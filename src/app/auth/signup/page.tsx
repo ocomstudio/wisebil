@@ -24,6 +24,7 @@ import { FcGoogle } from 'react-icons/fc';
 
 
 const signupSchema = z.object({
+  fullName: z.string().min(2, "Le nom doit comporter au moins 2 caractères."),
   phone: z.string().min(9, "Le numéro de téléphone doit comporter au moins 9 chiffres."),
   email: z.string().email("Adresse e-mail invalide.").optional().or(z.literal('')),
   password: z.string().min(8, "Le mot de passe doit comporter au moins 8 caractères."),
@@ -45,6 +46,7 @@ export default function SignupPage() {
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
+      fullName: "",
       phone: "",
       email: "",
       password: "",
@@ -70,6 +72,19 @@ export default function SignupPage() {
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+           <FormField
+            control={form.control}
+            name="fullName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nom complet <span className="text-destructive">*</span></FormLabel>
+                <FormControl>
+                  <Input placeholder="John Doe" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="phone"

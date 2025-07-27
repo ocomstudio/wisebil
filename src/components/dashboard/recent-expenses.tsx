@@ -6,24 +6,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { Shirt, Utensils } from "lucide-react";
+import { PlusCircle, Receipt } from "lucide-react";
 
-// Mock data
-const initialExpenses = [
-  { id: '1', description: 'Vêtements et chaussures', amount: 30000, category: 'Shopping', date: new Date(), icon: <Shirt className="h-5 w-5"/> },
-  { id: '2', description: 'Restaurant', amount: 15000, category: 'Dining', date: new Date(), icon: <Utensils className="h-5 w-5" /> },
-];
+// Mock data is cleared
+const initialExpenses: any[] = [];
 
 export function RecentExpenses() {
   return (
@@ -33,31 +21,34 @@ export function RecentExpenses() {
             <CardTitle className="text-lg">Dépenses récentes</CardTitle>
             <CardDescription>Vos dernières transactions</CardDescription>
         </div>
-        <Button variant="link" asChild>
-            <Link href="/dashboard/transactions">Voir tout</Link>
-        </Button>
+        {initialExpenses.length > 0 && (
+            <Button variant="link" asChild>
+                <Link href="/dashboard/transactions">Voir tout</Link>
+            </Button>
+        )}
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableBody>
-            {initialExpenses.map((expense) => (
-              <TableRow key={expense.id}>
-                <TableCell className="font-medium flex items-center gap-3">
-                    <div className="bg-secondary p-2 rounded-full">
-                        {expense.icon}
-                    </div>
-                    <div>
-                        <p>{expense.description}</p>
-                        <p className="text-xs text-muted-foreground">{expense.category}</p>
-                    </div>
-                </TableCell>
-                <TableCell className="text-right text-red-400 font-semibold">
-                    -{expense.amount.toLocaleString('fr-FR')} FCFA
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        {initialExpenses.length === 0 ? (
+           <div className="flex flex-col items-center justify-center text-center py-8">
+                <div className="bg-secondary p-3 rounded-full mb-4">
+                    <Receipt className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold mb-1">Aucune dépense</h3>
+                <p className="text-muted-foreground text-sm mb-4">
+                    Commencez à suivre vos dépenses pour les voir ici.
+                </p>
+                <Button asChild>
+                    <Link href="/dashboard/add-expense">
+                        <PlusCircle className="mr-2 h-4 w-4"/>
+                        Ajouter une dépense
+                    </Link>
+                </Button>
+           </div>
+        ) : (
+            <div>
+                {/* Table would go here */}
+            </div>
+        )}
       </CardContent>
     </Card>
   );

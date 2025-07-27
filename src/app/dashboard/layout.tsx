@@ -7,12 +7,8 @@ import {
   SidebarHeader,
   SidebarContent,
   SidebarFooter,
-  SidebarTrigger,
   SidebarInset,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
-import { Bell, User } from "lucide-react";
-import Link from "next/link";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { BottomNav } from "@/components/dashboard/bottom-nav";
 

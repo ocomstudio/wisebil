@@ -4,9 +4,9 @@ import { Eye, EyeOff } from "lucide-react";
 import { Button } from "../ui/button";
 
 export function BalanceCard() {
-  const balance = 40000;
-  const income = 70000;
-  const expenses = 30000;
+  const balance = 0;
+  const income = 0;
+  const expenses = 0;
 
   return (
     <Card className="bg-gradient-to-br from-primary/80 to-primary">

@@ -1,27 +1,10 @@
 // src/app/dashboard/savings/page.tsx
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Target, Zap } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
+import { PlusCircle, Target, Zap, Goal } from "lucide-react";
 
-const savingsGoals = [
-  {
-    name: "Nouvel Ordinateur",
-    saved: 150000,
-    total: 500000,
-  },
-  {
-    name: "Fonds d'urgence",
-    saved: 400000,
-    total: 1000000,
-  },
-  {
-    name: "Vacances",
-    saved: 50000,
-    total: 300000,
-  }
-];
+
+const savingsGoals: any[] = [];
 
 export default function SavingsPage() {
   return (
@@ -48,33 +31,31 @@ export default function SavingsPage() {
             <Button size="sm">En savoir plus</Button>
         </CardContent>
       </Card>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        {savingsGoals.map((goal) => (
-          <Card key={goal.name}>
+      
+      {savingsGoals.length === 0 ? (
+        <Card className="flex flex-col items-center justify-center text-center p-12 border-dashed">
             <CardHeader>
-              <div className="flex items-center gap-3">
-                 <div className="p-3 bg-secondary rounded-full">
-                    <Target className="h-6 w-6" />
-                 </div>
-                 <div>
-                    <CardTitle>{goal.name}</CardTitle>
-                    <Badge variant="outline" className="mt-1">
-                        {Math.round((goal.saved/goal.total) * 100)}%
-                    </Badge>
-                 </div>
-              </div>
+                <div className="mx-auto bg-secondary p-4 rounded-full mb-4">
+                    <Goal className="h-12 w-12 text-muted-foreground" />
+                </div>
+                <CardTitle>Aucun objectif d'épargne</CardTitle>
+                <CardDescription>
+                    Créez votre premier objectif pour commencer à épargner pour ce qui compte.
+                </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <Progress value={(goal.saved / goal.total) * 100} />
-               <div className="flex justify-between text-sm text-muted-foreground">
-                 <span>{goal.saved.toLocaleString('fr-FR')} FCFA</span>
-                 <span>{goal.total.toLocaleString('fr-FR')} FCFA</span>
-              </div>
+            <CardContent>
+                <Button>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Créer un objectif
+                </Button>
             </CardContent>
-          </Card>
-        ))}
-      </div>
+        </Card>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2">
+            {/* Savings goals would be mapped here */}
+        </div>
+      )}
+
     </div>
   );
 }
