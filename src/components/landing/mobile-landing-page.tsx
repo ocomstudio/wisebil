@@ -19,36 +19,23 @@ import { InstallPWA } from '@/components/pwa/install-pwa';
 const onboardingSteps = [
   {
     icon: <Wallet className="h-16 w-16 text-primary" />,
-    title: "Welcome to Wisebil!",
-    description: "The smart way to manage your personal finances. Let's take a quick tour.",
-    image: {
-      src: "https://placehold.co/600x400.png",
-      dataAiHint: "welcome finance"
-    }
+    title: "Bienvenue sur Wisebil !",
+    description: "La façon intelligente de gérer vos finances personnelles. Faisons un tour rapide.",
   },
   {
     icon: <Bot className="h-16 w-16 text-primary" />,
-    title: "AI-Powered Categorization",
-    description: "Simply enter your expense description, and our AI will intelligently categorize it for you.",
-    image: {
-      src: "https://placehold.co/600x400.png",
-      dataAiHint: "robot technology"
-    }
+    title: "Catégorisation par l'IA",
+    description: "Entrez simplement la description de votre dépense, et notre IA la catégorisera intelligemment pour vous.",
   },
   {
     icon: <BarChart2 className="h-16 w-16 text-primary" />,
-    title: "Track Your Spending",
-    description: "Get a clear view of where your money is going with our intuitive dashboard and reports.",
-    image: {
-      src: "https://placehold.co/600x400.png",
-      dataAiHint: "analytics chart"
-    }
+    title: "Suivez Vos Dépenses",
+    description: "Obtenez une vue claire de la destination de votre argent avec notre tableau de bord et nos rapports intuitifs.",
   },
   {
     icon: <PartyPopper className="h-16 w-16 text-primary" />,
-    title: "You're All Set!",
-    description: "Ready to take control of your finances? Sign up or log in to get started.",
-    isFinal: false,
+    title: "Vous êtes prêt !",
+    description: "Prêt à prendre le contrôle de vos finances ? Inscrivez-vous ou connectez-vous pour commencer.",
   }
 ];
 
@@ -82,7 +69,10 @@ export default function MobileLandingPage() {
       <footer className="py-4 space-y-4">
         <div className="w-full space-y-2">
           <Button asChild size="lg" className="w-full">
-            <Link href="/dashboard">Get Started</Link>
+            <Link href="/dashboard">Commencer</Link>
+          </Button>
+           <Button asChild size="lg" variant="outline" className="w-full">
+            <Link href="/dashboard">Se connecter</Link>
           </Button>
         </div>
         <InstallPWA />
