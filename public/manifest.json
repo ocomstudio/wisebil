@@ -1,0 +1,22 @@
+{
+  "theme_color": "#50c878",
+  "background_color": "#f0faf4",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/dashboard",
+  "name": "Wisebil",
+  "short_name": "Wisebil",
+  "description": "AI-powered expense management to help you save wisely.",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
