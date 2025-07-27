@@ -6,7 +6,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar"
-import { BarChart, Home, Settings } from "lucide-react"
+import { BarChart, Home, MessageSquare, Settings } from "lucide-react"
 import { usePathname } from "next/navigation"
 
 export function SidebarNav() {
@@ -17,6 +17,11 @@ export function SidebarNav() {
       href: "/dashboard",
       label: "Dashboard",
       icon: <Home />,
+    },
+    {
+      href: "/dashboard/assistant",
+      label: "Assistant",
+      icon: <MessageSquare />,
     },
     {
       href: "/dashboard/reports",

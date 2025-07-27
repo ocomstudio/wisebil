@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -18,8 +19,8 @@ import { InstallPWA } from '@/components/pwa/install-pwa';
 const onboardingSteps = [
   {
     icon: <Wallet className="h-16 w-16 text-primary" />,
-    title: "Welcome to Wisebil!",
-    description: "The smart way to manage your personal finances. Let's take a quick tour.",
+    title: "Bienvenue sur Wisebil!",
+    description: "La façon intelligente de gérer vos finances personnelles. Faisons un tour rapide.",
     image: {
       src: "https://placehold.co/600x400.png",
       dataAiHint: "welcome finance"
@@ -27,8 +28,8 @@ const onboardingSteps = [
   },
   {
     icon: <Bot className="h-16 w-16 text-primary" />,
-    title: "AI-Powered Categorization",
-    description: "Simply enter your expense description, and our AI will smartly categorize it for you.",
+    title: "Catégorisation par IA",
+    description: "Entrez simplement la description de votre dépense, et notre IA la catégorisera intelligemment pour vous.",
     image: {
       src: "https://placehold.co/600x400.png",
       dataAiHint: "robot technology"
@@ -36,8 +37,8 @@ const onboardingSteps = [
   },
   {
     icon: <BarChart2 className="h-16 w-16 text-primary" />,
-    title: "Track Your Spending",
-    description: "Get a clear view of where your money is going with our intuitive dashboard and reports.",
+    title: "Suivez vos dépenses",
+    description: "Obtenez une vue claire de la destination de votre argent grâce à notre tableau de bord et nos rapports intuitifs.",
     image: {
       src: "https://placehold.co/600x400.png",
       dataAiHint: "analytics chart"
@@ -45,9 +46,9 @@ const onboardingSteps = [
   },
   {
     icon: <PartyPopper className="h-16 w-16 text-primary" />,
-    title: "You're All Set!",
-    description: "Ready to take control of your finances? Sign up or log in to get started.",
-    isFinal: true,
+    title: "Vous êtes prêt !",
+    description: "Prêt à prendre le contrôle de vos finances ? Créez un compte ou connectez-vous pour commencer.",
+    isFinal: false, // Changed from true
   }
 ];
 
@@ -68,16 +69,6 @@ export default function MobileLandingPage() {
                       <div className="mb-6">{step.icon}</div>
                       <h3 className="text-2xl font-bold mb-2 font-headline">{step.title}</h3>
                       <p className="text-muted-foreground">{step.description}</p>
-                      {step.isFinal && (
-                        <div className="mt-8 w-full space-y-4">
-                          <Button asChild size="lg" className="w-full">
-                            <Link href="/dashboard">Sign Up</Link>
-                          </Button>
-                           <Button asChild variant="outline" size="lg" className="w-full">
-                            <Link href="/dashboard">Log In</Link>
-                          </Button>
-                        </div>
-                      )}
                     </CardContent>
                   </Card>
                 </div>
@@ -88,8 +79,16 @@ export default function MobileLandingPage() {
           <CarouselNext />
         </Carousel>
       </div>
-       <footer className="py-4">
-          <InstallPWA />
+      <footer className="py-4 space-y-4">
+        <div className="w-full space-y-2">
+          <Button asChild size="lg" className="w-full">
+            <Link href="/dashboard">Acheter une dépense</Link>
+          </Button>
+          <Button asChild variant="outline" size="lg" className="w-full">
+            <Link href="/dashboard">S'inscrire / Se connecter</Link>
+          </Button>
+        </div>
+        <InstallPWA />
       </footer>
     </div>
   );

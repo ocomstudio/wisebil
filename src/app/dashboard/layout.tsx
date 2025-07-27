@@ -11,7 +11,8 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Bell, User } from "lucide-react";
+import { Bell, MessageSquare, User } from "lucide-react";
+import Link from "next/link";
 
 export default function DashboardLayout({
   children,
@@ -37,6 +38,11 @@ export default function DashboardLayout({
         <header className="flex items-center justify-between p-4 border-b">
           <SidebarTrigger />
           <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="/dashboard/assistant">
+                <MessageSquare className="h-5 w-5" />
+              </Link>
+            </Button>
             <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5" />
             </Button>
