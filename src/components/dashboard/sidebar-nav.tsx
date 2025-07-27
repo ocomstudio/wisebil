@@ -44,10 +44,10 @@ export function SidebarNav() {
             isActive={pathname === item.href}
             asChild
           >
-            <>
+            <span>
               {item.icon}
               <span>{item.label}</span>
-            </>
+            </span>
           </SidebarMenuButton>
         </SidebarMenuItem>
       ))}
