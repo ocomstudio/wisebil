@@ -30,14 +30,8 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
-const chartData = [
-  { month: "Janvier", desktop: 186 },
-  { month: "Février", desktop: 305 },
-  { month: "Mars", desktop: 237 },
-  { month: "Avril", desktop: 73 },
-  { month: "Mai", desktop: 209 },
-  { month: "Juin", desktop: 214 },
-];
+const chartData: any[] = [];
+const topExpenses: any[] = [];
 
 const chartConfig = {
   desktop: {
@@ -45,14 +39,6 @@ const chartConfig = {
     color: "hsl(var(--primary))",
   },
 };
-
-const topExpenses = [
-    { name: "Shopping", amount: 45000, percentage: 35 },
-    { name: "Restaurant", amount: 30000, percentage: 25 },
-    { name: "Transport", amount: 20000, percentage: 15 },
-    { name: "Factures", amount: 15000, percentage: 10 },
-    { name: "Autres", amount: 10000, percentage: 5 },
-]
 
 export default function ReportsPage() {
   return (
@@ -75,27 +61,33 @@ export default function ReportsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Aperçu des Dépenses</CardTitle>
-          <CardDescription>Janvier - Juin 2024</CardDescription>
+          <CardDescription>Aucune donnée pour le moment</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[200px] w-full">
-            <BarChart accessibilityLayer data={chartData}>
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="month"
-                tickLine={false}
-                tickMargin={10}
-                axisLine={false}
-              />
-              <YAxis
-                tickFormatter={(value) => `${value / 1000}k`}
-              />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent indicator="dot" />}
-              />
-              <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
-            </BarChart>
+             {chartData.length > 0 ? (
+                <BarChart accessibilityLayer data={chartData}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis
+                        dataKey="month"
+                        tickLine={false}
+                        tickMargin={10}
+                        axisLine={false}
+                    />
+                    <YAxis
+                        tickFormatter={(value) => `${value / 1000}k`}
+                    />
+                    <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent indicator="dot" />}
+                    />
+                    <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
+                </BarChart>
+             ) : (
+                <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                    Aucune donnée de graphique disponible.
+                </div>
+             )}
           </ChartContainer>
         </CardContent>
       </Card>
@@ -106,26 +98,32 @@ export default function ReportsPage() {
            <CardDescription>Vos catégories de dépenses les plus importantes ce mois-ci.</CardDescription>
         </CardHeader>
         <CardContent>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Catégorie</TableHead>
-                        <TableHead className="text-right">Montant</TableHead>
-                        <TableHead className="text-right">Pourcentage</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {topExpenses.map((expense) => (
-                        <TableRow key={expense.name}>
-                            <TableCell className="font-medium">{expense.name}</TableCell>
-                            <TableCell className="text-right">{expense.amount.toLocaleString('fr-FR')} FCFA</TableCell>
-                            <TableCell className="text-right">
-                                <Badge variant="secondary">{expense.percentage}%</Badge>
-                            </TableCell>
+            {topExpenses.length > 0 ? (
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Catégorie</TableHead>
+                            <TableHead className="text-right">Montant</TableHead>
+                            <TableHead className="text-right">Pourcentage</TableHead>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {topExpenses.map((expense) => (
+                            <TableRow key={expense.name}>
+                                <TableCell className="font-medium">{expense.name}</TableCell>
+                                <TableCell className="text-right">{expense.amount.toLocaleString('fr-FR')} FCFA</TableCell>
+                                <TableCell className="text-right">
+                                    <Badge variant="secondary">{expense.percentage}%</Badge>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            ) : (
+                 <div className="flex h-24 w-full items-center justify-center text-muted-foreground">
+                    Aucune dépense enregistrée.
+                </div>
+            )}
         </CardContent>
       </Card>
     </div>

@@ -1,14 +1,25 @@
+// src/app/dashboard/page.tsx
+"use client";
+
+import { useState } from 'react';
 import { BalanceCard } from "@/components/dashboard/balance-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecentExpenses } from "@/components/dashboard/recent-expenses";
-import { Lightbulb, PlusCircle } from "lucide-react";
+import { Lightbulb } from "lucide-react";
 import Link from "next/link";
+import { Transaction } from '@/types/transaction';
 
 export default function DashboardPage() {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+  const balance = transactions.reduce((acc, t) => t.type === 'income' ? acc + t.amount : acc - t.amount, 0);
+  const income = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+  const expenses = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+
   return (
     <div className="space-y-6">
-      <BalanceCard />
+      <BalanceCard balance={balance} income={income} expenses={expenses} />
 
       <div className="grid grid-cols-2 gap-4">
         <Button variant="destructive" className="bg-red-500/20 text-red-400 hover:bg-red-500/30" asChild>
@@ -35,7 +46,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
       
-      <RecentExpenses />
+      <RecentExpenses transactions={transactions} />
     </div>
   );
 }
