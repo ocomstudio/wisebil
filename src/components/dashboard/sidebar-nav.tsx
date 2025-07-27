@@ -6,7 +6,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar"
-import { BarChart, Home, MessageSquare, Settings } from "lucide-react"
+import { BarChart, Bot, Home, Settings, Wallet } from "lucide-react"
 import { usePathname } from "next/navigation"
 
 export function SidebarNav() {
@@ -15,22 +15,27 @@ export function SidebarNav() {
   const menuItems = [
     {
       href: "/dashboard",
-      label: "Dashboard",
+      label: "Accueil",
       icon: <Home />,
     },
     {
       href: "/dashboard/assistant",
       label: "Assistant",
-      icon: <MessageSquare />,
+      icon: <Bot />,
     },
     {
       href: "/dashboard/reports",
-      label: "Reports",
+      label: "Rapports",
       icon: <BarChart />,
     },
     {
+      href: "/dashboard/accounts",
+      label: "Comptes",
+      icon: <Wallet />
+    },
+    {
       href: "/dashboard/settings",
-      label: "Settings",
+      label: "Paramètres",
       icon: <Settings />,
     },
   ]
@@ -41,7 +46,7 @@ export function SidebarNav() {
         <SidebarMenuItem key={item.href}>
           <SidebarMenuButton
             href={item.href}
-            isActive={pathname === item.href}
+            isActive={pathname.startsWith(item.href) && (item.href !== '/dashboard' || pathname === '/dashboard')}
             asChild
           >
             <span>

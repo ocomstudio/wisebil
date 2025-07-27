@@ -11,8 +11,10 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Bell, MessageSquare, User } from "lucide-react";
+import { Bell, User } from "lucide-react";
 import Link from "next/link";
+import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { BottomNav } from "@/components/dashboard/bottom-nav";
 
 export default function DashboardLayout({
   children,
@@ -35,23 +37,9 @@ export default function DashboardLayout({
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="flex items-center justify-between p-4 border-b">
-          <SidebarTrigger />
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild>
-              <Link href="/dashboard/assistant">
-                <MessageSquare className="h-5 w-5" />
-              </Link>
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Bell className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <User className="h-5 w-5" />
-            </Button>
-          </div>
-        </header>
+        <DashboardHeader />
         <main className="flex-1 p-4 md:p-8">{children}</main>
+        <BottomNav />
       </SidebarInset>
     </SidebarProvider>
   );

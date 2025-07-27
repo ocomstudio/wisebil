@@ -4,25 +4,25 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/common/logo';
 import { InstallPWA } from '@/components/pwa/install-pwa';
-import { CheckCircle, Bot, Wallet, BarChart2 } from 'lucide-react';
+import { Bot, Wallet, BarChart2 } from 'lucide-react';
 
 const features = [
   {
     icon: <Bot className="h-10 w-10 text-primary" />,
-    title: 'Catégorisation par IA',
-    description: 'Laissez notre IA intelligente catégoriser automatiquement vos dépenses, pour que vous n\'ayez pas à le faire.',
+    title: 'AI Categorization',
+    description: "Let our smart AI automatically categorize your expenses, so you don't have to.",
     dataAiHint: 'robot technology'
   },
   {
     icon: <Wallet className="h-10 w-10 text-primary" />,
-    title: 'Suivi des dépenses',
-    description: 'Conservez un enregistrement clair et simple de toutes vos transactions en un seul endroit.',
+    title: 'Expense Tracking',
+    description: 'Keep a clear, simple record of all your transactions in one place.',
     dataAiHint: 'finance money'
   },
   {
     icon: <BarChart2 className="h-10 w-10 text-primary" />,
-    title: 'Rapports perspicaces',
-    description: 'Visualisez vos habitudes de dépenses avec des tableaux et des graphiques faciles à comprendre.',
+    title: 'Insightful Reports',
+    description: 'Visualize your spending habits with easy-to-understand charts and graphs.',
     dataAiHint: 'charts graphs'
   },
 ];
@@ -30,41 +30,41 @@ const features = [
 const howItWorks = [
     {
         step: 1,
-        title: "Ajoutez une dépense",
-        description: "Ajoutez rapidement vos dépenses en saisissant une description et un montant."
+        title: "Add an Expense",
+        description: "Quickly add your expenses by entering a description and amount."
     },
     {
         step: 2,
-        title: "Catégorisez avec l'IA",
-        description: "En un clic, notre IA analyse la description et attribue la bonne catégorie."
+        title: "Categorize with AI",
+        description: "With one click, our AI analyzes the description and assigns the correct category."
     },
     {
         step: 3,
-        title: "Obtenez des informations",
-        description: "Examinez vos habitudes de dépenses via notre tableau de bord et prenez des décisions financières plus judicieuses."
+        title: "Get Insights",
+        description: "Review your spending habits through our dashboard and make smarter financial decisions."
     }
 ]
 
 export default function DesktopLandingPage() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-background">
       <header className="px-4 lg:px-6 h-16 flex items-center bg-background/80 backdrop-blur-sm sticky top-0 z-50 border-b">
         <Logo />
         <nav className="ml-auto hidden lg:flex gap-4 sm:gap-6 items-center">
           <Link className="text-sm font-medium hover:underline underline-offset-4" href="#features">
-            Fonctionnalités
+            Features
           </Link>
           <Link className="text-sm font-medium hover:underline underline-offset-4" href="#how-it-works">
-            Comment ça marche
+            How It Works
           </Link>
           <InstallPWA />
           <Button asChild>
-            <Link href="/dashboard">Commencer</Link>
+            <Link href="/dashboard">Get Started</Link>
           </Button>
         </nav>
         <div className="ml-auto lg:hidden">
             <Button asChild>
-                <Link href="/dashboard">Connexion</Link>
+                <Link href="/dashboard">Login</Link>
             </Button>
         </div>
       </header>
@@ -76,15 +76,15 @@ export default function DesktopLandingPage() {
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
-                    Gérez vos dépenses avec la puissance de l'IA
+                    Manage Your Expenses with the Power of AI
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    Wisebil est le moyen le plus intelligent de suivre vos dépenses. Notre application basée sur l'IA simplifie votre vie financière.
+                    Wisebil is the smartest way to track your spending. Our AI-powered app simplifies your financial life.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
                   <Button asChild size="lg">
-                     <Link href="/dashboard">Commencez gratuitement</Link>
+                     <Link href="/dashboard">Get Started For Free</Link>
                   </Button>
                 </div>
               </div>
@@ -105,19 +105,19 @@ export default function DesktopLandingPage() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary font-medium">
-                  Fonctionnalités clés
+                  Key Features
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">
-                  Pourquoi vous allez adorer Wisebil
+                  Why You'll Love Wisebil
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Nous avons doté Wisebil de fonctionnalités pour rendre la gestion de votre argent simple et perspicace.
+                  We've packed Wisebil with features to make managing your money simple and insightful.
                 </p>
               </div>
             </div>
             <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-3 mt-12">
               {features.map((feature) => (
-                <Card key={feature.title} className="text-center">
+                <Card key={feature.title} className="text-center bg-secondary">
                   <CardHeader className="items-center">
                     {feature.icon}
                     <CardTitle className="mt-4">{feature.title}</CardTitle>
@@ -135,9 +135,9 @@ export default function DesktopLandingPage() {
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
-                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Des étapes simples pour une clarté financière</h2>
+                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Simple Steps to Financial Clarity</h2>
                         <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                            Commencer avec Wisebil est aussi simple que 1, 2, 3.
+                            Getting started with Wisebil is as easy as 1, 2, 3.
                         </p>
                     </div>
                 </div>
@@ -158,13 +158,13 @@ export default function DesktopLandingPage() {
       </main>
 
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Wisebil. Tous les droits sont réservés.</p>
+        <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Wisebil. All rights reserved.</p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link className="text-xs hover:underline underline-offset-4" href="#">
-            Conditions d'utilisation
+            Terms of Service
           </Link>
           <Link className="text-xs hover:underline underline-offset-4" href="#">
-            Confidentialité
+            Privacy
           </Link>
         </nav>
       </footer>

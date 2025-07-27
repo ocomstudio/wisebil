@@ -1,11 +1,12 @@
+// src/app/dashboard/add-expense/page.tsx
 "use client";
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { v4 as uuidv4 } from 'uuid';
 import { categorizeExpense } from "@/ai/flows/categorize-expense";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,15 +19,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Bot, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -38,22 +30,10 @@ const expenseSchema = z.object({
 
 type ExpenseFormValues = z.infer<typeof expenseSchema>;
 
-interface Expense extends ExpenseFormValues {
-  id: string;
-  date: Date;
-}
-
-// Mock data
-const initialExpenses: Expense[] = [
-  { id: '1', description: 'Groceries from Walmart', amount: 75.4, category: 'Groceries', date: new Date() },
-  { id: '2', description: 'Monthly Netflix Subscription', amount: 15.99, category: 'Entertainment', date: new Date() },
-];
-
-
-export default function ExpenseManager() {
-  const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
+export default function AddExpensePage() {
   const [isCategorizing, setIsCategorizing] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseSchema),
@@ -87,36 +67,20 @@ export default function ExpenseManager() {
   };
 
   const onSubmit = (data: ExpenseFormValues) => {
-    const newExpense: Expense = {
-      id: uuidv4(),
-      ...data,
-      category: data.category || 'Other',
-      date: new Date(),
-    };
-    setExpenses([newExpense, ...expenses]);
-    form.reset();
+    // Here you would typically save the expense to your database
+    console.log("New expense added:", data);
+    toast({
+      title: "Expense Added",
+      description: `Successfully added "${data.description}".`,
+    });
+    router.push("/dashboard");
   };
-  
-  // A temporary solution for uuidv4 in client components without adding the package
-  if (typeof window !== 'undefined' && !window.crypto.randomUUID) {
-    // Basic fallback if crypto is not available
-    window.crypto.randomUUID = function() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    }
-  }
-  const uuidv4 = () => typeof window !== 'undefined' ? window.crypto.randomUUID() : Math.random().toString();
-
 
   return (
-    <div className="grid gap-8 md:grid-cols-2">
+    <div>
+      <h1 className="text-3xl font-bold font-headline mb-6">Ajouter une dépense</h1>
       <Card>
-        <CardHeader>
-          <CardTitle>Add New Expense</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -126,7 +90,7 @@ export default function ExpenseManager() {
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Coffee with a friend" {...field} />
+                      <Input placeholder="e.g., Café avec un ami" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -137,7 +101,7 @@ export default function ExpenseManager() {
                 name="amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Amount ($)</FormLabel>
+                    <FormLabel>Montant (FCFA)</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="0.00" {...field} />
                     </FormControl>
@@ -150,50 +114,23 @@ export default function ExpenseManager() {
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category</FormLabel>
+                    <FormLabel>Catégorie</FormLabel>
                     <div className="flex gap-2">
                        <FormControl>
-                        <Input placeholder="e.g., Dining" {...field} />
+                        <Input placeholder="e.g., Restaurant" {...field} />
                       </FormControl>
                       <Button type="button" variant="outline" onClick={handleCategorize} disabled={isCategorizing}>
                         {isCategorizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bot className="h-4 w-4" />}
-                        <span className="sr-only">Categorize with AI</span>
+                        <span className="sr-only">Catégoriser avec l'IA</span>
                       </Button>
                     </div>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">Add Expense</Button>
+              <Button type="submit" className="w-full">Ajouter la dépense</Button>
             </form>
           </Form>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Expenses</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Description</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {expenses.map((expense) => (
-                <TableRow key={expense.id}>
-                  <TableCell className="font-medium">{expense.description}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{expense.category}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right">${expense.amount.toFixed(2)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
         </CardContent>
       </Card>
     </div>

@@ -19,8 +19,8 @@ import { InstallPWA } from '@/components/pwa/install-pwa';
 const onboardingSteps = [
   {
     icon: <Wallet className="h-16 w-16 text-primary" />,
-    title: "Bienvenue sur Wisebil!",
-    description: "La façon intelligente de gérer vos finances personnelles. Faisons un tour rapide.",
+    title: "Welcome to Wisebil!",
+    description: "The smart way to manage your personal finances. Let's take a quick tour.",
     image: {
       src: "https://placehold.co/600x400.png",
       dataAiHint: "welcome finance"
@@ -28,8 +28,8 @@ const onboardingSteps = [
   },
   {
     icon: <Bot className="h-16 w-16 text-primary" />,
-    title: "Catégorisation par IA",
-    description: "Entrez simplement la description de votre dépense, et notre IA la catégorisera intelligemment pour vous.",
+    title: "AI-Powered Categorization",
+    description: "Simply enter your expense description, and our AI will intelligently categorize it for you.",
     image: {
       src: "https://placehold.co/600x400.png",
       dataAiHint: "robot technology"
@@ -37,8 +37,8 @@ const onboardingSteps = [
   },
   {
     icon: <BarChart2 className="h-16 w-16 text-primary" />,
-    title: "Suivez vos dépenses",
-    description: "Obtenez une vue claire de la destination de votre argent grâce à notre tableau de bord et nos rapports intuitifs.",
+    title: "Track Your Spending",
+    description: "Get a clear view of where your money is going with our intuitive dashboard and reports.",
     image: {
       src: "https://placehold.co/600x400.png",
       dataAiHint: "analytics chart"
@@ -46,9 +46,9 @@ const onboardingSteps = [
   },
   {
     icon: <PartyPopper className="h-16 w-16 text-primary" />,
-    title: "Vous êtes prêt !",
-    description: "Prêt à prendre le contrôle de vos finances ? Créez un compte ou connectez-vous pour commencer.",
-    isFinal: false, // Changed from true
+    title: "You're All Set!",
+    description: "Ready to take control of your finances? Sign up or log in to get started.",
+    isFinal: false,
   }
 ];
 
@@ -82,10 +82,7 @@ export default function MobileLandingPage() {
       <footer className="py-4 space-y-4">
         <div className="w-full space-y-2">
           <Button asChild size="lg" className="w-full">
-            <Link href="/dashboard">Acheter une dépense</Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="w-full">
-            <Link href="/dashboard">S'inscrire / Se connecter</Link>
+            <Link href="/dashboard">Get Started</Link>
           </Button>
         </div>
         <InstallPWA />
