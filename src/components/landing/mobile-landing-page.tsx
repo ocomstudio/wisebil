@@ -69,10 +69,10 @@ export default function MobileLandingPage() {
       <footer className="py-4 space-y-4">
         <div className="w-full space-y-2">
           <Button asChild size="lg" className="w-full">
-            <Link href="/dashboard">Commencer</Link>
+            <Link href="/auth/signup">Commencer</Link>
           </Button>
            <Button asChild size="lg" variant="outline" className="w-full">
-            <Link href="/dashboard">Se connecter</Link>
+            <Link href="/auth/login">Se connecter</Link>
           </Button>
         </div>
         <InstallPWA />

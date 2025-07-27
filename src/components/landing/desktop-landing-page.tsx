@@ -102,15 +102,15 @@ export default function DesktopLandingPage() {
             FAQ
           </Link>
           <Button variant="outline" asChild>
-             <Link href="/dashboard">Se connecter</Link>
+             <Link href="/auth/login">Se connecter</Link>
           </Button>
           <Button asChild>
-            <Link href="/dashboard">Télécharger l'app</Link>
+            <Link href="/auth/signup">Télécharger l'app</Link>
           </Button>
         </nav>
         <div className="ml-auto lg:hidden">
              <Button asChild>
-                <Link href="/dashboard">Se connecter</Link>
+                <Link href="/auth/login">Se connecter</Link>
             </Button>
         </div>
       </header>
@@ -131,7 +131,7 @@ export default function DesktopLandingPage() {
                         </div>
                         <div className="flex flex-col gap-2 min-[400px]:flex-row">
                             <Button asChild size="lg">
-                                <Link href="/dashboard">Télécharger l'application</Link>
+                                <Link href="/auth/signup">Télécharger l'application</Link>
                             </Button>
                             <Button asChild size="lg" variant="outline">
                                 <Link href="#features">Découvrir</Link>
@@ -219,7 +219,7 @@ export default function DesktopLandingPage() {
                     </li>
                 </ul>
                 <Button asChild>
-                    <Link href="/dashboard">Voir toutes les fonctionnalités</Link>
+                    <Link href="/auth/signup">Voir toutes les fonctionnalités</Link>
                 </Button>
               </div>
               <Image
