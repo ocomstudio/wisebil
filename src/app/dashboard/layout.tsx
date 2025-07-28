@@ -8,6 +8,7 @@ import {
   Sidebar,
   SidebarHeader,
   SidebarContent,
+  SidebarInset,
 } from "@/components/ui/sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { BottomNav } from "@/components/dashboard/bottom-nav";
