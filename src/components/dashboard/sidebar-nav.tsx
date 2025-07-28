@@ -1,13 +1,10 @@
 
 "use client"
 
-import {
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-} from "@/components/ui/sidebar"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { BarChart, Bot, Home, Settings, Shield, Target, Wallet } from "lucide-react"
-import { usePathname } from "next/navigation"
 
 export function SidebarNav() {
   const pathname = usePathname()
@@ -17,11 +14,6 @@ export function SidebarNav() {
       href: "/dashboard",
       label: "Accueil",
       icon: <Home />,
-    },
-    {
-      href: "/dashboard/assistant",
-      label: "Assistant",
-      icon: <Bot />,
     },
     {
       href: "/dashboard/reports",
@@ -38,6 +30,11 @@ export function SidebarNav() {
       label: "Épargne",
       icon: <Shield />,
     },
+     {
+      href: "/dashboard/assistant",
+      label: "Assistant",
+      icon: <Bot />,
+    },
     {
       href: "/dashboard/accounts",
       label: "Comptes",
@@ -51,21 +48,20 @@ export function SidebarNav() {
   ]
 
   return (
-    <SidebarMenu>
+     <nav className="flex flex-col gap-2">
       {menuItems.map((item) => (
-        <SidebarMenuItem key={item.href}>
-          <SidebarMenuButton
-            href={item.href}
-            isActive={pathname.startsWith(item.href) && (item.href !== '/dashboard' || pathname === '/dashboard')}
-            asChild
-          >
-            <span>
-              {item.icon}
-              <span>{item.label}</span>
-            </span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
+        <Link
+          key={item.href}
+          href={item.href}
+          className={cn(
+            "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-primary/10",
+            (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))) && "bg-primary/10 text-primary"
+          )}
+        >
+          {item.icon}
+          {item.label}
+        </Link>
       ))}
-    </SidebarMenu>
+    </nav>
   )
 }
