@@ -99,7 +99,7 @@ export default function ReportsPage() {
           )}
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+          <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
              {chartData.length > 0 ? (
                 <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ left: 10, right: 10 }}>
                     <CartesianGrid horizontal={false} />
@@ -109,7 +109,7 @@ export default function ReportsPage() {
                         tickLine={false}
                         tickMargin={10}
                         axisLine={false}
-                        className="text-xs"
+                        className="text-[10px] sm:text-xs"
                         interval={0}
                         width={80} 
                         tick={{
@@ -131,7 +131,7 @@ export default function ReportsPage() {
                     <Bar dataKey="amount" fill="var(--color-amount)" radius={4} barSize={20} />
                 </BarChart>
              ) : (
-                <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                <div className="flex h-full w-full items-center justify-center text-muted-foreground min-h-[200px]">
                     Aucune donnée de graphique disponible.
                 </div>
              )}
