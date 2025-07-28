@@ -4,10 +4,9 @@
 import { BalanceCard } from "@/components/dashboard/balance-card";
 import { RecentExpenses } from "@/components/dashboard/recent-expenses";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { AddTransactionDialog } from "@/components/dashboard/add-transaction-dialog";
+import { Card, CardContent } from "@/components/ui/card";
 import { useTransactions } from "@/context/transactions-context";
-import { ArrowUpRight, Plus, Repeat } from "lucide-react";
+import { TrendingDown, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -21,21 +20,19 @@ export default function DashboardPage() {
     <div className="space-y-6 pb-20">
       <BalanceCard balance={balance} />
 
-      <div className="grid grid-cols-3 gap-3 text-center">
-        <Button variant="outline" className="flex-col h-20">
-          <Repeat className="h-5 w-5 mb-1 text-primary"/>
-          <span className="text-xs">Envoyer</span>
+      <div className="grid grid-cols-2 gap-4">
+        <Button asChild className="h-20 flex-col gap-2 bg-red-600 hover:bg-red-700 text-white shadow-md">
+          <Link href="/dashboard/add-expense">
+            <TrendingDown className="h-6 w-6" />
+            <span className="font-semibold">Ajouter une dépense</span>
+          </Link>
         </Button>
-         <Button variant="outline" className="flex-col h-20">
-          <ArrowUpRight className="h-5 w-5 mb-1 text-primary"/>
-          <span className="text-xs">Recevoir</span>
+        <Button asChild className="h-20 flex-col gap-2 bg-green-600 hover:bg-green-700 text-white shadow-md">
+           <Link href="/dashboard/add-income">
+            <TrendingUp className="h-6 w-6" />
+            <span className="font-semibold">Ajouter un revenu</span>
+          </Link>
         </Button>
-        <AddTransactionDialog>
-            <Button variant="outline" className="flex-col h-20">
-                <Plus className="h-5 w-5 mb-1 text-primary"/>
-                <span className="text-xs">Ajouter</span>
-            </Button>
-        </AddTransactionDialog>
       </div>
 
       <div>
