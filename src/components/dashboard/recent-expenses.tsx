@@ -1,17 +1,10 @@
 // src/components/dashboard/recent-expenses.tsx
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { PlusCircle, Receipt, TrendingDown, TrendingUp } from "lucide-react";
 import { Transaction } from "@/types/transaction";
-import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 
 interface RecentExpensesProps {
   transactions: Transaction[];
@@ -21,19 +14,16 @@ export function RecentExpenses({ transactions }: RecentExpensesProps) {
   const recentTransactions = transactions.slice(-5).reverse();
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-            <CardTitle className="text-lg">Transactions récentes</CardTitle>
-            <CardDescription>Vos dernières transactions</CardDescription>
-        </div>
-        {transactions.length > 5 && (
-            <Button variant="link" asChild>
+    <div>
+      <div className="flex justify-between items-center mb-2">
+        <h2 className="font-semibold">Transactions Récentes</h2>
+         {transactions.length > 5 && (
+            <Button variant="link" size="sm" asChild>
                 <Link href="/dashboard/transactions">Voir tout</Link>
             </Button>
         )}
-      </CardHeader>
-      <CardContent>
+      </div>
+      <div className="bg-background rounded-lg p-4 space-y-4">
         {transactions.length === 0 ? (
            <div className="flex flex-col items-center justify-center text-center py-8">
                 <div className="bg-secondary p-3 rounded-full mb-4">
@@ -54,35 +44,31 @@ export function RecentExpenses({ transactions }: RecentExpensesProps) {
             <div className="space-y-4">
                 {recentTransactions.map((transaction) => (
                     <div key={transaction.id} className="flex items-center gap-4">
-                        <div className={cn(
-                          "rounded-full p-2",
-                          transaction.type === 'income' ? 'bg-green-500/20' : 'bg-red-500/20'
-                        )}>
-                           {transaction.type === 'income' ? 
-                           <TrendingUp className="h-5 w-5 text-green-400" /> : 
-                           <TrendingDown className="h-5 w-5 text-red-400" />}
-                        </div>
+                        <Avatar>
+                            <AvatarFallback>
+                                {transaction.description.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                        </Avatar>
                         <div className="flex-grow">
                             <p className="font-semibold">{transaction.description}</p>
-                            <p className="text-sm text-muted-foreground">{transaction.category}</p>
+                            <p className="text-sm text-muted-foreground">
+                                {new Date(transaction.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </p>
                         </div>
                         <div className="text-right">
                            <p className={cn(
                              "font-bold",
-                              transaction.type === 'income' ? 'text-green-400' : 'text-red-400'
+                              transaction.type === 'income' ? 'text-green-600' : 'text-foreground'
                            )}>
                             {transaction.type === 'income' ? '+' : '-'}
                             {transaction.amount.toLocaleString('fr-FR')} FCFA
-                           </p>
-                           <p className="text-xs text-muted-foreground">
-                              {new Date(transaction.date).toLocaleDateString('fr-FR')}
                            </p>
                         </div>
                     </div>
                 ))}
             </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

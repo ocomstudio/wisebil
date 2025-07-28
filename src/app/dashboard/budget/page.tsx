@@ -7,7 +7,7 @@ export default function BudgetPage() {
   const budgets: any[] = [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-background">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold font-headline">Budgets</h1>
         <Button>
@@ -16,7 +16,7 @@ export default function BudgetPage() {
       </div>
 
       {budgets.length === 0 ? (
-         <Card className="flex flex-col items-center justify-center text-center p-12 border-dashed">
+         <Card className="flex flex-col items-center justify-center text-center p-12 border-dashed bg-card">
             <CardHeader>
                 <div className="mx-auto bg-secondary p-4 rounded-full mb-4">
                     <FilePlus className="h-12 w-12 text-muted-foreground" />

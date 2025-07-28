@@ -2,15 +2,12 @@
 "use client";
 
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
-import { AdBanner } from "@/components/dashboard/ad-banner";
 import { Logo } from "@/components/common/logo";
 import {
   SidebarProvider,
   Sidebar,
   SidebarHeader,
   SidebarContent,
-  SidebarFooter,
-  SidebarInset,
 } from "@/components/ui/sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { BottomNav } from "@/components/dashboard/bottom-nav";
@@ -33,13 +30,10 @@ export default function DashboardLayout({
           <SidebarContent>
             <SidebarNav />
           </SidebarContent>
-          <SidebarFooter>
-            <AdBanner />
-          </SidebarFooter>
         </Sidebar>
         <SidebarInset>
           <DashboardHeader />
-          <main className="flex-1 p-4 md:p-8">
+          <main className="flex-1 p-4 md:p-8 bg-secondary/30">
             <div className="max-w-6xl mx-auto">{children}</div>
           </main>
           <BottomNav />
