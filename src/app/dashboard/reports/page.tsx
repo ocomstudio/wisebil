@@ -32,7 +32,6 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useTransactions } from "@/context/transactions-context";
-import { Transaction } from "@/types/transaction";
 
 const chartConfig = {
   amount: {
@@ -100,7 +99,7 @@ export default function ReportsPage() {
           )}
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[250px] w-full">
+          <ChartContainer config={chartConfig} className="h-[300px] w-full">
              {chartData.length > 0 ? (
                 <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ left: 10, right: 10 }}>
                     <CartesianGrid horizontal={false} />
@@ -129,7 +128,7 @@ export default function ReportsPage() {
                         cursor={false}
                         content={<ChartTooltipContent indicator="dot" />}
                     />
-                    <Bar dataKey="amount" fill="var(--color-amount)" radius={4} />
+                    <Bar dataKey="amount" fill="var(--color-amount)" radius={4} barSize={20} />
                 </BarChart>
              ) : (
                 <div className="flex h-full w-full items-center justify-center text-muted-foreground">
