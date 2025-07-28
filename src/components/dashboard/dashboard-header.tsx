@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Bell } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "../common/logo";
+import { UserProfile } from "./user-profile";
 
 export function DashboardHeader() {
   return (
@@ -14,6 +15,7 @@ export function DashboardHeader() {
             <Bell className="h-5 w-5" />
           </Link>
         </Button>
+        <UserProfile />
       </div>
     </header>
   );

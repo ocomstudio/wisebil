@@ -7,6 +7,10 @@ import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { BottomNav } from "@/components/dashboard/bottom-nav";
 import { TransactionsProvider } from "@/context/transactions-context";
 import { AssistantPanel } from "@/components/dashboard/assistant-panel";
+import { Button } from "@/components/ui/button";
+import { Bell } from "lucide-react";
+import Link from "next/link";
+import { UserProfile } from "@/components/dashboard/user-profile";
 
 export default function DashboardLayout({
   children,
@@ -15,28 +19,41 @@ export default function DashboardLayout({
 }) {
   return (
     <TransactionsProvider>
-      <div className="md:grid md:grid-cols-[250px_1fr_350px] min-h-screen bg-background">
+      <div className="grid min-h-screen w-full md:grid-cols-[250px_1fr_350px]">
         {/* Desktop Sidebar */}
-        <aside className="hidden md:flex flex-col gap-6 p-4 border-r bg-secondary/20">
-          <div className="px-2">
+        <aside className="hidden border-r bg-muted/40 md:flex flex-col gap-6 p-4">
+           <div className="px-2">
             <Logo />
           </div>
           <SidebarNav />
         </aside>
 
-        {/* Mobile Header */}
-        <DashboardHeader />
+        <div className="flex flex-col">
+          {/* Desktop Header */}
+          <header className="hidden md:flex items-center justify-end h-14 px-6 border-b bg-muted/40">
+             <div className="flex items-center gap-4">
+               <Button variant="ghost" size="icon" className="rounded-full">
+                  <Bell className="h-5 w-5" />
+                  <span className="sr-only">Notifications</span>
+                </Button>
+               <UserProfile />
+             </div>
+          </header>
 
-        {/* Main Content */}
-        <main className="flex-1 p-4 md:p-8 bg-secondary/30">
-          <div className="max-w-6xl mx-auto">{children}</div>
-        </main>
+          {/* Mobile Header */}
+          <DashboardHeader />
+
+          {/* Main Content */}
+          <main className="flex-1 p-4 md:p-8 bg-background md:bg-muted/40 overflow-y-auto">
+            <div className="max-w-6xl mx-auto">{children}</div>
+          </main>
+        </div>
         
         {/* Mobile Bottom Nav */}
         <BottomNav />
         
         {/* Desktop AI Assistant */}
-        <aside className="hidden md:flex flex-col border-l bg-secondary/20">
+        <aside className="hidden md:flex flex-col border-l bg-muted/40">
           <AssistantPanel />
         </aside>
       </div>
