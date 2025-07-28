@@ -40,6 +40,35 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+const CustomYAxisTick = (props: any) => {
+    const { x, y, payload } = props;
+    const maxLines = 2;
+    const words = payload.value.split(' ');
+    const lines = [];
+    let currentLine = words[0];
+
+    for (let i = 1; i < words.length; i++) {
+        const word = words[i];
+        if (currentLine.length + word.length < 15) { // Approximate character limit
+            currentLine += ` ${word}`;
+        } else {
+            lines.push(currentLine);
+            currentLine = word;
+        }
+    }
+    lines.push(currentLine);
+
+    return (
+        <g transform={`translate(${x},${y})`}>
+            <text x={0} y={0} dy={4} textAnchor="end" fill="#888" fontSize={12}>
+                {lines.slice(0, maxLines).map((line, index) => (
+                    <tspan key={index} x={0} dy={index > 0 ? '1.1em' : 0}>{line}{index === maxLines - 1 && lines.length > maxLines ? '...' : ''}</tspan>
+                ))}
+            </text>
+        </g>
+    );
+};
+
 export default function ReportsPage() {
   const { transactions, expenses: totalExpenses } = useTransactions();
 
@@ -107,16 +136,9 @@ export default function ReportsPage() {
                         dataKey="name"
                         type="category"
                         tickLine={false}
-                        tickMargin={10}
                         axisLine={false}
-                        className="text-[10px] sm:text-xs"
-                        interval={0}
+                        tick={<CustomYAxisTick />}
                         width={80} 
-                        tick={{
-                            overflow: 'visible',
-                            whiteSpace: 'normal',
-                            wordBreak: 'break-word',
-                        }}
                     />
                     <XAxis
                         type="number"
