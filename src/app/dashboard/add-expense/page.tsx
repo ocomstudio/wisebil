@@ -1,3 +1,4 @@
+
 // src/app/dashboard/add-expense/page.tsx
 "use client";
 
@@ -98,7 +99,7 @@ export default function AddExpensePage() {
         form.setValue("category", "Autre", { shouldValidate: true });
         form.setValue("customCategory", result.category, { shouldValidate: true });
       }
-    } catch (error) => {
+    } catch (error) {
       console.error("La catégorisation par l'IA a échoué:", error);
       toast({
         variant: "destructive",
