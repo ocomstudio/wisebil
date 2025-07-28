@@ -73,13 +73,16 @@ export default function AddExpensePage() {
   const onSubmit = async (data: ExpenseFormValues) => {
     setIsSubmitting(true);
     try {
-      await addTransaction({
+      // Create a unique ID for the transaction
+      const newTransaction = {
+        id: new Date().toISOString(), // Simple unique ID
         type: 'expense' as const,
         amount: data.amount,
         description: data.description,
         category: data.category || 'Autre',
         date: new Date().toISOString(),
-      });
+      };
+      await addTransaction(newTransaction);
       toast({
         title: "Dépense ajoutée",
         description: `La dépense "${data.description}" a été ajoutée avec succès.`,
@@ -100,13 +103,13 @@ export default function AddExpensePage() {
     <div>
       <div className="flex items-center gap-4 mb-6">
         <Button variant="outline" size="icon" asChild>
-          <Link href="/dashboard/add">
+          <Link href="/dashboard">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
         <h1 className="text-3xl font-bold font-headline">Ajouter une dépense</h1>
       </div>
-      <Card>
+      <Card className="shadow-lg">
         <CardContent className="pt-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

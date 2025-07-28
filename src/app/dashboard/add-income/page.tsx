@@ -47,13 +47,15 @@ export default function AddIncomePage() {
   const onSubmit = async (data: IncomeFormValues) => {
     setIsSubmitting(true);
     try {
-      await addTransaction({
+      const newTransaction = {
+        id: new Date().toISOString(), // Simple unique ID
         type: 'income' as const,
         amount: data.amount,
         description: data.description,
         category: 'Revenu',
         date: new Date().toISOString(),
-      });
+      };
+      await addTransaction(newTransaction);
       toast({
         title: "Revenu ajouté",
         description: `Le revenu "${data.description}" a été ajouté avec succès.`,
@@ -74,13 +76,13 @@ export default function AddIncomePage() {
     <div>
        <div className="flex items-center gap-4 mb-6">
         <Button variant="outline" size="icon" asChild>
-          <Link href="/dashboard/add">
+          <Link href="/dashboard">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
          <h1 className="text-3xl font-bold font-headline">Ajouter un revenu</h1>
       </div>
-      <Card>
+      <Card className="shadow-lg">
         <CardContent className="pt-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

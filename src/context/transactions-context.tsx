@@ -6,7 +6,7 @@ import { Transaction } from '@/types/transaction';
 
 interface TransactionsContextType {
   transactions: Transaction[];
-  addTransaction: (transaction: Transaction) => void;
+  addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   balance: number;
   income: number;
   expenses: number;
@@ -17,8 +17,9 @@ const TransactionsContext = createContext<TransactionsContextType | undefined>(u
 export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  const addTransaction = (transaction: Transaction) => {
-    setTransactions(prevTransactions => [...prevTransactions, transaction]);
+  const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
+    const newTransaction = { ...transaction, id: new Date().toISOString() + Math.random() };
+    setTransactions(prevTransactions => [...prevTransactions, newTransaction]);
   };
 
   const { balance, income, expenses } = useMemo(() => {
