@@ -1,10 +1,11 @@
 // src/components/dashboard/recent-expenses.tsx
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { PlusCircle, Receipt, TrendingDown, TrendingUp } from "lucide-react";
+import { PlusCircle, Receipt } from "lucide-react";
 import { Transaction } from "@/types/transaction";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "../ui/avatar";
+import { allCategories } from "@/config/categories";
 
 interface RecentExpensesProps {
   transactions: Transaction[];
@@ -12,6 +13,12 @@ interface RecentExpensesProps {
 
 export function RecentExpenses({ transactions }: RecentExpensesProps) {
   const recentTransactions = transactions.slice(-5).reverse();
+
+  const getCategoryEmoji = (categoryName?: string) => {
+    if (!categoryName) return '💸';
+    const category = allCategories.find(c => c.name === categoryName);
+    return category ? category.emoji : '💸';
+  }
 
   return (
     <div>
@@ -45,8 +52,8 @@ export function RecentExpenses({ transactions }: RecentExpensesProps) {
                 {recentTransactions.map((transaction) => (
                     <div key={transaction.id} className="flex items-center gap-4">
                         <Avatar>
-                            <AvatarFallback>
-                                {transaction.description.charAt(0).toUpperCase()}
+                            <AvatarFallback className="text-xl bg-secondary">
+                                {getCategoryEmoji(transaction.category)}
                             </AvatarFallback>
                         </Avatar>
                         <div className="flex-grow">

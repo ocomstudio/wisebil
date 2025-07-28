@@ -35,6 +35,7 @@ import { Loader2, ArrowLeft, CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { incomeCategories } from "@/config/categories";
 
 const incomeSchema = z.object({
   description: z.string().min(3, "La description doit contenir au moins 3 caractères."),
@@ -47,15 +48,6 @@ const incomeSchema = z.object({
 });
 
 type IncomeFormValues = z.infer<typeof incomeSchema>;
-
-const predefinedCategories = [
-    { name: "Salaire", emoji: "💰" },
-    { name: "Vente", emoji: "📈" },
-    { name: "Bonus", emoji: "🎁" },
-    { name: "Cadeau", emoji: "🎉" },
-    { name: "Remboursement", emoji: "💸" },
-    { name: "Autre", emoji: "➕" },
-];
 
 export default function AddIncomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,7 +66,8 @@ export default function AddIncomePage() {
     },
   });
 
-  const selectedCategory = form.watch("category");
+  const selectedCategoryValue = form.watch("category");
+  const selectedCategory = incomeCategories.find(c => c.name === selectedCategoryValue);
 
   const onSubmit = async (data: IncomeFormValues) => {
     setIsSubmitting(true);
@@ -155,12 +148,18 @@ export default function AddIncomePage() {
                     <FormLabel>Catégorie</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionnez une catégorie" />
-                        </SelectTrigger>
+                          <SelectTrigger>
+                             {selectedCategory ? (
+                                <span className="flex items-center gap-2">
+                                  {selectedCategory.emoji} {selectedCategory.name}
+                                </span>
+                              ) : (
+                                <SelectValue placeholder="Sélectionnez une catégorie" />
+                              )}
+                          </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {predefinedCategories.map((cat) => (
+                        {incomeCategories.map((cat) => (
                           <SelectItem key={cat.name} value={cat.name}>
                             <span className="mr-2">{cat.emoji}</span> {cat.name}
                           </SelectItem>
@@ -172,7 +171,7 @@ export default function AddIncomePage() {
                 )}
               />
               
-              {selectedCategory === "Autre" && (
+              {selectedCategoryValue === "Autre" && (
                 <FormField
                   control={form.control}
                   name="customCategory"

@@ -36,6 +36,7 @@ import { Bot, Loader2, ArrowLeft, CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTransactions } from "@/context/transactions-context";
 import { cn } from "@/lib/utils";
+import { expenseCategories } from "@/config/categories";
 
 const expenseSchema = z.object({
   description: z.string().min(3, "La description doit contenir au moins 3 caractères."),
@@ -48,20 +49,6 @@ const expenseSchema = z.object({
 });
 
 type ExpenseFormValues = z.infer<typeof expenseSchema>;
-
-const predefinedCategories = [
-    { name: "Alimentation", emoji: "🍔" },
-    { name: "Transport", emoji: "🚗" },
-    { name: "Logement", emoji: "🏠" },
-    { name: "Factures", emoji: "🧾" },
-    { name: "Santé", emoji: "💊" },
-    { name: "Divertissement", emoji: "🎬" },
-    { name: "Shopping", emoji: "🛍️" },
-    { name: "Éducation", emoji: "🎓" },
-    { name: "Famille", emoji: "👨‍👩‍👧‍👦" },
-    { name: "Animaux", emoji: "🐾" },
-    { name: "Autre", emoji: "➕" },
-];
 
 export default function AddExpensePage() {
   const [isCategorizing, setIsCategorizing] = useState(false);
@@ -81,7 +68,8 @@ export default function AddExpensePage() {
     },
   });
 
-  const selectedCategory = form.watch("category");
+  const selectedCategoryValue = form.watch("category");
+  const selectedCategory = expenseCategories.find(c => c.name === selectedCategoryValue);
 
   const handleCategorize = async () => {
     const description = form.getValues("description");
@@ -92,7 +80,7 @@ export default function AddExpensePage() {
     setIsCategorizing(true);
     try {
       const result = await categorizeExpense({ description });
-      const existingCategory = predefinedCategories.find(c => c.name.toLowerCase() === result.category.toLowerCase());
+      const existingCategory = expenseCategories.find(c => c.name.toLowerCase() === result.category.toLowerCase());
       if (existingCategory) {
         form.setValue("category", existingCategory.name, { shouldValidate: true });
       } else {
@@ -192,11 +180,17 @@ export default function AddExpensePage() {
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Sélectionnez une catégorie" />
+                             {selectedCategory ? (
+                                <span className="flex items-center gap-2">
+                                  {selectedCategory.emoji} {selectedCategory.name}
+                                </span>
+                              ) : (
+                                <SelectValue placeholder="Sélectionnez une catégorie" />
+                              )}
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {predefinedCategories.map((cat) => (
+                          {expenseCategories.map((cat) => (
                             <SelectItem key={cat.name} value={cat.name}>
                               <span className="mr-2">{cat.emoji}</span> {cat.name}
                             </SelectItem>
@@ -213,7 +207,7 @@ export default function AddExpensePage() {
               />
 
 
-              {selectedCategory === "Autre" && (
+              {selectedCategoryValue === "Autre" && (
                 <FormField
                   control={form.control}
                   name="customCategory"
