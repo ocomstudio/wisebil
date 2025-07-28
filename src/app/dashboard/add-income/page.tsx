@@ -1,3 +1,4 @@
+
 // src/app/dashboard/add-income/page.tsx
 "use client";
 
@@ -48,12 +49,12 @@ const incomeSchema = z.object({
 type IncomeFormValues = z.infer<typeof incomeSchema>;
 
 const predefinedCategories = [
-  "Salaire",
-  "Vente",
-  "Bonus",
-  "Cadeau",
-  "Remboursement",
-  "Autre",
+    { name: "Salaire", emoji: "💰" },
+    { name: "Vente", emoji: "📈" },
+    { name: "Bonus", emoji: "🎁" },
+    { name: "Cadeau", emoji: "🎉" },
+    { name: "Remboursement", emoji: "💸" },
+    { name: "Autre", emoji: "➕" },
 ];
 
 export default function AddIncomePage() {
@@ -160,8 +161,8 @@ export default function AddIncomePage() {
                       </FormControl>
                       <SelectContent>
                         {predefinedCategories.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat}
+                          <SelectItem key={cat.name} value={cat.name}>
+                            <span className="mr-2">{cat.emoji}</span> {cat.name}
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -50,17 +50,17 @@ const expenseSchema = z.object({
 type ExpenseFormValues = z.infer<typeof expenseSchema>;
 
 const predefinedCategories = [
-  "Alimentation",
-  "Transport",
-  "Logement",
-  "Factures",
-  "Santé",
-  "Divertissement",
-  "Shopping",
-  "Éducation",
-  "Famille",
-  "Animaux",
-  "Autre",
+    { name: "Alimentation", emoji: "🍔" },
+    { name: "Transport", emoji: "🚗" },
+    { name: "Logement", emoji: "🏠" },
+    { name: "Factures", emoji: "🧾" },
+    { name: "Santé", emoji: "💊" },
+    { name: "Divertissement", emoji: "🎬" },
+    { name: "Shopping", emoji: "🛍️" },
+    { name: "Éducation", emoji: "🎓" },
+    { name: "Famille", emoji: "👨‍👩‍👧‍👦" },
+    { name: "Animaux", emoji: "🐾" },
+    { name: "Autre", emoji: "➕" },
 ];
 
 export default function AddExpensePage() {
@@ -92,9 +92,9 @@ export default function AddExpensePage() {
     setIsCategorizing(true);
     try {
       const result = await categorizeExpense({ description });
-      const existingCategory = predefinedCategories.find(c => c.toLowerCase() === result.category.toLowerCase());
+      const existingCategory = predefinedCategories.find(c => c.name.toLowerCase() === result.category.toLowerCase());
       if (existingCategory) {
-        form.setValue("category", existingCategory, { shouldValidate: true });
+        form.setValue("category", existingCategory.name, { shouldValidate: true });
       } else {
         form.setValue("category", "Autre", { shouldValidate: true });
         form.setValue("customCategory", result.category, { shouldValidate: true });
@@ -197,8 +197,8 @@ export default function AddExpensePage() {
                         </FormControl>
                         <SelectContent>
                           {predefinedCategories.map((cat) => (
-                            <SelectItem key={cat} value={cat}>
-                              {cat}
+                            <SelectItem key={cat.name} value={cat.name}>
+                              <span className="mr-2">{cat.emoji}</span> {cat.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
