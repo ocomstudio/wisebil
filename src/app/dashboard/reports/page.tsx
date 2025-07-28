@@ -1,5 +1,6 @@
 // src/app/dashboard/reports/page.tsx
 "use client"
+import React, { useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -11,6 +12,7 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartConfig
 } from "@/components/ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
@@ -29,25 +31,55 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-
-const chartData: any[] = [];
-const topExpenses: any[] = [];
+import { useTransactions } from "@/context/transactions-context";
+import { Transaction } from "@/types/transaction";
 
 const chartConfig = {
-  desktop: {
+  amount: {
     label: "Dépenses",
     color: "hsl(var(--primary))",
   },
-};
+} satisfies ChartConfig;
 
 export default function ReportsPage() {
+  const { transactions, expenses: totalExpenses } = useTransactions();
+
+  const { chartData, topExpenses } = useMemo(() => {
+    const expenseTransactions = transactions.filter(t => t.type === 'expense');
+
+    if (expenseTransactions.length === 0) {
+      return { chartData: [], topExpenses: [] };
+    }
+
+    const expensesByCategory = expenseTransactions.reduce((acc, transaction) => {
+      const category = transaction.category || "Autre";
+      if (!acc[category]) {
+        acc[category] = 0;
+      }
+      acc[category] += transaction.amount;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const chartData = Object.entries(expensesByCategory).map(([name, amount]) => ({
+      name,
+      amount,
+    })).sort((a, b) => b.amount - a.amount);
+
+    const topExpenses = chartData.slice(0, 5).map(expense => ({
+      ...expense,
+      percentage: totalExpenses > 0 ? ((expense.amount / totalExpenses) * 100).toFixed(0) : 0,
+    }));
+    
+    return { chartData, topExpenses };
+  }, [transactions, totalExpenses]);
+
   return (
     <div className="space-y-6">
        <div className="flex justify-between items-center">
          <h1 className="text-3xl font-bold font-headline">Statistiques</h1>
          <Select defaultValue="monthly">
             <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter" />
+                <SelectValue placeholder="Filtrer" />
             </SelectTrigger>
             <SelectContent>
                 <SelectItem value="daily">Journalier</SelectItem>
@@ -61,27 +93,37 @@ export default function ReportsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Aperçu des Dépenses</CardTitle>
-          <CardDescription>Aucune donnée pour le moment</CardDescription>
+           {chartData.length === 0 ? (
+            <CardDescription>Aucune dépense enregistrée pour le moment.</CardDescription>
+          ) : (
+            <CardDescription>Vos dépenses totales par catégorie.</CardDescription>
+          )}
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[200px] w-full">
+          <ChartContainer config={chartConfig} className="h-[250px] w-full">
              {chartData.length > 0 ? (
-                <BarChart accessibilityLayer data={chartData}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis
-                        dataKey="month"
+                <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ left: 10 }}>
+                    <CartesianGrid horizontal={false} />
+                    <YAxis
+                        dataKey="name"
+                        type="category"
                         tickLine={false}
                         tickMargin={10}
                         axisLine={false}
+                        className="text-xs"
+                        interval={0}
                     />
-                    <YAxis
+                    <XAxis
+                        type="number"
+                        dataKey="amount"
                         tickFormatter={(value) => `${value / 1000}k`}
+                        hide
                     />
                     <ChartTooltip
                         cursor={false}
                         content={<ChartTooltipContent indicator="dot" />}
                     />
-                    <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
+                    <Bar dataKey="amount" fill="var(--color-amount)" radius={4} />
                 </BarChart>
              ) : (
                 <div className="flex h-full w-full items-center justify-center text-muted-foreground">
