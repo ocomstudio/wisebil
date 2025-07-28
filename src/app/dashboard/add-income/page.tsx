@@ -1,10 +1,12 @@
 // src/app/dashboard/add-income/page.tsx
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useTransactions } from "@/context/transactions-context";
-import { v4 as uuidv4 } from "uuid";
+import { Loader2, ArrowLeft } from "lucide-react";
 
 const incomeSchema = z.object({
   description: z.string().min(3, "La description doit contenir au moins 3 caractères."),
@@ -29,6 +31,7 @@ const incomeSchema = z.object({
 type IncomeFormValues = z.infer<typeof incomeSchema>;
 
 export default function AddIncomePage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const { addTransaction } = useTransactions();
@@ -41,26 +44,42 @@ export default function AddIncomePage() {
     },
   });
 
-  const onSubmit = (data: IncomeFormValues) => {
-    const newIncome = {
-        id: uuidv4(),
+  const onSubmit = async (data: IncomeFormValues) => {
+    setIsSubmitting(true);
+    try {
+      await addTransaction({
         type: 'income' as const,
         amount: data.amount,
         description: data.description,
         category: 'Revenu',
         date: new Date().toISOString(),
-    };
-    addTransaction(newIncome);
-    toast({
-      title: "Revenu ajouté",
-      description: `Le revenu "${data.description}" a été ajouté avec succès.`,
-    });
-    router.push("/dashboard");
+      });
+      toast({
+        title: "Revenu ajouté",
+        description: `Le revenu "${data.description}" a été ajouté avec succès.`,
+      });
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Failed to add income:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'ajouter le revenu. Veuillez réessayer.",
+      });
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div>
-      <h1 className="text-3xl font-bold font-headline mb-6">Ajouter un revenu</h1>
+       <div className="flex items-center gap-4 mb-6">
+        <Button variant="outline" size="icon" asChild>
+          <Link href="/dashboard/add">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        </Button>
+         <h1 className="text-3xl font-bold font-headline">Ajouter un revenu</h1>
+      </div>
       <Card>
         <CardContent className="pt-6">
           <Form {...form}>
@@ -91,7 +110,10 @@ export default function AddIncomePage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">Ajouter le revenu</Button>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Ajouter le revenu
+              </Button>
             </form>
           </Form>
         </CardContent>

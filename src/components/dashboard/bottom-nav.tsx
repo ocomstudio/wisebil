@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { href: '/dashboard', label: 'Accueil', icon: Home },
   { href: '/dashboard/reports', label: 'Statistiques', icon: BarChart },
-  { href: '/dashboard/add-expense', label: 'Ajouter', icon: PlusCircle, isCentral: true },
+  { href: '/dashboard/add', label: 'Ajouter', icon: PlusCircle, isCentral: true },
   { href: '/dashboard/savings', label: 'Épargne', icon: Shield },
   { href: '/dashboard/assistant', label: 'Conseils', icon: Bot },
 ];
@@ -21,7 +21,7 @@ export function BottomNav() {
     <footer className="md:hidden fixed bottom-0 left-0 right-0 bg-secondary border-t border-border z-50">
       <nav className="flex items-center justify-around h-16">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = pathname.startsWith(item.href) && !(item.href === '/dashboard/add' && pathname !== '/dashboard/add');
           return (
             <Link
               key={item.label}

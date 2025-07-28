@@ -7,9 +7,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { categorizeExpense } from "@/ai/flows/categorize-expense";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -19,10 +20,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Bot, Loader2 } from "lucide-react";
+import { Bot, Loader2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTransactions } from "@/context/transactions-context";
-import { v4 as uuidv4 } from "uuid";
 
 const expenseSchema = z.object({
   description: z.string().min(3, "La description doit contenir au moins 3 caractères."),
@@ -34,6 +34,7 @@ type ExpenseFormValues = z.infer<typeof expenseSchema>;
 
 export default function AddExpensePage() {
   const [isCategorizing, setIsCategorizing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const { addTransaction } = useTransactions();
@@ -69,26 +70,42 @@ export default function AddExpensePage() {
     }
   };
 
-  const onSubmit = (data: ExpenseFormValues) => {
-    const newExpense = {
-        id: uuidv4(),
+  const onSubmit = async (data: ExpenseFormValues) => {
+    setIsSubmitting(true);
+    try {
+      await addTransaction({
         type: 'expense' as const,
         amount: data.amount,
         description: data.description,
-        category: data.category,
+        category: data.category || 'Autre',
         date: new Date().toISOString(),
-    };
-    addTransaction(newExpense);
-    toast({
-      title: "Dépense ajoutée",
-      description: `La dépense "${data.description}" a été ajoutée avec succès.`,
-    });
-    router.push("/dashboard");
+      });
+      toast({
+        title: "Dépense ajoutée",
+        description: `La dépense "${data.description}" a été ajoutée avec succès.`,
+      });
+      router.push("/dashboard");
+    } catch (error) {
+       console.error("Failed to add expense:", error);
+       toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'ajouter la dépense. Veuillez réessayer.",
+      });
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div>
-      <h1 className="text-3xl font-bold font-headline mb-6">Ajouter une dépense</h1>
+      <div className="flex items-center gap-4 mb-6">
+        <Button variant="outline" size="icon" asChild>
+          <Link href="/dashboard/add">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        </Button>
+        <h1 className="text-3xl font-bold font-headline">Ajouter une dépense</h1>
+      </div>
       <Card>
         <CardContent className="pt-6">
           <Form {...form}>
@@ -138,7 +155,10 @@ export default function AddExpensePage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">Ajouter la dépense</Button>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Ajouter la dépense
+              </Button>
             </form>
           </Form>
         </CardContent>
