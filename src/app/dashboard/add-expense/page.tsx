@@ -21,10 +21,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Bot, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTransactions } from "@/context/transactions-context";
+import { v4 as uuidv4 } from "uuid";
 
 const expenseSchema = z.object({
-  description: z.string().min(3, "Description must be at least 3 characters."),
-  amount: z.coerce.number().positive("Amount must be a positive number."),
+  description: z.string().min(3, "La description doit contenir au moins 3 caractères."),
+  amount: z.coerce.number().positive("Le montant doit être un nombre positif."),
   category: z.string().optional(),
 });
 
@@ -34,6 +36,7 @@ export default function AddExpensePage() {
   const [isCategorizing, setIsCategorizing] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const { addTransaction } = useTransactions();
 
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseSchema),
@@ -47,7 +50,7 @@ export default function AddExpensePage() {
   const handleCategorize = async () => {
     const description = form.getValues("description");
     if (!description) {
-      form.setError("description", { message: "Please enter a description first." });
+      form.setError("description", { message: "Veuillez d'abord entrer une description." });
       return;
     }
     setIsCategorizing(true);
@@ -55,11 +58,11 @@ export default function AddExpensePage() {
       const result = await categorizeExpense({ description });
       form.setValue("category", result.category, { shouldValidate: true });
     } catch (error) {
-      console.error("AI categorization failed:", error);
+      console.error("La catégorisation par l'IA a échoué:", error);
       toast({
         variant: "destructive",
-        title: "AI Categorization Failed",
-        description: "Could not categorize the expense. Please enter a category manually.",
+        title: "La catégorisation par l'IA a échoué",
+        description: "Impossible de catégoriser la dépense. Veuillez entrer une catégorie manuellement.",
       });
     } finally {
       setIsCategorizing(false);
@@ -67,11 +70,18 @@ export default function AddExpensePage() {
   };
 
   const onSubmit = (data: ExpenseFormValues) => {
-    // Here you would typically save the expense to your database
-    console.log("New expense added:", data);
+    const newExpense = {
+        id: uuidv4(),
+        type: 'expense' as const,
+        amount: data.amount,
+        description: data.description,
+        category: data.category,
+        date: new Date().toISOString(),
+    };
+    addTransaction(newExpense);
     toast({
-      title: "Expense Added",
-      description: `Successfully added "${data.description}".`,
+      title: "Dépense ajoutée",
+      description: `La dépense "${data.description}" a été ajoutée avec succès.`,
     });
     router.push("/dashboard");
   };
@@ -90,7 +100,7 @@ export default function AddExpensePage() {
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Café avec un ami" {...field} />
+                      <Input placeholder="ex: Café avec un ami" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -117,7 +127,7 @@ export default function AddExpensePage() {
                     <FormLabel>Catégorie</FormLabel>
                     <div className="flex gap-2">
                        <FormControl>
-                        <Input placeholder="e.g., Restaurant" {...field} />
+                        <Input placeholder="ex: Restaurant" {...field} />
                       </FormControl>
                       <Button type="button" variant="outline" onClick={handleCategorize} disabled={isCategorizing}>
                         {isCategorizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bot className="h-4 w-4" />}

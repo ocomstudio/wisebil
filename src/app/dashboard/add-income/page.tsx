@@ -18,10 +18,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useTransactions } from "@/context/transactions-context";
+import { v4 as uuidv4 } from "uuid";
 
 const incomeSchema = z.object({
-  description: z.string().min(3, "Description must be at least 3 characters."),
-  amount: z.coerce.number().positive("Amount must be a positive number."),
+  description: z.string().min(3, "La description doit contenir au moins 3 caractères."),
+  amount: z.coerce.number().positive("Le montant doit être un nombre positif."),
 });
 
 type IncomeFormValues = z.infer<typeof incomeSchema>;
@@ -29,6 +31,7 @@ type IncomeFormValues = z.infer<typeof incomeSchema>;
 export default function AddIncomePage() {
   const { toast } = useToast();
   const router = useRouter();
+  const { addTransaction } = useTransactions();
 
   const form = useForm<IncomeFormValues>({
     resolver: zodResolver(incomeSchema),
@@ -39,11 +42,18 @@ export default function AddIncomePage() {
   });
 
   const onSubmit = (data: IncomeFormValues) => {
-    // Here you would typically save the income to your database
-    console.log("New income added:", data);
+    const newIncome = {
+        id: uuidv4(),
+        type: 'income' as const,
+        amount: data.amount,
+        description: data.description,
+        category: 'Revenu',
+        date: new Date().toISOString(),
+    };
+    addTransaction(newIncome);
     toast({
-      title: "Income Added",
-      description: `Successfully added "${data.description}".`,
+      title: "Revenu ajouté",
+      description: `Le revenu "${data.description}" a été ajouté avec succès.`,
     });
     router.push("/dashboard");
   };
@@ -62,7 +72,7 @@ export default function AddIncomePage() {
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Salaire mensuel" {...field} />
+                      <Input placeholder="ex: Salaire mensuel" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

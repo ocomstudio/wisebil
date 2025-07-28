@@ -1,21 +1,16 @@
 // src/app/dashboard/page.tsx
 "use client";
 
-import { useState } from 'react';
 import { BalanceCard } from "@/components/dashboard/balance-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecentExpenses } from "@/components/dashboard/recent-expenses";
 import { Lightbulb } from "lucide-react";
 import Link from "next/link";
-import { Transaction } from '@/types/transaction';
+import { useTransactions } from "@/context/transactions-context";
 
 export default function DashboardPage() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-
-  const balance = transactions.reduce((acc, t) => t.type === 'income' ? acc + t.amount : acc - t.amount, 0);
-  const income = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
-  const expenses = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+  const { transactions, balance, income, expenses } = useTransactions();
 
   return (
     <div className="space-y-6">
