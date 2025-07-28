@@ -2,12 +2,14 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { categorizeExpense } from "@/ai/flows/categorize-expense";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,17 +22,38 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Bot, Loader2, ArrowLeft } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Bot, Loader2, ArrowLeft, CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTransactions } from "@/context/transactions-context";
+import { cn } from "@/lib/utils";
 
 const expenseSchema = z.object({
   description: z.string().min(3, "La description doit contenir au moins 3 caractères."),
   amount: z.coerce.number().positive("Le montant doit être un nombre positif."),
-  category: z.string().optional(),
+  category: z.string().min(1, "Veuillez sélectionner ou saisir une catégorie."),
+  date: z.date({
+    required_error: "Veuillez sélectionner une date.",
+  }),
+  customCategory: z.string().optional(),
 });
 
 type ExpenseFormValues = z.infer<typeof expenseSchema>;
+
+const predefinedCategories = [
+  { name: "Alimentation", emoji: "🍔" },
+  { name: "Transport", emoji: "🚗" },
+  { name: "Logement", emoji: "🏠" },
+  { name: "Factures", emoji: "🧾" },
+  { name: "Santé", emoji: "❤️" },
+  { name: "Divertissement", emoji: "🎉" },
+  { name: "Shopping", emoji: "🛍️" },
+  { name: "Éducation", emoji: "📚" },
+  { name: "Famille", emoji: "👨‍👩‍👧‍👦" },
+  { name: "Animaux", emoji: "🐾" },
+  { name: "Autre", emoji: "➕" },
+];
 
 export default function AddExpensePage() {
   const [isCategorizing, setIsCategorizing] = useState(false);
@@ -45,8 +68,12 @@ export default function AddExpensePage() {
       description: "",
       amount: 0,
       category: "",
+      date: new Date(),
+      customCategory: "",
     },
   });
+
+  const selectedCategory = form.watch("category");
 
   const handleCategorize = async () => {
     const description = form.getValues("description");
@@ -57,13 +84,19 @@ export default function AddExpensePage() {
     setIsCategorizing(true);
     try {
       const result = await categorizeExpense({ description });
-      form.setValue("category", result.category, { shouldValidate: true });
+      const existingCategory = predefinedCategories.find(c => c.name.toLowerCase() === result.category.toLowerCase());
+      if (existingCategory) {
+        form.setValue("category", existingCategory.name, { shouldValidate: true });
+      } else {
+        form.setValue("category", "Autre", { shouldValidate: true });
+        form.setValue("customCategory", result.category, { shouldValidate: true });
+      }
     } catch (error) {
       console.error("La catégorisation par l'IA a échoué:", error);
       toast({
         variant: "destructive",
         title: "La catégorisation par l'IA a échoué",
-        description: "Impossible de catégoriser la dépense. Veuillez entrer une catégorie manuellement.",
+        description: "Impossible de suggérer une catégorie.",
       });
     } finally {
       setIsCategorizing(false);
@@ -73,14 +106,15 @@ export default function AddExpensePage() {
   const onSubmit = async (data: ExpenseFormValues) => {
     setIsSubmitting(true);
     try {
-      // Create a unique ID for the transaction
+      const finalCategory = data.category === 'Autre' ? data.customCategory : data.category;
+      
       const newTransaction = {
-        id: new Date().toISOString(), // Simple unique ID
+        id: new Date().toISOString(),
         type: 'expense' as const,
         amount: data.amount,
         description: data.description,
-        category: data.category || 'Autre',
-        date: new Date().toISOString(),
+        category: finalCategory || 'Autre',
+        date: data.date.toISOString(),
       };
       await addTransaction(newTransaction);
       toast({
@@ -139,25 +173,103 @@ export default function AddExpensePage() {
                   </FormItem>
                 )}
               />
-               <FormField
+              <Controller
                 control={form.control}
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Catégorie</FormLabel>
-                    <div className="flex gap-2">
-                       <FormControl>
-                        <Input placeholder="ex: Restaurant" {...field} />
+                     <FormLabel>Catégorie</FormLabel>
+                     <div className="flex items-center gap-2">
+                        <p className="text-sm text-muted-foreground flex-1">Sélectionnez une catégorie</p>
+                        <Button type="button" size="sm" variant="outline" onClick={handleCategorize} disabled={isCategorizing}>
+                          {isCategorizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bot className="h-4 w-4" />}
+                           <span className="ml-2 hidden sm:inline">Suggestion IA</span>
+                        </Button>
+                     </div>
+                     <FormControl>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                            {predefinedCategories.map((cat) => (
+                                <button
+                                    key={cat.name}
+                                    type="button"
+                                    onClick={() => field.onChange(cat.name)}
+                                    className={cn(
+                                        "flex flex-col items-center justify-center gap-2 p-3 rounded-lg border-2 transition-all",
+                                        selectedCategory === cat.name
+                                        ? "border-primary bg-primary/10"
+                                        : "border-border hover:border-primary/50"
+                                    )}
+                                >
+                                    <span className="text-2xl">{cat.emoji}</span>
+                                    <span className="text-xs font-medium text-center">{cat.name}</span>
+                                </button>
+                            ))}
+                        </div>
+                     </FormControl>
+                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {selectedCategory === "Autre" && (
+                <FormField
+                  control={form.control}
+                  name="customCategory"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nom de la nouvelle catégorie</FormLabel>
+                      <FormControl>
+                        <Input placeholder="ex: Cadeau d'anniversaire" {...field} />
                       </FormControl>
-                      <Button type="button" variant="outline" onClick={handleCategorize} disabled={isCategorizing}>
-                        {isCategorizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bot className="h-4 w-4" />}
-                        <span className="sr-only">Catégoriser avec l'IA</span>
-                      </Button>
-                    </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              <FormField
+                control={form.control}
+                name="date"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Date de la dépense</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP", { locale: fr })
+                            ) : (
+                              <span>Choisissez une date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) =>
+                            date > new Date() || date < new Date("1900-01-01")
+                          }
+                          initialFocus
+                          locale={fr}
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Ajouter la dépense
