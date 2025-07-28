@@ -7,7 +7,6 @@ import { RecentExpenses } from "@/components/dashboard/recent-expenses";
 import { Lightbulb } from "lucide-react";
 import Link from "next/link";
 import { useTransactions } from "@/context/transactions-context";
-import { AddTransactionDialog } from "@/components/dashboard/add-transaction-dialog";
 
 export default function DashboardPage() {
   const { transactions, balance, income, expenses } = useTransactions();
@@ -15,8 +14,6 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <BalanceCard balance={balance} income={income} expenses={expenses} />
-
-      <AddTransactionDialog />
 
       <Card>
         <CardHeader className="flex flex-row items-center gap-2 space-y-0">

@@ -16,7 +16,7 @@ export function BalanceCard({ balance, income, expenses }: BalanceCardProps) {
   const [isVisible, setIsVisible] = useState(true);
 
   return (
-    <Card className="bg-gradient-to-br from-primary/80 to-primary">
+    <Card className="bg-gradient-to-br from-primary/80 to-primary text-primary-foreground">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-primary-foreground/80">
           Solde
@@ -27,17 +27,17 @@ export function BalanceCard({ balance, income, expenses }: BalanceCardProps) {
         </Button>
       </CardHeader>
       <CardContent>
-        <div className="text-4xl font-bold text-primary-foreground">
+        <div className="text-4xl font-bold">
           {isVisible ? `${balance.toLocaleString('fr-FR')} FCFA` : '******'}
         </div>
-        <div className="mt-4 flex justify-between text-primary-foreground/90">
+        <div className="mt-4 grid grid-cols-2 gap-4">
             <div className="text-sm">
-                <p className="text-xs opacity-70">Revenus</p>
-                <p className="font-semibold">{isVisible ? `${income.toLocaleString('fr-FR')} FCFA` : '******'}</p>
+                <p className="text-xs opacity-80">Revenus</p>
+                <p className="font-semibold text-green-300">{isVisible ? `+ ${income.toLocaleString('fr-FR')} FCFA` : '******'}</p>
             </div>
-             <div className="text-sm text-right">
-                <p className="text-xs opacity-70">Dépenses</p>
-                <p className="font-semibold">{isVisible ? `${expenses.toLocaleString('fr-FR')} FCFA` : '******'}</p>
+             <div className="text-sm">
+                <p className="text-xs opacity-80">Dépenses</p>
+                <p className="font-semibold text-red-300">{isVisible ? `- ${expenses.toLocaleString('fr-FR')} FCFA` : '******'}</p>
             </div>
         </div>
       </CardContent>
