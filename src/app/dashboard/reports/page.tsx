@@ -102,7 +102,7 @@ export default function ReportsPage() {
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[250px] w-full">
              {chartData.length > 0 ? (
-                <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ left: 10 }}>
+                <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ left: 10, right: 10 }}>
                     <CartesianGrid horizontal={false} />
                     <YAxis
                         dataKey="name"
@@ -112,6 +112,12 @@ export default function ReportsPage() {
                         axisLine={false}
                         className="text-xs"
                         interval={0}
+                        width={80} 
+                        tick={{
+                            overflow: 'visible',
+                            whiteSpace: 'normal',
+                            wordBreak: 'break-word',
+                        }}
                     />
                     <XAxis
                         type="number"
