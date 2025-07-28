@@ -14,7 +14,7 @@ import {
   ChartTooltipContent,
   ChartConfig
 } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
 import {
   Select,
   SelectContent,
@@ -39,35 +39,6 @@ const chartConfig = {
     color: "hsl(var(--primary))",
   },
 } satisfies ChartConfig;
-
-const CustomYAxisTick = (props: any) => {
-    const { x, y, payload } = props;
-    const maxLines = 2;
-    const words = payload.value.split(' ');
-    const lines = [];
-    let currentLine = words[0];
-
-    for (let i = 1; i < words.length; i++) {
-        const word = words[i];
-        if (currentLine.length + word.length < 15) { // Approximate character limit
-            currentLine += ` ${word}`;
-        } else {
-            lines.push(currentLine);
-            currentLine = word;
-        }
-    }
-    lines.push(currentLine);
-
-    return (
-        <g transform={`translate(${x},${y})`}>
-            <text x={0} y={0} dy={4} textAnchor="end" fill="#888" fontSize={12}>
-                {lines.slice(0, maxLines).map((line, index) => (
-                    <tspan key={index} x={0} dy={index > 0 ? '1.1em' : 0}>{line}{index === maxLines - 1 && lines.length > maxLines ? '...' : ''}</tspan>
-                ))}
-            </text>
-        </g>
-    );
-};
 
 export default function ReportsPage() {
   const { transactions, expenses: totalExpenses } = useTransactions();
@@ -95,7 +66,7 @@ export default function ReportsPage() {
 
     const topExpenses = chartData.slice(0, 5).map(expense => ({
       ...expense,
-      percentage: totalExpenses > 0 ? ((expense.amount / totalExpenses) * 100).toFixed(0) : 0,
+      percentage: totalExpenses > 0 ? ((expense.amount / totalExpenses) * 100).toFixed(0) : "0",
     }));
     
     return { chartData, topExpenses };
@@ -128,32 +99,31 @@ export default function ReportsPage() {
           )}
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+          <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
              {chartData.length > 0 ? (
-                <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ left: 10, right: 10 }}>
-                    <CartesianGrid horizontal={false} />
-                    <YAxis
+                <BarChart accessibilityLayer data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis
                         dataKey="name"
-                        type="category"
                         tickLine={false}
                         axisLine={false}
-                        tick={<CustomYAxisTick />}
-                        width={80} 
+                        tickMargin={8}
+                        tickFormatter={(value) => value.slice(0, 3)}
                     />
-                    <XAxis
-                        type="number"
-                        dataKey="amount"
+                    <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
                         tickFormatter={(value) => `${value / 1000}k`}
-                        hide
                     />
                     <ChartTooltip
                         cursor={false}
                         content={<ChartTooltipContent indicator="dot" />}
                     />
-                    <Bar dataKey="amount" fill="var(--color-amount)" radius={4} barSize={20} />
+                    <Bar dataKey="amount" fill="hsl(var(--primary))" radius={8} />
                 </BarChart>
              ) : (
-                <div className="flex h-full w-full items-center justify-center text-muted-foreground min-h-[200px]">
+                <div className="flex h-full w-full items-center justify-center text-muted-foreground min-h-[300px]">
                     Aucune donnée de graphique disponible.
                 </div>
              )}
