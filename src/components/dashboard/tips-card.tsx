@@ -1,18 +1,26 @@
 // src/components/dashboard/tips-card.tsx
+"use client";
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lightbulb } from "lucide-react";
 
+const tips = [
+    "Créez un budget mensuel et suivez-le.",
+    "Mettez de côté au moins 20% de vos revenus.",
+    "Automatisez vos virements vers votre compte épargne.",
+    "Évitez les achats impulsifs en attendant 24h avant de décider.",
+    "Comparez les prix avant de faire un gros achat."
+];
+
 export function TipsCard() {
-    const tips = [
-        "Créez un budget mensuel et suivez-le.",
-        "Mettez de côté au moins 20% de vos revenus.",
-        "Automatisez vos virements vers votre compte épargne.",
-        "Évitez les achats impulsifs en attendant 24h avant de décider.",
-        "Comparez les prix avant de faire un gros achat."
-    ];
-    // Pick a random tip
-    const tip = tips[Math.floor(Math.random() * tips.length)];
+    const [tip, setTip] = useState("Chargement de l'astuce...");
+
+    useEffect(() => {
+        // This code runs only on the client, after hydration
+        const randomTip = tips[Math.floor(Math.random() * tips.length)];
+        setTip(randomTip);
+    }, []); // Empty dependency array ensures this runs only once on mount
 
     return (
         <Card className="bg-secondary/50 border-dashed">
