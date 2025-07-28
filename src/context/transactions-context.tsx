@@ -1,12 +1,12 @@
 // src/context/transactions-context.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useMemo, useCallback } from 'react';
 import { Transaction } from '@/types/transaction';
 
 interface TransactionsContextType {
   transactions: Transaction[];
-  addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
+  addTransaction: (transaction: Transaction) => Promise<void>;
   balance: number;
   income: number;
   expenses: number;
@@ -17,10 +17,11 @@ const TransactionsContext = createContext<TransactionsContextType | undefined>(u
 export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
-    const newTransaction = { ...transaction, id: new Date().toISOString() + Math.random() };
-    setTransactions(prevTransactions => [...prevTransactions, newTransaction]);
-  };
+  const addTransaction = useCallback(async (transaction: Transaction) => {
+    // In a real app, you would post this to your API
+    // For now, we just add it to the local state
+    setTransactions(prevTransactions => [...prevTransactions, transaction]);
+  }, []);
 
   const { balance, income, expenses } = useMemo(() => {
     let income = 0;

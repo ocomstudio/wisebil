@@ -98,7 +98,7 @@ export default function AddExpensePage() {
         form.setValue("category", "Autre", { shouldValidate: true });
         form.setValue("customCategory", result.category, { shouldValidate: true });
       }
-    } catch (error) {
+    } catch (error) => {
       console.error("La catégorisation par l'IA a échoué:", error);
       toast({
         variant: "destructive",
@@ -188,7 +188,7 @@ export default function AddExpensePage() {
                   <FormItem>
                     <FormLabel>Catégorie</FormLabel>
                     <div className="flex items-start gap-2">
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Sélectionnez une catégorie" />
