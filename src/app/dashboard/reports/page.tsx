@@ -14,7 +14,7 @@ import {
   ChartTooltipContent,
   ChartConfig
 } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
   Select,
   SelectContent,
@@ -74,10 +74,10 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-       <div className="flex justify-between items-center">
+       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
          <h1 className="text-3xl font-bold font-headline">Statistiques</h1>
          <Select defaultValue="monthly">
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Filtrer" />
             </SelectTrigger>
             <SelectContent>
@@ -101,20 +101,24 @@ export default function ReportsPage() {
         <CardContent>
           <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
              {chartData.length > 0 ? (
-                <BarChart accessibilityLayer data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                <BarChart accessibilityLayer data={chartData} margin={{ top: 20, right: 0, bottom: 40, left: 0 }}>
                     <CartesianGrid vertical={false} />
                     <XAxis
                         dataKey="name"
                         tickLine={false}
                         axisLine={false}
-                        tickMargin={8}
-                        tickFormatter={(value) => value.slice(0, 3)}
+                        tickMargin={10}
+                        angle={-45}
+                        textAnchor="end"
+                        height={60}
+                        tick={{ fontSize: 12 }}
                     />
                     <YAxis
                         tickLine={false}
                         axisLine={false}
                         tickMargin={8}
                         tickFormatter={(value) => `${value / 1000}k`}
+                        tick={{ fontSize: 12 }}
                     />
                     <ChartTooltip
                         cursor={false}
@@ -141,17 +145,17 @@ export default function ReportsPage() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Catégorie</TableHead>
-                            <TableHead className="text-right">Montant</TableHead>
-                            <TableHead className="text-right">Pourcentage</TableHead>
+                            <TableHead className="text-xs">Catégorie</TableHead>
+                            <TableHead className="text-right text-xs">Montant</TableHead>
+                            <TableHead className="text-right text-xs">Pourcentage</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {topExpenses.map((expense) => (
                             <TableRow key={expense.name}>
-                                <TableCell className="font-medium">{expense.name}</TableCell>
-                                <TableCell className="text-right">{expense.amount.toLocaleString('fr-FR')} FCFA</TableCell>
-                                <TableCell className="text-right">
+                                <TableCell className="font-medium text-xs sm:text-sm">{expense.name}</TableCell>
+                                <TableCell className="text-right text-xs sm:text-sm">{expense.amount.toLocaleString('fr-FR')} FCFA</TableCell>
+                                <TableCell className="text-right text-xs sm:text-sm">
                                     <Badge variant="secondary">{expense.percentage}%</Badge>
                                 </TableCell>
                             </TableRow>
