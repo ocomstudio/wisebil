@@ -21,6 +21,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useTransactions } from "@/context/transactions-context";
 import { Loader2, ArrowLeft, CalendarIcon } from "lucide-react";
@@ -31,12 +38,23 @@ import { cn } from "@/lib/utils";
 const incomeSchema = z.object({
   description: z.string().min(3, "La description doit contenir au moins 3 caractères."),
   amount: z.coerce.number().positive("Le montant doit être un nombre positif."),
+  category: z.string().min(1, "Veuillez sélectionner une catégorie."),
   date: z.date({
     required_error: "Veuillez sélectionner une date.",
   }),
+  customCategory: z.string().optional(),
 });
 
 type IncomeFormValues = z.infer<typeof incomeSchema>;
+
+const predefinedCategories = [
+  "Salaire",
+  "Vente",
+  "Bonus",
+  "Cadeau",
+  "Remboursement",
+  "Autre",
+];
 
 export default function AddIncomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,19 +67,25 @@ export default function AddIncomePage() {
     defaultValues: {
       description: "",
       amount: 0,
+      category: "",
       date: new Date(),
+      customCategory: "",
     },
   });
+
+  const selectedCategory = form.watch("category");
 
   const onSubmit = async (data: IncomeFormValues) => {
     setIsSubmitting(true);
     try {
+      const finalCategory = data.category === 'Autre' ? data.customCategory : data.category;
+      
       const newTransaction = {
         id: new Date().toISOString(),
         type: 'income' as const,
         amount: data.amount,
         description: data.description,
-        category: 'Revenu',
+        category: finalCategory || 'Autre',
         date: data.date.toISOString(),
       };
       await addTransaction(newTransaction);
@@ -121,6 +145,48 @@ export default function AddIncomePage() {
                   </FormItem>
                 )}
               />
+              
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Catégorie</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionnez une catégorie" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {predefinedCategories.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              {selectedCategory === "Autre" && (
+                <FormField
+                  control={form.control}
+                  name="customCategory"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nom de la nouvelle catégorie</FormLabel>
+                      <FormControl>
+                        <Input placeholder="ex: Vente en ligne" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
               <FormField
                 control={form.control}
                 name="date"

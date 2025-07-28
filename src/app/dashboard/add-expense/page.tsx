@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { categorizeExpense } from "@/ai/flows/categorize-expense";
@@ -22,6 +22,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Bot, Loader2, ArrowLeft, CalendarIcon } from "lucide-react";
@@ -42,17 +49,17 @@ const expenseSchema = z.object({
 type ExpenseFormValues = z.infer<typeof expenseSchema>;
 
 const predefinedCategories = [
-  { name: "Alimentation", emoji: "🍔" },
-  { name: "Transport", emoji: "🚗" },
-  { name: "Logement", emoji: "🏠" },
-  { name: "Factures", emoji: "🧾" },
-  { name: "Santé", emoji: "❤️" },
-  { name: "Divertissement", emoji: "🎉" },
-  { name: "Shopping", emoji: "🛍️" },
-  { name: "Éducation", emoji: "📚" },
-  { name: "Famille", emoji: "👨‍👩‍👧‍👦" },
-  { name: "Animaux", emoji: "🐾" },
-  { name: "Autre", emoji: "➕" },
+  "Alimentation",
+  "Transport",
+  "Logement",
+  "Factures",
+  "Santé",
+  "Divertissement",
+  "Shopping",
+  "Éducation",
+  "Famille",
+  "Animaux",
+  "Autre",
 ];
 
 export default function AddExpensePage() {
@@ -84,9 +91,9 @@ export default function AddExpensePage() {
     setIsCategorizing(true);
     try {
       const result = await categorizeExpense({ description });
-      const existingCategory = predefinedCategories.find(c => c.name.toLowerCase() === result.category.toLowerCase());
+      const existingCategory = predefinedCategories.find(c => c.toLowerCase() === result.category.toLowerCase());
       if (existingCategory) {
-        form.setValue("category", existingCategory.name, { shouldValidate: true });
+        form.setValue("category", existingCategory, { shouldValidate: true });
       } else {
         form.setValue("category", "Autre", { shouldValidate: true });
         form.setValue("customCategory", result.category, { shouldValidate: true });
@@ -173,43 +180,37 @@ export default function AddExpensePage() {
                   </FormItem>
                 )}
               />
-              <Controller
+
+              <FormField
                 control={form.control}
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                     <FormLabel>Catégorie</FormLabel>
-                     <div className="flex items-center gap-2">
-                        <p className="text-sm text-muted-foreground flex-1">Sélectionnez une catégorie</p>
-                        <Button type="button" size="sm" variant="outline" onClick={handleCategorize} disabled={isCategorizing}>
-                          {isCategorizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bot className="h-4 w-4" />}
-                           <span className="ml-2 hidden sm:inline">Suggestion IA</span>
-                        </Button>
-                     </div>
-                     <FormControl>
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                            {predefinedCategories.map((cat) => (
-                                <button
-                                    key={cat.name}
-                                    type="button"
-                                    onClick={() => field.onChange(cat.name)}
-                                    className={cn(
-                                        "flex flex-col items-center justify-center gap-2 p-3 rounded-lg border-2 transition-all",
-                                        selectedCategory === cat.name
-                                        ? "border-primary bg-primary/10"
-                                        : "border-border hover:border-primary/50"
-                                    )}
-                                >
-                                    <span className="text-2xl">{cat.emoji}</span>
-                                    <span className="text-xs font-medium text-center">{cat.name}</span>
-                                </button>
-                            ))}
-                        </div>
-                     </FormControl>
-                     <FormMessage />
+                    <FormLabel>Catégorie</FormLabel>
+                    <div className="flex items-start gap-2">
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionnez une catégorie" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {predefinedCategories.map((cat) => (
+                            <SelectItem key={cat} value={cat}>
+                              {cat}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button type="button" size="icon" variant="outline" onClick={handleCategorize} disabled={isCategorizing}>
+                        {isCategorizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bot className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
+
 
               {selectedCategory === "Autre" && (
                 <FormField
