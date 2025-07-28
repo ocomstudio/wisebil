@@ -82,7 +82,7 @@ export default function AddIncomePage() {
         </Button>
          <h1 className="text-3xl font-bold font-headline">Ajouter un revenu</h1>
       </div>
-      <Card className="shadow-lg">
+      <Card className="shadow-xl">
         <CardContent className="pt-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

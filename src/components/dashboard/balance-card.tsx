@@ -3,15 +3,16 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Eye, EyeOff, Leaf } from "lucide-react";
+import { Eye, EyeOff, Leaf, TrendingDown, TrendingUp } from "lucide-react";
 import { Button } from "../ui/button";
-import { cn } from '@/lib/utils';
 
 interface BalanceCardProps {
     balance: number;
+    income: number;
+    expenses: number;
 }
 
-export function BalanceCard({ balance }: BalanceCardProps) {
+export function BalanceCard({ balance, income, expenses }: BalanceCardProps) {
   const [isVisible, setIsVisible] = useState(true);
 
   return (
@@ -28,17 +29,31 @@ export function BalanceCard({ balance }: BalanceCardProps) {
                         {isVisible ? `${balance.toLocaleString('fr-FR')} FCFA` : '******'}
                     </p>
                 </div>
-                <div className='flex items-center gap-2'>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/80 hover:bg-white/20 hover:text-white rounded-full" onClick={() => setIsVisible(!isVisible)}>
-                        {isVisible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                        <span className="sr-only">{isVisible ? 'Hide balance' : 'Show balance'}</span>
-                    </Button>
-                </div>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/80 hover:bg-white/20 hover:text-white rounded-full" onClick={() => setIsVisible(!isVisible)}>
+                    {isVisible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    <span className="sr-only">{isVisible ? 'Cacher le solde' : 'Afficher le solde'}</span>
+                </Button>
             </div>
             
-            <div className="mt-8 flex justify-between items-center font-mono text-lg tracking-widest text-primary-foreground/90">
-                <span>Wisebil</span>
-                <span>5367</span>
+            <div className="mt-6 grid grid-cols-2 gap-4">
+                <div>
+                    <div className='flex items-center gap-2 text-sm text-green-300'>
+                        <TrendingUp className="h-4 w-4" />
+                        <span>Revenus</span>
+                    </div>
+                    <p className="font-semibold text-lg text-primary-foreground">
+                       {isVisible ? `${income.toLocaleString('fr-FR')} FCFA` : '******'}
+                    </p>
+                </div>
+                 <div>
+                    <div className='flex items-center gap-2 text-sm text-red-300'>
+                        <TrendingDown className="h-4 w-4" />
+                        <span>Dépenses</span>
+                    </div>
+                    <p className="font-semibold text-lg text-primary-foreground">
+                        {isVisible ? `${expenses.toLocaleString('fr-FR')} FCFA` : '******'}
+                    </p>
+                </div>
             </div>
         </CardContent>
     </Card>
