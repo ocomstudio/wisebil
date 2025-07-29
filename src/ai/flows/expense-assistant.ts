@@ -17,7 +17,7 @@ const ExpenseAssistantInputSchema = z.object({
     .array(
       z.object({
         role: z.enum(['user', 'model']),
-        content: z.string(),
+        content: z.array(z.object({text: z.string()})),
       })
     )
     .describe(
@@ -48,7 +48,7 @@ const expenseAssistantFlow = ai.defineFlow(
 
     const messages = [
         ...history,
-        { role: 'user' as const, content: question },
+        { role: 'user' as const, content: [{text: question}] },
     ];
     
     const response = await ai.generate({

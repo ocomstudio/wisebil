@@ -24,7 +24,7 @@ type AssistantFormValues = z.infer<typeof assistantSchema>;
 
 interface Message {
   role: 'user' | 'model';
-  content: string;
+  content: { text: string }[];
 }
 
 type Conversation = Message[];
@@ -124,7 +124,7 @@ export function ConseilPanel() {
       setIsListening(false);
     }
     
-    const userMessage: Message = { role: 'user', content: data.prompt };
+    const userMessage: Message = { role: 'user', content: [{ text: data.prompt }] };
     const newConversation = [...currentConversation, userMessage];
     setCurrentConversation(newConversation);
     form.reset();
@@ -132,7 +132,7 @@ export function ConseilPanel() {
 
     try {
       const result = await askExpenseAssistant({ question: data.prompt, history: newConversation.slice(0, -1) });
-      const assistantMessage: Message = { role: 'model', content: result.answer };
+      const assistantMessage: Message = { role: 'model', content: [{ text: result.answer }] };
       setCurrentConversation(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('AI assistant failed:', error);
@@ -180,7 +180,7 @@ export function ConseilPanel() {
                       : 'bg-muted'
                   }`}
                 >
-                  <p className="text-sm">{message.content}</p>
+                  <p className="text-sm">{message.content[0].text}</p>
                 </div>
                 {message.role === 'user' && (
                   <Avatar className="h-8 w-8">
@@ -219,7 +219,7 @@ export function ConseilPanel() {
                           }
                           setCurrentConversation(convo);
                         }}>
-                          {convo[0]?.content || 'Conversation vide'}
+                          {convo[0]?.content[0]?.text || 'Conversation vide'}
                         </div>
                     ))}
                   </div>
