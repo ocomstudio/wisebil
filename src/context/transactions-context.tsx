@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 interface TransactionsContextType {
   transactions: Transaction[];
   addTransaction: (transaction: Transaction) => Promise<void>;
-  updateTransaction: (id: string, updatedTransaction: Omit<Transaction, 'id'>) => Promise<void>;
+  updateTransaction: (id: string, updatedTransaction: Transaction) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   getTransactionById: (id: string) => Transaction | undefined;
   balance: number;
@@ -23,11 +23,11 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   const addTransaction = useCallback(async (transaction: Transaction) => {
-    setTransactions(prevTransactions => [...prevTransactions, transaction]);
+    setTransactions(prevTransactions => [...prevTransactions, transaction].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   }, []);
 
-  const updateTransaction = useCallback(async (id: string, updatedTransaction: Omit<Transaction, 'id'>) => {
-    setTransactions(prev => prev.map(t => t.id === id ? { ...t, ...updatedTransaction } : t));
+  const updateTransaction = useCallback(async (id: string, updatedTransaction: Transaction) => {
+    setTransactions(prev => prev.map(t => (t.id === id ? updatedTransaction : t)).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   }, []);
 
   const deleteTransaction = useCallback(async (id: string) => {

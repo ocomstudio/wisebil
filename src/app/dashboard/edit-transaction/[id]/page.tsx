@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTransactions } from "@/context/transactions-context";
 import { TransactionForm } from "@/components/dashboard/transaction-form";
@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function EditTransactionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialData, setInitialData] = useState<Transaction | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const router = useRouter();
   const params = useParams();
@@ -33,6 +34,7 @@ export default function EditTransactionPage() {
         });
         router.push("/dashboard");
       }
+      setIsLoading(false);
     }
   }, [id, getTransactionById, router, toast]);
 
@@ -40,7 +42,7 @@ export default function EditTransactionPage() {
     if (!initialData) return;
     setIsSubmitting(true);
     try {
-      await updateTransaction(id, { ...initialData, ...data });
+      await updateTransaction(id, { ...initialData, ...data, id });
       toast({
         title: "Transaction modifiée",
         description: `La transaction a été modifiée avec succès.`,
@@ -57,20 +59,25 @@ export default function EditTransactionPage() {
     }
   };
 
-  if (!initialData) {
+  if (isLoading) {
     return (
         <div>
             <div className="flex items-center gap-4 mb-6">
                 <Skeleton className="h-10 w-10" />
                 <Skeleton className="h-9 w-64" />
             </div>
-            <div className="space-y-6">
+            <div className="space-y-6 bg-card p-6 rounded-lg">
                 <Skeleton className="h-16 w-full" />
                 <Skeleton className="h-16 w-full" />
                 <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-10 w-full mt-4" />
             </div>
         </div>
     );
+  }
+
+  if (!initialData) {
+    return null; // or a not found component
   }
 
   return (
