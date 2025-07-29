@@ -15,17 +15,13 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2, Send, PlusCircle, Mic, MicOff } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from '@/lib/utils';
+import { Message } from '@/types/message';
 
 const assistantSchema = z.object({
   prompt: z.string().min(1, 'Veuillez entrer une question.'),
 });
 
 type AssistantFormValues = z.infer<typeof assistantSchema>;
-
-interface Message {
-  role: 'user' | 'model';
-  content: { text: string }[];
-}
 
 type Conversation = Message[];
 
@@ -129,11 +125,29 @@ export function ConseilPanel() {
     setCurrentConversation(newConversation);
     form.reset();
     setIsThinking(true);
+  
+    // Add an empty assistant message to start updating
+    const assistantMessage: Message = { role: 'model', content: [{ text: '' }] };
+    setCurrentConversation(prev => [...prev, assistantMessage]);
 
     try {
-      const result = await askExpenseAssistant({ question: data.prompt, history: newConversation.slice(0, -1) });
-      const assistantMessage: Message = { role: 'model', content: [{ text: result.answer }] };
-      setCurrentConversation(prev => [...prev, assistantMessage]);
+      await askExpenseAssistant(
+        { question: data.prompt, history: newConversation.slice(0, -1) },
+        (chunk) => {
+          setCurrentConversation(prev => {
+            const lastMessage = prev[prev.length - 1];
+            if (lastMessage && lastMessage.role === 'model') {
+              const updatedContent = lastMessage.content[0].text + chunk;
+              const updatedMessage: Message = {
+                ...lastMessage,
+                content: [{ text: updatedContent }],
+              };
+              return [...prev.slice(0, -1), updatedMessage];
+            }
+            return prev;
+          });
+        }
+      );
     } catch (error) {
       console.error('AI assistant failed:', error);
       toast({
@@ -141,8 +155,8 @@ export function ConseilPanel() {
         title: 'Assistant Error',
         description: 'The assistant could not respond. Please try again.',
       });
-       // remove the user message if the assistant fails
-      setCurrentConversation(prev => prev.slice(0, -1));
+      // remove the user message and the empty assistant message if the assistant fails
+      setCurrentConversation(prev => prev.slice(0, -2));
     } finally {
       setIsThinking(false);
     }
@@ -181,6 +195,9 @@ export function ConseilPanel() {
                   }`}
                 >
                   <p className="text-sm">{message.content[0].text}</p>
+                   {isThinking && index === currentConversation.length - 1 && (
+                      <span className="animate-pulse">_</span>
+                    )}
                 </div>
                 {message.role === 'user' && (
                   <Avatar className="h-8 w-8">
@@ -189,16 +206,6 @@ export function ConseilPanel() {
                 )}
               </div>
             ))}
-            {isThinking && (
-              <div className="flex items-start gap-3 justify-start">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>AI</AvatarFallback>
-                </Avatar>
-                <div className="rounded-lg px-4 py-2 max-w-sm bg-muted flex items-center">
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                </div>
-              </div>
-            )}
           </div>
         </ScrollArea>
       </div>

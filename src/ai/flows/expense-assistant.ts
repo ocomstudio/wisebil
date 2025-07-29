@@ -26,43 +26,41 @@ const ExpenseAssistantInputSchema = z.object({
 });
 export type ExpenseAssistantInput = z.infer<typeof ExpenseAssistantInputSchema>;
 
-const ExpenseAssistantOutputSchema = z.object({
-  answer: z.string().describe("The assistant's answer to the user's question."),
-});
-export type ExpenseAssistantOutput = z.infer<typeof ExpenseAssistantOutputSchema>;
 
 export async function askExpenseAssistant(
-  input: ExpenseAssistantInput
-): Promise<ExpenseAssistantOutput> {
-  const result = await expenseAssistantFlow(input);
+  input: ExpenseAssistantInput,
+  // This callback function will be called with chunks of the response
+  onChunk: (chunk: string) => void
+) {
+  const result = await expenseAssistantFlow(input, onChunk);
   return { answer: result };
 }
 
-const expenseAssistantFlow = ai.defineFlow(
-  {
-    name: 'expenseAssistantFlow',
-    inputSchema: ExpenseAssistantInputSchema,
-    outputSchema: z.string(),
-  },
-  async ({ history, question }) => {
+async function expenseAssistantFlow(
+  { history, question }: ExpenseAssistantInput,
+  onChunk: (chunk: string) => void
+): Promise<string> {
+  const messages = [
+    ...history,
+    { role: 'user' as const, content: [{ text: question }] },
+  ];
 
-    const messages = [
-        ...history,
-        { role: 'user' as const, content: [{text: question}] },
-    ];
-    
-    const response = await ai.generate({
-        model: 'googleai/gemini-1.5-flash',
-        messages: messages,
-        system: `You are Wise, a specialist AI in finance, created by the communication and technological innovation agency Ocomstudio. Your focus is on financial counseling, guidance, and education. Your primary role is to educate and train users to improve their financial health.
+  const { stream, response } = ai.generateStream({
+    model: 'googleai/gemini-1.5-flash',
+    messages: messages,
+    system: `You are Wise, a specialist AI in finance, created by the communication and technological innovation agency Ocomstudio. Your focus is on financial counseling, guidance, and education. Your primary role is to educate and train users to improve their financial health.
 
 Your tone should be encouraging, pedagogical, and professional. You must break down complex financial concepts into simple, understandable terms.
 
 You are NOT a financial advisor for investments and you must not provide any investment advice (stocks, crypto, etc.). Your focus is exclusively on personal finance management: budgeting, saving, debt management, and financial education.
 
 You must answer in the same language as the user's question.`
-    });
-
-    return response.text;
+  });
+  
+  for await (const chunk of stream) {
+    onChunk(chunk.text);
   }
-);
+
+  const finalResponse = await response;
+  return finalResponse.text;
+}
