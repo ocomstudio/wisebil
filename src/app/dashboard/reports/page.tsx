@@ -14,7 +14,7 @@ import {
   ChartTooltipContent,
   ChartConfig
 } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, PieChart, Pie, Cell } from "recharts";
 import {
   Select,
   SelectContent,
@@ -22,16 +22,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { useTransactions } from "@/context/transactions-context";
+import { ArrowLeft, Settings, TrendingDown, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { allCategories } from "@/config/categories";
 
 const chartConfig = {
   amount: {
@@ -40,14 +35,22 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function ReportsPage() {
-  const { transactions, expenses: totalExpenses } = useTransactions();
+const COLORS = ["#50C878", "#FF8042", "#FFBB28", "#0088FE", "#AF19FF"];
 
-  const { chartData, topExpenses } = useMemo(() => {
+export default function ReportsPage() {
+  const { transactions, income, expenses } = useTransactions();
+
+  const getCategoryEmoji = (categoryName?: string) => {
+    if (!categoryName) return '💸';
+    const category = allCategories.find(c => c.name === categoryName);
+    return category ? category.emoji : '💸';
+  }
+
+  const { chartData, pieChartData, topCategoryEmoji } = useMemo(() => {
     const expenseTransactions = transactions.filter(t => t.type === 'expense');
 
     if (expenseTransactions.length === 0) {
-      return { chartData: [], topExpenses: [] };
+      return { chartData: [], pieChartData: [], topCategoryEmoji: '📊' };
     }
 
     const expensesByCategory = expenseTransactions.reduce((acc, transaction) => {
@@ -64,17 +67,31 @@ export default function ReportsPage() {
       amount,
     })).sort((a, b) => b.amount - a.amount);
 
-    const topExpenses = chartData.slice(0, 5).map(expense => ({
-      ...expense,
-      percentage: totalExpenses > 0 ? ((expense.amount / totalExpenses) * 100).toFixed(0) : "0",
+     const pieChartData = chartData.map((item) => ({
+      name: item.name,
+      value: item.amount,
     }));
     
-    return { chartData, topExpenses };
-  }, [transactions, totalExpenses]);
+    const topCategoryEmoji = chartData.length > 0 ? getCategoryEmoji(chartData[0].name) : '📊';
+
+    return { chartData, pieChartData, topCategoryEmoji };
+  }, [transactions]);
 
   return (
     <div className="space-y-6">
-       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+       <div className="flex items-center justify-between md:hidden">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/dashboard">
+              <ArrowLeft />
+            </Link>
+          </Button>
+          <h1 className="text-lg font-bold">Statistiques</h1>
+          <Button variant="ghost" size="icon">
+            <Settings />
+          </Button>
+        </div>
+
+       <div className="hidden md:flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
          <h1 className="text-3xl font-bold font-headline">Statistiques</h1>
          <Select defaultValue="monthly">
             <SelectTrigger className="w-full sm:w-[180px]">
@@ -88,20 +105,56 @@ export default function ReportsPage() {
             </SelectContent>
         </Select>
        </div>
+       
+        <Card>
+            <CardContent className="p-4 grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                    <div className="bg-green-500/20 p-2 rounded-full">
+                        <TrendingUp className="h-5 w-5 text-green-400" />
+                    </div>
+                    <div>
+                        <p className="text-sm text-muted-foreground">Revenus</p>
+                        <p className="font-bold text-lg">{income.toLocaleString('fr-FR')} FCFA</p>
+                    </div>
+                </div>
+                 <div className="flex items-center gap-2">
+                    <div className="bg-red-500/20 p-2 rounded-full">
+                        <TrendingDown className="h-5 w-5 text-red-400" />
+                    </div>
+                    <div>
+                        <p className="text-sm text-muted-foreground">Dépenses</p>
+                        <p className="font-bold text-lg">{expenses.toLocaleString('fr-FR')} FCFA</p>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Aperçu des Dépenses</CardTitle>
-           {chartData.length === 0 ? (
-            <CardDescription>Aucune dépense enregistrée pour le moment.</CardDescription>
-          ) : (
-            <CardDescription>Vos dépenses totales par catégorie.</CardDescription>
-          )}
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Aperçu des Dépenses</CardTitle>
+              {chartData.length === 0 ? (
+                <CardDescription>Aucune dépense enregistrée.</CardDescription>
+              ) : (
+                <CardDescription>Ce mois-ci</CardDescription>
+              )}
+            </div>
+            <Select defaultValue="monthly">
+                <SelectTrigger className="w-[130px] hidden md:flex">
+                    <SelectValue placeholder="Filtrer" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="monthly">Mensuel</SelectItem>
+                    <SelectItem value="yearly">Annuel</SelectItem>
+                </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+          <ChartContainer config={chartConfig} className="min-h-[250px] w-full">
              {chartData.length > 0 ? (
-                <BarChart accessibilityLayer data={chartData} margin={{ top: 20, right: 0, bottom: 40, left: 0 }}>
+                <BarChart accessibilityLayer data={chartData} margin={{ top: 20, right: 0, bottom: 40, left: -20 }}>
                     <CartesianGrid vertical={false} />
                     <XAxis
                         dataKey="name"
@@ -111,7 +164,16 @@ export default function ReportsPage() {
                         angle={-45}
                         textAnchor="end"
                         height={60}
-                        tick={{ fontSize: 12 }}
+                        tick={{ fontSize: 10 }}
+                        className="hidden md:block"
+                    />
+                     <XAxis
+                        dataKey="name"
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={10}
+                        tick={{ fontSize: 10 }}
+                         className="md:hidden"
                     />
                     <YAxis
                         tickLine={false}
@@ -127,7 +189,7 @@ export default function ReportsPage() {
                     <Bar dataKey="amount" fill="hsl(var(--primary))" radius={8} />
                 </BarChart>
              ) : (
-                <div className="flex h-full w-full items-center justify-center text-muted-foreground min-h-[300px]">
+                <div className="flex h-full w-full items-center justify-center text-muted-foreground min-h-[250px]">
                     Aucune donnée de graphique disponible.
                 </div>
              )}
@@ -137,33 +199,42 @@ export default function ReportsPage() {
       
       <Card>
         <CardHeader>
-          <CardTitle>Top des Dépenses</CardTitle>
-           <CardDescription>Vos catégories de dépenses les plus importantes ce mois-ci.</CardDescription>
+          <CardTitle>Répartition par catégorie</CardTitle>
+           <CardDescription>Vos dépenses ce mois-ci.</CardDescription>
         </CardHeader>
-        <CardContent>
-            {topExpenses.length > 0 ? (
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="text-xs">Catégorie</TableHead>
-                            <TableHead className="text-right text-xs">Montant</TableHead>
-                            <TableHead className="text-right text-xs">Pourcentage</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {topExpenses.map((expense) => (
-                            <TableRow key={expense.name}>
-                                <TableCell className="font-medium text-xs sm:text-sm">{expense.name}</TableCell>
-                                <TableCell className="text-right text-xs sm:text-sm">{expense.amount.toLocaleString('fr-FR')} FCFA</TableCell>
-                                <TableCell className="text-right text-xs sm:text-sm">
-                                    <Badge variant="secondary">{expense.percentage}%</Badge>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+        <CardContent className="flex justify-center items-center">
+            {pieChartData.length > 0 ? (
+                 <ChartContainer config={chartConfig} className="min-h-[250px] w-full aspect-square">
+                    <PieChart>
+                        <ChartTooltip
+                            cursor={false}
+                            content={<ChartTooltipContent hideLabel />}
+                        />
+                        <Pie
+                            data={pieChartData}
+                            dataKey="value"
+                            nameKey="name"
+                            innerRadius="60%"
+                            outerRadius="80%"
+                            strokeWidth={5}
+                        >
+                            <text
+                                x="50%"
+                                y="50%"
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                                fontSize="2.5rem"
+                            >
+                                {topCategoryEmoji}
+                            </text>
+                            {pieChartData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                             ))}
+                        </Pie>
+                    </PieChart>
+                </ChartContainer>
             ) : (
-                 <div className="flex h-24 w-full items-center justify-center text-muted-foreground">
+                 <div className="flex h-48 w-full items-center justify-center text-muted-foreground">
                     Aucune dépense enregistrée.
                 </div>
             )}
