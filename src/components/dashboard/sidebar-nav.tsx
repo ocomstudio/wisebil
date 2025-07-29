@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { BarChart, Lightbulb, Home, Settings, Shield, Target, Wallet } from "lucide-react"
+import { BarChart, Lightbulb, Home, Settings, Shield, Target, Wallet, Bell } from "lucide-react"
 
 export function SidebarNav() {
   const pathname = usePathname()
@@ -39,6 +39,11 @@ export function SidebarNav() {
       href: "/dashboard/accounts",
       label: "Comptes",
       icon: <Wallet />
+    },
+    {
+      href: "/dashboard/notifications",
+      label: "Notifications",
+      icon: <Bell />
     },
     {
       href: "/dashboard/settings",

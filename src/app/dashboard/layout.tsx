@@ -15,6 +15,9 @@ import { SavingsProvider } from "@/context/savings-context";
 import { SettingsProvider } from "@/context/settings-context";
 import { AuthProvider } from "@/context/auth-context";
 import { ProtectedRoute } from "@/components/common/protected-route";
+import { Toaster as HotToaster } from 'react-hot-toast';
+import Link from "next/link";
+
 
 // Import AI flows to prevent tree-shaking
 import * as aiFlows from '@/ai/flows';
@@ -44,9 +47,11 @@ export default function DashboardLayout({
                     {/* Desktop Header */}
                     <header className="hidden md:flex items-center justify-end h-14 px-6 border-b bg-muted/40 flex-shrink-0">
                       <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" className="rounded-full">
-                            <Bell className="h-5 w-5" />
-                            <span className="sr-only">Notifications</span>
+                        <Button variant="ghost" size="icon" className="rounded-full" asChild>
+                            <Link href="/dashboard/notifications">
+                              <Bell className="h-5 w-5" />
+                              <span className="sr-only">Notifications</span>
+                            </Link>
                           </Button>
                         <UserProfile />
                       </div>
@@ -69,6 +74,12 @@ export default function DashboardLayout({
                     <ConseilPanel />
                   </aside>
                 </div>
+                 <HotToaster
+                  position="top-center"
+                  toastOptions={{
+                    className: 'bg-card text-card-foreground',
+                  }}
+                />
               </SavingsProvider>
             </BudgetProvider>
           </TransactionsProvider>
