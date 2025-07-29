@@ -6,8 +6,9 @@ import DesktopLandingPage from "@/components/landing/desktop-landing-page";
 import MobileLandingPage from "@/components/landing/mobile-landing-page";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LocaleProvider } from "@/context/locale-context";
 
-export default function Home() {
+function HomePageContent() {
   const isMobile = useIsMobile();
   const [isClient, setIsClient] = useState(false);
 
@@ -15,7 +16,7 @@ export default function Home() {
     setIsClient(true);
   }, []);
 
-  if (!isClient) {
+  if (!isClient || isMobile === undefined) {
     return (
       <div className="flex h-screen w-screen items-center justify-center">
         <Skeleton className="h-full w-full" />
@@ -23,13 +24,13 @@ export default function Home() {
     );
   }
 
-  if (isMobile === undefined) {
-    return (
-       <div className="flex h-screen w-screen items-center justify-center">
-        <Skeleton className="h-full w-full" />
-      </div>
-    )
-  }
-
   return isMobile ? <MobileLandingPage /> : <DesktopLandingPage />;
+}
+
+export default function Home() {
+  return (
+    <LocaleProvider>
+      <HomePageContent />
+    </LocaleProvider>
+  )
 }

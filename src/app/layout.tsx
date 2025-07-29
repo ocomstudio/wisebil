@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
+import { LocaleProvider } from '@/context/locale-context';
 
 const APP_NAME = "Wisebil";
 const APP_DESCRIPTION = "Maîtrisez vos finances avec l'IA.";
@@ -40,7 +41,9 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        {children}
+        <LocaleProvider>
+          {children}
+        </LocaleProvider>
         <Toaster />
       </body>
     </html>

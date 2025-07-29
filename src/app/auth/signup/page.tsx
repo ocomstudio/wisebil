@@ -22,28 +22,31 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from "@/context/auth-context";
+import { useLocale } from "@/context/locale-context";
 
-
-const signupSchema = z.object({
-  fullName: z.string().min(2, "Le nom doit comporter au moins 2 caractères."),
-  phone: z.string().min(9, "Le numéro de téléphone doit comporter au moins 9 chiffres."),
-  email: z.string().email("Adresse e-mail invalide.").optional().or(z.literal('')),
-  password: z.string().min(8, "Le mot de passe doit comporter au moins 8 caractères."),
-  confirmPassword: z.string(),
-  terms: z.boolean().refine(val => val === true, {
-    message: "Vous devez accepter les termes et conditions.",
-  })
-}).refine(data => data.password === data.confirmPassword, {
-    message: "Les mots de passe ne correspondent pas.",
-    path: ["confirmPassword"],
-});
-
-type SignupFormValues = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
+  const { t } = useLocale();
   const { toast } = useToast();
   const router = useRouter();
   const { login } = useAuth();
+
+  const signupSchema = z.object({
+    fullName: z.string().min(2, t('signup_fullname_error')),
+    phone: z.string().min(9, t('signup_phone_error')),
+    email: z.string().email(t('signup_email_error')).optional().or(z.literal('')),
+    password: z.string().min(8, t('signup_password_error')),
+    confirmPassword: z.string(),
+    terms: z.boolean().refine(val => val === true, {
+      message: t('signup_terms_error'),
+    })
+  }).refine(data => data.password === data.confirmPassword, {
+      message: t('signup_password_mismatch'),
+      path: ["confirmPassword"],
+  });
+
+  type SignupFormValues = z.infer<typeof signupSchema>;
+
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -61,8 +64,8 @@ export default function SignupPage() {
     console.log("Signup data:", data);
     login(); // Set authenticated state
     toast({
-      title: "Inscription réussie",
-      description: "Bienvenue ! Veuillez compléter votre profil.",
+      title: t('signup_success_title'),
+      description: t('signup_success_desc'),
     });
     router.push("/auth/onboarding");
   };
@@ -70,8 +73,8 @@ export default function SignupPage() {
   return (
     <>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold font-headline">Créer un compte</h1>
-        <p className="text-muted-foreground">Commencez votre voyage vers la liberté financière.</p>
+        <h1 className="text-3xl font-bold font-headline">{t('signup_title')}</h1>
+        <p className="text-muted-foreground">{t('signup_subtitle')}</p>
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -80,7 +83,7 @@ export default function SignupPage() {
             name="fullName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nom complet <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>{t('fullname_label')} <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <Input placeholder="John Doe" {...field} />
                 </FormControl>
@@ -93,7 +96,7 @@ export default function SignupPage() {
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Numéro de téléphone <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>{t('phone_number_label')} <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <Input type="tel" placeholder="+221 77 123 45 67" {...field} />
                 </FormControl>
@@ -106,7 +109,7 @@ export default function SignupPage() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Adresse e-mail (Facultatif)</FormLabel>
+                <FormLabel>{t('email_label_optional')}</FormLabel>
                 <FormControl>
                   <Input type="email" placeholder="votre@email.com" {...field} />
                 </FormControl>
@@ -119,7 +122,7 @@ export default function SignupPage() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Mot de passe <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>{t('password_label')} <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <Input type="password" placeholder="********" {...field} />
                 </FormControl>
@@ -132,7 +135,7 @@ export default function SignupPage() {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirmer le mot de passe <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>{t('confirm_password_label')} <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <Input type="password" placeholder="********" {...field} />
                 </FormControl>
@@ -153,7 +156,10 @@ export default function SignupPage() {
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel>
-                     J'accepte les <Link href="/terms" className="text-primary hover:underline">Termes</Link> et la <Link href="/privacy" className="text-primary hover:underline">Politique de confidentialité</Link>.
+                     {t('i_agree_to_the')}{" "}
+                     <Link href="/terms" className="text-primary hover:underline">{t('terms')}</Link>{" "}
+                     {t('and')}{" "}
+                     <Link href="/privacy" className="text-primary hover:underline">{t('privacy_policy')}</Link>.
                   </FormLabel>
                    <FormMessage />
                 </div>
@@ -161,19 +167,19 @@ export default function SignupPage() {
             )}
           />
           <Button type="submit" className="w-full">
-            Créer mon compte
+            {t('create_account_button')}
           </Button>
         </form>
       </Form>
       <Separator className="my-6" />
       <Button variant="outline" className="w-full">
         <FcGoogle className="mr-2 h-5 w-5" />
-        S'inscrire avec Google
+        {t('signup_with_google')}
       </Button>
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        Vous avez déjà un compte ?{" "}
+        {t('already_have_account')}{" "}
         <Link href="/auth/login" className="text-primary hover:underline">
-          Se connecter
+          {t('login_link')}
         </Link>
       </p>
     </>

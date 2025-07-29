@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { MoreVertical, Trash2 } from "lucide-react";
 import { useSettings } from "@/context/settings-context";
+import { useLocale } from "@/context/locale-context";
 
 interface BudgetCardProps {
   budget: Budget;
@@ -34,6 +35,7 @@ interface BudgetCardProps {
 export function BudgetCard({ budget, spent, onDelete }: BudgetCardProps) {
   const { id, name, amount, category } = budget;
   const { settings, isTemporarilyVisible } = useSettings();
+  const { t, formatCurrency } = useLocale();
   const isVisible = !settings.isBalanceHidden || isTemporarilyVisible;
 
   const remaining = amount - spent;
@@ -49,6 +51,13 @@ export function BudgetCard({ budget, spent, onDelete }: BudgetCardProps) {
     if (progress > 75) return "bg-orange-500";
     return "bg-primary";
   };
+  
+  const getRemainingText = () => {
+    if (remaining >= 0) {
+      return `${formatCurrency(remaining)} ${t('remaining')}`;
+    }
+    return `${formatCurrency(Math.abs(remaining))} ${t('overspent')}`;
+  }
 
   return (
     <Card>
@@ -69,7 +78,7 @@ export function BudgetCard({ budget, spent, onDelete }: BudgetCardProps) {
                 <AlertDialogTrigger asChild>
                   <DropdownMenuItem className="text-destructive">
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Supprimer
+                    {t('delete')}
                   </DropdownMenuItem>
                 </AlertDialogTrigger>
               </DropdownMenuContent>
@@ -80,15 +89,15 @@ export function BudgetCard({ budget, spent, onDelete }: BudgetCardProps) {
                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
                     <Trash2 className="h-6 w-6 text-red-600" />
                 </div>
-                <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+                <AlertDialogTitle>{t('are_you_sure')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Cette action est irréversible. Le budget "{name}" sera supprimé définitivement.
+                  {t('budget_delete_confirmation', { budgetName: name })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                 <AlertDialogAction onClick={() => onDelete(id)} className="bg-destructive hover:bg-destructive/90">
-                  Supprimer
+                  {t('delete')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -99,10 +108,10 @@ export function BudgetCard({ budget, spent, onDelete }: BudgetCardProps) {
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="font-medium text-foreground">
-              {isVisible ? `${spent.toLocaleString('fr-FR')} FCFA` : '******'}
+              {isVisible ? formatCurrency(spent) : '******'}
             </span>
             <span className="text-muted-foreground">
-              / {isVisible ? `${amount.toLocaleString('fr-FR')} FCFA` : '******'}
+              / {isVisible ? formatCurrency(amount) : '******'}
             </span>
           </div>
           <Progress value={progress} className="h-2 [&>div]:bg-primary" indicatorClassName={getProgressColor()} />
@@ -110,11 +119,7 @@ export function BudgetCard({ budget, spent, onDelete }: BudgetCardProps) {
             "text-sm text-right font-medium",
             remaining < 0 ? "text-destructive" : "text-muted-foreground"
           )}>
-            {isVisible ? (
-              remaining >= 0 
-                ? `${remaining.toLocaleString('fr-FR')} FCFA restants`
-                : `${Math.abs(remaining).toLocaleString('fr-FR')} FCFA de dépassement`
-            ) : '******'}
+            {isVisible ? getRemainingText() : '******'}
           </p>
         </div>
       </CardContent>

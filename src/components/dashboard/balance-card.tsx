@@ -7,6 +7,7 @@ import { Eye, EyeOff, Leaf, TrendingDown, TrendingUp } from "lucide-react";
 import { Button } from "../ui/button";
 import { useSettings } from '@/context/settings-context';
 import { useToast } from '@/hooks/use-toast';
+import { useLocale } from '@/context/locale-context';
 
 interface BalanceCardProps {
     balance: number;
@@ -16,6 +17,7 @@ interface BalanceCardProps {
 
 export function BalanceCard({ balance, income, expenses }: BalanceCardProps) {
   const { settings, checkPin, isTemporarilyVisible, setIsTemporarilyVisible } = useSettings();
+  const { t, formatCurrency } = useLocale();
   const { toast } = useToast();
 
   const isVisible = !settings.isBalanceHidden || isTemporarilyVisible;
@@ -25,14 +27,14 @@ export function BalanceCard({ balance, income, expenses }: BalanceCardProps) {
       setIsTemporarilyVisible(false);
     } else {
       if (!settings.pin) {
-        toast({ variant: "destructive", title: "Aucun code PIN défini.", description: "Veuillez définir un code PIN dans les paramètres de sécurité." });
+        toast({ variant: "destructive", title: t('no_pin_set_title'), description: t('no_pin_set_desc') });
         return;
       }
-      const pin = prompt("Veuillez entrer votre code PIN pour afficher le solde.");
+      const pin = prompt(t('enter_pin_prompt'));
       if (pin && checkPin(pin)) {
         setIsTemporarilyVisible(true);
       } else if (pin !== null) {
-        toast({ variant: "destructive", title: "Code PIN incorrect" });
+        toast({ variant: "destructive", title: t('incorrect_pin') });
       }
     }
   };
@@ -51,15 +53,15 @@ export function BalanceCard({ balance, income, expenses }: BalanceCardProps) {
         <CardContent className="p-6 relative z-10">
             <div className="flex justify-between items-start">
                 <div>
-                    <p className="text-sm text-primary-foreground/80">Solde Total</p>
+                    <p className="text-sm text-primary-foreground/80">{t('total_balance')}</p>
                     <p className="text-4xl font-bold mt-1">
-                        {isVisible ? `${balance.toLocaleString('fr-FR')} FCFA` : '******'}
+                        {isVisible ? formatCurrency(balance) : '******'}
                     </p>
                 </div>
                 {showToggleButton && (
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/80 hover:bg-white/20 hover:text-white rounded-full" onClick={handleToggleVisibility}>
                         <EyeIcon className="h-5 w-5" />
-                        <span className="sr-only">{isVisible ? 'Cacher le solde' : 'Afficher le solde'}</span>
+                        <span className="sr-only">{isVisible ? t('hide_balance') : t('show_balance')}</span>
                     </Button>
                 )}
             </div>
@@ -68,19 +70,19 @@ export function BalanceCard({ balance, income, expenses }: BalanceCardProps) {
                 <div>
                     <div className='flex items-center gap-2 text-sm text-green-300'>
                         <TrendingUp className="h-4 w-4" />
-                        <span>Revenus</span>
+                        <span>{t('income')}</span>
                     </div>
                     <p className="font-semibold text-lg text-primary-foreground">
-                       {isVisible ? `${income.toLocaleString('fr-FR')} FCFA` : '******'}
+                       {isVisible ? formatCurrency(income) : '******'}
                     </p>
                 </div>
                  <div>
                     <div className='flex items-center gap-2 text-sm text-red-300'>
                         <TrendingDown className="h-4 w-4" />
-                        <span>Dépenses</span>
+                        <span>{t('expenses')}</span>
                     </div>
                     <p className="font-semibold text-lg text-primary-foreground">
-                        {isVisible ? `${expenses.toLocaleString('fr-FR')} FCFA` : '******'}
+                        {isVisible ? formatCurrency(expenses) : '******'}
                     </p>
                 </div>
             </div>

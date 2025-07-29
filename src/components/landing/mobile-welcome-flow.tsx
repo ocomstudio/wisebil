@@ -8,16 +8,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/common/logo';
 import { Wallet, Globe, DollarSign, Euro, CircleDollarSign } from 'lucide-react';
+import { useLocale } from '@/context/locale-context';
+import type { Currency, Language } from '@/context/locale-context';
 
 const languages = [
-    { code: 'fr', name: 'Français', flag: '🇫🇷' },
-    { code: 'en', name: 'English', flag: '🇬🇧' },
+    { code: 'fr' as Language, name: 'Français', flag: '🇫🇷' },
+    { code: 'en' as Language, name: 'English', flag: '🇬🇧' },
 ];
 
 const currencies = [
-    { code: 'XOF', name: 'Franc CFA', icon: <CircleDollarSign className="h-8 w-8 text-primary" /> },
-    { code: 'EUR', name: 'Euro', icon: <Euro className="h-8 w-8 text-primary" /> },
-    { code: 'USD', name: 'US Dollar', icon: <DollarSign className="h-8 w-8 text-primary" /> },
+    { code: 'XOF' as Currency, name: 'Franc CFA', icon: <CircleDollarSign className="h-8 w-8 text-primary" /> },
+    { code: 'EUR' as Currency, name: 'Euro', icon: <Euro className="h-8 w-8 text-primary" /> },
+    { code: 'USD' as Currency, name: 'US Dollar', icon: <DollarSign className="h-8 w-8 text-primary" /> },
 ];
 
 const pageVariants = {
@@ -34,12 +36,15 @@ const pageTransition = {
 
 export function MobileWelcomeFlow() {
   const [step, setStep] = useState('language'); // 'language', 'currency', 'done'
+  const { setLocale, setCurrency, t } = useLocale();
 
-  const handleSelectLanguage = () => {
+  const handleSelectLanguage = (lang: Language) => {
+    setLocale(lang);
     setStep('currency');
   };
 
-  const handleSelectCurrency = () => {
+  const handleSelectCurrency = (curr: Currency) => {
+    setCurrency(curr);
     setStep('done');
   };
 
@@ -64,12 +69,12 @@ export function MobileWelcomeFlow() {
                         <Card className="bg-transparent border-0 shadow-none text-center">
                             <CardHeader>
                                 <div className="flex justify-center mb-4"><Globe className="h-12 w-12 text-primary"/></div>
-                                <CardTitle className="font-headline">Choisissez votre langue</CardTitle>
-                                <CardDescription>Select your language</CardDescription>
+                                <CardTitle className="font-headline">{t('choose_language_title')}</CardTitle>
+                                <CardDescription>{t('choose_language_subtitle')}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 {languages.map(lang => (
-                                    <Button key={lang.code} size="lg" className="w-full justify-start text-lg h-14" onClick={handleSelectLanguage}>
+                                    <Button key={lang.code} size="lg" className="w-full justify-start text-lg h-14" onClick={() => handleSelectLanguage(lang.code)}>
                                         <span className="mr-4 text-2xl">{lang.flag}</span> {lang.name}
                                     </Button>
                                 ))}
@@ -91,14 +96,14 @@ export function MobileWelcomeFlow() {
                         <Card className="bg-transparent border-0 shadow-none text-center">
                             <CardHeader>
                                 <div className="flex justify-center mb-4"><Wallet className="h-12 w-12 text-primary"/></div>
-                                <CardTitle className="font-headline">Choisissez votre devise</CardTitle>
-                                <CardDescription>Sélectionnez votre devise principale</CardDescription>
+                                <CardTitle className="font-headline">{t('choose_currency_title')}</CardTitle>
+                                <CardDescription>{t('choose_currency_subtitle')}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 {currencies.map(curr => (
-                                     <Button key={curr.code} variant="outline" size="lg" className="w-full justify-start text-lg h-16" onClick={handleSelectCurrency}>
+                                     <Button key={curr.code} variant="outline" size="lg" className="w-full justify-start text-lg h-16" onClick={() => handleSelectCurrency(curr.code)}>
                                         <div className="mr-4">{curr.icon}</div> 
-                                        <span>{curr.name} <span className="text-muted-foreground">({curr.code})</span></span>
+                                        <span>{t(`currency_${curr.code.toLowerCase()}`)} <span className="text-muted-foreground">({curr.code})</span></span>
                                     </Button>
                                 ))}
                             </CardContent>
@@ -116,10 +121,10 @@ export function MobileWelcomeFlow() {
                 transition={{ delay: 0.5 }}
             >
                 <Button asChild size="lg" className="w-full">
-                    <Link href="/auth/signup">Commencer</Link>
+                    <Link href="/auth/signup">{t('get_started')}</Link>
                 </Button>
                 <Button asChild size="lg" variant="outline" className="w-full">
-                    <Link href="/auth/login">Se connecter</Link>
+                    <Link href="/auth/login">{t('login_button')}</Link>
                 </Button>
             </motion.footer>
         )}

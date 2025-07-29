@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useTransactions } from "@/context/transactions-context";
 import { useSettings } from "@/context/settings-context";
+import { useLocale } from "@/context/locale-context";
 
 interface RecentExpensesProps {
   transactions: Transaction[];
@@ -33,6 +34,7 @@ interface RecentExpensesProps {
 export function RecentExpenses({ transactions }: RecentExpensesProps) {
   const { deleteTransaction } = useTransactions();
   const { settings, isTemporarilyVisible } = useSettings();
+  const { t, formatCurrency, formatDate } = useLocale();
   const isVisible = !settings.isBalanceHidden || isTemporarilyVisible;
   const recentTransactions = transactions.slice(0, 5);
 
@@ -45,10 +47,10 @@ export function RecentExpenses({ transactions }: RecentExpensesProps) {
   return (
     <div>
       <div className="flex justify-between items-center mb-2">
-        <h2 className="font-semibold">Transactions Récentes</h2>
+        <h2 className="font-semibold">{t('recent_transactions')}</h2>
          {transactions.length > 5 && (
             <Button variant="link" size="sm" asChild>
-                <Link href="/dashboard/transactions">Voir tout</Link>
+                <Link href="/dashboard/transactions">{t('see_all')}</Link>
             </Button>
         )}
       </div>
@@ -58,14 +60,14 @@ export function RecentExpenses({ transactions }: RecentExpensesProps) {
                 <div className="bg-secondary p-3 rounded-full mb-4">
                     <Receipt className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold mb-1">Aucune transaction</h3>
+                <h3 className="text-lg font-semibold mb-1">{t('no_transactions_yet')}</h3>
                 <p className="text-muted-foreground text-sm mb-4">
-                    Commencez à suivre vos revenus et dépenses pour les voir ici.
+                    {t('start_tracking_prompt')}
                 </p>
                 <Button asChild>
                     <Link href="/dashboard/add-expense">
                         <PlusCircle className="mr-2 h-4 w-4"/>
-                        Ajouter une transaction
+                        {t('add_transaction_button')}
                     </Link>
                 </Button>
            </div>
@@ -81,7 +83,7 @@ export function RecentExpenses({ transactions }: RecentExpensesProps) {
                         <div className="flex-grow">
                             <p className="font-semibold">{transaction.description}</p>
                             <p className="text-sm text-muted-foreground">
-                                {new Date(transaction.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                {formatDate(transaction.date)}
                             </p>
                         </div>
                         <div className="text-right">
@@ -92,7 +94,7 @@ export function RecentExpenses({ transactions }: RecentExpensesProps) {
                             {isVisible ? (
                                 <>
                                     {transaction.type === 'income' ? '+' : '-'}
-                                    {transaction.amount.toLocaleString('fr-FR')} FCFA
+                                    {formatCurrency(transaction.amount)}
                                 </>
                             ) : '******'}
                            </p>
@@ -108,13 +110,13 @@ export function RecentExpenses({ transactions }: RecentExpensesProps) {
                                 <DropdownMenuItem asChild>
                                     <Link href={`/dashboard/edit-transaction/${transaction.id}`}>
                                         <Edit className="mr-2 h-4 w-4" />
-                                        Modifier
+                                        {t('edit')}
                                     </Link>
                                 </DropdownMenuItem>
                                 <AlertDialogTrigger asChild>
                                     <DropdownMenuItem className="text-destructive">
                                         <Trash2 className="mr-2 h-4 w-4" />
-                                        Supprimer
+                                        {t('delete')}
                                     </DropdownMenuItem>
                                 </AlertDialogTrigger>
                             </DropdownMenuContent>
@@ -125,15 +127,15 @@ export function RecentExpenses({ transactions }: RecentExpensesProps) {
                                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
                                     <Trash2 className="h-6 w-6 text-red-600" />
                                 </div>
-                                <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+                                <AlertDialogTitle>{t('are_you_sure')}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                Cette action est irréversible. La transaction "{transaction.description}" sera supprimée définitivement.
+                                  {t('transaction_delete_confirmation', { transactionDesc: transaction.description })}
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                                 <AlertDialogAction onClick={() => deleteTransaction(transaction.id)} className="bg-destructive hover:bg-destructive/90">
-                                Supprimer
+                                {t('delete')}
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                             </AlertDialogContent>

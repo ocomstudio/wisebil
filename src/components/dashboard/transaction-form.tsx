@@ -7,7 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { categorizeExpense } from "@/ai/flows/categorize-expense";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+import { useLocale } from "@/context/locale-context";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,18 +36,6 @@ import { cn } from "@/lib/utils";
 import { expenseCategories, incomeCategories, allCategories } from "@/config/categories";
 import type { Transaction } from "@/types/transaction";
 
-const formSchema = z.object({
-  description: z.string().min(3, "La description doit contenir au moins 3 caractères."),
-  amount: z.coerce.number().positive("Le montant doit être un nombre positif."),
-  category: z.string().min(1, "Veuillez sélectionner ou saisir une catégorie."),
-  date: z.date({
-    required_error: "Veuillez sélectionner une date.",
-  }),
-  customCategory: z.string().optional(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
-
 interface TransactionFormProps {
   transactionType: 'income' | 'expense';
   onSubmit: (data: Omit<Transaction, 'id' | 'type'>) => Promise<void>;
@@ -60,10 +49,23 @@ export function TransactionForm({
   onSubmit,
   isSubmitting,
   initialData,
-  submitButtonText = "Soumettre",
+  submitButtonText = "Submit",
 }: TransactionFormProps) {
+  const { t, locale, getCategoryName } = useLocale();
   const [isCategorizing, setIsCategorizing] = useState(false);
   const { toast } = useToast();
+
+  const formSchema = z.object({
+    description: z.string().min(3, t('description_error')),
+    amount: z.coerce.number().positive(t('amount_error')),
+    category: z.string().min(1, t('category_error')),
+    date: z.date({
+      required_error: t('date_error'),
+    }),
+    customCategory: z.string().optional(),
+  });
+  type FormValues = z.infer<typeof formSchema>;
+
 
   const categories = transactionType === 'expense' ? expenseCategories : incomeCategories;
   
@@ -86,7 +88,7 @@ export function TransactionForm({
   const handleCategorize = async () => {
     const description = form.getValues("description");
     if (!description) {
-      form.setError("description", { message: "Veuillez d'abord entrer une description." });
+      form.setError("description", { message: t('description_required_for_ai') });
       return;
     }
     setIsCategorizing(true);
@@ -100,11 +102,11 @@ export function TransactionForm({
         form.setValue("customCategory", result.category, { shouldValidate: true });
       }
     } catch (error) {
-      console.error("La catégorisation par l'IA a échoué:", error);
+      console.error(t('ai_categorization_failed'), error);
       toast({
         variant: "destructive",
-        title: "La catégorisation par l'IA a échoué",
-        description: "Impossible de suggérer une catégorie.",
+        title: t('ai_categorization_failed'),
+        description: t('ai_categorization_failed_desc'),
       });
     } finally {
       setIsCategorizing(false);
@@ -120,6 +122,8 @@ export function TransactionForm({
     })
   }
 
+  const dateLocale = locale === 'fr' ? fr : enUS;
+
   return (
     <Card className="shadow-xl">
       <CardContent className="pt-6">
@@ -130,9 +134,9 @@ export function TransactionForm({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>{t('description_label')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="ex: Café avec un ami" {...field} />
+                    <Input placeholder={t('description_placeholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -143,7 +147,7 @@ export function TransactionForm({
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Montant (FCFA)</FormLabel>
+                  <FormLabel>{t('amount_label')}</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="0.00" {...field} />
                   </FormControl>
@@ -157,24 +161,24 @@ export function TransactionForm({
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Catégorie</FormLabel>
+                  <FormLabel>{t('category_label')}</FormLabel>
                   <div className="flex items-start gap-2">
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                            {selectedCategory ? (
                               <span className="flex items-center gap-2">
-                                {selectedCategory.emoji} {selectedCategory.name}
+                                {selectedCategory.emoji} {getCategoryName(selectedCategory.name)}
                               </span>
                             ) : (
-                              <SelectValue placeholder="Sélectionnez une catégorie" />
+                              <SelectValue placeholder={t('category_placeholder')} />
                             )}
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {categories.map((cat) => (
                           <SelectItem key={cat.name} value={cat.name}>
-                            <span className="mr-2">{cat.emoji}</span> {cat.name}
+                            <span className="mr-2">{cat.emoji}</span> {getCategoryName(cat.name)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -197,9 +201,9 @@ export function TransactionForm({
                 name="customCategory"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nom de la nouvelle catégorie</FormLabel>
+                    <FormLabel>{t('custom_category_label')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="ex: Cadeau d'anniversaire" {...field} />
+                      <Input placeholder={t('custom_category_placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -212,7 +216,7 @@ export function TransactionForm({
               name="date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Date de la transaction</FormLabel>
+                  <FormLabel>{t('transaction_date_label')}</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -224,9 +228,9 @@ export function TransactionForm({
                           )}
                         >
                           {field.value ? (
-                            format(field.value, "PPP", { locale: fr })
+                            format(field.value, "PPP", { locale: dateLocale })
                           ) : (
-                            <span>Choisissez une date</span>
+                            <span>{t('pick_a_date')}</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -241,7 +245,7 @@ export function TransactionForm({
                           date > new Date() || date < new Date("1900-01-01")
                         }
                         initialFocus
-                        locale={fr}
+                        locale={dateLocale}
                       />
                     </PopoverContent>
                   </Popover>

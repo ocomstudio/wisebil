@@ -35,6 +35,7 @@ import { Progress } from "@/components/ui/progress";
 import { SavingsGoal } from "@/types/savings-goal";
 import { MoreVertical, PiggyBank, Trash2 } from "lucide-react";
 import { useSettings } from "@/context/settings-context";
+import { useLocale } from "@/context/locale-context";
 
 interface SavingsGoalCardProps {
   goal: SavingsGoal;
@@ -45,6 +46,7 @@ interface SavingsGoalCardProps {
 export function SavingsGoalCard({ goal, onAddFunds, onDelete }: SavingsGoalCardProps) {
   const [amountToAdd, setAmountToAdd] = useState(0);
   const { settings, isTemporarilyVisible } = useSettings();
+  const { t, formatCurrency } = useLocale();
   const isVisible = !settings.isBalanceHidden || isTemporarilyVisible;
 
   const { id, name, emoji, currentAmount, targetAmount } = goal;
@@ -66,7 +68,7 @@ export function SavingsGoalCard({ goal, onAddFunds, onDelete }: SavingsGoalCardP
             <div>
               <CardTitle className="text-lg font-bold">{name}</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Objectif: {isVisible ? `${targetAmount.toLocaleString('fr-FR')} FCFA` : '******'}
+                {t('goal')}: {isVisible ? formatCurrency(targetAmount) : '******'}
               </p>
             </div>
           </div>
@@ -82,13 +84,13 @@ export function SavingsGoalCard({ goal, onAddFunds, onDelete }: SavingsGoalCardP
                     <DialogTrigger asChild>
                         <DropdownMenuItem>
                             <PiggyBank className="mr-2 h-4 w-4" />
-                            Ajouter des fonds
+                            {t('add_funds')}
                         </DropdownMenuItem>
                     </DialogTrigger>
                     <AlertDialogTrigger asChild>
                         <DropdownMenuItem className="text-destructive">
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Supprimer
+                            {t('delete')}
                         </DropdownMenuItem>
                     </AlertDialogTrigger>
                     </DropdownMenuContent>
@@ -96,15 +98,15 @@ export function SavingsGoalCard({ goal, onAddFunds, onDelete }: SavingsGoalCardP
 
                 <DialogContent>
                     <DialogHeader>
-                    <DialogTitle>Ajouter des fonds à "{name}"</DialogTitle>
+                    <DialogTitle>{t('add_funds_to', { goalName: name })}</DialogTitle>
                     <DialogDescription>
-                        Combien souhaitez-vous ajouter à votre épargne ?
+                        {t('add_funds_desc')}
                     </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="amount" className="text-right">
-                        Montant
+                        {t('amount')}
                         </Label>
                         <Input
                         id="amount"
@@ -117,7 +119,7 @@ export function SavingsGoalCard({ goal, onAddFunds, onDelete }: SavingsGoalCardP
                     </div>
                     <DialogFooter>
                      <DialogClose asChild>
-                        <Button type="button" onClick={handleAddFunds}>Ajouter</Button>
+                        <Button type="button" onClick={handleAddFunds}>{t('add')}</Button>
                       </DialogClose>
                     </DialogFooter>
                 </DialogContent>
@@ -127,15 +129,15 @@ export function SavingsGoalCard({ goal, onAddFunds, onDelete }: SavingsGoalCardP
                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
                             <Trash2 className="h-6 w-6 text-red-600" />
                         </div>
-                        <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+                        <AlertDialogTitle>{t('are_you_sure')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Cette action est irréversible. L'objectif "{name}" sera supprimé définitivement.
+                            {t('goal_delete_confirmation', { goalName: name })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                         <AlertDialogAction onClick={() => onDelete(id)} className="bg-destructive hover:bg-destructive/90">
-                            Supprimer
+                            {t('delete')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -146,11 +148,11 @@ export function SavingsGoalCard({ goal, onAddFunds, onDelete }: SavingsGoalCardP
       <CardContent>
         <div className="space-y-2">
           <p className="text-xl font-bold">
-            {isVisible ? `${currentAmount.toLocaleString('fr-FR')} FCFA` : '******'}
+            {isVisible ? formatCurrency(currentAmount) : '******'}
           </p>
           <Progress value={progress} className="h-2" />
           <p className="text-sm text-muted-foreground text-right">
-            {Math.round(progress)}% atteint
+            {t('percent_achieved', { progress: Math.round(progress) })}
           </p>
         </div>
       </CardContent>

@@ -17,17 +17,19 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/context/auth-context"
+import { useLocale } from "@/context/locale-context"
 
 export function UserProfile() {
   const router = useRouter();
   const { toast } = useToast();
   const { logout } = useAuth();
+  const { t } = useLocale();
 
   const handleLogout = () => {
     logout();
     toast({
-      title: "Déconnexion réussie",
-      description: "À bientôt !",
+      title: t('logout_success_title'),
+      description: t('see_you_soon'),
     });
     router.push('/auth/login');
   };
@@ -56,18 +58,18 @@ export function UserProfile() {
           <DropdownMenuItem asChild>
              <Link href="/dashboard/settings">
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Paramètres</span>
+                <span>{t('settings')}</span>
              </Link>
           </DropdownMenuItem>
            <DropdownMenuItem>
             <CreditCard className="mr-2 h-4 w-4" />
-            <span>Facturation</span>
+            <span>{t('billing')}</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Déconnexion</span>
+          <span>{t('logout')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -1,53 +1,55 @@
-
+// src/components/dashboard/sidebar-nav.tsx
 "use client"
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { BarChart, Lightbulb, Home, Settings, Shield, Target, Wallet, Bell } from "lucide-react"
+import { useLocale } from "@/context/locale-context";
 
 export function SidebarNav() {
-  const pathname = usePathname()
+  const pathname = usePathname();
+  const { t } = useLocale();
 
   const menuItems = [
     {
       href: "/dashboard",
-      label: "Accueil",
+      label: t('nav_home'),
       icon: <Home />,
     },
     {
       href: "/dashboard/reports",
-      label: "Rapports",
+      label: t('nav_reports'),
       icon: <BarChart />,
     },
     {
       href: "/dashboard/budget",
-      label: "Budgets",
+      label: t('nav_budgets'),
       icon: <Target />,
     },
     {
       href: "/dashboard/savings",
-      label: "Épargne",
+      label: t('nav_savings'),
       icon: <Shield />,
     },
      {
       href: "/dashboard/conseil",
-      label: "Conseil",
+      label: t('nav_advice'),
       icon: <Lightbulb />,
     },
     {
       href: "/dashboard/accounts",
-      label: "Comptes",
+      label: t('nav_accounts'),
       icon: <Wallet />
     },
     {
       href: "/dashboard/notifications",
-      label: "Notifications",
+      label: t('nav_notifications'),
       icon: <Bell />
     },
     {
       href: "/dashboard/settings",
-      label: "Paramètres",
+      label: t('nav_settings'),
       icon: <Settings />,
     },
   ]

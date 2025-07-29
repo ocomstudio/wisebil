@@ -21,19 +21,21 @@ import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { FcGoogle } from "react-icons/fc";
 import { useAuth } from "@/context/auth-context";
+import { useLocale } from "@/context/locale-context";
 
-
-const loginSchema = z.object({
-  phone: z.string().min(1, "Le numéro de téléphone est requis."),
-  password: z.string().min(1, "Le mot de passe est requis."),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
+  const { t } = useLocale();
   const { toast } = useToast();
   const router = useRouter();
   const { login } = useAuth();
+  
+  const loginSchema = z.object({
+    phone: z.string().min(1, t('phone_required')),
+    password: z.string().min(1, t('password_required')),
+  });
+
+  type LoginFormValues = z.infer<typeof loginSchema>;
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -47,8 +49,8 @@ export default function LoginPage() {
     console.log("Login data:", data);
     login(); // Set authenticated state
     toast({
-      title: "Connexion réussie",
-      description: "Bienvenue !",
+      title: t('login_success_title'),
+      description: t('welcome_back'),
     });
     router.push("/dashboard");
   };
@@ -56,8 +58,8 @@ export default function LoginPage() {
   return (
     <>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold font-headline">Se connecter</h1>
-        <p className="text-muted-foreground">Content de vous revoir !</p>
+        <h1 className="text-3xl font-bold font-headline">{t('login_title')}</h1>
+        <p className="text-muted-foreground">{t('login_subtitle')}</p>
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -66,7 +68,7 @@ export default function LoginPage() {
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Numéro de téléphone</FormLabel>
+                <FormLabel>{t('phone_number_label')}</FormLabel>
                 <FormControl>
                   <Input type="tel" placeholder="+221 77 123 45 67" {...field} />
                 </FormControl>
@@ -79,7 +81,7 @@ export default function LoginPage() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Mot de passe</FormLabel>
+                <FormLabel>{t('password_label')}</FormLabel>
                 <FormControl>
                   <Input type="password" placeholder="********" {...field} />
                 </FormControl>
@@ -88,19 +90,19 @@ export default function LoginPage() {
             )}
           />
           <Button type="submit" className="w-full">
-            Se connecter
+            {t('login_button')}
           </Button>
         </form>
       </Form>
       <Separator className="my-6" />
       <Button variant="outline" className="w-full">
         <FcGoogle className="mr-2 h-5 w-5" />
-        Se connecter avec Google
+        {t('login_with_google')}
       </Button>
        <p className="mt-6 text-center text-sm text-muted-foreground">
-        Pas encore de compte ?{" "}
+        {t('no_account_yet')}{" "}
         <Link href="/auth/signup" className="text-primary hover:underline">
-          S'inscrire
+          {t('signup_link')}
         </Link>
       </p>
     </>
