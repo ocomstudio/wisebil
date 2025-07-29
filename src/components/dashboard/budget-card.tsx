@@ -1,17 +1,37 @@
 // src/components/dashboard/budget-card.tsx
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Progress } from "@/components/ui/progress";
 import { expenseCategories } from "@/config/categories";
 import { Budget } from "@/types/budget";
 import { cn } from "@/lib/utils";
+import { Button } from "../ui/button";
+import { MoreVertical, Trash2 } from "lucide-react";
 
 interface BudgetCardProps {
   budget: Budget;
   spent: number;
+  onDelete: (id: string) => void;
 }
 
-export function BudgetCard({ budget, spent }: BudgetCardProps) {
-  const { name, amount, category } = budget;
+export function BudgetCard({ budget, spent, onDelete }: BudgetCardProps) {
+  const { id, name, amount, category } = budget;
   const remaining = amount - spent;
   const progress = (spent / amount) * 100;
 
@@ -34,7 +54,38 @@ export function BudgetCard({ budget, spent }: BudgetCardProps) {
             <span className="text-2xl">{getCategoryEmoji(category)}</span>
             <CardTitle className="text-lg font-semibold">{name}</CardTitle>
           </div>
-          {/* Add options dropdown here if needed */}
+          <AlertDialog>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem className="text-destructive">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Supprimer
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Cette action est irréversible. Le budget "{name}" sera supprimé définitivement.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onDelete(id)} className="bg-destructive hover:bg-destructive/90">
+                  Supprimer
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </CardHeader>
       <CardContent>

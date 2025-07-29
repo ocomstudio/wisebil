@@ -10,7 +10,7 @@ import { BudgetCard } from "@/components/dashboard/budget-card";
 import { useTransactions } from "@/context/transactions-context";
 
 export default function BudgetPage() {
-  const { budgets } = useBudgets();
+  const { budgets, deleteBudget } = useBudgets();
   const { transactions } = useTransactions();
 
   const getSpentAmount = (category: string) => {
@@ -39,14 +39,14 @@ export default function BudgetPage() {
                 </div>
                 <CardTitle>Aucun budget créé</CardTitle>
                 <CardDescription>
-                    Commencez à planifier vos dépenses en créant votre premier budget.
+                    Les budgets vous aident à suivre et limiter vos dépenses par catégorie chaque mois.
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <Button asChild>
                   <Link href="/dashboard/budget/create">
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    Créer un budget
+                    Créer votre premier budget
                   </Link>
                 </Button>
             </CardContent>
@@ -58,6 +58,7 @@ export default function BudgetPage() {
               key={budget.id} 
               budget={budget} 
               spent={getSpentAmount(budget.category)} 
+              onDelete={() => deleteBudget(budget.id)}
             />
           ))}
         </div>
