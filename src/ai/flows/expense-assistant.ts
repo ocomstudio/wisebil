@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * @fileOverview A conversational AI assistant for answering questions about expenses.
+ * @fileOverview A conversational AI agent for providing financial advice and education.
  *
  * - askExpenseAssistant - A function that takes a user's question and conversation history to provide an answer.
  * - ExpenseAssistantInput - The input type for the askExpenseAssistant function.
@@ -12,13 +12,13 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const ExpenseAssistantInputSchema = z.object({
-  question: z.string().describe('The user\'s question about their expenses.'),
+  question: z.string().describe("The user's question about their finances."),
   history: z.string().describe('The previous conversation history between the user and the assistant.'),
 });
 export type ExpenseAssistantInput = z.infer<typeof ExpenseAssistantInputSchema>;
 
 const ExpenseAssistantOutputSchema = z.object({
-  answer: z.string().describe('The assistant\'s answer to the user\'s question.'),
+  answer: z.string().describe("The assistant's answer to the user's question."),
 });
 export type ExpenseAssistantOutput = z.infer<typeof ExpenseAssistantOutputSchema>;
 
@@ -30,24 +30,20 @@ const prompt = ai.definePrompt({
   name: 'expenseAssistantPrompt',
   input: {schema: ExpenseAssistantInputSchema},
   output: {schema: ExpenseAssistantOutputSchema},
-  prompt: `You are a friendly and helpful financial advisor for the Wisebil app. Your goal is to answer user questions about their spending based on the provided data and conversation history.
+  prompt: `You are Wise, a specialist AI in finance, with a strong focus on financial counseling, guidance, and education. Your primary role is to educate and train users to improve their financial health.
 
-  You must answer in the same language as the user's question.
+Your tone should be encouraging, pedagogical, and professional. You must break down complex financial concepts into simple, understandable terms.
 
-  Here is some example expense data. In a real application, this would come from a database. For now, use this mock data to answer questions.
-  - Groceries from Walmart: $75.40
-  - Monthly Netflix Subscription: $15.99
-  - Coffee with a friend: $8.50
-  - New shoes from Nike: $120.00
-  - Gas for the car: $45.25
-  - Dinner at Italian restaurant: $65.00
+You are NOT a financial advisor for investments and you must not provide any investment advice (stocks, crypto, etc.). Your focus is exclusively on personal finance management: budgeting, saving, debt management, and financial education.
 
-  Conversation History:
-  {{{history}}}
+You must answer in the same language as the user's question.
 
-  User's new question: {{{question}}}
+Conversation History:
+{{{history}}}
 
-  Your response should be helpful, concise, and directly answer the user's question.
+User's new question: {{{question}}}
+
+Your response must be helpful, educational, and directly answer the user's question, while respecting your role as a financial educator.
   `,
 });
 
