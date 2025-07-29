@@ -11,6 +11,7 @@ import { useTransactions } from "@/context/transactions-context";
 import { TransactionForm } from "@/components/dashboard/transaction-form";
 import type { Transaction } from "@/types/transaction";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLocale } from "@/context/locale-context";
 
 export default function EditTransactionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,6 +21,7 @@ export default function EditTransactionPage() {
   const router = useRouter();
   const params = useParams();
   const { getTransactionById, updateTransaction } = useTransactions();
+  const { t } = useLocale();
   const id = params.id as string;
 
   useEffect(() => {
@@ -30,13 +32,13 @@ export default function EditTransactionPage() {
       } else {
         toast({
           variant: "destructive",
-          title: "Transaction non trouvée",
+          title: t('transaction_not_found'),
         });
         router.push("/dashboard");
       }
       setIsLoading(false);
     }
-  }, [id, getTransactionById, router, toast]);
+  }, [id, getTransactionById, router, toast, t]);
 
   const handleSubmit = async (data: Omit<Transaction, 'id' | 'type'>) => {
     if (!initialData) return;
@@ -44,16 +46,16 @@ export default function EditTransactionPage() {
     try {
       await updateTransaction(id, { ...initialData, ...data, id });
       toast({
-        title: "Transaction modifiée",
-        description: `La transaction a été modifiée avec succès.`,
+        title: t('transaction_updated_title'),
+        description: t('transaction_updated_desc'),
       });
       router.push("/dashboard");
     } catch (error) {
        console.error("Failed to update transaction:", error);
        toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de modifier la transaction. Veuillez réessayer.",
+        title: t('error_title'),
+        description: t('transaction_update_error_desc'),
       });
       setIsSubmitting(false);
     }
@@ -88,14 +90,14 @@ export default function EditTransactionPage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold font-headline">Modifier la transaction</h1>
+        <h1 className="text-3xl font-bold font-headline">{t('edit_transaction_page_title')}</h1>
       </div>
       <TransactionForm 
         transactionType={initialData.type}
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
         initialData={initialData}
-        submitButtonText="Sauvegarder les modifications"
+        submitButtonText={t('save_changes_button')}
       />
     </div>
   );

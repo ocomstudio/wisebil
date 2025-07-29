@@ -6,8 +6,10 @@ import { Bell, Lightbulb } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "../common/logo";
 import { UserProfile } from "./user-profile";
+import { useLocale } from '@/context/locale-context';
 
 export function DashboardHeader() {
+  const { t } = useLocale();
   const handleNotificationClick = () => {
     toast.custom((t) => (
       <div
@@ -24,10 +26,10 @@ export function DashboardHeader() {
             </div>
             <div className="ml-3 flex-1">
               <p className="text-sm font-medium text-foreground">
-                Astuce du jour
+                {t('tip_of_the_day')}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Pensez à noter vos petites dépenses, elles s'additionnent vite !
+                {t('toast_tip_desc')}
               </p>
             </div>
           </div>
@@ -37,13 +39,12 @@ export function DashboardHeader() {
             onClick={() => toast.dismiss(t.id)}
             className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-primary hover:text-primary/80 focus:outline-none focus:ring-2 focus:ring-primary"
           >
-            Fermer
+            {t('toast_close_button')}
           </button>
         </div>
       </div>
     ), {
-        vibrate: 1, // Vibrate for 200ms
-        sound: 'default'
+        vibrate: 1,
     });
   }
 

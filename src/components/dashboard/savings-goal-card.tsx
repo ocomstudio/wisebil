@@ -44,7 +44,7 @@ interface SavingsGoalCardProps {
 }
 
 export function SavingsGoalCard({ goal, onAddFunds, onDelete }: SavingsGoalCardProps) {
-  const [amountToAdd, setAmountToAdd] = useState(0);
+  const [amountToAdd, setAmountToAdd] = useState<number | string>('');
   const { settings, isTemporarilyVisible } = useSettings();
   const { t, formatCurrency } = useLocale();
   const isVisible = !settings.isBalanceHidden || isTemporarilyVisible;
@@ -53,9 +53,10 @@ export function SavingsGoalCard({ goal, onAddFunds, onDelete }: SavingsGoalCardP
   const progress = targetAmount > 0 ? (currentAmount / targetAmount) * 100 : 0;
 
   const handleAddFunds = () => {
-    if (amountToAdd > 0) {
-      onAddFunds(id, amountToAdd);
-      setAmountToAdd(0);
+    const numericAmount = Number(amountToAdd);
+    if (numericAmount > 0) {
+      onAddFunds(id, numericAmount);
+      setAmountToAdd('');
     }
   };
 
@@ -111,8 +112,8 @@ export function SavingsGoalCard({ goal, onAddFunds, onDelete }: SavingsGoalCardP
                         <Input
                         id="amount"
                         type="number"
-                        value={amountToAdd || ''}
-                        onChange={(e) => setAmountToAdd(Number(e.target.value))}
+                        value={amountToAdd}
+                        onChange={(e) => setAmountToAdd(e.target.value)}
                         className="col-span-3"
                         />
                     </div>

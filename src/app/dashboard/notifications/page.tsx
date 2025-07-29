@@ -1,41 +1,46 @@
 // src/app/dashboard/notifications/page.tsx
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Bell, Lightbulb, TrendingUp, X } from "lucide-react";
 import Link from "next/link";
-
-const notifications = [
-  {
-    icon: <Lightbulb className="h-6 w-6 text-yellow-400" />,
-    title: "Astuce du jour",
-    description: "Économisez sur vos factures d'électricité en débranchant les appareils non utilisés.",
-    time: "il y a 5 minutes",
-    isNew: true,
-  },
-  {
-    icon: <TrendingUp className="h-6 w-6 text-green-500" />,
-    title: "Objectif d'épargne atteint !",
-    description: "Félicitations ! Vous avez atteint votre objectif 'Fonds d'urgence'.",
-    time: "il y a 2 heures",
-    isNew: true,
-  },
-  {
-    icon: <Bell className="h-6 w-6 text-primary" />,
-    title: "Rappel de facture",
-    description: "Votre facture de téléphone est due demain.",
-    time: "hier",
-    isNew: false,
-  },
-  {
-    icon: <Lightbulb className="h-6 w-6 text-yellow-400" />,
-    title: "Conseil personnalisé",
-    description: "Nous avons remarqué que vos dépenses en restaurant ont augmenté. Pensez à cuisiner à la maison !",
-    time: "il y a 2 jours",
-    isNew: false,
-  },
-];
+import { useLocale } from "@/context/locale-context";
 
 export default function NotificationsPage() {
+  const { t } = useLocale();
+
+  const notifications = [
+    {
+      icon: <Lightbulb className="h-6 w-6 text-yellow-400" />,
+      title: t('notification_tip_title'),
+      description: t('notification_tip_desc'),
+      time: t('time_5_minutes_ago'),
+      isNew: true,
+    },
+    {
+      icon: <TrendingUp className="h-6 w-6 text-green-500" />,
+      title: t('notification_goal_title'),
+      description: t('notification_goal_desc'),
+      time: t('time_2_hours_ago'),
+      isNew: true,
+    },
+    {
+      icon: <Bell className="h-6 w-6 text-primary" />,
+      title: t('notification_bill_title'),
+      description: t('notification_bill_desc'),
+      time: t('time_yesterday'),
+      isNew: false,
+    },
+    {
+      icon: <Lightbulb className="h-6 w-6 text-yellow-400" />,
+      title: t('notification_advice_title'),
+      description: t('notification_advice_desc'),
+      time: t('time_2_days_ago'),
+      isNew: false,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -44,14 +49,14 @@ export default function NotificationsPage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold font-headline">Notifications</h1>
+        <h1 className="text-3xl font-bold font-headline">{t('notifications')}</h1>
       </div>
 
       <Card className="shadow-xl">
         <CardHeader>
-          <CardTitle>Vos alertes récentes</CardTitle>
+          <CardTitle>{t('notification_page_title')}</CardTitle>
           <CardDescription>
-            Restez informé de votre activité financière et de nos conseils.
+            {t('notification_page_desc')}
           </CardDescription>
         </CardHeader>
         <CardContent>

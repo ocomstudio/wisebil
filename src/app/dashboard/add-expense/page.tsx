@@ -10,9 +10,11 @@ import { useTransactions } from "@/context/transactions-context";
 import { TransactionForm } from "@/components/dashboard/transaction-form";
 import type { Transaction } from "@/types/transaction";
 import { useState } from "react";
+import { useLocale } from "@/context/locale-context";
 
 export default function AddExpensePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { t } = useLocale();
   const { toast } = useToast();
   const router = useRouter();
   const { addTransaction } = useTransactions();
@@ -27,16 +29,16 @@ export default function AddExpensePage() {
       };
       await addTransaction(newTransaction);
       toast({
-        title: "Dépense ajoutée",
-        description: `La dépense "${data.description}" a été ajoutée avec succès.`,
+        title: t('expense_added_title'),
+        description: t('expense_added_desc', { expenseDesc: data.description }),
       });
       router.push("/dashboard");
     } catch (error) {
        console.error("Failed to add expense:", error);
        toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'ajouter la dépense. Veuillez réessayer.",
+        title: t('error_title'),
+        description: t('expense_add_error_desc'),
       });
       setIsSubmitting(false);
     }
@@ -50,13 +52,13 @@ export default function AddExpensePage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold font-headline">Ajouter une dépense</h1>
+        <h1 className="text-3xl font-bold font-headline">{t('add_expense_page_title')}</h1>
       </div>
       <TransactionForm 
         transactionType="expense"
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
-        submitButtonText="Ajouter la dépense"
+        submitButtonText={t('add_expense_button')}
       />
     </div>
   );

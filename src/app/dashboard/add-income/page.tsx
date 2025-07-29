@@ -10,10 +10,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useTransactions } from "@/context/transactions-context";
 import { TransactionForm } from "@/components/dashboard/transaction-form";
 import type { Transaction } from "@/types/transaction";
+import { useLocale } from "@/context/locale-context";
 
 export default function AddIncomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { t } = useLocale();
   const router = useRouter();
   const { addTransaction } = useTransactions();
 
@@ -27,16 +29,16 @@ export default function AddIncomePage() {
       };
       await addTransaction(newTransaction);
       toast({
-        title: "Revenu ajouté",
-        description: `Le revenu "${data.description}" a été ajouté avec succès.`,
+        title: t('income_added_title'),
+        description: t('income_added_desc', { incomeDesc: data.description }),
       });
       router.push("/dashboard");
     } catch (error) {
        console.error("Failed to add income:", error);
        toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'ajouter le revenu. Veuillez réessayer.",
+        title: t('error_title'),
+        description: t('income_add_error_desc'),
       });
       setIsSubmitting(false);
     }
@@ -50,13 +52,13 @@ export default function AddIncomePage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold font-headline">Ajouter un revenu</h1>
+        <h1 className="text-3xl font-bold font-headline">{t('add_income_page_title')}</h1>
       </div>
       <TransactionForm 
         transactionType="income"
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
-        submitButtonText="Ajouter le revenu"
+        submitButtonText={t('add_income_button')}
       />
     </div>
   );

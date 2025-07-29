@@ -15,12 +15,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useLocale } from '@/context/locale-context';
 
-const assistantSchema = z.object({
-  prompt: z.string().min(1, 'Please enter a question.'),
-});
-
-type AssistantFormValues = z.infer<typeof assistantSchema>;
+type AssistantFormValues = z.infer<ReturnType<typeof assistantSchema>>;
 
 interface Message {
   role: 'user' | 'assistant';
@@ -31,9 +28,14 @@ export function AssistantPanel() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isThinking, setIsThinking] = useState(false);
   const { toast } = useToast();
+  const { t } = useLocale();
+
+  const assistantSchema = (t: (key: string) => string) => z.object({
+    prompt: z.string().min(1, t('prompt_min_error')),
+  });
 
   const form = useForm<AssistantFormValues>({
-    resolver: zodResolver(assistantSchema),
+    resolver: zodResolver(assistantSchema(t)),
     defaultValues: {
       prompt: '',
     },
@@ -46,17 +48,27 @@ export function AssistantPanel() {
     setIsThinking(true);
 
     try {
-      const history = messages.map(m => `${m.role}: ${m.content}`).join('\n');
-      const result = await askExpenseAssistant({ question: data.prompt, history });
+      const history = messages.map((m) => ({
+        role: m.role === 'user' ? 'user' : ('model' as 'user' | 'model'),
+        content: [{ text: m.content }],
+      }));
+
+      const result = await askExpenseAssistant({
+        question: data.prompt,
+        history,
+        language: 'en', // This should be dynamic based on locale
+      });
       const assistantMessage: Message = { role: 'assistant', content: result.answer };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error('AI assistant failed:', error);
       toast({
         variant: 'destructive',
-        title: 'Assistant Error',
-        description: 'The assistant could not respond. Please try again.',
+        title: t('assistant_error_title'),
+        description: t('assistant_error_desc'),
       });
+       // Remove the user message if the assistant fails
+      setMessages((prev) => prev.slice(0, -1));
     } finally {
       setIsThinking(false);
     }
@@ -65,7 +77,7 @@ export function AssistantPanel() {
   return (
     <div className="flex flex-col h-full bg-background md:bg-transparent">
        <div className='p-4 md:p-6 border-b'>
-         <h1 className="text-xl font-bold font-headline">Assistant IA</h1>
+         <h1 className="text-xl font-bold font-headline">{t('ai_assistant_title')}</h1>
        </div>
        <div className="flex-1 flex flex-col p-4 md:p-6 overflow-hidden">
           <ScrollArea className="flex-1 pr-4 -mr-4 mb-4">
@@ -122,7 +134,7 @@ export function AssistantPanel() {
                   <FormItem className="flex-1">
                     <FormControl>
                       <Input
-                        placeholder="Posez une question..."
+                        placeholder={t('ask_a_question_placeholder')}
                         {...field}
                         disabled={isThinking}
                       />

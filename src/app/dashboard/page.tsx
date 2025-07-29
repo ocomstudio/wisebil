@@ -9,13 +9,11 @@ import { TrendingDown, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { TipsCard } from "@/components/dashboard/tips-card";
+import { useLocale } from "@/context/locale-context";
 
 export default function DashboardPage() {
   const { transactions, balance, income, expenses } = useTransactions();
-  const savingsGoals = [
-    { id: 1, name: "Vacances", amount: 921, icon: "🌴" },
-    { id: 2, name: "Voiture", amount: 1274, icon: "🚗" },
-  ];
+  const { t } = useLocale();
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -51,7 +49,7 @@ export default function DashboardPage() {
           <Button asChild className="h-20 flex-col gap-2 bg-destructive hover:bg-destructive/90 text-white shadow-lg transform-gpu transition-transform hover:scale-105 w-full rounded-2xl">
             <Link href="/dashboard/add-expense">
               <TrendingDown className="h-6 w-6" />
-              <span className="font-semibold">Ajouter dépense</span>
+              <span className="font-semibold">{t('add_expense_button_short')}</span>
             </Link>
           </Button>
         </motion.div>
@@ -64,7 +62,7 @@ export default function DashboardPage() {
           <Button asChild className="h-20 flex-col gap-2 bg-green-600 hover:bg-green-700 text-white shadow-lg transform-gpu transition-transform hover:scale-105 w-full rounded-2xl">
             <Link href="/dashboard/add-income">
               <TrendingUp className="h-6 w-6" />
-              <span className="font-semibold">Ajouter revenu</span>
+              <span className="font-semibold">{t('add_income_button_short')}</span>
             </Link>
           </Button>
         </motion.div>
