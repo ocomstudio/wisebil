@@ -1,14 +1,16 @@
+// src/components/landing/desktop-landing-page.tsx
+"use client";
+
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/common/logo';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Check, Download, Eye, BarChart, Bot, Shield, Star, Twitter, Facebook, Instagram, Radio, HeartHandshake, Zap } from 'lucide-react';
-import { InstallPWA } from '../pwa/install-pwa';
+import { Check, Eye, BarChart, Bot, Shield, Star, Twitter, Facebook, Instagram, HeartHandshake, Zap } from 'lucide-react';
 import { GooglePlayLogo } from './logos/google-play-logo';
 import { AppStoreLogo } from './logos/app-store-logo';
-
 
 const features = [
     {
@@ -93,10 +95,18 @@ const faqs = [
     }
 ]
 
+const sectionVariants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 0.6, ease: "easeOut" } 
+  },
+};
 
 export default function DesktopLandingPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
+    <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
       <header className="px-4 lg:px-6 h-16 flex items-center bg-background/80 backdrop-blur-sm sticky top-0 z-50 border-b border-border/50">
         <Logo />
         <nav className="ml-auto hidden lg:flex gap-6 items-center">
@@ -127,7 +137,12 @@ export default function DesktopLandingPage() {
       </header>
 
       <main className="flex-1">
-        <section className="w-full py-20 md:py-32 lg:py-40 relative overflow-hidden">
+        <motion.section 
+          className="w-full py-20 md:py-32 lg:py-40 relative overflow-hidden"
+          initial="hidden"
+          animate="visible"
+          variants={sectionVariants}
+        >
              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-primary/10 z-0"></div>
              <div className="container px-4 md:px-6 z-10 relative">
                  <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:gap-24 items-center">
@@ -149,19 +164,31 @@ export default function DesktopLandingPage() {
                             </Button>
                         </div>
                     </div>
-                    <Image
-                        src="https://placehold.co/600x600.png"
-                        width="600"
-                        height="600"
-                        alt="Hero"
-                        data-ai-hint="finance app mobile"
-                        className="mx-auto aspect-square overflow-hidden rounded-xl object-contain sm:w-full lg:order-last"
-                    />
+                     <motion.div 
+                        animate={{ y: [0, -10, 0] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                        <Image
+                            src="https://placehold.co/600x600.png"
+                            width="600"
+                            height="600"
+                            alt="Hero"
+                            data-ai-hint="finance app mobile"
+                            className="mx-auto aspect-square overflow-hidden rounded-xl object-contain sm:w-full lg:order-last transform-gpu shadow-2xl"
+                        />
+                    </motion.div>
                 </div>
             </div>
-        </section>
+        </motion.section>
 
-        <section id="features" className="w-full py-12 md:py-24 lg:py-32 bg-secondary/30">
+        <motion.section 
+          id="features" 
+          className="w-full py-12 md:py-24 lg:py-32 bg-secondary/30"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={sectionVariants}
+        >
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
@@ -171,28 +198,43 @@ export default function DesktopLandingPage() {
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">
                   Wisebil utilise l'IA pour transformer votre gestion financière.
                 </h2>
-                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
                     Dites adieu aux saisies manuelles fastidieuses. Notre technologie vous fait gagner du temps et vous apporte une clarté inégalée sur vos finances.
                 </p>
               </div>
             </div>
             <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 lg:grid-cols-3 mt-12">
-              {features.map((feature) => (
-                <Card key={feature.title} className="text-left bg-card/50 backdrop-blur-sm border-border/50 p-4">
-                    <CardHeader className="p-2">
-                        {feature.icon}
-                        <CardTitle className="mt-4 text-lg font-headline">{feature.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-2">
-                        <p className="text-muted-foreground text-sm">{feature.description}</p>
-                    </CardContent>
-                </Card>
+              {features.map((feature, i) => (
+                <motion.div
+                    key={feature.title}
+                    custom={i}
+                    initial={{ opacity: 0, y: 50 }}
+                    whileInView={{ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.5 } }}
+                    viewport={{ once: true, amount: 0.5 }}
+                >
+                    <Card className="text-left bg-card/50 backdrop-blur-sm border-border/50 p-4 h-full transform-gpu transition-transform hover:scale-105 hover:shadow-primary/20 shadow-xl">
+                        <CardHeader className="p-2">
+                            {feature.icon}
+                            <CardTitle className="mt-4 text-lg font-headline">{feature.title}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-2">
+                            <p className="text-muted-foreground text-sm">{feature.description}</p>
+                        </CardContent>
+                    </Card>
+                </motion.div>
               ))}
             </div>
           </div>
-        </section>
+        </motion.section>
         
-        <section id="pricing" className="w-full py-12 md:py-24 lg:py-32">
+        <motion.section 
+          id="pricing" 
+          className="w-full py-12 md:py-24 lg:py-32"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={sectionVariants}
+        >
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
@@ -200,14 +242,13 @@ export default function DesktopLandingPage() {
                             Tarifs Simples
                         </div>
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Un plan pour chaque besoin</h2>
-                        <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                        <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
                             Choisissez le plan qui vous convient et commencez à transformer vos finances dès aujourd'hui. Sans frais cachés.
                         </p>
                     </div>
                 </div>
                 <div className="mx-auto grid max-w-5xl items-stretch gap-8 sm:grid-cols-1 lg:grid-cols-3 mt-12">
-                    {/* Free Plan */}
-                    <Card className="flex flex-col">
+                    <Card className="flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/20 shadow-xl">
                         <CardHeader className="pb-4">
                             <CardTitle className="font-headline text-2xl">Gratuit</CardTitle>
                             <p className="text-4xl font-bold">0 F <span className="text-lg font-normal text-muted-foreground">/mois</span></p>
@@ -227,8 +268,7 @@ export default function DesktopLandingPage() {
                             </Button>
                         </div>
                     </Card>
-                    {/* Premium Plan */}
-                    <Card className="flex flex-col border-primary shadow-2xl shadow-primary/10">
+                    <Card className="flex flex-col border-primary shadow-2xl shadow-primary/20 transform-gpu scale-105">
                          <CardHeader className="pb-4">
                             <p className="text-sm font-semibold text-primary">Le plus populaire</p>
                             <CardTitle className="font-headline text-2xl">Premium</CardTitle>
@@ -249,8 +289,7 @@ export default function DesktopLandingPage() {
                             </Button>
                         </div>
                     </Card>
-                    {/* Enterprise Plan */}
-                     <Card className="flex flex-col">
+                     <Card className="flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/20 shadow-xl">
                         <CardHeader className="pb-4">
                             <CardTitle className="font-headline text-2xl">Entreprise</CardTitle>
                             <p className="text-4xl font-bold">19 900 F <span className="text-lg font-normal text-muted-foreground">/mois</span></p>
@@ -272,21 +311,28 @@ export default function DesktopLandingPage() {
                     </Card>
                 </div>
             </div>
-        </section>
+        </motion.section>
 
-        <section id="testimonials" className="w-full py-12 md:py-24 lg:py-32 bg-secondary/30">
+        <motion.section 
+          id="testimonials" 
+          className="w-full py-12 md:py-24 lg:py-32 bg-secondary/30"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={sectionVariants}
+        >
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Ce que disent nos utilisateurs</h2>
-                        <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                        <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
                             Découvrez pourquoi des milliers de personnes font confiance à Wisebil pour gérer leurs finances.
                         </p>
                     </div>
                 </div>
                 <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 lg:grid-cols-3 mt-12">
                     {testimonials.map((testimonial) => (
-                        <Card key={testimonial.name} className="bg-card/50 backdrop-blur-sm border-border/50">
+                        <Card key={testimonial.name} className="bg-card/50 backdrop-blur-sm border-border/50 transform-gpu transition-transform hover:scale-105 hover:shadow-primary/20 shadow-xl">
                             <CardContent className="p-6">
                                 <div className="flex items-center mb-4 gap-3">
                                     <Image src={testimonial.avatar} alt={testimonial.name} width={40} height={40} className="rounded-full" data-ai-hint={testimonial['data-ai-hint']} />
@@ -298,20 +344,27 @@ export default function DesktopLandingPage() {
                                 <div className="flex items-center gap-1 mb-2">
                                     {[...Array(testimonial.rating)].map((_, i) => <Star key={i} className="h-5 w-5 text-yellow-400 fill-yellow-400" />)}
                                 </div>
-                                <p className="text-muted-foreground text-sm">"{testimonial.quote}"</p>
+                                <p className="text-muted-foreground text-base">"{testimonial.quote}"</p>
                             </CardContent>
                         </Card>
                     ))}
                 </div>
             </div>
-        </section>
+        </motion.section>
 
-        <section id="faq" className="w-full py-12 md:py-24 lg:py-32">
+        <motion.section 
+          id="faq" 
+          className="w-full py-12 md:py-24 lg:py-32"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={sectionVariants}
+        >
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Questions Fréquentes</h2>
-                        <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                        <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
                             Vous avez des questions ? Nous avons les réponses.
                         </p>
                     </div>
@@ -320,37 +373,43 @@ export default function DesktopLandingPage() {
                      <Accordion type="single" collapsible className="w-full">
                         {faqs.map((faq, index) => (
                             <AccordionItem key={index} value={`item-${index}`}>
-                                <AccordionTrigger className="text-left">{faq.question}</AccordionTrigger>
+                                <AccordionTrigger className="text-left text-lg">{faq.question}</AccordionTrigger>
                                 <AccordionContent>
-                                    <p className="text-muted-foreground">{faq.answer}</p>
+                                    <p className="text-muted-foreground text-base">{faq.answer}</p>
                                 </AccordionContent>
                             </AccordionItem>
                         ))}
                     </Accordion>
                 </div>
             </div>
-        </section>
+        </motion.section>
 
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-primary text-primary-foreground">
+        <motion.section 
+          className="w-full py-12 md:py-24 lg:py-32 bg-primary text-primary-foreground"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={sectionVariants}
+        >
             <div className="container px-4 md:px-6 text-center">
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Prêt à transformer votre vie financière ?</h2>
-                <p className="mx-auto max-w-[700px] text-primary-foreground/80 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed my-4">
+                <p className="mx-auto max-w-[700px] text-primary-foreground/80 md:text-xl/relaxed my-4">
                     Rejoignez des milliers d'utilisateurs qui ont décidé de prendre le contrôle de leur argent avec Wisebil.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
-                   <Button size="lg" variant="secondary" asChild>
+                   <Button size="lg" variant="secondary" asChild className="transform-gpu transition-transform hover:scale-105">
                      <Link href="#">
                         <GooglePlayLogo className="h-8" />
                      </Link>
                    </Button>
-                    <Button size="lg" variant="secondary" asChild>
+                    <Button size="lg" variant="secondary" asChild className="transform-gpu transition-transform hover:scale-105">
                      <Link href="#">
                         <AppStoreLogo className="h-8" />
                      </Link>
                    </Button>
                 </div>
             </div>
-        </section>
+        </motion.section>
 
       </main>
 
@@ -359,7 +418,7 @@ export default function DesktopLandingPage() {
           <div className="grid gap-8 lg:grid-cols-4">
             <div className="space-y-4">
               <Logo />
-              <p className="text-xs text-muted-foreground">La meilleure application de gestion financière pour prendre le contrôle de votre argent.</p>
+              <p className="text-sm text-muted-foreground">La meilleure application de gestion financière pour prendre le contrôle de votre argent.</p>
               <div className="flex gap-2">
                  <Button variant="ghost" size="icon" className="text-muted-foreground"><Twitter className="h-4 w-4" /></Button>
                  <Button variant="ghost" size="icon" className="text-muted-foreground"><Facebook className="h-4 w-4" /></Button>
@@ -391,12 +450,12 @@ export default function DesktopLandingPage() {
             </div>
           </div>
           <div className="mt-8 border-t border-border/50 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Wisebil by Ocomstudio. Tous droits réservés.</p>
+            <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} Wisebil by Ocomstudio. Tous droits réservés.</p>
             <nav className="sm:ml-auto flex gap-4 sm:gap-6">
-              <Link className="text-xs hover:underline underline-offset-4" href="/terms-of-service">
+              <Link className="text-sm hover:underline underline-offset-4" href="/terms-of-service">
                 Termes
               </Link>
-              <Link className="text-xs hover:underline underline-offset-4" href="/privacy-policy">
+              <Link className="text-sm hover:underline underline-offset-4" href="/privacy-policy">
                 Confidentialité
               </Link>
             </nav>
