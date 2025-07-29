@@ -1,3 +1,4 @@
+
 // src/components/landing/desktop-landing-page.tsx
 "use client";
 
@@ -107,44 +108,46 @@ const sectionVariants = {
 export default function DesktopLandingPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
-      <header className="px-4 lg:px-6 h-16 flex items-center bg-background/80 backdrop-blur-sm sticky top-0 z-50 border-b border-border/50">
-        <Logo />
-        <nav className="ml-auto hidden lg:flex gap-6 items-center">
-          <Link className="text-sm font-medium hover:text-primary transition-colors" href="#features">
-            Fonctionnalités
-          </Link>
-          <Link className="text-sm font-medium hover:text-primary transition-colors" href="#pricing">
-            Tarifs
-          </Link>
-          <Link className="text-sm font-medium hover:text-primary transition-colors" href="#testimonials">
-            Avis
-          </Link>
-           <Link className="text-sm font-medium hover:text-primary transition-colors" href="#faq">
-            FAQ
-          </Link>
-          <Button variant="outline" asChild>
-             <Link href="/auth/login">Se connecter</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/auth/signup">S'inscrire</Link>
-          </Button>
-        </nav>
-        <div className="ml-auto lg:hidden">
-             <Button asChild>
-                <Link href="/auth/login">Se connecter</Link>
-            </Button>
+      <header className="w-full px-4 lg:px-6 h-16 flex justify-center bg-background/80 backdrop-blur-sm sticky top-0 z-50 border-b border-border/50">
+        <div className="w-full max-w-7xl flex items-center">
+            <Logo />
+            <nav className="ml-auto hidden lg:flex gap-6 items-center">
+              <Link className="text-sm font-medium hover:text-primary transition-colors" href="#features">
+                Fonctionnalités
+              </Link>
+              <Link className="text-sm font-medium hover:text-primary transition-colors" href="#pricing">
+                Tarifs
+              </Link>
+              <Link className="text-sm font-medium hover:text-primary transition-colors" href="#testimonials">
+                Avis
+              </Link>
+               <Link className="text-sm font-medium hover:text-primary transition-colors" href="#faq">
+                FAQ
+              </Link>
+              <Button variant="outline" asChild>
+                 <Link href="/auth/login">Se connecter</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/auth/signup">S'inscrire</Link>
+              </Button>
+            </nav>
+            <div className="ml-auto lg:hidden">
+                 <Button asChild>
+                    <Link href="/auth/login">Se connecter</Link>
+                </Button>
+            </div>
         </div>
       </header>
 
       <main className="flex-1">
         <motion.section 
-          className="w-full py-20 md:py-32 lg:py-40 relative overflow-hidden"
+          className="w-full py-20 md:py-32 lg:py-40 relative overflow-hidden flex justify-center"
           initial="hidden"
           animate="visible"
           variants={sectionVariants}
         >
              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-primary/10 z-0"></div>
-             <div className="container px-4 md:px-6 z-10 relative">
+             <div className="w-full max-w-7xl px-4 md:px-6 z-10 relative">
                  <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:gap-24 items-center">
                     <div className="flex flex-col justify-center space-y-4">
                         <div className="space-y-4">
@@ -184,13 +187,13 @@ export default function DesktopLandingPage() {
 
         <motion.section 
           id="features" 
-          className="w-full py-12 md:py-24 lg:py-32 bg-secondary/30"
+          className="w-full py-12 md:py-24 lg:py-32 bg-secondary/30 flex justify-center"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
           variants={sectionVariants}
         >
-          <div className="container px-4 md:px-6">
+          <div className="w-full max-w-7xl px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary font-medium">
@@ -230,13 +233,13 @@ export default function DesktopLandingPage() {
         
         <motion.section 
           id="pricing" 
-          className="w-full py-12 md:py-24 lg:py-32"
+          className="w-full py-12 md:py-24 lg:py-32 flex justify-center"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
           variants={sectionVariants}
         >
-            <div className="container px-4 md:px-6">
+            <div className="w-full max-w-7xl px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
                          <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary font-medium">
@@ -316,13 +319,13 @@ export default function DesktopLandingPage() {
 
         <motion.section 
           id="testimonials" 
-          className="w-full py-12 md:py-24 lg:py-32 bg-secondary/30"
+          className="w-full py-12 md:py-24 lg:py-32 bg-secondary/30 flex justify-center"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
           variants={sectionVariants}
         >
-            <div className="container px-4 md:px-6">
+            <div className="w-full max-w-7xl px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Ce que disent nos utilisateurs</h2>
@@ -355,13 +358,13 @@ export default function DesktopLandingPage() {
 
         <motion.section 
           id="faq" 
-          className="w-full py-12 md:py-24 lg:py-32"
+          className="w-full py-12 md:py-24 lg:py-32 flex justify-center"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
           variants={sectionVariants}
         >
-            <div className="container px-4 md:px-6">
+            <div className="w-full max-w-7xl px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Questions Fréquentes</h2>
@@ -386,13 +389,13 @@ export default function DesktopLandingPage() {
         </motion.section>
 
         <motion.section 
-          className="w-full py-12 md:py-24 lg:py-32 bg-primary text-primary-foreground"
+          className="w-full py-12 md:py-24 lg:py-32 bg-primary text-primary-foreground flex justify-center"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
           variants={sectionVariants}
         >
-            <div className="container px-4 md:px-6 text-center">
+            <div className="w-full max-w-7xl px-4 md:px-6 text-center">
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Prêt à transformer votre vie financière ?</h2>
                 <p className="mx-auto max-w-[700px] text-primary-foreground/80 md:text-xl/relaxed my-4">
                     Rejoignez des milliers d'utilisateurs qui ont décidé de prendre le contrôle de leur argent avec Wisebil.
@@ -414,8 +417,8 @@ export default function DesktopLandingPage() {
 
       </main>
 
-      <footer className="bg-secondary/30">
-        <div className="container px-4 md:px-6 py-8">
+      <footer className="bg-secondary/30 flex justify-center">
+        <div className="w-full max-w-7xl px-4 md:px-6 py-8">
           <div className="grid gap-8 lg:grid-cols-4">
             <div className="space-y-4">
               <Logo />
