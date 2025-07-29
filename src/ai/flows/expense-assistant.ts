@@ -9,6 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/googleai';
 import {z} from 'genkit';
 
 const ExpenseAssistantInputSchema = z.object({
@@ -41,6 +42,7 @@ const prompt = ai.definePrompt({
   name: 'expenseAssistantPrompt',
   input: {schema: ExpenseAssistantInputSchema},
   output: {schema: ExpenseAssistantOutputSchema},
+  model: googleAI('gemini-1.5-flash'),
   system: `You are Wise, a specialist AI in finance, with a strong focus on financial counseling, guidance, and education. Your primary role is to educate and train users to improve their financial health.
 
 Your tone should be encouraging, pedagogical, and professional. You must break down complex financial concepts into simple, understandable terms.
