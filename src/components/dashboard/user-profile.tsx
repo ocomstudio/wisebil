@@ -16,12 +16,15 @@ import { CreditCard, LogOut, Settings } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/context/auth-context"
 
 export function UserProfile() {
   const router = useRouter();
   const { toast } = useToast();
+  const { logout } = useAuth();
 
   const handleLogout = () => {
+    logout();
     toast({
       title: "Déconnexion réussie",
       description: "À bientôt !",

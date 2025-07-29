@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FcGoogle } from 'react-icons/fc';
+import { useAuth } from "@/context/auth-context";
 
 
 const signupSchema = z.object({
@@ -42,6 +43,7 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 export default function SignupPage() {
   const { toast } = useToast();
   const router = useRouter();
+  const { login } = useAuth();
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -57,6 +59,7 @@ export default function SignupPage() {
 
   const onSubmit = (data: SignupFormValues) => {
     console.log("Signup data:", data);
+    login(); // Set authenticated state
     toast({
       title: "Inscription réussie",
       description: "Bienvenue ! Veuillez compléter votre profil.",

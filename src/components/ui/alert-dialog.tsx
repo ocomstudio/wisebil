@@ -65,7 +65,7 @@ const AlertDialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-center sm:space-x-2",
+      "flex flex-col-reverse sm:flex-row sm:justify-center sm:space-x-2 gap-2",
       className
     )}
     {...props}
@@ -104,7 +104,7 @@ const AlertDialogAction = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AlertDialogPrimitive.Action
     ref={ref}
-    className={cn(buttonVariants({ variant: 'default'}), "w-full bg-neutral-700 hover:bg-neutral-600 text-white rounded-full", className)}
+    className={cn(buttonVariants({ variant: 'default'}), "w-full bg-neutral-700 hover:bg-neutral-600 text-white rounded-md", className)}
     {...props}
   />
 ))
@@ -118,7 +118,7 @@ const AlertDialogCancel = React.forwardRef<
     ref={ref}
     className={cn(
       buttonVariants({ variant: "outline" }),
-      "mt-0 w-full bg-neutral-700 hover:bg-neutral-600 text-white border-0 hover:text-white rounded-full",
+      "mt-0 w-full bg-neutral-700 hover:bg-neutral-600 text-white border-0 hover:text-white rounded-md",
       className
     )}
     {...props}

@@ -20,6 +20,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { FcGoogle } from "react-icons/fc";
+import { useAuth } from "@/context/auth-context";
+
 
 const loginSchema = z.object({
   phone: z.string().min(1, "Le numéro de téléphone est requis."),
@@ -31,6 +33,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
+  const { login } = useAuth();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -42,6 +45,7 @@ export default function LoginPage() {
 
   const onSubmit = (data: LoginFormValues) => {
     console.log("Login data:", data);
+    login(); // Set authenticated state
     toast({
       title: "Connexion réussie",
       description: "Bienvenue !",
