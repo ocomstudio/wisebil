@@ -9,6 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {generate} from 'genkit';
 import {z} from 'genkit';
 
 const ExpenseAssistantInputSchema = z.object({
@@ -34,37 +35,37 @@ export type ExpenseAssistantOutput = z.infer<typeof ExpenseAssistantOutputSchema
 export async function askExpenseAssistant(
   input: ExpenseAssistantInput
 ): Promise<ExpenseAssistantOutput> {
-  const {answer} = await expenseAssistantFlow(input);
-  return { answer };
+  const result = await expenseAssistantFlow(input);
+  return { answer: result };
 }
-
-const prompt = ai.definePrompt({
-  name: 'expenseAssistantPrompt',
-  model: 'googleai/gemini-1.5-flash',
-  input: {schema: ExpenseAssistantInputSchema},
-  output: {schema: z.object({ answer: z.string() })},
-  system: `You are Wise, a specialist AI in finance, with a strong focus on financial counseling, guidance, and education. Your primary role is to educate and train users to improve their financial health.
-
-Your tone should be encouraging, pedagogical, and professional. You must break down complex financial concepts into simple, understandable terms.
-
-You are NOT a financial advisor for investments and you must not provide any investment advice (stocks, crypto, etc.). Your focus is exclusively on personal finance management: budgeting, saving, debt management, and financial education.
-
-You must answer in the same language as the user's question.`,
-  messages: [
-    ...('{{history}}' as any),
-    {role: 'user', content: '{{question}}'}
-  ],
-});
-
 
 const expenseAssistantFlow = ai.defineFlow(
   {
     name: 'expenseAssistantFlow',
     inputSchema: ExpenseAssistantInputSchema,
-    outputSchema: z.object({ answer: z.string() }),
+    outputSchema: z.string(),
   },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  async ({ history, question }) => {
+
+    const messages = [
+        ...history,
+        { role: 'user' as const, content: question },
+    ];
+    
+    const response = await generate({
+        model: 'googleai/gemini-1.5-flash',
+        prompt: {
+            messages,
+            system: `You are Wise, a specialist AI in finance, with a strong focus on financial counseling, guidance, and education. Your primary role is to educate and train users to improve their financial health.
+
+Your tone should be encouraging, pedagogical, and professional. You must break down complex financial concepts into simple, understandable terms.
+
+You are NOT a financial advisor for investments and you must not provide any investment advice (stocks, crypto, etc.). Your focus is exclusively on personal finance management: budgeting, saving, debt management, and financial education.
+
+You must answer in the same language as the user's question.`
+        }
+    });
+
+    return response.text;
   }
 );
