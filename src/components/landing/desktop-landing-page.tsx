@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/common/logo';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { CheckCircle, Download, Eye, BarChart, Bot, Shield, Star, Twitter, Facebook, Instagram, Radio, HeartHandshake, Zap, Check } from 'lucide-react';
+import { Check, Download, Eye, BarChart, Bot, Shield, Star, Twitter, Facebook, Instagram, Radio, HeartHandshake, Zap } from 'lucide-react';
 import { InstallPWA } from '../pwa/install-pwa';
 import { GooglePlayLogo } from './logos/google-play-logo';
 import { AppStoreLogo } from './logos/app-store-logo';
@@ -129,7 +129,7 @@ export default function DesktopLandingPage() {
       <main className="flex-1">
         <section className="w-full py-20 md:py-32 lg:py-40 relative overflow-hidden">
              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-primary/10 z-0"></div>
-             <div className="container px-4 md:px-6 z-10 relative">
+             <div className="container px-4 md:px-6 z-10 relative pl-8">
                  <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:gap-24 items-center">
                     <div className="flex flex-col justify-center space-y-4">
                         <div className="space-y-4">
@@ -162,7 +162,7 @@ export default function DesktopLandingPage() {
         </section>
 
         <section id="features" className="w-full py-12 md:py-24 lg:py-32 bg-secondary/30">
-          <div className="container px-4 md:px-6">
+          <div className="container px-4 md:px-6 pl-8">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary font-medium">
@@ -193,7 +193,7 @@ export default function DesktopLandingPage() {
         </section>
         
         <section id="pricing" className="w-full py-12 md:py-24 lg:py-32">
-            <div className="container px-4 md:px-6">
+            <div className="container px-4 md:px-6 pl-8">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
                          <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary font-medium">
@@ -275,7 +275,7 @@ export default function DesktopLandingPage() {
         </section>
 
         <section id="testimonials" className="w-full py-12 md:py-24 lg:py-32 bg-secondary/30">
-            <div className="container px-4 md:px-6">
+            <div className="container px-4 md:px-6 pl-8">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Ce que disent nos utilisateurs</h2>
@@ -307,7 +307,7 @@ export default function DesktopLandingPage() {
         </section>
 
         <section id="faq" className="w-full py-12 md:py-24 lg:py-32">
-            <div className="container px-4 md:px-6">
+            <div className="container px-4 md:px-6 pl-8">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Questions Fréquentes</h2>
@@ -332,7 +332,7 @@ export default function DesktopLandingPage() {
         </section>
 
         <section className="w-full py-12 md:py-24 lg:py-32 bg-primary text-primary-foreground">
-            <div className="container px-4 md:px-6 text-center">
+            <div className="container px-4 md:px-6 text-center pl-8">
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Prêt à transformer votre vie financière ?</h2>
                 <p className="mx-auto max-w-[700px] text-primary-foreground/80 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed my-4">
                     Rejoignez des milliers d'utilisateurs qui ont décidé de prendre le contrôle de leur argent avec Wisebil.
@@ -355,7 +355,7 @@ export default function DesktopLandingPage() {
       </main>
 
       <footer className="bg-secondary/30">
-        <div className="container px-4 md:px-6 py-8">
+        <div className="container px-4 md:px-6 py-8 pl-8">
           <div className="grid gap-8 lg:grid-cols-4">
             <div className="space-y-4">
               <Logo />
