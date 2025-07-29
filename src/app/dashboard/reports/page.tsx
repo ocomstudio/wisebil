@@ -64,19 +64,19 @@ export default function ReportsPage() {
       return acc;
     }, {} as Record<string, number>);
 
-    const chartData = Object.entries(expensesByCategory).map(([name, amount]) => ({
+    const sortedChartData = Object.entries(expensesByCategory).map(([name, amount]) => ({
       name,
       amount,
     })).sort((a, b) => b.amount - a.amount);
 
-     const pieChartData = chartData.map((item) => ({
+     const pieChartData = sortedChartData.map((item) => ({
       name: item.name,
       value: item.amount,
     }));
     
-    const topCategoryEmoji = chartData.length > 0 ? getCategoryEmoji(chartData[0].name) : '📊';
+    const topCategoryEmoji = sortedChartData.length > 0 ? getCategoryEmoji(sortedChartData[0].name) : '📊';
 
-    return { chartData, pieChartData, topCategoryEmoji };
+    return { chartData: sortedChartData, pieChartData, topCategoryEmoji };
   }, [transactions]);
 
   return (
