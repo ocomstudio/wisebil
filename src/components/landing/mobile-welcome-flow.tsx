@@ -6,18 +6,8 @@ import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Logo } from '@/components/common/logo';
-import { Wallet, Bot, BarChart2, PartyPopper, Globe, DollarSign, Euro, CircleDollarSign } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
+import { Wallet, Globe, DollarSign, Euro, CircleDollarSign } from 'lucide-react';
 
 const languages = [
     { code: 'fr', name: 'Français', flag: '🇫🇷' },
@@ -28,29 +18,6 @@ const currencies = [
     { code: 'XOF', name: 'Franc CFA', icon: <CircleDollarSign className="h-8 w-8 text-primary" /> },
     { code: 'EUR', name: 'Euro', icon: <Euro className="h-8 w-8 text-primary" /> },
     { code: 'USD', name: 'US Dollar', icon: <DollarSign className="h-8 w-8 text-primary" /> },
-]
-
-const onboardingSteps = [
-  {
-    icon: <Wallet className="h-12 w-12 text-primary" />,
-    title: "Bienvenue sur Wisebil !",
-    description: "La façon intelligente de gérer vos finances personnelles. Faisons un tour rapide.",
-  },
-  {
-    icon: <Bot className="h-12 w-12 text-primary" />,
-    title: "Catégorisation par l'IA",
-    description: "Entrez simplement la description de votre dépense, et notre IA la catégorisera intelligemment pour vous.",
-  },
-  {
-    icon: <BarChart2 className="h-12 w-12 text-primary" />,
-    title: "Suivez Vos Dépenses",
-    description: "Obtenez une vue claire de la destination de votre argent avec notre tableau de bord et nos rapports intuitifs.",
-  },
-  {
-    icon: <PartyPopper className="h-12 w-12 text-primary" />,
-    title: "Vous êtes prêt !",
-    description: "Prêt à prendre le contrôle de vos finances ? Inscrivez-vous ou connectez-vous pour commencer.",
-  }
 ];
 
 const pageVariants = {
@@ -67,7 +34,6 @@ const pageTransition = {
 
 export function MobileWelcomeFlow() {
   const [step, setStep] = useState('language'); // 'language', 'currency', 'done'
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
   const handleSelectLanguage = () => {
     setStep('currency');
@@ -75,7 +41,6 @@ export function MobileWelcomeFlow() {
 
   const handleSelectCurrency = () => {
     setStep('done');
-    setShowWelcomeModal(true);
   };
 
   return (
@@ -158,36 +123,6 @@ export function MobileWelcomeFlow() {
                 </Button>
             </motion.footer>
         )}
-        
-        <Dialog open={showWelcomeModal} onOpenChange={setShowWelcomeModal}>
-            <DialogContent className="max-w-[90vw] rounded-2xl">
-                 <DialogHeader className="sr-only">
-                    <DialogTitle>Bienvenue sur Wisebil</DialogTitle>
-                    <DialogDescription>
-                        Une brève introduction aux fonctionnalités clés de l'application.
-                    </DialogDescription>
-                </DialogHeader>
-                 <Carousel className="w-full -mx-2">
-                    <CarouselContent>
-                        {onboardingSteps.map((step, index) => (
-                        <CarouselItem key={index}>
-                            <div className="p-1">
-                                <Card className="border-0 shadow-none bg-transparent">
-                                    <CardContent className="flex flex-col items-center justify-center p-6 text-center aspect-square">
-                                    <div className="mb-6">{step.icon}</div>
-                                    <h3 className="text-2xl font-bold mb-2 font-headline">{step.title}</h3>
-                                    <p className="text-muted-foreground">{step.description}</p>
-                                    </CardContent>
-                                </Card>
-                            </div>
-                        </CarouselItem>
-                        ))}
-                    </CarouselContent>
-                    <CarouselPrevious className="left-2"/>
-                    <CarouselNext className="right-2"/>
-                </Carousel>
-            </DialogContent>
-        </Dialog>
      </div>
   );
 }
