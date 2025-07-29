@@ -23,5 +23,13 @@ export default function Home() {
     );
   }
 
+  if (isMobile === undefined) {
+    return (
+       <div className="flex h-screen w-screen items-center justify-center">
+        <Skeleton className="h-full w-full" />
+      </div>
+    )
+  }
+
   return isMobile ? <MobileLandingPage /> : <DesktopLandingPage />;
 }
