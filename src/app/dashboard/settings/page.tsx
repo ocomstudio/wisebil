@@ -1,0 +1,195 @@
+// src/app/dashboard/settings/page.tsx
+"use client";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Camera, EyeOff, Lock, User } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { useSettings } from "@/context/settings-context";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+
+const profileSchema = z.object({
+  fullName: z.string().min(2, "Le nom est requis."),
+  email: z.string().email("Adresse e-mail invalide."),
+  phone: z.string().min(9, "Numéro de téléphone invalide."),
+});
+
+type ProfileFormValues = z.infer<typeof profileSchema>;
+
+export default function SettingsPage() {
+  const { settings, updateSettings, checkPin } = useSettings();
+  const { toast } = useToast();
+  const [pinInput, setPinInput] = useState("");
+
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      fullName: "John Doe",
+      email: "john.doe@example.com",
+      phone: "+221 77 123 45 67",
+    },
+  });
+
+  const onProfileSubmit = (data: ProfileFormValues) => {
+    console.log("Profile updated:", data);
+    toast({
+      title: "Profil mis à jour",
+      description: "Vos informations ont été sauvegardées.",
+    });
+  };
+
+  const handleToggleBalanceVisibility = (isChecked: boolean) => {
+    if (!isChecked) { // If user is trying to show the balance
+      const pin = prompt("Veuillez entrer votre code PIN pour afficher le solde.");
+      if (pin && checkPin(pin)) {
+        updateSettings({ isBalanceHidden: false });
+        toast({ title: "Solde affiché" });
+      } else {
+        toast({ variant: "destructive", title: "Code PIN incorrect" });
+      }
+    } else { // If user is trying to hide the balance
+      updateSettings({ isBalanceHidden: true });
+      toast({ title: "Solde masqué" });
+    }
+  };
+
+  const handleTogglePinLock = (isChecked: boolean) => {
+    if (isChecked && !settings.pin) {
+        const newPin = prompt("Veuillez définir un nouveau code PIN à 4 chiffres.");
+        if (newPin && /^\d{4}$/.test(newPin)) {
+            updateSettings({ isPinLockEnabled: true, pin: newPin });
+            toast({ title: "Verrouillage par code PIN activé." });
+        } else {
+            toast({ variant: "destructive", title: "Code PIN invalide. Veuillez entrer 4 chiffres." });
+        }
+    } else {
+        updateSettings({ isPinLockEnabled: isChecked });
+        toast({ title: `Verrouillage par code PIN ${isChecked ? 'activé' : 'désactivé'}` });
+    }
+  }
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold font-headline">Paramètres</h1>
+        <p className="text-muted-foreground">Gérez votre compte et vos préférences.</p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Profil</CardTitle>
+          <CardDescription>Mettez à jour vos informations personnelles.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onProfileSubmit)} className="space-y-6">
+              <div className="flex items-center gap-6">
+                <div className="relative">
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage src="https://placehold.co/80x80.png" alt="User avatar" data-ai-hint="man avatar"/>
+                    <AvatarFallback>JD</AvatarFallback>
+                  </Avatar>
+                  <Button size="icon" className="absolute bottom-0 right-0 rounded-full h-7 w-7">
+                    <Camera className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex-1">
+                  <FormField
+                    control={form.control}
+                    name="fullName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nom complet</FormLabel>
+                        <FormControl>
+                          <Input placeholder="John Doe" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Adresse e-mail</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="votre@email.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Numéro de téléphone</FormLabel>
+                    <FormControl>
+                      <Input type="tel" placeholder="+221 77 123 45 67" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end">
+                <Button type="submit">Sauvegarder les modifications</Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Sécurité</CardTitle>
+          <CardDescription>Protégez votre compte et vos informations.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <h3 className="font-medium flex items-center gap-2"><EyeOff className="h-4 w-4" /> Masquer le solde</h3>
+              <p className="text-sm text-muted-foreground">Cachez votre solde total sur le tableau de bord.</p>
+            </div>
+            <Switch
+              checked={settings.isBalanceHidden}
+              onCheckedChange={handleToggleBalanceVisibility}
+              disabled={!settings.isPinLockEnabled && !settings.isBalanceHidden}
+            />
+          </div>
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <h3 className="font-medium flex items-center gap-2"><Lock className="h-4 w-4" /> Verrouillage par code PIN</h3>
+              <p className="text-sm text-muted-foreground">Activez un code PIN pour sécuriser certaines actions.</p>
+            </div>
+            <Switch
+              checked={settings.isPinLockEnabled}
+              onCheckedChange={handleTogglePinLock}
+            />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

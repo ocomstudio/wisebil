@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Eye, EyeOff, Leaf, TrendingDown, TrendingUp } from "lucide-react";
 import { Button } from "../ui/button";
+import { useSettings } from '@/context/settings-context';
+import { useToast } from '@/hooks/use-toast';
 
 interface BalanceCardProps {
     balance: number;
@@ -13,7 +15,27 @@ interface BalanceCardProps {
 }
 
 export function BalanceCard({ balance, income, expenses }: BalanceCardProps) {
-  const [isVisible, setIsVisible] = useState(true);
+  const { settings, updateSettings, checkPin } = useSettings();
+  const { toast } = useToast();
+
+  const handleToggleVisibility = () => {
+    if (settings.isBalanceHidden) {
+      if (settings.isPinLockEnabled) {
+        const pin = prompt("Veuillez entrer votre code PIN pour afficher le solde.");
+        if (pin && checkPin(pin)) {
+          updateSettings({ isBalanceHidden: false });
+        } else {
+          toast({ variant: "destructive", title: "Code PIN incorrect" });
+        }
+      } else {
+         updateSettings({ isBalanceHidden: false });
+      }
+    } else {
+      updateSettings({ isBalanceHidden: true });
+    }
+  };
+
+  const isVisible = !settings.isBalanceHidden;
 
   return (
     <Card className="bg-card text-card-foreground shadow-xl rounded-2xl overflow-hidden relative border-primary/20 transform-gpu transition-transform hover:scale-[1.02]">
@@ -29,7 +51,7 @@ export function BalanceCard({ balance, income, expenses }: BalanceCardProps) {
                         {isVisible ? `${balance.toLocaleString('fr-FR')} FCFA` : '******'}
                     </p>
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/80 hover:bg-white/20 hover:text-white rounded-full" onClick={() => setIsVisible(!isVisible)}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/80 hover:bg-white/20 hover:text-white rounded-full" onClick={handleToggleVisibility}>
                     {isVisible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     <span className="sr-only">{isVisible ? 'Cacher le solde' : 'Afficher le solde'}</span>
                 </Button>
