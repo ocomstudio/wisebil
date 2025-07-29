@@ -1,7 +1,7 @@
 // src/components/dashboard/balance-card.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Eye, EyeOff, Leaf, TrendingDown, TrendingUp } from "lucide-react";
 import { Button } from "../ui/button";
@@ -15,40 +15,32 @@ interface BalanceCardProps {
 }
 
 export function BalanceCard({ balance, income, expenses }: BalanceCardProps) {
-  const { settings, checkPin } = useSettings();
+  const { settings, checkPin, isTemporarilyVisible, setIsTemporarilyVisible } = useSettings();
   const { toast } = useToast();
-  // Local state to track if balance is temporarily visible for this session
-  const [isTemporarilyVisible, setIsTemporarilyVisible] = useState(false);
 
-  // Determine if the balance should be visible based on settings and temporary state
-  const isVisible = !settings.isPinLockEnabled || !settings.isBalanceHidden || isTemporarilyVisible;
+  const isVisible = !settings.isBalanceHidden || isTemporarilyVisible;
 
-  // Reset temporary visibility if the global setting changes to avoid stale state
   useEffect(() => {
     if (!settings.isBalanceHidden) {
       setIsTemporarilyVisible(false);
     }
-  }, [settings.isBalanceHidden]);
+  }, [settings.isBalanceHidden, setIsTemporarilyVisible]);
 
   const handleToggleVisibility = () => {
-    // This button should only do something if the PIN lock is on and the balance is hidden
-    if (settings.isPinLockEnabled && settings.isBalanceHidden) {
-      if (isTemporarilyVisible) {
-        // If it's already visible, hide it again
-        setIsTemporarilyVisible(false);
-      } else {
-        // If it's hidden, ask for PIN to show it
-        const pin = prompt("Veuillez entrer votre code PIN pour afficher le solde.");
-        if (pin && checkPin(pin)) {
-          setIsTemporarilyVisible(true);
-        } else if (pin !== null) {
-          toast({ variant: "destructive", title: "Code PIN incorrect" });
-        }
+    if (isTemporarilyVisible) {
+      setIsTemporarilyVisible(false);
+    } else {
+      const pin = prompt("Veuillez entrer votre code PIN pour afficher le solde.");
+      if (pin && checkPin(pin)) {
+        setIsTemporarilyVisible(true);
+      } else if (pin !== null) {
+        toast({ variant: "destructive", title: "Code PIN incorrect" });
       }
     }
   };
   
   const EyeIcon = isVisible ? EyeOff : Eye;
+  const showToggleButton = settings.isPinLockEnabled && settings.isBalanceHidden;
 
   return (
     <Card className="bg-card text-card-foreground shadow-xl rounded-2xl overflow-hidden relative border-primary/20 transform-gpu transition-transform hover:scale-[1.02]">
@@ -64,7 +56,7 @@ export function BalanceCard({ balance, income, expenses }: BalanceCardProps) {
                         {isVisible ? `${balance.toLocaleString('fr-FR')} FCFA` : '******'}
                     </p>
                 </div>
-                {settings.isPinLockEnabled && settings.isBalanceHidden && (
+                {showToggleButton && (
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/80 hover:bg-white/20 hover:text-white rounded-full" onClick={handleToggleVisibility}>
                         <EyeIcon className="h-5 w-5" />
                         <span className="sr-only">{isVisible ? 'Cacher le solde' : 'Afficher le solde'}</span>

@@ -31,7 +31,7 @@ const profileSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export default function SettingsPage() {
-  const { settings, updateSettings, checkPin } = useSettings();
+  const { settings, updateSettings, checkPin, setIsTemporarilyVisible } = useSettings();
   const { toast } = useToast();
 
   const form = useForm<ProfileFormValues>({
@@ -53,7 +53,6 @@ export default function SettingsPage() {
   
   const handleTogglePinLock = (isChecked: boolean) => {
     if (isChecked) {
-      // Activating PIN lock
       if (!settings.pin) {
         const newPin = prompt("Veuillez définir un nouveau code PIN à 4 chiffres.");
         if (newPin && /^\d{4}$/.test(newPin)) {
@@ -67,12 +66,11 @@ export default function SettingsPage() {
          toast({ title: "Verrouillage par code PIN activé." });
       }
     } else {
-      // Deactivating PIN lock
       const pin = prompt("Veuillez entrer votre code PIN pour désactiver le verrouillage.");
       if (pin && checkPin(pin)) {
-        updateSettings({ isPinLockEnabled: false, isBalanceHidden: false }); // Also un-hide balance for safety
+        updateSettings({ isPinLockEnabled: false, isBalanceHidden: false }); 
         toast({ title: "Verrouillage par code PIN désactivé." });
-      } else if (pin !== null) { // User entered something, but it was wrong
+      } else if (pin !== null) {
         toast({ variant: "destructive", title: "Code PIN incorrect." });
       }
     }
@@ -88,7 +86,10 @@ export default function SettingsPage() {
       return;
     }
     updateSettings({ isBalanceHidden: isChecked });
-    toast({ title: `Visibilité du solde ${isChecked ? 'masquée' : 'affichée'}.` });
+    if (!isChecked) {
+      setIsTemporarilyVisible(false);
+    }
+    toast({ title: `Visibilité du solde ${isChecked ? 'masquée par défaut' : 'affichée par défaut'}.` });
   };
 
   return (
