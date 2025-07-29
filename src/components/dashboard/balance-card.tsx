@@ -20,16 +20,14 @@ export function BalanceCard({ balance, income, expenses }: BalanceCardProps) {
 
   const isVisible = !settings.isBalanceHidden || isTemporarilyVisible;
 
-  useEffect(() => {
-    if (!settings.isBalanceHidden) {
-      setIsTemporarilyVisible(false);
-    }
-  }, [settings.isBalanceHidden, setIsTemporarilyVisible]);
-
   const handleToggleVisibility = () => {
     if (isTemporarilyVisible) {
       setIsTemporarilyVisible(false);
     } else {
+      if (!settings.pin) {
+        toast({ variant: "destructive", title: "Aucun code PIN défini.", description: "Veuillez définir un code PIN dans les paramètres de sécurité." });
+        return;
+      }
       const pin = prompt("Veuillez entrer votre code PIN pour afficher le solde.");
       if (pin && checkPin(pin)) {
         setIsTemporarilyVisible(true);
@@ -40,6 +38,8 @@ export function BalanceCard({ balance, income, expenses }: BalanceCardProps) {
   };
   
   const EyeIcon = isVisible ? EyeOff : Eye;
+  
+  // The toggle button is shown only if PIN lock is enabled AND balance hiding is on
   const showToggleButton = settings.isPinLockEnabled && settings.isBalanceHidden;
 
   return (

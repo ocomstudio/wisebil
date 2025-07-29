@@ -33,11 +33,11 @@ interface BudgetCardProps {
 
 export function BudgetCard({ budget, spent, onDelete }: BudgetCardProps) {
   const { id, name, amount, category } = budget;
-  const { settings } = useSettings();
-  const isVisible = !settings.isBalanceHidden;
+  const { settings, isTemporarilyVisible } = useSettings();
+  const isVisible = !settings.isBalanceHidden || isTemporarilyVisible;
 
   const remaining = amount - spent;
-  const progress = (spent / amount) * 100;
+  const progress = amount > 0 ? (spent / amount) * 100 : 0;
 
   const getCategoryEmoji = (categoryName: string) => {
     const cat = expenseCategories.find(c => c.name === categoryName);

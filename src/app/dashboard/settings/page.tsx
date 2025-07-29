@@ -1,4 +1,3 @@
-
 // src/app/dashboard/settings/page.tsx
 "use client";
 
@@ -17,10 +16,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, EyeOff, Lock } from "lucide-react";
+import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useSettings } from "@/context/settings-context";
 import { useToast } from "@/hooks/use-toast";
+import { Separator } from "@/components/ui/separator";
+import Link from "next/link";
 
 const profileSchema = z.object({
   fullName: z.string().min(2, "Le nom est requis."),
@@ -31,7 +32,7 @@ const profileSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export default function SettingsPage() {
-  const { settings, updateSettings, checkPin, setIsTemporarilyVisible } = useSettings();
+  const { settings, updateSettings, checkPin } = useSettings();
   const { toast } = useToast();
 
   const form = useForm<ProfileFormValues>({
@@ -53,19 +54,21 @@ export default function SettingsPage() {
   
   const handleTogglePinLock = (isChecked: boolean) => {
     if (isChecked) {
+      // Logic to enable PIN lock
       if (!settings.pin) {
         const newPin = prompt("Veuillez définir un nouveau code PIN à 4 chiffres.");
         if (newPin && /^\d{4}$/.test(newPin)) {
           updateSettings({ isPinLockEnabled: true, pin: newPin });
           toast({ title: "Verrouillage par code PIN activé." });
         } else {
-          toast({ variant: "destructive", title: "Code PIN invalide. Veuillez entrer 4 chiffres." });
+          toast({ variant: "destructive", title: "Code PIN invalide. Le PIN doit contenir 4 chiffres." });
         }
       } else {
          updateSettings({ isPinLockEnabled: true });
          toast({ title: "Verrouillage par code PIN activé." });
       }
     } else {
+      // Logic to disable PIN lock
       const pin = prompt("Veuillez entrer votre code PIN pour désactiver le verrouillage.");
       if (pin && checkPin(pin)) {
         updateSettings({ isPinLockEnabled: false, isBalanceHidden: false }); 
@@ -77,19 +80,13 @@ export default function SettingsPage() {
   };
 
   const handleToggleBalanceVisibility = (isChecked: boolean) => {
-    if (!settings.isPinLockEnabled) {
-      toast({
-        variant: "destructive",
-        title: "Action requise",
-        description: "Veuillez d'abord activer le verrouillage par code PIN.",
-      });
-      return;
+    const pin = prompt("Veuillez entrer votre code PIN pour modifier ce paramètre.");
+    if (pin && checkPin(pin)) {
+        updateSettings({ isBalanceHidden: isChecked });
+        toast({ title: `Visibilité du solde ${isChecked ? 'masquée par défaut' : 'affichée par défaut'}.` });
+    } else if (pin !== null) {
+        toast({ variant: "destructive", title: "Code PIN incorrect." });
     }
-    updateSettings({ isBalanceHidden: isChecked });
-    if (!isChecked) {
-      setIsTemporarilyVisible(false);
-    }
-    toast({ title: `Visibilité du solde ${isChecked ? 'masquée par défaut' : 'affichée par défaut'}.` });
   };
 
   return (
@@ -197,6 +194,32 @@ export default function SettingsPage() {
               disabled={!settings.isPinLockEnabled}
             />
           </div>
+        </CardContent>
+      </Card>
+      
+       <Card>
+        <CardHeader>
+          <CardTitle>À propos</CardTitle>
+          <CardDescription>Informations sur l'application et mentions légales.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <Info className="h-5 w-5"/>
+                <p>Wisebil est une application conçue et développée par <strong>Ocomstudio</strong>.</p>
+            </div>
+             <Separator />
+            <div className="space-y-2">
+                <Button variant="ghost" className="w-full justify-start p-0 h-auto" asChild>
+                    <Link href="/privacy-policy">
+                         <ShieldCheck className="mr-2 h-4 w-4"/> Politique de confidentialité
+                    </Link>
+                </Button>
+                 <Button variant="ghost" className="w-full justify-start p-0 h-auto" asChild>
+                    <Link href="/terms-of-service">
+                        <FileText className="mr-2 h-4 w-4"/> Conditions d'utilisation
+                    </Link>
+                </Button>
+            </div>
         </CardContent>
       </Card>
     </div>

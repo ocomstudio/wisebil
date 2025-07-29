@@ -32,9 +32,9 @@ interface RecentExpensesProps {
 
 export function RecentExpenses({ transactions }: RecentExpensesProps) {
   const { deleteTransaction } = useTransactions();
-  const { settings } = useSettings();
-  const isVisible = !settings.isBalanceHidden;
-  const recentTransactions = transactions.slice(-5).reverse();
+  const { settings, isTemporarilyVisible } = useSettings();
+  const isVisible = !settings.isBalanceHidden || isTemporarilyVisible;
+  const recentTransactions = transactions.slice(0, 5);
 
   const getCategoryEmoji = (categoryName?: string) => {
     if (!categoryName) return '💸';

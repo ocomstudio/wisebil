@@ -42,8 +42,8 @@ const COLORS = ["#50C878", "#FF8042", "#FFBB28", "#0088FE", "#AF19FF"];
 
 export default function ReportsPage() {
   const { transactions, income, expenses } = useTransactions();
-  const { settings } = useSettings();
-  const isVisible = !settings.isBalanceHidden;
+  const { settings, isTemporarilyVisible } = useSettings();
+  const isVisible = !settings.isBalanceHidden || isTemporarilyVisible;
 
   const getCategoryEmoji = (categoryName?: string) => {
     if (!categoryName) return '💸';
@@ -187,12 +187,12 @@ export default function ReportsPage() {
                             tickLine={false}
                             axisLine={false}
                             tickMargin={8}
-                            tickFormatter={(value) => isVisible ? `${Number(value) / 1000}k` : '***'}
+                            tickFormatter={(value) => isVisible ? `${Number(value) / 1000}k` : '******'}
                             tick={{ fontSize: 12 }}
                         />
                         <ChartTooltip
                             cursor={false}
-                            content={<ChartTooltipContent indicator="dot" formatter={(value, name) => isVisible ? `${Number(value).toLocaleString('fr-FR')} FCFA` : '******'} />}
+                            content={<ChartTooltipContent indicator="dot" formatter={(value) => isVisible ? `${Number(value).toLocaleString('fr-FR')} FCFA` : '******'} />}
                         />
                         <Bar dataKey="amount" fill="hsl(var(--primary))" radius={8} />
                     </BarChart>

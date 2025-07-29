@@ -21,9 +21,9 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [settings, setSettings] = useState<Settings>({
-    isBalanceHidden: false,
-    isPinLockEnabled: false,
-    pin: null, 
+    isBalanceHidden: false, // Balance is visible by default
+    isPinLockEnabled: false, // PIN lock is disabled by default
+    pin: null,
   });
   const [isTemporarilyVisible, setIsTemporarilyVisible] = useState(false);
 

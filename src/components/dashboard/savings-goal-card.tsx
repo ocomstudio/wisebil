@@ -44,15 +44,16 @@ interface SavingsGoalCardProps {
 
 export function SavingsGoalCard({ goal, onAddFunds, onDelete }: SavingsGoalCardProps) {
   const [amountToAdd, setAmountToAdd] = useState(0);
-  const { settings } = useSettings();
-  const isVisible = !settings.isBalanceHidden;
+  const { settings, isTemporarilyVisible } = useSettings();
+  const isVisible = !settings.isBalanceHidden || isTemporarilyVisible;
 
   const { id, name, emoji, currentAmount, targetAmount } = goal;
-  const progress = (currentAmount / targetAmount) * 100;
+  const progress = targetAmount > 0 ? (currentAmount / targetAmount) * 100 : 0;
 
   const handleAddFunds = () => {
     if (amountToAdd > 0) {
       onAddFunds(id, amountToAdd);
+      setAmountToAdd(0);
     }
   };
 
@@ -108,7 +109,7 @@ export function SavingsGoalCard({ goal, onAddFunds, onDelete }: SavingsGoalCardP
                         <Input
                         id="amount"
                         type="number"
-                        value={amountToAdd}
+                        value={amountToAdd || ''}
                         onChange={(e) => setAmountToAdd(Number(e.target.value))}
                         className="col-span-3"
                         />
