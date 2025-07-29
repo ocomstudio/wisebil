@@ -8,10 +8,12 @@ import Link from "next/link";
 import { useBudgets } from "@/context/budget-context";
 import { BudgetCard } from "@/components/dashboard/budget-card";
 import { useTransactions } from "@/context/transactions-context";
+import { useLocale } from "@/context/locale-context";
 
 export default function BudgetPage() {
   const { budgets, deleteBudget } = useBudgets();
   const { transactions } = useTransactions();
+  const { t } = useLocale();
 
   const getSpentAmount = (category: string) => {
     return transactions
@@ -22,11 +24,11 @@ export default function BudgetPage() {
   return (
     <div className="space-y-6 bg-background">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold font-headline">Budgets</h1>
+        <h1 className="text-3xl font-bold font-headline">{t('nav_budgets')}</h1>
         <Button asChild>
           <Link href="/dashboard/budget/create">
             <PlusCircle className="mr-2 h-4 w-4" />
-            Créer un budget
+            {t('create_budget_button')}
           </Link>
         </Button>
       </div>
@@ -37,16 +39,16 @@ export default function BudgetPage() {
                 <div className="mx-auto bg-secondary p-4 rounded-full mb-4">
                     <FilePlus className="h-12 w-12 text-muted-foreground" />
                 </div>
-                <CardTitle>Aucun budget créé</CardTitle>
+                <CardTitle>{t('no_budgets_title')}</CardTitle>
                 <CardDescription>
-                    Les budgets vous aident à suivre et limiter vos dépenses par catégorie chaque mois.
+                    {t('no_budgets_desc')}
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <Button asChild>
                   <Link href="/dashboard/budget/create">
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    Créer votre premier budget
+                    {t('create_first_budget_button')}
                   </Link>
                 </Button>
             </CardContent>

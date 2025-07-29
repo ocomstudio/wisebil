@@ -23,6 +23,7 @@ const ExpenseAssistantInputSchema = z.object({
     .describe(
       'The previous conversation history between the user and the assistant.'
     ),
+  language: z.string().describe("The user's preferred language (e.g., 'fr', 'en')."),
 });
 export type ExpenseAssistantInput = z.infer<typeof ExpenseAssistantInputSchema>;
 
@@ -35,7 +36,7 @@ export async function askExpenseAssistant(
 }
 
 async function expenseAssistantFlow(
-  { history, question }: ExpenseAssistantInput,
+  { history, question, language }: ExpenseAssistantInput,
 ): Promise<string> {
   const messages = [
     ...history,
@@ -51,7 +52,7 @@ Your tone should be encouraging, pedagogical, and professional. You must break d
 
 You are NOT a financial advisor for investments and you must not provide any investment advice (stocks, crypto, etc.). Your focus is exclusively on personal finance management: budgeting, saving, debt management, and financial education.
 
-You must answer in the same language as the user's question.`
+You MUST answer in the user's specified language: ${language}. If the user asks a question in a different language, still respond in the specified language: ${language}.`
   });
   
   return response.text;

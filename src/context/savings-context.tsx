@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { SavingsGoal } from '@/types/savings-goal';
 import { useToast } from '@/hooks/use-toast';
+import { useLocale } from './locale-context';
 
 interface SavingsContextType {
   savingsGoals: SavingsGoal[];
@@ -17,6 +18,7 @@ const SavingsContext = createContext<SavingsContextType | undefined>(undefined);
 export const SavingsProvider = ({ children }: { children: ReactNode }) => {
   const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
   const { toast } = useToast();
+  const { t, formatCurrency } = useLocale();
 
   const addSavingsGoal = useCallback(async (goal: SavingsGoal) => {
     setSavingsGoals(prev => [...prev, goal]);
@@ -25,10 +27,10 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
   const deleteSavingsGoal = useCallback(async (id: string) => {
     setSavingsGoals(prev => prev.filter(g => g.id !== id));
     toast({
-      title: "Objectif supprimé",
-      description: "Votre objectif d'épargne a été supprimé.",
+      title: t('goal_deleted_title'),
+      description: t('goal_deleted_desc'),
     });
-  }, [toast]);
+  }, [t, toast]);
 
   const addFunds = useCallback(async (id: string, amount: number) => {
     setSavingsGoals(prev => prev.map(g => 
@@ -37,10 +39,10 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
         : g
     ));
     toast({
-      title: "Fonds ajoutés !",
-      description: `${amount.toLocaleString('fr-FR')} FCFA ont été ajoutés à votre objectif.`,
+      title: t('funds_added_title'),
+      description: t('funds_added_desc', { amount: formatCurrency(amount) }),
     });
-  }, [toast]);
+  }, [t, toast, formatCurrency]);
 
   return (
     <SavingsContext.Provider value={{ savingsGoals, addSavingsGoal, deleteSavingsGoal, addFunds }}>

@@ -31,16 +31,19 @@ import { useToast } from "@/hooks/use-toast";
 import { useBudgets } from "@/context/budget-context";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { expenseCategories } from "@/config/categories";
-
-const budgetSchema = z.object({
-  name: z.string().min(3, "Le nom doit contenir au moins 3 caractères."),
-  amount: z.coerce.number().positive("Le montant doit être un nombre positif."),
-  category: z.string().min(1, "Veuillez sélectionner une catégorie."),
-});
-
-type BudgetFormValues = z.infer<typeof budgetSchema>;
+import { useLocale } from "@/context/locale-context";
 
 export default function CreateBudgetPage() {
+  const { t, currency, getCategoryName } = useLocale();
+  
+  const budgetSchema = z.object({
+    name: z.string().min(3, t('budget_name_error')),
+    amount: z.coerce.number().positive(t('amount_error')),
+    category: z.string().min(1, t('category_error')),
+  });
+
+  type BudgetFormValues = z.infer<typeof budgetSchema>;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -67,16 +70,16 @@ export default function CreateBudgetPage() {
       };
       await addBudget(newBudget);
       toast({
-        title: "Budget créé",
-        description: `Le budget "${data.name}" a été créé avec succès.`,
+        title: t('budget_created_title'),
+        description: t('budget_created_desc', { budgetName: data.name }),
       });
       router.push("/dashboard/budget");
     } catch (error) {
       console.error("Failed to create budget:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de créer le budget. Veuillez réessayer.",
+        title: t('error_title'),
+        description: t('create_budget_error'),
       });
       setIsSubmitting(false);
     }
@@ -90,7 +93,7 @@ export default function CreateBudgetPage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold font-headline">Créer un nouveau budget</h1>
+        <h1 className="text-3xl font-bold font-headline">{t('create_budget_title')}</h1>
       </div>
       <Card className="shadow-xl">
         <CardContent className="pt-6">
@@ -101,9 +104,9 @@ export default function CreateBudgetPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nom du budget</FormLabel>
+                    <FormLabel>{t('budget_name_label')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="ex: Budget Alimentation Mensuel" {...field} />
+                      <Input placeholder={t('budget_name_placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -114,7 +117,7 @@ export default function CreateBudgetPage() {
                 name="amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Montant Alloué (FCFA)</FormLabel>
+                    <FormLabel>{t('allocated_amount_label', { currency: currency })}</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="50000" {...field} />
                     </FormControl>
@@ -128,23 +131,23 @@ export default function CreateBudgetPage() {
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Catégorie</FormLabel>
+                    <FormLabel>{t('category_label')}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           {selectedCategory ? (
                             <span className="flex items-center gap-2">
-                              {selectedCategory.emoji} {selectedCategory.name}
+                              {selectedCategory.emoji} {getCategoryName(selectedCategory.name)}
                             </span>
                           ) : (
-                            <SelectValue placeholder="Sélectionnez une catégorie à budgétiser" />
+                            <SelectValue placeholder={t('budget_category_placeholder')} />
                           )}
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {expenseCategories.filter(c => c.name !== 'Autre').map((cat) => (
                           <SelectItem key={cat.name} value={cat.name}>
-                            <span className="mr-2">{cat.emoji}</span> {cat.name}
+                            <span className="mr-2">{cat.emoji}</span> {getCategoryName(cat.name)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -156,7 +159,7 @@ export default function CreateBudgetPage() {
 
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Créer le Budget
+                {t('create_budget_button_submit')}
               </Button>
             </form>
           </Form>

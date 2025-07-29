@@ -29,21 +29,23 @@ import { Button } from "@/components/ui/button";
 import { allCategories } from "@/config/categories";
 import { FinancialSummaryCard } from "@/components/dashboard/financial-summary-card";
 import { useSettings } from "@/context/settings-context";
+import { useLocale } from "@/context/locale-context";
 
-
-const chartConfig = {
-  amount: {
-    label: "Dépenses",
-    color: "hsl(var(--primary))",
-  },
-} satisfies ChartConfig;
 
 const COLORS = ["#50C878", "#FF8042", "#FFBB28", "#0088FE", "#AF19FF"];
 
 export default function ReportsPage() {
   const { transactions, income, expenses } = useTransactions();
   const { settings, isTemporarilyVisible } = useSettings();
+  const { t, formatCurrency, getCategoryName } = useLocale();
   const isVisible = !settings.isBalanceHidden || isTemporarilyVisible;
+
+  const chartConfig = {
+    amount: {
+      label: t('expenses'),
+      color: "hsl(var(--primary))",
+    },
+  } satisfies ChartConfig;
 
   const getCategoryEmoji = (categoryName?: string) => {
     if (!categoryName) return '💸';
@@ -73,14 +75,16 @@ export default function ReportsPage() {
     })).sort((a, b) => b.amount - a.amount);
 
      const pieChartData = sortedChartData.map((item) => ({
-      name: item.name,
+      name: getCategoryName(item.name),
       value: item.amount,
     }));
     
     const topCategoryEmoji = sortedChartData.length > 0 ? getCategoryEmoji(sortedChartData[0]?.name) : '📊';
+    
+    const chartDataWithTranslatedNames = sortedChartData.map(item => ({...item, name: getCategoryName(item.name)}));
 
-    return { chartData: sortedChartData, pieChartData, topCategoryEmoji };
-  }, [transactions]);
+    return { chartData: chartDataWithTranslatedNames, pieChartData, topCategoryEmoji };
+  }, [transactions, getCategoryName]);
 
   return (
     <div className="space-y-6">
@@ -90,23 +94,23 @@ export default function ReportsPage() {
               <ArrowLeft />
             </Link>
           </Button>
-          <h1 className="text-lg font-bold">Statistiques</h1>
+          <h1 className="text-lg font-bold">{t('nav_reports')}</h1>
           <Button variant="ghost" size="icon">
             <Settings />
           </Button>
         </div>
 
        <div className="hidden md:flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-         <h1 className="text-3xl font-bold font-headline">Statistiques</h1>
+         <h1 className="text-3xl font-bold font-headline">{t('nav_reports')}</h1>
          <Select defaultValue="monthly">
             <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Filtrer" />
+                <SelectValue placeholder={t('filter_placeholder')} />
             </SelectTrigger>
             <SelectContent>
-                <SelectItem value="daily">Journalier</SelectItem>
-                <SelectItem value="weekly">Hebdomadaire</SelectItem>
-                <SelectItem value="monthly">Mensuel</SelectItem>
-                <SelectItem value="yearly">Annuel</SelectItem>
+                <SelectItem value="daily">{t('filter_daily')}</SelectItem>
+                <SelectItem value="weekly">{t('filter_weekly')}</SelectItem>
+                <SelectItem value="monthly">{t('filter_monthly')}</SelectItem>
+                <SelectItem value="yearly">{t('filter_yearly')}</SelectItem>
             </SelectContent>
         </Select>
        </div>
@@ -118,8 +122,8 @@ export default function ReportsPage() {
                         <TrendingUp className="h-5 w-5 text-green-400" />
                     </div>
                     <div>
-                        <p className="text-sm text-muted-foreground">Revenus</p>
-                        <p className="font-bold text-lg">{isVisible ? `${income.toLocaleString('fr-FR')} FCFA` : '******'}</p>
+                        <p className="text-sm text-muted-foreground">{t('income')}</p>
+                        <p className="font-bold text-lg">{isVisible ? formatCurrency(income) : '******'}</p>
                     </div>
                 </div>
                  <div className="flex items-center gap-2">
@@ -127,8 +131,8 @@ export default function ReportsPage() {
                         <TrendingDown className="h-5 w-5 text-red-400" />
                     </div>
                     <div>
-                        <p className="text-sm text-muted-foreground">Dépenses</p>
-                        <p className="font-bold text-lg">{isVisible ? `${expenses.toLocaleString('fr-FR')} FCFA` : '******'}</p>
+                        <p className="text-sm text-muted-foreground">{t('expenses')}</p>
+                        <p className="font-bold text-lg">{isVisible ? formatCurrency(expenses) : '******'}</p>
                     </div>
                 </div>
             </CardContent>
@@ -141,20 +145,20 @@ export default function ReportsPage() {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <div>
-                  <CardTitle>Aperçu des Dépenses</CardTitle>
+                  <CardTitle>{t('expenses_overview_title')}</CardTitle>
                   {chartData.length === 0 ? (
-                    <CardDescription>Aucune dépense enregistrée.</CardDescription>
+                    <CardDescription>{t('no_expenses_recorded')}</CardDescription>
                   ) : (
-                    <CardDescription>Ce mois-ci</CardDescription>
+                    <CardDescription>{t('this_month')}</CardDescription>
                   )}
                 </div>
                 <Select defaultValue="monthly">
                     <SelectTrigger className="w-[130px] hidden md:flex">
-                        <SelectValue placeholder="Filtrer" />
+                        <SelectValue placeholder={t('filter_placeholder')} />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="monthly">Mensuel</SelectItem>
-                        <SelectItem value="yearly">Annuel</SelectItem>
+                        <SelectItem value="monthly">{t('filter_monthly')}</SelectItem>
+                        <SelectItem value="yearly">{t('filter_yearly')}</SelectItem>
                     </SelectContent>
                 </Select>
               </div>
@@ -192,13 +196,13 @@ export default function ReportsPage() {
                         />
                         <ChartTooltip
                             cursor={false}
-                            content={<ChartTooltipContent indicator="dot" formatter={(value) => isVisible ? `${Number(value).toLocaleString('fr-FR')} FCFA` : '******'} />}
+                            content={<ChartTooltipContent indicator="dot" formatter={(value) => isVisible ? formatCurrency(Number(value)) : '******'} />}
                         />
                         <Bar dataKey="amount" fill="hsl(var(--primary))" radius={8} />
                     </BarChart>
                  ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground min-h-[250px]">
-                        Aucune donnée de graphique disponible.
+                        {t('no_chart_data')}
                     </div>
                  )}
               </ChartContainer>
@@ -207,8 +211,8 @@ export default function ReportsPage() {
           
           <Card>
             <CardHeader>
-              <CardTitle>Répartition par catégorie</CardTitle>
-               <CardDescription>Vos dépenses ce mois-ci.</CardDescription>
+              <CardTitle>{t('category_breakdown_title')}</CardTitle>
+               <CardDescription>{t('your_expenses_this_month')}</CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center items-center">
                 {pieChartData.length > 0 ? (
@@ -216,7 +220,7 @@ export default function ReportsPage() {
                         <PieChart>
                             <ChartTooltip
                                 cursor={false}
-                                content={<ChartTooltipContent hideLabel formatter={(value, name) => isVisible ? `${name}: ${Number(value).toLocaleString('fr-FR')} FCFA` : `${name}: ******`} />}
+                                content={<ChartTooltipContent hideLabel formatter={(value, name) => isVisible ? `${name}: ${formatCurrency(Number(value))}` : `${name}: ******`} />}
                             />
                             <Pie
                                 data={pieChartData}
@@ -243,7 +247,7 @@ export default function ReportsPage() {
                     </ChartContainer>
                 ) : (
                      <div className="flex h-48 w-full items-center justify-center text-muted-foreground">
-                        Aucune dépense enregistrée.
+                        {t('no_expenses_recorded')}
                     </div>
                 )}
             </CardContent>

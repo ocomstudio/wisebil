@@ -23,18 +23,20 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useSavings } from "@/context/savings-context";
 import { Loader2, ArrowLeft } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
-
-const savingsGoalSchema = z.object({
-  name: z.string().min(3, "Le nom de l'objectif doit contenir au moins 3 caractères."),
-  targetAmount: z.coerce.number().positive("Le montant cible doit être un nombre positif."),
-  currentAmount: z.coerce.number().min(0, "Le montant actuel ne peut être négatif.").optional().default(0),
-  emoji: z.string().optional(),
-});
-
-type SavingsGoalFormValues = z.infer<typeof savingsGoalSchema>;
+import { useLocale } from "@/context/locale-context";
 
 export default function CreateSavingsGoalPage() {
+  const { t, currency } = useLocale();
+
+  const savingsGoalSchema = z.object({
+    name: z.string().min(3, t('goal_name_error')),
+    targetAmount: z.coerce.number().positive(t('target_amount_error')),
+    currentAmount: z.coerce.number().min(0, t('current_amount_error')).optional().default(0),
+    emoji: z.string().optional(),
+  });
+
+  type SavingsGoalFormValues = z.infer<typeof savingsGoalSchema>;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -59,16 +61,16 @@ export default function CreateSavingsGoalPage() {
       };
       await addSavingsGoal(newGoal);
       toast({
-        title: "Objectif créé !",
-        description: `Votre objectif "${data.name}" a été créé.`,
+        title: t('goal_created_title'),
+        description: t('goal_created_desc', { goalName: data.name }),
       });
       router.push("/dashboard/savings");
     } catch (error) {
       console.error("Failed to create savings goal:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de créer l'objectif. Veuillez réessayer.",
+        title: t('error_title'),
+        description: t('create_goal_error'),
       });
       setIsSubmitting(false);
     }
@@ -82,7 +84,7 @@ export default function CreateSavingsGoalPage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold font-headline">Créer un objectif d'épargne</h1>
+        <h1 className="text-3xl font-bold font-headline">{t('create_goal_title')}</h1>
       </div>
       <Card className="shadow-xl">
         <CardContent className="pt-6">
@@ -93,9 +95,9 @@ export default function CreateSavingsGoalPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nom de l'objectif</FormLabel>
+                    <FormLabel>{t('goal_name_label')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="ex: Voyage au Japon" {...field} />
+                      <Input placeholder={t('goal_name_placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -106,7 +108,7 @@ export default function CreateSavingsGoalPage() {
                 name="emoji"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Emoji</FormLabel>
+                    <FormLabel>{t('emoji_label')}</FormLabel>
                     <FormControl>
                       <Input placeholder="ex: ✈️" {...field} maxLength={2} />
                     </FormControl>
@@ -119,7 +121,7 @@ export default function CreateSavingsGoalPage() {
                 name="targetAmount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Montant Cible (FCFA)</FormLabel>
+                    <FormLabel>{t('target_amount_label', { currency })}</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="1500000" {...field} />
                     </FormControl>
@@ -132,7 +134,7 @@ export default function CreateSavingsGoalPage() {
                 name="currentAmount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Montant Actuel (FCFA)</FormLabel>
+                    <FormLabel>{t('current_amount_label', { currency })}</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="0" {...field} />
                     </FormControl>
@@ -142,7 +144,7 @@ export default function CreateSavingsGoalPage() {
               />
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Créer l'Objectif
+                {t('create_goal_button_submit')}
               </Button>
             </form>
           </Form>

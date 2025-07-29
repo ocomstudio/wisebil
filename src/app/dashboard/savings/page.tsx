@@ -7,18 +7,20 @@ import { PlusCircle, Target, Zap, Goal } from "lucide-react";
 import { useSavings } from "@/context/savings-context";
 import Link from "next/link";
 import { SavingsGoalCard } from "@/components/dashboard/savings-goal-card";
+import { useLocale } from "@/context/locale-context";
 
 export default function SavingsPage() {
   const { savingsGoals, addFunds, deleteSavingsGoal } = useSavings();
+  const { t } = useLocale();
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold font-headline">Objectifs d'Épargne</h1>
+        <h1 className="text-3xl font-bold font-headline">{t('nav_savings')}</h1>
         <Button asChild>
           <Link href="/dashboard/savings/create">
             <PlusCircle className="mr-2 h-4 w-4" />
-            Nouvel Objectif
+            {t('new_goal_button')}
           </Link>
         </Button>
       </div>
@@ -27,10 +29,10 @@ export default function SavingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-primary"/>
-            <span>Budgets vs. Épargne</span>
+            <span>{t('budgets_vs_savings_title')}</span>
           </CardTitle>
           <CardDescription>
-            Utilisez les **Budgets** pour contrôler vos dépenses mensuelles et l'**Épargne** pour atteindre vos grands objectifs financiers.
+            {t('budgets_vs_savings_desc')}
           </CardDescription>
         </CardHeader>
       </Card>
@@ -41,16 +43,16 @@ export default function SavingsPage() {
                 <div className="mx-auto bg-secondary p-4 rounded-full mb-4">
                     <Goal className="h-12 w-12 text-muted-foreground" />
                 </div>
-                <CardTitle>Aucun objectif d'épargne</CardTitle>
+                <CardTitle>{t('no_savings_goals_title')}</CardTitle>
                 <CardDescription>
-                    Créez votre premier objectif pour commencer à épargner pour ce qui compte.
+                    {t('no_savings_goals_desc')}
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <Button asChild>
                   <Link href="/dashboard/savings/create">
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    Créer un objectif
+                    {t('create_goal_button')}
                   </Link>
                 </Button>
             </CardContent>

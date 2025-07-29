@@ -14,8 +14,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2, Send, PlusCircle, Mic, MicOff } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { cn } from '@/lib/utils';
 import { Message } from '@/types/message';
+import { useLocale } from '@/context/locale-context';
 
 const assistantSchema = z.object({
   prompt: z.string().min(1, 'Veuillez entrer une question.'),
@@ -26,6 +26,7 @@ type AssistantFormValues = z.infer<typeof assistantSchema>;
 type Conversation = Message[];
 
 export function ConseilPanel() {
+  const { t, locale } = useLocale();
   const [currentConversation, setCurrentConversation] = useState<Conversation>([]);
   const [conversationHistory, setConversationHistory] = useState<Conversation[]>([]);
   const [isThinking, setIsThinking] = useState(false);
@@ -79,7 +80,7 @@ export function ConseilPanel() {
         const recognition = recognitionRef.current;
         recognition.continuous = true;
         recognition.interimResults = true;
-        recognition.lang = 'fr-FR';
+        recognition.lang = locale;
 
         recognition.onresult = (event: any) => {
             let interimTranscript = '';
@@ -96,13 +97,15 @@ export function ConseilPanel() {
 
         recognition.onerror = (event: any) => {
             console.error('Speech recognition error', event.error);
-            toast({ variant: 'destructive', title: 'Erreur de reconnaissance vocale' });
+            toast({ variant: 'destructive', title: t('speech_recognition_error') });
             setIsListening(false);
         };
         
         recognition.onend = () => {
             setIsListening(false);
         }
+    } else {
+      recognitionRef.current.lang = locale;
     }
 
     return () => {
@@ -110,7 +113,7 @@ export function ConseilPanel() {
         recognitionRef.current.stop();
       }
     };
-  }, [form, toast]);
+  }, [form, toast, locale, t]);
 
 
   const handleNewConversation = () => {
@@ -136,6 +139,7 @@ export function ConseilPanel() {
       const result = await askExpenseAssistant({
         question: data.prompt,
         history: newConversation.slice(0, -1),
+        language: locale,
       });
 
       const assistantMessage: Message = { role: 'model', content: [{ text: result.answer }] };
@@ -145,8 +149,8 @@ export function ConseilPanel() {
       console.error('AI assistant failed:', error);
       toast({
         variant: 'destructive',
-        title: 'Assistant Error',
-        description: 'The assistant could not respond. Please try again.',
+        title: t('assistant_error_title'),
+        description: t('assistant_error_desc'),
       });
       setCurrentConversation(prev => prev.slice(0, -1));
     } finally {
@@ -157,10 +161,10 @@ export function ConseilPanel() {
   return (
     <div className="flex flex-col h-full bg-background md:bg-transparent">
       <div className='p-4 md:p-6 border-b flex justify-between items-center flex-shrink-0'>
-        <h1 className="text-xl font-bold font-headline">Conseil IA</h1>
+        <h1 className="text-xl font-bold font-headline">{t('nav_advice')} IA</h1>
         <Button variant="ghost" size="sm" onClick={handleNewConversation}>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Nouveau
+          {t('new_chat_button')}
         </Button>
       </div>
 
@@ -213,7 +217,7 @@ export function ConseilPanel() {
         {conversationHistory.length > 0 && (
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1">
-              <AccordionTrigger>Historique</AccordionTrigger>
+              <AccordionTrigger>{t('history_button')}</AccordionTrigger>
               <AccordionContent>
                 <ScrollArea className="h-32">
                   <div className='space-y-2 pr-4'>
@@ -225,7 +229,7 @@ export function ConseilPanel() {
                           }
                           setCurrentConversation(convo);
                         }}>
-                          {convo[0]?.content[0]?.text || 'Conversation vide'}
+                          {convo[0]?.content[0]?.text || t('empty_conversation')}
                         </div>
                     ))}
                   </div>
@@ -252,7 +256,7 @@ export function ConseilPanel() {
                 <FormItem className="flex-1">
                   <FormControl>
                     <Input
-                      placeholder="Posez une question..."
+                      placeholder={t('ask_a_question_placeholder')}
                       {...field}
                       disabled={isThinking}
                       className="pr-10"

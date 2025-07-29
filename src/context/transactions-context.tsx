@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState, ReactNode, useMemo, useCallback } from 'react';
 import { Transaction } from '@/types/transaction';
 import { useToast } from '@/hooks/use-toast';
+import { useLocale } from './locale-context';
 
 interface TransactionsContextType {
   transactions: Transaction[];
@@ -21,6 +22,7 @@ const TransactionsContext = createContext<TransactionsContextType | undefined>(u
 export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const { toast } = useToast();
+  const { t } = useLocale();
 
   const addTransaction = useCallback(async (transaction: Transaction) => {
     setTransactions(prevTransactions => [...prevTransactions, transaction].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
@@ -33,9 +35,9 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
   const deleteTransaction = useCallback(async (id: string) => {
     setTransactions(prev => prev.filter(t => t.id !== id));
     toast({
-        title: "Transaction supprimée",
+        title: t('transaction_deleted_title'),
     });
-  }, [toast]);
+  }, [toast, t]);
 
   const getTransactionById = useCallback((id: string) => {
     return transactions.find(t => t.id === id);

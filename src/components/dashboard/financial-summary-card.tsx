@@ -4,8 +4,9 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getFinancialSummary } from "@/ai/flows/financial-summary";
-import { Loader2, Lightbulb, Activity } from "lucide-react";
+import { Lightbulb, Activity } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
+import { useLocale } from "@/context/locale-context";
 
 interface FinancialSummaryCardProps {
     income: number;
@@ -14,6 +15,7 @@ interface FinancialSummaryCardProps {
 }
 
 export function FinancialSummaryCard({ income, expenses, chartData }: FinancialSummaryCardProps) {
+    const { t, locale, currency } = useLocale();
     const [summary, setSummary] = useState("");
     const [advice, setAdvice] = useState("");
     const [isLoading, setIsLoading] = useState(true);
@@ -25,21 +27,23 @@ export function FinancialSummaryCard({ income, expenses, chartData }: FinancialS
                 const result = await getFinancialSummary({ 
                     income, 
                     expenses, 
-                    expensesByCategory: chartData 
+                    expensesByCategory: chartData,
+                    language: locale,
+                    currency
                 });
                 setSummary(result.summary);
                 setAdvice(result.advice);
             } catch (error) {
                 console.error("Failed to get financial summary:", error);
-                setSummary("Impossible de générer le résumé.");
-                setAdvice("Une erreur est survenue lors de l'analyse de vos données.");
+                setSummary(t('summary_generation_error'));
+                setAdvice(t('advice_generation_error'));
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchSummary();
-    }, [income, expenses, chartData]);
+    }, [income, expenses, chartData, locale, currency, t]);
 
     if (isLoading) {
         return (
@@ -70,14 +74,14 @@ export function FinancialSummaryCard({ income, expenses, chartData }: FinancialS
                 <div className="flex items-start gap-4">
                     <Activity className="h-5 w-5 text-primary mt-1" />
                     <div>
-                        <h4 className="font-semibold">Résumé du mois</h4>
+                        <h4 className="font-semibold">{t('monthly_summary_title')}</h4>
                         <p className="text-sm text-muted-foreground">{summary}</p>
                     </div>
                 </div>
                 <div className="flex items-start gap-4">
                     <Lightbulb className="h-5 w-5 text-yellow-400 mt-1" />
                     <div>
-                        <h4 className="font-semibold">Conseil pour vous</h4>
+                        <h4 className="font-semibold">{t('advice_for_you_title')}</h4>
                         <p className="text-sm text-muted-foreground">{advice}</p>
                     </div>
                 </div>

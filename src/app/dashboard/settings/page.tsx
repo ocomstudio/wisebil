@@ -16,24 +16,28 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck } from "lucide-react";
+import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck, Languages, Wallet } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useSettings } from "@/context/settings-context";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-
-const profileSchema = z.object({
-  fullName: z.string().min(2, "Le nom est requis."),
-  email: z.string().email("Adresse e-mail invalide."),
-  phone: z.string().min(9, "Numéro de téléphone invalide."),
-});
-
-type ProfileFormValues = z.infer<typeof profileSchema>;
+import { useLocale } from "@/context/locale-context";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { Language, Currency } from "@/context/locale-context";
 
 export default function SettingsPage() {
   const { settings, updateSettings, checkPin } = useSettings();
   const { toast } = useToast();
+  const { t, locale, setLocale, currency, setCurrency } = useLocale();
+
+  const profileSchema = z.object({
+    fullName: z.string().min(2, t('fullname_error')),
+    email: z.string().email(t('email_error')),
+    phone: z.string().min(9, t('phone_error')),
+  });
+
+  type ProfileFormValues = z.infer<typeof profileSchema>;
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -47,59 +51,57 @@ export default function SettingsPage() {
   const onProfileSubmit = (data: ProfileFormValues) => {
     console.log("Profile updated:", data);
     toast({
-      title: "Profil mis à jour",
-      description: "Vos informations ont été sauvegardées.",
+      title: t('profile_updated_title'),
+      description: t('profile_updated_desc'),
     });
   };
   
   const handleTogglePinLock = (isChecked: boolean) => {
     if (isChecked) {
-      // Logic to enable PIN lock
       if (!settings.pin) {
-        const newPin = prompt("Veuillez définir un nouveau code PIN à 4 chiffres.");
+        const newPin = prompt(t('set_pin_prompt'));
         if (newPin && /^\d{4}$/.test(newPin)) {
           updateSettings({ isPinLockEnabled: true, pin: newPin });
-          toast({ title: "Verrouillage par code PIN activé." });
+          toast({ title: t('pin_lock_enabled_title') });
         } else {
-          toast({ variant: "destructive", title: "Code PIN invalide. Le PIN doit contenir 4 chiffres." });
+          toast({ variant: "destructive", title: t('invalid_pin_error') });
         }
       } else {
          updateSettings({ isPinLockEnabled: true });
-         toast({ title: "Verrouillage par code PIN activé." });
+         toast({ title: t('pin_lock_enabled_title') });
       }
     } else {
-      // Logic to disable PIN lock
-      const pin = prompt("Veuillez entrer votre code PIN pour désactiver le verrouillage.");
+      const pin = prompt(t('enter_pin_to_disable_prompt'));
       if (pin && checkPin(pin)) {
         updateSettings({ isPinLockEnabled: false, isBalanceHidden: false }); 
-        toast({ title: "Verrouillage par code PIN désactivé." });
+        toast({ title: t('pin_lock_disabled_title') });
       } else if (pin !== null) {
-        toast({ variant: "destructive", title: "Code PIN incorrect." });
+        toast({ variant: "destructive", title: t('incorrect_pin') });
       }
     }
   };
 
   const handleToggleBalanceVisibility = (isChecked: boolean) => {
-    const pin = prompt("Veuillez entrer votre code PIN pour modifier ce paramètre.");
+    const pin = prompt(t('enter_pin_to_change_setting_prompt'));
     if (pin && checkPin(pin)) {
         updateSettings({ isBalanceHidden: isChecked });
-        toast({ title: `Visibilité du solde ${isChecked ? 'masquée par défaut' : 'affichée par défaut'}.` });
+        toast({ title: t(isChecked ? 'balance_hidden_title' : 'balance_shown_title') });
     } else if (pin !== null) {
-        toast({ variant: "destructive", title: "Code PIN incorrect." });
+        toast({ variant: "destructive", title: t('incorrect_pin') });
     }
   };
 
   return (
     <div className="space-y-8 pb-24 md:pb-8">
       <div>
-        <h1 className="text-3xl font-bold font-headline">Paramètres</h1>
-        <p className="text-muted-foreground">Gérez votre compte et vos préférences.</p>
+        <h1 className="text-3xl font-bold font-headline">{t('nav_settings')}</h1>
+        <p className="text-muted-foreground">{t('settings_subtitle')}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Profil</CardTitle>
-          <CardDescription>Mettez à jour vos informations personnelles.</CardDescription>
+          <CardTitle>{t('profile_title')}</CardTitle>
+          <CardDescription>{t('profile_desc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -120,7 +122,7 @@ export default function SettingsPage() {
                     name="fullName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nom complet</FormLabel>
+                        <FormLabel>{t('fullname_label')}</FormLabel>
                         <FormControl>
                           <Input placeholder="John Doe" {...field} />
                         </FormControl>
@@ -136,7 +138,7 @@ export default function SettingsPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Adresse e-mail</FormLabel>
+                    <FormLabel>{t('email_label')}</FormLabel>
                     <FormControl>
                       <Input type="email" placeholder="votre@email.com" {...field} />
                     </FormControl>
@@ -150,7 +152,7 @@ export default function SettingsPage() {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Numéro de téléphone</FormLabel>
+                    <FormLabel>{t('phone_number_label')}</FormLabel>
                     <FormControl>
                       <Input type="tel" placeholder="+221 77 123 45 67" {...field} />
                     </FormControl>
@@ -160,7 +162,7 @@ export default function SettingsPage() {
               />
 
               <div className="flex justify-end">
-                <Button type="submit">Sauvegarder les modifications</Button>
+                <Button type="submit">{t('save_changes_button')}</Button>
               </div>
             </form>
           </Form>
@@ -169,14 +171,55 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Sécurité</CardTitle>
-          <CardDescription>Protégez votre compte et vos informations.</CardDescription>
+          <CardTitle>{t('preferences_title')}</CardTitle>
+          <CardDescription>{t('preferences_desc')}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+           <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <h3 className="font-medium flex items-center gap-2"><Languages className="h-4 w-4" /> {t('language_label')}</h3>
+              <p className="text-sm text-muted-foreground">{t('language_setting_desc')}</p>
+            </div>
+             <Select value={locale} onValueChange={(value) => setLocale(value as Language)}>
+                <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder={t('language')} />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="fr">Français</SelectItem>
+                    <SelectItem value="en">English</SelectItem>
+                </SelectContent>
+            </Select>
+          </div>
+           <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <h3 className="font-medium flex items-center gap-2"><Wallet className="h-4 w-4" /> {t('currency_label')}</h3>
+              <p className="text-sm text-muted-foreground">{t('currency_setting_desc')}</p>
+            </div>
+             <Select value={currency} onValueChange={(value) => setCurrency(value as Currency)}>
+                <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder={t('currency')} />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="XOF">{t('currency_xof')} (XOF)</SelectItem>
+                    <SelectItem value="EUR">{t('currency_eur')} (EUR)</SelectItem>
+                    <SelectItem value="USD">{t('currency_usd')} (USD)</SelectItem>
+                </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('security_title')}</CardTitle>
+          <CardDescription>{t('security_desc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <h3 className="font-medium flex items-center gap-2"><Lock className="h-4 w-4" /> Verrouillage par code PIN</h3>
-              <p className="text-sm text-muted-foreground">Activez un code PIN pour sécuriser certaines actions.</p>
+              <h3 className="font-medium flex items-center gap-2"><Lock className="h-4 w-4" /> {t('pin_lock_label')}</h3>
+              <p className="text-sm text-muted-foreground">{t('pin_lock_desc')}</p>
             </div>
             <Switch
               checked={settings.isPinLockEnabled}
@@ -185,8 +228,8 @@ export default function SettingsPage() {
           </div>
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <h3 className="font-medium flex items-center gap-2"><EyeOff className="h-4 w-4" /> Masquer le solde par défaut</h3>
-              <p className="text-sm text-muted-foreground">Cachez votre solde total sur le tableau de bord.</p>
+              <h3 className="font-medium flex items-center gap-2"><EyeOff className="h-4 w-4" /> {t('hide_balance_label')}</h3>
+              <p className="text-sm text-muted-foreground">{t('hide_balance_desc')}</p>
             </div>
             <Switch
               checked={settings.isBalanceHidden}
@@ -199,24 +242,24 @@ export default function SettingsPage() {
       
        <Card>
         <CardHeader>
-          <CardTitle>À propos</CardTitle>
-          <CardDescription>Informations sur l'application et mentions légales.</CardDescription>
+          <CardTitle>{t('about_title')}</CardTitle>
+          <CardDescription>{t('about_desc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <Info className="h-5 w-5"/>
-                <p>Wisebil est une application conçue et développée par <strong>Ocomstudio</strong>.</p>
+                <p>{t('app_info')}</p>
             </div>
              <Separator />
             <div className="space-y-2">
                 <Button variant="ghost" className="w-full justify-start p-0 h-auto" asChild>
                     <Link href="/privacy-policy">
-                         <ShieldCheck className="mr-2 h-4 w-4"/> Politique de confidentialité
+                         <ShieldCheck className="mr-2 h-4 w-4"/> {t('privacy_policy')}
                     </Link>
                 </Button>
                  <Button variant="ghost" className="w-full justify-start p-0 h-auto" asChild>
                     <Link href="/terms-of-service">
-                        <FileText className="mr-2 h-4 w-4"/> Conditions d'utilisation
+                        <FileText className="mr-2 h-4 w-4"/> {t('terms_of_service')}
                     </Link>
                 </Button>
             </div>

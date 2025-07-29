@@ -18,6 +18,8 @@ const FinancialSummaryInputSchema = z.object({
     name: z.string(),
     amount: z.number(),
   })).describe('An array of expense categories with their total amounts.'),
+  language: z.string().describe("The user's preferred language (e.g., 'fr', 'en')."),
+  currency: z.string().describe("The user's preferred currency (e.g., 'XOF', 'EUR', 'USD')."),
 });
 export type FinancialSummaryInput = z.infer<typeof FinancialSummaryInputSchema>;
 
@@ -36,24 +38,32 @@ const prompt = ai.definePrompt({
   input: {schema: FinancialSummaryInputSchema},
   output: {schema: FinancialSummaryOutputSchema},
   model: 'googleai/gemini-1.5-flash',
-  prompt: `You are a friendly and encouraging financial advisor for the Wisebil app. Your goal is to analyze the user's financial data and provide a simple, positive summary and one actionable piece of advice. Speak in French.
+  prompt: `You are a friendly and encouraging financial advisor for the Wisebil app. Your goal is to analyze the user's financial data and provide a simple, positive summary and one actionable piece of advice. 
+  
+  You MUST speak in the user's specified language: {{{language}}}.
 
   Financial Data:
-  - Total Income: {{{income}}} FCFA
-  - Total Expenses: {{{expenses}}} FCFA
+  - Total Income: {{{income}}} {{{currency}}}
+  - Total Expenses: {{{expenses}}} {{{currency}}}
   - Expenses by Category:
   {{#each expensesByCategory}}
-    - {{name}}: {{amount}} FCFA
+    - {{name}}: {{amount}} {{{../currency}}}
   {{/each}}
 
   Based on this data, provide:
   1.  A short, positive summary of their financial activity. For example, if they spent less than they earned, congratulate them. If not, be encouraging about taking control.
   2.  One clear, simple, and actionable piece of advice. Focus on the largest spending category or the relationship between income and expenses.
 
-  Example Output:
+  Example Output (if language is 'fr'):
   {
     "summary": "Excellent ! Ce mois-ci, vos revenus ont dépassé vos dépenses. C'est une superbe gestion !",
     "advice": "Votre plus gros poste de dépense est l'Alimentation; cherchez des recettes économiques pour optimiser ce budget."
+  }
+  
+  Example Output (if language is 'en'):
+  {
+    "summary": "Excellent! This month, your income exceeded your expenses. That's great management!",
+    "advice": "Your biggest spending category is Food; look for budget-friendly recipes to optimize this budget."
   }
 
   Respond ONLY with a JSON object conforming to the schema.
@@ -69,10 +79,17 @@ const financialSummaryFlow = ai.defineFlow(
   async input => {
     // Avoid calling the AI if there's no data to analyze
     if (input.income === 0 && input.expenses === 0) {
-      return {
-        summary: "Bienvenue ! Ajoutez vos premières transactions pour voir votre résumé financier ici.",
-        advice: "Commencez par enregistrer une dépense ou un revenu pour prendre le contrôle de vos finances."
-      };
+      if (input.language === 'fr') {
+        return {
+          summary: "Bienvenue ! Ajoutez vos premières transactions pour voir votre résumé financier ici.",
+          advice: "Commencez par enregistrer une dépense ou un revenu pour prendre le contrôle de vos finances."
+        };
+      } else {
+         return {
+          summary: "Welcome! Add your first transactions to see your financial summary here.",
+          advice: "Start by recording an expense or income to take control of your finances."
+        };
+      }
     }
 
     const {output} = await prompt(input);
