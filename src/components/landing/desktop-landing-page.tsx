@@ -49,21 +49,24 @@ const testimonials = [
         role: "Chef de projet",
         quote: "Wisebil a transformé ma façon de gérer mon argent. L'IA est incroyablement précise pour catégoriser mes dépenses, ce qui me fait gagner un temps précieux chaque mois.",
         rating: 5,
-        avatar: "https://placehold.co/40x40.png"
+        avatar: "https://placehold.co/40x40.png",
+        "data-ai-hint": "woman avatar"
     },
     {
         name: "Elhadj N.",
         role: "Développeur Freelance",
         quote: "En tant que freelance, mes revenus varient. Wisebil m'aide à avoir une vision claire de ma trésorerie et à planifier mes investissements. L'assistant IA est un vrai plus !",
         rating: 5,
-        avatar: "https://placehold.co/40x40.png"
+        avatar: "https://placehold.co/40x40.png",
+        "data-ai-hint": "man avatar"
     },
     {
         name: "Aminata S.",
         role: "Étudiante",
         quote: "Gérer mon budget étudiant était un casse-tête. Maintenant, je sais exactement où va mon argent et je peux même mettre de côté pour mes projets. Je recommande à 100% !",
         rating: 5,
-        avatar: "https://placehold.co/40x40.png"
+        avatar: "https://placehold.co/40x40.png",
+        "data-ai-hint": "woman avatar"
     }
 ];
 
@@ -127,7 +130,7 @@ export default function DesktopLandingPage() {
         <section className="w-full py-20 md:py-32 lg:py-40 relative overflow-hidden">
              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-primary/10 z-0"></div>
              <div className="container px-4 md:px-6 z-10 relative">
-                 <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:gap-24">
+                 <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:gap-24 items-center">
                     <div className="flex flex-col justify-center space-y-4">
                         <div className="space-y-4">
                             <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-foreground">
@@ -202,7 +205,7 @@ export default function DesktopLandingPage() {
                         </p>
                     </div>
                 </div>
-                <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-1 lg:grid-cols-3 mt-12">
+                <div className="mx-auto grid max-w-5xl items-stretch gap-8 sm:grid-cols-1 lg:grid-cols-3 mt-12">
                     {/* Free Plan */}
                     <Card className="flex flex-col">
                         <CardHeader className="pb-4">
@@ -218,7 +221,7 @@ export default function DesktopLandingPage() {
                                 <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Assistant IA (1 usage/mois)</li>
                             </ul>
                         </CardContent>
-                        <div className="p-6 pt-0">
+                        <div className="p-6 pt-0 mt-auto">
                              <Button asChild variant="outline" className="w-full">
                                 <Link href="/auth/signup">Choisir ce plan</Link>
                             </Button>
@@ -240,7 +243,7 @@ export default function DesktopLandingPage() {
                                 <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Support prioritaire</li>
                             </ul>
                         </CardContent>
-                        <div className="p-6 pt-0">
+                        <div className="p-6 pt-0 mt-auto">
                             <Button asChild className="w-full">
                                 <Link href="/auth/signup">Passer au Premium</Link>
                             </Button>
@@ -261,7 +264,7 @@ export default function DesktopLandingPage() {
                                 <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Accès anticipé aux nouveautés</li>
                             </ul>
                         </CardContent>
-                         <div className="p-6 pt-0">
+                         <div className="p-6 pt-0 mt-auto">
                             <Button asChild variant="outline" className="w-full">
                                 <Link href="/auth/signup">Choisir ce plan</Link>
                             </Button>
@@ -286,7 +289,7 @@ export default function DesktopLandingPage() {
                         <Card key={testimonial.name} className="bg-card/50 backdrop-blur-sm border-border/50">
                             <CardContent className="p-6">
                                 <div className="flex items-center mb-4 gap-3">
-                                    <Image src={testimonial.avatar} alt={testimonial.name} width={40} height={40} className="rounded-full" data-ai-hint="woman avatar" />
+                                    <Image src={testimonial.avatar} alt={testimonial.name} width={40} height={40} className="rounded-full" data-ai-hint={testimonial['data-ai-hint']} />
                                     <div>
                                       <div className="font-semibold">{testimonial.name}</div>
                                       <div className="text-xs text-muted-foreground">{testimonial.role}</div>
@@ -403,5 +406,3 @@ export default function DesktopLandingPage() {
     </div>
   );
 }
-
-    
