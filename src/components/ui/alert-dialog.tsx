@@ -36,7 +36,7 @@ const AlertDialogContent = React.forwardRef<
     <AlertDialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-sm translate-x-[-50%] translate-y-[-50%] gap-4 border-0 bg-neutral-900 p-4 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 rounded-2xl",
+        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-sm translate-x-[-50%] translate-y-[-50%] gap-4 border-0 bg-neutral-900/95 p-4 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 rounded-2xl backdrop-blur-sm",
         className
       )}
       {...props}
@@ -51,7 +51,7 @@ const AlertDialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col space-y-2 text-center",
+      "flex flex-col space-y-2 text-center items-center",
       className
     )}
     {...props}
@@ -65,7 +65,7 @@ const AlertDialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex gap-2",
+      "flex flex-col-reverse sm:flex-row sm:justify-center sm:space-x-2",
       className
     )}
     {...props}
@@ -104,7 +104,7 @@ const AlertDialogAction = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AlertDialogPrimitive.Action
     ref={ref}
-    className={cn(buttonVariants({ variant: 'default'}), "w-full bg-neutral-700 hover:bg-neutral-600 text-white", className)}
+    className={cn(buttonVariants({ variant: 'default'}), "w-full bg-neutral-700 hover:bg-neutral-600 text-white rounded-full", className)}
     {...props}
   />
 ))
@@ -118,7 +118,7 @@ const AlertDialogCancel = React.forwardRef<
     ref={ref}
     className={cn(
       buttonVariants({ variant: "outline" }),
-      "mt-0 w-full bg-neutral-700 hover:bg-neutral-600 text-white border-0 hover:text-white",
+      "mt-0 w-full bg-neutral-700 hover:bg-neutral-600 text-white border-0 hover:text-white rounded-full",
       className
     )}
     {...props}

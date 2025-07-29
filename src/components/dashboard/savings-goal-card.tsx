@@ -124,16 +124,19 @@ export function SavingsGoalCard({ goal, onAddFunds, onDelete }: SavingsGoalCardP
                 
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                    <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Cette action est irréversible. L'objectif "{name}" sera supprimé définitivement.
-                    </AlertDialogDescription>
+                       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+                            <Trash2 className="h-6 w-6 text-red-600" />
+                        </div>
+                        <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Cette action est irréversible. L'objectif "{name}" sera supprimé définitivement.
+                        </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => onDelete(id)} className="bg-destructive hover:bg-destructive/90">
-                        Supprimer
-                    </AlertDialogAction>
+                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => onDelete(id)} className="bg-destructive hover:bg-destructive/90">
+                            Supprimer
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </Dialog>

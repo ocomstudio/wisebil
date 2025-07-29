@@ -77,6 +77,9 @@ export function BudgetCard({ budget, spent, onDelete }: BudgetCardProps) {
 
             <AlertDialogContent>
               <AlertDialogHeader>
+                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+                    <Trash2 className="h-6 w-6 text-red-600" />
+                </div>
                 <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
                 <AlertDialogDescription>
                   Cette action est irréversible. Le budget "{name}" sera supprimé définitivement.
