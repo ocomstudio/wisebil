@@ -29,10 +29,6 @@ interface Message {
 
 type Conversation = Message[];
 
-// Check for SpeechRecognition API
-const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-const isSpeechRecognitionSupported = !!SpeechRecognition;
-
 export function ConseilPanel() {
   const [currentConversation, setCurrentConversation] = useState<Conversation>([]);
   const [conversationHistory, setConversationHistory] = useState<Conversation[]>([]);
@@ -41,6 +37,8 @@ export function ConseilPanel() {
   const recognitionRef = useRef<any>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState(false);
 
   const form = useForm<AssistantFormValues>({
     resolver: zodResolver(assistantSchema),
@@ -56,7 +54,11 @@ export function ConseilPanel() {
   }, [currentConversation]);
 
   useEffect(() => {
-    if (!isSpeechRecognitionSupported) return;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const supported = !!SpeechRecognition;
+    setIsSpeechRecognitionSupported(supported);
+
+    if (!supported) return;
 
     recognitionRef.current = new SpeechRecognition();
     const recognition = recognitionRef.current;
@@ -88,7 +90,9 @@ export function ConseilPanel() {
     }
 
     return () => {
-      recognition.stop();
+      if (recognition) {
+        recognition.stop();
+      }
     };
   }, [form, toast]);
 
