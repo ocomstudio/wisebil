@@ -30,7 +30,7 @@ const prompt = ai.definePrompt({
   name: 'expenseAssistantPrompt',
   input: {schema: ExpenseAssistantInputSchema},
   output: {schema: ExpenseAssistantOutputSchema},
-  prompt: `You are a friendly and helpful expense management assistant for the Wisebil app. Your goal is to answer user questions about their spending based on the provided data and conversation history.
+  prompt: `You are a friendly and helpful financial advisor for the Wisebil app. Your goal is to answer user questions about their spending based on the provided data and conversation history.
 
   You must answer in the same language as the user's question.
 

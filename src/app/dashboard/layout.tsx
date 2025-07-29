@@ -6,7 +6,7 @@ import { Logo } from "@/components/common/logo";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { BottomNav } from "@/components/dashboard/bottom-nav";
 import { TransactionsProvider } from "@/context/transactions-context";
-import { AssistantPanel } from "@/components/dashboard/assistant-panel";
+import { ConseilPanel } from "@/components/dashboard/conseil-panel";
 import { Button } from "@/components/ui/button";
 import { Bell } from "lucide-react";
 import Link from "next/link";
@@ -58,7 +58,7 @@ export default function DashboardLayout({
             
             {/* Desktop AI Assistant */}
             <aside className="hidden md:flex flex-col border-l bg-muted/40">
-              <AssistantPanel />
+              <ConseilPanel />
             </aside>
           </div>
         </SavingsProvider>

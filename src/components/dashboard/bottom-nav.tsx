@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BarChart, Plus, User, Shield, Target } from 'lucide-react';
+import { Home, BarChart, Plus, User, Shield, Target, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AddTransactionDialog } from './add-transaction-dialog';
 
@@ -12,7 +12,7 @@ const navItems = [
   { href: '/dashboard/reports', label: 'Statistiques', icon: BarChart },
   { href: '/dashboard/budget', label: 'Budgets', icon: Target },
   { href: '/dashboard/savings', label: 'Épargne', icon: Shield },
-  { href: '/dashboard/assistant', label: 'Assistant', icon: User },
+  { href: '/dashboard/conseil', label: 'Conseil', icon: Lightbulb },
 ];
 
 export function BottomNav() {
