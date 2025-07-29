@@ -13,7 +13,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Logo } from '@/components/common/logo';
 import { Wallet, Bot, BarChart2, PartyPopper, Globe, DollarSign, Euro, CircleDollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -164,6 +164,12 @@ export function MobileWelcomeFlow() {
         
         <Dialog open={showWelcomeModal} onOpenChange={setShowWelcomeModal}>
             <DialogContent className="max-w-[90vw] rounded-2xl">
+                 <DialogHeader className="sr-only">
+                    <DialogTitle>Bienvenue sur Wisebil</DialogTitle>
+                    <DialogDescription>
+                        Une brève introduction aux fonctionnalités clés de l'application.
+                    </DialogDescription>
+                </DialogHeader>
                  <Carousel className="w-full -mx-2">
                     <CarouselContent>
                         {onboardingSteps.map((step, index) => (
