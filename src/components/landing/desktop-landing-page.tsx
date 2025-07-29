@@ -13,9 +13,10 @@ import { GooglePlayLogo } from './logos/google-play-logo';
 import { AppStoreLogo } from './logos/app-store-logo';
 import { LanguageSelector } from '../common/language-selector';
 import { useLocale } from '@/context/locale-context';
+import type { Currency } from '@/context/locale-context';
 
 export default function DesktopLandingPage() {
-    const { t } = useLocale();
+    const { t, currency, formatCurrency } = useLocale();
 
     const features = [
         {
@@ -109,6 +110,26 @@ export default function DesktopLandingPage() {
       },
     };
 
+    const pricing = {
+        premium: { XOF: 9000 },
+        business: { XOF: 19900 },
+    };
+
+    const conversionRates: Record<Currency, number> = {
+        XOF: 1,
+        EUR: 655.957,
+        USD: 610,
+    };
+
+    const getConvertedPrice = (basePriceXOF: number, targetCurrency: Currency): number => {
+        if (targetCurrency === 'XOF') {
+            return basePriceXOF;
+        }
+        const priceInXOF = basePriceXOF;
+        const rate = conversionRates[targetCurrency];
+        return Math.round(priceInXOF / rate);
+    };
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
       <header className="w-full px-4 lg:px-6 h-16 flex justify-center bg-background/80 backdrop-blur-sm sticky top-0 z-50 border-b border-border/50">
@@ -153,7 +174,7 @@ export default function DesktopLandingPage() {
              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-primary/10 z-0"></div>
              <div className="w-full max-w-7xl px-4 md:px-6 z-10 relative">
                  <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:gap-24 items-center">
-                    <div className="flex flex-col justify-center space-y-4">
+                    <div className="flex flex-col justify-center space-y-4 lg:order-last">
                         <div className="space-y-4">
                             <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-foreground">
                                 {t('hero_title_part1')} <span className="text-primary">{t('hero_title_part2')}</span>
@@ -174,7 +195,6 @@ export default function DesktopLandingPage() {
                      <motion.div 
                         animate={{ y: [0, -10, 0] }}
                         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                        className="lg:order-first"
                     >
                         <Image
                             src="https://placehold.co/600x600.png"
@@ -259,7 +279,7 @@ export default function DesktopLandingPage() {
                     <Card className="flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/20 shadow-xl">
                         <CardHeader className="pb-4">
                             <CardTitle className="font-headline text-2xl">{t('plan_free_title')}</CardTitle>
-                            <p className="text-4xl font-bold">0 F <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
+                            <p className="text-4xl font-bold">{formatCurrency(0)} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
                             <p className="text-muted-foreground text-sm pt-2">{t('plan_free_desc')}</p>
                         </CardHeader>
                         <CardContent className="flex-1 space-y-4">
@@ -280,7 +300,7 @@ export default function DesktopLandingPage() {
                          <CardHeader className="pb-4">
                             <p className="text-sm font-semibold text-primary">{t('plan_premium_badge')}</p>
                             <CardTitle className="font-headline text-2xl">{t('plan_premium_title')}</CardTitle>
-                            <p className="text-4xl font-bold">9 000 F <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
+                            <p className="text-4xl font-bold">{formatCurrency(getConvertedPrice(pricing.premium.XOF, currency))} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
                             <p className="text-muted-foreground text-sm pt-2">{t('plan_premium_desc')}</p>
                         </CardHeader>
                         <CardContent className="flex-1 space-y-4">
@@ -300,7 +320,7 @@ export default function DesktopLandingPage() {
                      <Card className="flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/20 shadow-xl">
                         <CardHeader className="pb-4">
                             <CardTitle className="font-headline text-2xl">{t('plan_business_title')}</CardTitle>
-                            <p className="text-4xl font-bold">19 900 F <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
+                            <p className="text-4xl font-bold">{formatCurrency(getConvertedPrice(pricing.business.XOF, currency))} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
                             <p className="text-muted-foreground text-sm pt-2">{t('plan_business_desc')}</p>
                         </CardHeader>
                         <CardContent className="flex-1 space-y-4">
