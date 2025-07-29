@@ -45,7 +45,10 @@ export function ConseilPanel() {
 
   useEffect(() => {
     if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
+      const scrollEl = scrollAreaRef.current.querySelector('div');
+      if (scrollEl) {
+        scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' });
+      }
     }
   }, [currentConversation]);
 
@@ -142,7 +145,6 @@ export function ConseilPanel() {
         title: 'Assistant Error',
         description: 'The assistant could not respond. Please try again.',
       });
-      // remove the user message if the assistant fails
       setCurrentConversation(prev => prev.slice(0, -1));
     } finally {
       setIsThinking(false);
@@ -151,7 +153,7 @@ export function ConseilPanel() {
 
   return (
     <div className="flex flex-col h-full bg-background md:bg-transparent">
-      <div className='p-4 md:p-6 border-b flex justify-between items-center'>
+      <div className='p-4 md:p-6 border-b flex justify-between items-center flex-shrink-0'>
         <h1 className="text-xl font-bold font-headline">Conseil IA</h1>
         <Button variant="ghost" size="sm" onClick={handleNewConversation}>
           <PlusCircle className="mr-2 h-4 w-4" />
@@ -159,8 +161,8 @@ export function ConseilPanel() {
         </Button>
       </div>
 
-      <div className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full pr-4" ref={scrollAreaRef}>
+      <div className="flex-1 overflow-y-auto">
+        <ScrollArea className="h-full" ref={scrollAreaRef}>
           <div className="p-4 md:p-6 space-y-6">
             {currentConversation.map((message, index) => (
               <div
@@ -181,7 +183,7 @@ export function ConseilPanel() {
                       : 'bg-muted'
                   }`}
                 >
-                  <p className="text-sm">{message.content[0].text}</p>
+                  <p className="text-sm whitespace-pre-wrap">{message.content[0].text}</p>
                 </div>
                 {message.role === 'user' && (
                   <Avatar className="h-8 w-8">
@@ -204,14 +206,14 @@ export function ConseilPanel() {
         </ScrollArea>
       </div>
 
-      <div className='p-4 md:p-6 border-t space-y-4'>
+      <div className='p-4 md:p-6 border-t space-y-4 flex-shrink-0'>
         {conversationHistory.length > 0 && (
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1">
               <AccordionTrigger>Historique</AccordionTrigger>
               <AccordionContent>
                 <ScrollArea className="h-32">
-                  <div className='space-y-2'>
+                  <div className='space-y-2 pr-4'>
                     {conversationHistory.map((convo, index) => (
                         <div key={index} className="p-2 bg-muted/50 rounded-md text-sm truncate cursor-pointer hover:bg-muted" onClick={() => {
                           setConversationHistory(prev => prev.filter((_, i) => i !== index));

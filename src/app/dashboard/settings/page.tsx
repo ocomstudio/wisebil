@@ -84,7 +84,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-24 md:pb-8">
       <div>
         <h1 className="text-3xl font-bold font-headline">Paramètres</h1>
         <p className="text-muted-foreground">Gérez votre compte et vos préférences.</p>

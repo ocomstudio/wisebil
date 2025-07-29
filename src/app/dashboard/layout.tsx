@@ -34,9 +34,9 @@ export default function DashboardLayout({
                 <SidebarNav />
               </aside>
 
-              <div className="flex flex-col">
+              <div className="flex flex-col overflow-hidden">
                 {/* Desktop Header */}
-                <header className="hidden md:flex items-center justify-end h-14 px-6 border-b bg-muted/40">
+                <header className="hidden md:flex items-center justify-end h-14 px-6 border-b bg-muted/40 flex-shrink-0">
                   <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" className="rounded-full">
                         <Bell className="h-5 w-5" />
@@ -59,7 +59,7 @@ export default function DashboardLayout({
               <BottomNav />
               
               {/* Desktop AI Assistant */}
-              <aside className="hidden md:flex flex-col border-l bg-muted/40">
+              <aside className="hidden md:flex flex-col border-l bg-muted/40 h-screen">
                 <ConseilPanel />
               </aside>
             </div>
