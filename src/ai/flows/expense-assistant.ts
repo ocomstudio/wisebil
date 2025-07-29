@@ -28,24 +28,21 @@ export type ExpenseAssistantInput = z.infer<typeof ExpenseAssistantInputSchema>;
 
 
 export async function askExpenseAssistant(
-  input: ExpenseAssistantInput,
-  // This callback function will be called with chunks of the response
-  onChunk: (chunk: string) => void
+  input: ExpenseAssistantInput
 ) {
-  const result = await expenseAssistantFlow(input, onChunk);
+  const result = await expenseAssistantFlow(input);
   return { answer: result };
 }
 
 async function expenseAssistantFlow(
   { history, question }: ExpenseAssistantInput,
-  onChunk: (chunk: string) => void
 ): Promise<string> {
   const messages = [
     ...history,
     { role: 'user' as const, content: [{ text: question }] },
   ];
 
-  const { stream, response } = ai.generateStream({
+  const response = await ai.generate({
     model: 'googleai/gemini-1.5-flash',
     messages: messages,
     system: `You are Wise, a specialist AI in finance, created by the communication and technological innovation agency Ocomstudio. Your focus is on financial counseling, guidance, and education. Your primary role is to educate and train users to improve their financial health.
@@ -57,10 +54,5 @@ You are NOT a financial advisor for investments and you must not provide any inv
 You must answer in the same language as the user's question.`
   });
   
-  for await (const chunk of stream) {
-    onChunk(chunk.text);
-  }
-
-  const finalResponse = await response;
-  return finalResponse.text;
+  return response.text;
 }
