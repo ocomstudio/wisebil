@@ -8,13 +8,19 @@ import { z } from 'zod';
 import { askExpenseAssistant } from '@/ai/flows/expense-assistant';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send } from 'lucide-react';
+import { Loader2, Send, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import { Separator } from '../ui/separator';
 
 const assistantSchema = z.object({
   prompt: z.string().min(1, 'Please enter a question.'),
@@ -27,8 +33,11 @@ interface Message {
   content: string;
 }
 
+type Conversation = Message[];
+
 export function ConseilPanel() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [currentConversation, setCurrentConversation] = useState<Conversation>([]);
+  const [conversationHistory, setConversationHistory] = useState<Conversation[]>([]);
   const [isThinking, setIsThinking] = useState(false);
   const { toast } = useToast();
 
@@ -39,17 +48,25 @@ export function ConseilPanel() {
     },
   });
 
+  const handleNewConversation = () => {
+    if (currentConversation.length > 0) {
+      setConversationHistory(prev => [currentConversation, ...prev]);
+    }
+    setCurrentConversation([]);
+  };
+
   const onSubmit = async (data: AssistantFormValues) => {
     const userMessage: Message = { role: 'user', content: data.prompt };
-    setMessages((prev) => [...prev, userMessage]);
+    const newConversation = [...currentConversation, userMessage];
+    setCurrentConversation(newConversation);
     form.reset();
     setIsThinking(true);
 
     try {
-      const history = messages.map(m => `${m.role}: ${m.content}`).join('\n');
+      const history = newConversation.map(m => `${m.role}: ${m.content}`).join('\n');
       const result = await askExpenseAssistant({ question: data.prompt, history });
       const assistantMessage: Message = { role: 'assistant', content: result.answer };
-      setMessages((prev) => [...prev, assistantMessage]);
+      setCurrentConversation(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('AI assistant failed:', error);
       toast({
@@ -57,6 +74,8 @@ export function ConseilPanel() {
         title: 'Assistant Error',
         description: 'The assistant could not respond. Please try again.',
       });
+       // remove the user message if the assistant fails
+      setCurrentConversation(prev => prev.slice(0, -1));
     } finally {
       setIsThinking(false);
     }
@@ -64,13 +83,17 @@ export function ConseilPanel() {
 
   return (
     <div className="flex flex-col h-full bg-background md:bg-transparent">
-       <div className='p-4 md:p-6 border-b'>
+       <div className='p-4 md:p-6 border-b flex justify-between items-center'>
          <h1 className="text-xl font-bold font-headline">Conseil IA</h1>
+         <Button variant="ghost" size="sm" onClick={handleNewConversation}>
+           <PlusCircle className="mr-2 h-4 w-4" />
+           Nouveau
+         </Button>
        </div>
        <div className="flex-1 flex flex-col p-4 md:p-6 overflow-hidden">
           <ScrollArea className="flex-1 pr-4 -mr-4 mb-4">
             <div className="space-y-6">
-              {messages.map((message, index) => (
+              {currentConversation.map((message, index) => (
                 <div
                   key={index}
                   className={`flex items-start gap-3 ${
@@ -110,32 +133,62 @@ export function ConseilPanel() {
               )}
             </div>
           </ScrollArea>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="flex items-center gap-2 pt-4 border-t"
-            >
-              <FormField
-                control={form.control}
-                name="prompt"
-                render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormControl>
-                      <Input
-                        placeholder="Posez une question..."
-                        {...field}
-                        disabled={isThinking}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" size="icon" disabled={isThinking}>
-                <Send className="h-5 w-5" />
-              </Button>
-            </form>
-          </Form>
+
+          <div className='space-y-4'>
+            {conversationHistory.length > 0 && (
+              <>
+                 <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="item-1">
+                    <AccordionTrigger>Historique</AccordionTrigger>
+                    <AccordionContent>
+                      <ScrollArea className="h-32">
+                        <div className='space-y-2'>
+                          {conversationHistory.map((convo, index) => (
+                              <div key={index} className="p-2 bg-muted/50 rounded-md text-sm truncate cursor-pointer hover:bg-muted" onClick={() => {
+                                setConversationHistory(prev => prev.filter((_, i) => i !== index));
+                                if (currentConversation.length > 0) {
+                                  setConversationHistory(prev => [currentConversation, ...prev]);
+                                }
+                                setCurrentConversation(convo);
+                              }}>
+                                {convo[0]?.content || 'Conversation vide'}
+                              </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </>
+            )}
+
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="flex items-center gap-2 pt-4 border-t"
+              >
+                <FormField
+                  control={form.control}
+                  name="prompt"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormControl>
+                        <Input
+                          placeholder="Posez une question..."
+                          {...field}
+                          disabled={isThinking}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" size="icon" disabled={isThinking || !form.formState.isValid}>
+                  <Send className="h-5 w-5" />
+                </Button>
+              </form>
+            </Form>
+          </div>
         </div>
     </div>
   );

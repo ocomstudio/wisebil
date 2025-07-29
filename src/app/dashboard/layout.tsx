@@ -25,7 +25,7 @@ export default function DashboardLayout({
       <TransactionsProvider>
         <BudgetProvider>
           <SavingsProvider>
-            <div className="grid min-h-screen w-full md:grid-cols-[250px_1fr_350px]">
+            <div className="grid h-screen w-full overflow-hidden md:grid-cols-[250px_1fr_350px]">
               {/* Desktop Sidebar */}
               <aside className="hidden border-r bg-muted/40 md:flex flex-col gap-6 p-4">
                 <div className="px-2">
