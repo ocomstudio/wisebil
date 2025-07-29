@@ -1,7 +1,7 @@
 // src/components/dashboard/conseil-panel.tsx
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -52,6 +52,21 @@ export function ConseilPanel() {
     }
   }, [currentConversation]);
 
+  const handleToggleListening = useCallback(() => {
+    if (!recognitionRef.current) return;
+
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+       const currentPrompt = form.getValues('prompt');
+       if (currentPrompt) {
+           form.setValue('prompt', currentPrompt + ' ');
+       }
+       recognitionRef.current.start();
+    }
+    setIsListening(!isListening);
+  }, [isListening, form]);
+
   useEffect(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const supported = !!SpeechRecognition;
@@ -59,55 +74,43 @@ export function ConseilPanel() {
 
     if (!supported) return;
 
-    recognitionRef.current = new SpeechRecognition();
-    const recognition = recognitionRef.current;
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'fr-FR';
+    if (!recognitionRef.current) {
+        recognitionRef.current = new SpeechRecognition();
+        const recognition = recognitionRef.current;
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'fr-FR';
 
-    recognition.onresult = (event: any) => {
-      let interimTranscript = '';
-      let finalTranscript = '';
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
-        } else {
-          interimTranscript += event.results[i][0].transcript;
+        recognition.onresult = (event: any) => {
+            let interimTranscript = '';
+            let finalTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                finalTranscript += event.results[i][0].transcript;
+                } else {
+                interimTranscript += event.results[i][0].transcript;
+                }
+            }
+            form.setValue('prompt', form.getValues('prompt') + finalTranscript + interimTranscript, { shouldValidate: true });
+        };
+
+        recognition.onerror = (event: any) => {
+            console.error('Speech recognition error', event.error);
+            toast({ variant: 'destructive', title: 'Erreur de reconnaissance vocale' });
+            setIsListening(false);
+        };
+        
+        recognition.onend = () => {
+            setIsListening(false);
         }
-      }
-      form.setValue('prompt', form.getValues('prompt') + finalTranscript + interimTranscript);
-    };
-
-    recognition.onerror = (event: any) => {
-      console.error('Speech recognition error', event.error);
-      toast({ variant: 'destructive', title: 'Erreur de reconnaissance vocale' });
-      setIsListening(false);
-    };
-    
-    recognition.onend = () => {
-        setIsListening(false);
     }
 
     return () => {
-      if (recognition) {
-        recognition.stop();
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
       }
     };
   }, [form, toast]);
-
-
-  const handleToggleListening = () => {
-    if (isListening) {
-      recognitionRef.current?.stop();
-    } else {
-      const currentPrompt = form.getValues('prompt');
-      if (currentPrompt) {
-          form.setValue('prompt', currentPrompt + ' ');
-      }
-      recognitionRef.current?.start();
-    }
-    setIsListening(!isListening);
-  };
 
 
   const handleNewConversation = () => {
