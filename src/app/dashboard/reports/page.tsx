@@ -27,6 +27,8 @@ import { ArrowLeft, Settings, TrendingDown, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { allCategories } from "@/config/categories";
+import { FinancialSummaryCard } from "@/components/dashboard/financial-summary-card";
+
 
 const chartConfig = {
   amount: {
@@ -128,6 +130,8 @@ export default function ReportsPage() {
                 </div>
             </CardContent>
         </Card>
+
+        <FinancialSummaryCard income={income} expenses={expenses} chartData={chartData} />
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>

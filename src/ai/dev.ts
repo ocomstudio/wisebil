@@ -3,3 +3,4 @@ config();
 
 import '@/ai/flows/categorize-expense.ts';
 import '@/ai/flows/expense-assistant.ts';
+import '@/ai/flows/financial-summary.ts';
