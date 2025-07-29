@@ -9,7 +9,6 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {generate} from 'genkit';
 import {z} from 'genkit';
 
 const ExpenseAssistantInputSchema = z.object({
@@ -52,7 +51,7 @@ const expenseAssistantFlow = ai.defineFlow(
         { role: 'user' as const, content: question },
     ];
     
-    const response = await generate({
+    const response = await ai.generate({
         model: 'googleai/gemini-1.5-flash',
         prompt: {
             messages,
