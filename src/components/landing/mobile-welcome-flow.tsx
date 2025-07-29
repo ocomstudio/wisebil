@@ -79,12 +79,12 @@ export function MobileWelcomeFlow() {
   };
 
   return (
-     <div className="flex flex-col h-screen w-screen bg-background p-4 overflow-hidden">
-        <header className="flex justify-start">
+     <div className="flex flex-col h-screen w-screen bg-background p-6 overflow-hidden">
+        <header className="flex justify-start flex-shrink-0">
             <Logo />
         </header>
 
-        <div className="flex-1 flex flex-col items-center justify-center relative">
+        <main className="flex-1 flex flex-col items-center justify-center relative">
             <AnimatePresence mode="wait">
                  {step === 'language' && (
                     <motion.div
@@ -141,24 +141,21 @@ export function MobileWelcomeFlow() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </main>
 
         {step === 'done' && (
             <motion.footer 
-                className="py-4 space-y-4"
+                className="py-4 space-y-2 flex-shrink-0"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
             >
-                <div className="w-full space-y-2">
-                    <Button asChild size="lg" className="w-full">
-                        <Link href="/auth/signup">Commencer</Link>
-                    </Button>
-                    <Button asChild size="lg" variant="outline" className="w-full">
-                        <Link href="/auth/login">Se connecter</Link>
-                    </Button>
-                </div>
-                <p className="text-center text-xs text-muted-foreground">By Ocomstudio</p>
+                <Button asChild size="lg" className="w-full">
+                    <Link href="/auth/signup">Commencer</Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="w-full">
+                    <Link href="/auth/login">Se connecter</Link>
+                </Button>
             </motion.footer>
         )}
         
