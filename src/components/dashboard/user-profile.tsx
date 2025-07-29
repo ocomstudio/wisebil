@@ -61,9 +61,11 @@ export function UserProfile() {
                 <span>{t('nav_settings')}</span>
              </Link>
           </DropdownMenuItem>
-           <DropdownMenuItem>
-            <CreditCard className="mr-2 h-4 w-4" />
-            <span>{t('billing')}</span>
+           <DropdownMenuItem asChild>
+            <Link href="/dashboard/billing">
+              <CreditCard className="mr-2 h-4 w-4" />
+              <span>{t('billing')}</span>
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
