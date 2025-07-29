@@ -167,6 +167,7 @@ export default function DesktopLandingPage() {
                      <motion.div 
                         animate={{ y: [0, -10, 0] }}
                         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                        className="lg:order-last"
                     >
                         <Image
                             src="https://placehold.co/600x600.png"
@@ -174,7 +175,7 @@ export default function DesktopLandingPage() {
                             height="600"
                             alt="Hero"
                             data-ai-hint="finance app mobile"
-                            className="mx-auto aspect-square overflow-hidden rounded-xl object-contain sm:w-full lg:order-last transform-gpu shadow-2xl"
+                            className="mx-auto aspect-square overflow-hidden rounded-xl object-contain sm:w-full transform-gpu shadow-2xl"
                         />
                     </motion.div>
                 </div>
