@@ -34,6 +34,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { SavingsGoal } from "@/types/savings-goal";
 import { MoreVertical, PiggyBank, Trash2 } from "lucide-react";
+import { useSettings } from "@/context/settings-context";
 
 interface SavingsGoalCardProps {
   goal: SavingsGoal;
@@ -43,6 +44,8 @@ interface SavingsGoalCardProps {
 
 export function SavingsGoalCard({ goal, onAddFunds, onDelete }: SavingsGoalCardProps) {
   const [amountToAdd, setAmountToAdd] = useState(0);
+  const { settings } = useSettings();
+  const isVisible = !settings.isBalanceHidden;
 
   const { id, name, emoji, currentAmount, targetAmount } = goal;
   const progress = (currentAmount / targetAmount) * 100;
@@ -62,7 +65,7 @@ export function SavingsGoalCard({ goal, onAddFunds, onDelete }: SavingsGoalCardP
             <div>
               <CardTitle className="text-lg font-bold">{name}</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Objectif: {targetAmount.toLocaleString('fr-FR')} FCFA
+                Objectif: {isVisible ? `${targetAmount.toLocaleString('fr-FR')} FCFA` : '******'}
               </p>
             </div>
           </div>
@@ -139,7 +142,7 @@ export function SavingsGoalCard({ goal, onAddFunds, onDelete }: SavingsGoalCardP
       <CardContent>
         <div className="space-y-2">
           <p className="text-xl font-bold">
-            {currentAmount.toLocaleString('fr-FR')} FCFA
+            {isVisible ? `${currentAmount.toLocaleString('fr-FR')} FCFA` : '******'}
           </p>
           <Progress value={progress} className="h-2" />
           <p className="text-sm text-muted-foreground text-right">

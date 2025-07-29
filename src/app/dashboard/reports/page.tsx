@@ -28,6 +28,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { allCategories } from "@/config/categories";
 import { FinancialSummaryCard } from "@/components/dashboard/financial-summary-card";
+import { useSettings } from "@/context/settings-context";
 
 
 const chartConfig = {
@@ -41,6 +42,8 @@ const COLORS = ["#50C878", "#FF8042", "#FFBB28", "#0088FE", "#AF19FF"];
 
 export default function ReportsPage() {
   const { transactions, income, expenses } = useTransactions();
+  const { settings } = useSettings();
+  const isVisible = !settings.isBalanceHidden;
 
   const getCategoryEmoji = (categoryName?: string) => {
     if (!categoryName) return '💸';
@@ -116,7 +119,7 @@ export default function ReportsPage() {
                     </div>
                     <div>
                         <p className="text-sm text-muted-foreground">Revenus</p>
-                        <p className="font-bold text-lg">{income.toLocaleString('fr-FR')} FCFA</p>
+                        <p className="font-bold text-lg">{isVisible ? `${income.toLocaleString('fr-FR')} FCFA` : '******'}</p>
                     </div>
                 </div>
                  <div className="flex items-center gap-2">
@@ -125,7 +128,7 @@ export default function ReportsPage() {
                     </div>
                     <div>
                         <p className="text-sm text-muted-foreground">Dépenses</p>
-                        <p className="font-bold text-lg">{expenses.toLocaleString('fr-FR')} FCFA</p>
+                        <p className="font-bold text-lg">{isVisible ? `${expenses.toLocaleString('fr-FR')} FCFA` : '******'}</p>
                     </div>
                 </div>
             </CardContent>
@@ -184,12 +187,12 @@ export default function ReportsPage() {
                             tickLine={false}
                             axisLine={false}
                             tickMargin={8}
-                            tickFormatter={(value) => `${value / 1000}k`}
+                            tickFormatter={(value) => isVisible ? `${Number(value) / 1000}k` : '***'}
                             tick={{ fontSize: 12 }}
                         />
                         <ChartTooltip
                             cursor={false}
-                            content={<ChartTooltipContent indicator="dot" />}
+                            content={<ChartTooltipContent indicator="dot" formatter={(value, name) => isVisible ? `${Number(value).toLocaleString('fr-FR')} FCFA` : '******'} />}
                         />
                         <Bar dataKey="amount" fill="hsl(var(--primary))" radius={8} />
                     </BarChart>
@@ -213,7 +216,7 @@ export default function ReportsPage() {
                         <PieChart>
                             <ChartTooltip
                                 cursor={false}
-                                content={<ChartTooltipContent hideLabel />}
+                                content={<ChartTooltipContent hideLabel formatter={(value, name) => isVisible ? `${name}: ${Number(value).toLocaleString('fr-FR')} FCFA` : `${name}: ******`} />}
                             />
                             <Pie
                                 data={pieChartData}

@@ -23,6 +23,7 @@ import { Budget } from "@/types/budget";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { MoreVertical, Trash2 } from "lucide-react";
+import { useSettings } from "@/context/settings-context";
 
 interface BudgetCardProps {
   budget: Budget;
@@ -32,6 +33,9 @@ interface BudgetCardProps {
 
 export function BudgetCard({ budget, spent, onDelete }: BudgetCardProps) {
   const { id, name, amount, category } = budget;
+  const { settings } = useSettings();
+  const isVisible = !settings.isBalanceHidden;
+
   const remaining = amount - spent;
   const progress = (spent / amount) * 100;
 
@@ -92,10 +96,10 @@ export function BudgetCard({ budget, spent, onDelete }: BudgetCardProps) {
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="font-medium text-foreground">
-              {spent.toLocaleString('fr-FR')} FCFA
+              {isVisible ? `${spent.toLocaleString('fr-FR')} FCFA` : '******'}
             </span>
             <span className="text-muted-foreground">
-              / {amount.toLocaleString('fr-FR')} FCFA
+              / {isVisible ? `${amount.toLocaleString('fr-FR')} FCFA` : '******'}
             </span>
           </div>
           <Progress value={progress} className="h-2 [&>div]:bg-primary" indicatorClassName={getProgressColor()} />
@@ -103,10 +107,11 @@ export function BudgetCard({ budget, spent, onDelete }: BudgetCardProps) {
             "text-sm text-right font-medium",
             remaining < 0 ? "text-destructive" : "text-muted-foreground"
           )}>
-            {remaining >= 0 
-              ? `${remaining.toLocaleString('fr-FR')} FCFA restants`
-              : `${Math.abs(remaining).toLocaleString('fr-FR')} FCFA de dépassement`
-            }
+            {isVisible ? (
+              remaining >= 0 
+                ? `${remaining.toLocaleString('fr-FR')} FCFA restants`
+                : `${Math.abs(remaining).toLocaleString('fr-FR')} FCFA de dépassement`
+            ) : '******'}
           </p>
         </div>
       </CardContent>

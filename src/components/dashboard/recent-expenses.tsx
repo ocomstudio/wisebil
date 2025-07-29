@@ -24,6 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useTransactions } from "@/context/transactions-context";
+import { useSettings } from "@/context/settings-context";
 
 interface RecentExpensesProps {
   transactions: Transaction[];
@@ -31,6 +32,8 @@ interface RecentExpensesProps {
 
 export function RecentExpenses({ transactions }: RecentExpensesProps) {
   const { deleteTransaction } = useTransactions();
+  const { settings } = useSettings();
+  const isVisible = !settings.isBalanceHidden;
   const recentTransactions = transactions.slice(-5).reverse();
 
   const getCategoryEmoji = (categoryName?: string) => {
@@ -86,8 +89,12 @@ export function RecentExpenses({ transactions }: RecentExpensesProps) {
                              "font-bold",
                               transaction.type === 'income' ? 'text-green-600' : 'text-foreground'
                            )}>
-                            {transaction.type === 'income' ? '+' : '-'}
-                            {transaction.amount.toLocaleString('fr-FR')} FCFA
+                            {isVisible ? (
+                                <>
+                                    {transaction.type === 'income' ? '+' : '-'}
+                                    {transaction.amount.toLocaleString('fr-FR')} FCFA
+                                </>
+                            ) : '******'}
                            </p>
                         </div>
                          <AlertDialog>
