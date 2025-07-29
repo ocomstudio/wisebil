@@ -1,17 +1,33 @@
 // src/app/dashboard/budget/page.tsx
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FilePlus } from "lucide-react";
+import { FilePlus, PlusCircle } from "lucide-react";
+import Link from "next/link";
+import { useBudgets } from "@/context/budget-context";
+import { BudgetCard } from "@/components/dashboard/budget-card";
+import { useTransactions } from "@/context/transactions-context";
 
 export default function BudgetPage() {
-  const budgets: any[] = [];
+  const { budgets } = useBudgets();
+  const { transactions } = useTransactions();
+
+  const getSpentAmount = (category: string) => {
+    return transactions
+      .filter(t => t.type === 'expense' && t.category === category)
+      .reduce((sum, t) => sum + t.amount, 0);
+  };
 
   return (
     <div className="space-y-6 bg-background">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold font-headline">Budgets</h1>
-        <Button>
-          Créer un budget
+        <Button asChild>
+          <Link href="/dashboard/budget/create">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Créer un budget
+          </Link>
         </Button>
       </div>
 
@@ -27,12 +43,23 @@ export default function BudgetPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <Button>Créer un budget</Button>
+                <Button asChild>
+                  <Link href="/dashboard/budget/create">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Créer un budget
+                  </Link>
+                </Button>
             </CardContent>
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Budget items would be mapped here */}
+          {budgets.map(budget => (
+            <BudgetCard 
+              key={budget.id} 
+              budget={budget} 
+              spent={getSpentAmount(budget.category)} 
+            />
+          ))}
         </div>
       )}
     </div>
