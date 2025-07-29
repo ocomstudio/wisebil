@@ -128,118 +128,120 @@ export default function ReportsPage() {
                 </div>
             </CardContent>
         </Card>
-
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>Aperçu des Dépenses</CardTitle>
-              {chartData.length === 0 ? (
-                <CardDescription>Aucune dépense enregistrée.</CardDescription>
-              ) : (
-                <CardDescription>Ce mois-ci</CardDescription>
-              )}
-            </div>
-            <Select defaultValue="monthly">
-                <SelectTrigger className="w-[130px] hidden md:flex">
-                    <SelectValue placeholder="Filtrer" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="monthly">Mensuel</SelectItem>
-                    <SelectItem value="yearly">Annuel</SelectItem>
-                </SelectContent>
-            </Select>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="min-h-[250px] w-full">
-             {chartData.length > 0 ? (
-                <BarChart accessibilityLayer data={chartData} margin={{ top: 20, right: 0, bottom: 40, left: -20 }}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis
-                        dataKey="name"
-                        tickLine={false}
-                        axisLine={false}
-                        tickMargin={10}
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                        tick={{ fontSize: 10 }}
-                        className="hidden md:block"
-                    />
-                     <XAxis
-                        dataKey="name"
-                        tickLine={false}
-                        axisLine={false}
-                        tickMargin={10}
-                        tick={{ fontSize: 10 }}
-                         className="md:hidden"
-                    />
-                    <YAxis
-                        tickLine={false}
-                        axisLine={false}
-                        tickMargin={8}
-                        tickFormatter={(value) => `${value / 1000}k`}
-                        tick={{ fontSize: 12 }}
-                    />
-                    <ChartTooltip
-                        cursor={false}
-                        content={<ChartTooltipContent indicator="dot" />}
-                    />
-                    <Bar dataKey="amount" fill="hsl(var(--primary))" radius={8} />
-                </BarChart>
-             ) : (
-                <div className="flex h-full w-full items-center justify-center text-muted-foreground min-h-[250px]">
-                    Aucune donnée de graphique disponible.
-                </div>
-             )}
-          </ChartContainer>
-        </CardContent>
-      </Card>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Répartition par catégorie</CardTitle>
-           <CardDescription>Vos dépenses ce mois-ci.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex justify-center items-center">
-            {pieChartData.length > 0 ? (
-                 <ChartContainer config={chartConfig} className="min-h-[250px] w-full aspect-square">
-                    <PieChart>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Aperçu des Dépenses</CardTitle>
+                  {chartData.length === 0 ? (
+                    <CardDescription>Aucune dépense enregistrée.</CardDescription>
+                  ) : (
+                    <CardDescription>Ce mois-ci</CardDescription>
+                  )}
+                </div>
+                <Select defaultValue="monthly">
+                    <SelectTrigger className="w-[130px] hidden md:flex">
+                        <SelectValue placeholder="Filtrer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="monthly">Mensuel</SelectItem>
+                        <SelectItem value="yearly">Annuel</SelectItem>
+                    </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={chartConfig} className="min-h-[250px] w-full">
+                 {chartData.length > 0 ? (
+                    <BarChart accessibilityLayer data={chartData} margin={{ top: 20, right: 0, bottom: 40, left: -20 }}>
+                        <CartesianGrid vertical={false} />
+                        <XAxis
+                            dataKey="name"
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={10}
+                            angle={-45}
+                            textAnchor="end"
+                            height={60}
+                            tick={{ fontSize: 10 }}
+                            className="hidden sm:block"
+                        />
+                         <XAxis
+                            dataKey="name"
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={10}
+                            tick={{ fontSize: 10 }}
+                             className="sm:hidden"
+                        />
+                        <YAxis
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={8}
+                            tickFormatter={(value) => `${value / 1000}k`}
+                            tick={{ fontSize: 12 }}
+                        />
                         <ChartTooltip
                             cursor={false}
-                            content={<ChartTooltipContent hideLabel />}
+                            content={<ChartTooltipContent indicator="dot" />}
                         />
-                        <Pie
-                            data={pieChartData}
-                            dataKey="value"
-                            nameKey="name"
-                            innerRadius="60%"
-                            outerRadius="80%"
-                            strokeWidth={5}
-                        >
-                            <text
-                                x="50%"
-                                y="50%"
-                                textAnchor="middle"
-                                dominantBaseline="middle"
-                                fontSize="2.5rem"
+                        <Bar dataKey="amount" fill="hsl(var(--primary))" radius={8} />
+                    </BarChart>
+                 ) : (
+                    <div className="flex h-full w-full items-center justify-center text-muted-foreground min-h-[250px]">
+                        Aucune donnée de graphique disponible.
+                    </div>
+                 )}
+              </ChartContainer>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Répartition par catégorie</CardTitle>
+               <CardDescription>Vos dépenses ce mois-ci.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-center items-center">
+                {pieChartData.length > 0 ? (
+                     <ChartContainer config={chartConfig} className="min-h-[250px] w-full aspect-square">
+                        <PieChart>
+                            <ChartTooltip
+                                cursor={false}
+                                content={<ChartTooltipContent hideLabel />}
+                            />
+                            <Pie
+                                data={pieChartData}
+                                dataKey="value"
+                                nameKey="name"
+                                innerRadius="60%"
+                                outerRadius="80%"
+                                strokeWidth={5}
                             >
-                                {topCategoryEmoji}
-                            </text>
-                            {pieChartData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                             ))}
-                        </Pie>
-                    </PieChart>
-                </ChartContainer>
-            ) : (
-                 <div className="flex h-48 w-full items-center justify-center text-muted-foreground">
-                    Aucune dépense enregistrée.
-                </div>
-            )}
-        </CardContent>
-      </Card>
+                                <text
+                                    x="50%"
+                                    y="50%"
+                                    textAnchor="middle"
+                                    dominantBaseline="middle"
+                                    fontSize="2.5rem"
+                                >
+                                    {topCategoryEmoji}
+                                </text>
+                                {pieChartData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                 ))}
+                            </Pie>
+                        </PieChart>
+                    </ChartContainer>
+                ) : (
+                     <div className="flex h-48 w-full items-center justify-center text-muted-foreground">
+                        Aucune dépense enregistrée.
+                    </div>
+                )}
+            </CardContent>
+          </Card>
+      </div>
     </div>
   );
 }
