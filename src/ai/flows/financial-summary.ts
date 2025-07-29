@@ -35,6 +35,7 @@ const prompt = ai.definePrompt({
   name: 'financialSummaryPrompt',
   input: {schema: FinancialSummaryInputSchema},
   output: {schema: FinancialSummaryOutputSchema},
+  model: 'googleai/gemini-1.5-flash',
   prompt: `You are a friendly and encouraging financial advisor for the Wisebil app. Your goal is to analyze the user's financial data and provide a simple, positive summary and one actionable piece of advice. Speak in French.
 
   Financial Data:
