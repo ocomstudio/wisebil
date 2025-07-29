@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/common/logo';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { CheckCircle, Download, Eye, BarChart, Bot, Shield, Star, Twitter, Facebook, Instagram } from 'lucide-react';
+import { CheckCircle, Download, Eye, BarChart, Bot, Shield, Star, Twitter, Facebook, Instagram, Radio, HeartHandshake, Zap, Check } from 'lucide-react';
 import { InstallPWA } from '../pwa/install-pwa';
+import { GooglePlayLogo } from './logos/google-play-logo';
+import { AppStoreLogo } from './logos/app-store-logo';
 
 
 const features = [
@@ -16,7 +18,7 @@ const features = [
     },
     {
         icon: <Shield className="h-8 w-8 text-primary" />,
-        title: "Conseiller financier",
+        title: "Conseiller financier IA",
         description: "Recevez des conseils personnalisés pour optimiser votre budget et atteindre vos objectifs.",
     },
     {
@@ -30,14 +32,14 @@ const features = [
         description: "Anticipez vos soldes futurs grâce à nos projections basées sur l'intelligence artificielle.",
     },
     {
-        icon: <CheckCircle className="h-8 w-8 text-primary" />,
-        title: "Alertes personnalisées",
-        description: "Soyez notifié des dépenses importantes, des factures à venir et des opportunités d'économie.",
+        icon: <Zap className="h-8 w-8 text-primary" />,
+        title: "Agent Vocal Automatisé",
+        description: "Dictez vos transactions en une seule fois, l'IA s'occupe de tout remplir pour vous.",
     },
     {
-        icon: <Download className="h-8 w-8 text-primary" />,
-        title: "Rapports & Exports",
-        description: "Générez des rapports détaillés et exportez vos données pour vos déclarations ou analyses.",
+        icon: <HeartHandshake className="h-8 w-8 text-primary" />,
+        title: "Support Prioritaire",
+        description: "Nos abonnés bénéficient d'un accès prioritaire à notre équipe de support dédiée.",
     }
 ];
 
@@ -47,18 +49,21 @@ const testimonials = [
         role: "Chef de projet",
         quote: "Wisebil a transformé ma façon de gérer mon argent. L'IA est incroyablement précise pour catégoriser mes dépenses, ce qui me fait gagner un temps précieux chaque mois.",
         rating: 5,
+        avatar: "https://placehold.co/40x40.png"
     },
     {
         name: "Elhadj N.",
         role: "Développeur Freelance",
         quote: "En tant que freelance, mes revenus varient. Wisebil m'aide à avoir une vision claire de ma trésorerie et à planifier mes investissements. L'assistant IA est un vrai plus !",
         rating: 5,
+        avatar: "https://placehold.co/40x40.png"
     },
     {
         name: "Aminata S.",
         role: "Étudiante",
         quote: "Gérer mon budget étudiant était un casse-tête. Maintenant, je sais exactement où va mon argent et je peux même mettre de côté pour mes projets. Je recommande à 100% !",
         rating: 5,
+        avatar: "https://placehold.co/40x40.png"
     }
 ];
 
@@ -69,7 +74,7 @@ const faqs = [
     },
     {
         question: "Wisebil est-il vraiment gratuit ou y a-t-il des coûts cachés ?",
-        answer: "Wisebil propose une version gratuite robuste avec toutes les fonctionnalités essentielles pour gérer vos finances. Nous avons également un plan Premium pour ceux qui souhaitent des fonctionnalités avancées comme des rapports illimités et un coaching financier personnalisé."
+        answer: "Wisebil propose une version gratuite robuste avec toutes les fonctionnalités essentielles pour gérer vos finances. Nous avons également des plans Premium pour ceux qui souhaitent des fonctionnalités d'automatisation avancées comme notre agent vocal."
     },
     {
         question: "Wisebil fonctionne-t-il même sans connexion internet ?",
@@ -95,6 +100,9 @@ export default function DesktopLandingPage() {
           <Link className="text-sm font-medium hover:text-primary transition-colors" href="#features">
             Fonctionnalités
           </Link>
+          <Link className="text-sm font-medium hover:text-primary transition-colors" href="#pricing">
+            Tarifs
+          </Link>
           <Link className="text-sm font-medium hover:text-primary transition-colors" href="#testimonials">
             Avis
           </Link>
@@ -105,7 +113,7 @@ export default function DesktopLandingPage() {
              <Link href="/auth/login">Se connecter</Link>
           </Button>
           <Button asChild>
-            <Link href="/auth/signup">Télécharger l'app</Link>
+            <Link href="/auth/signup">S'inscrire</Link>
           </Button>
         </nav>
         <div className="ml-auto lg:hidden">
@@ -122,8 +130,8 @@ export default function DesktopLandingPage() {
                  <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:gap-24">
                     <div className="flex flex-col justify-center space-y-4">
                         <div className="space-y-4">
-                            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-primary">
-                                Maîtrisez vos finances avec Wisebil
+                            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-foreground">
+                                L'intelligence financière <span className="text-primary">à votre portée.</span>
                             </h1>
                             <p className="max-w-[600px] text-muted-foreground md:text-xl">
                                 Plus qu'une simple application de gestion de dépenses, Wisebil est votre conseiller financier personnel, propulsé par l'intelligence artificielle.
@@ -131,10 +139,10 @@ export default function DesktopLandingPage() {
                         </div>
                         <div className="flex flex-col gap-2 min-[400px]:flex-row">
                             <Button asChild size="lg">
-                                <Link href="/auth/signup">Télécharger l'application</Link>
+                                <Link href="/auth/signup">Commencer gratuitement</Link>
                             </Button>
                             <Button asChild size="lg" variant="outline">
-                                <Link href="#features">Découvrir</Link>
+                                <Link href="#features">Découvrir les fonctionnalités</Link>
                             </Button>
                         </div>
                     </div>
@@ -147,24 +155,6 @@ export default function DesktopLandingPage() {
                         className="mx-auto aspect-square overflow-hidden rounded-xl object-contain sm:w-full lg:order-last"
                     />
                 </div>
-                 <div className="mt-16 grid sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-                    <div>
-                        <p className="text-4xl font-bold font-headline text-primary">500,000+</p>
-                        <p className="text-muted-foreground">Utilisateurs</p>
-                    </div>
-                     <div>
-                        <p className="text-4xl font-bold font-headline text-primary">25%</p>
-                        <p className="text-muted-foreground">Économies en moyenne</p>
-                    </div>
-                     <div>
-                        <p className="text-4xl font-bold font-headline text-primary">20+</p>
-                        <p className="text-muted-foreground">Pays</p>
-                    </div>
-                     <div>
-                        <p className="text-4xl font-bold font-headline text-primary">4.9/5</p>
-                        <p className="text-muted-foreground">Note moyenne</p>
-                    </div>
-                </div>
             </div>
         </section>
 
@@ -176,8 +166,11 @@ export default function DesktopLandingPage() {
                   Fonctionnalités Intelligentes
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">
-                  Wisebil utilise l'intelligence artificielle pour transformer la façon dont vous gérez vos finances.
+                  Wisebil utilise l'IA pour transformer votre gestion financière.
                 </h2>
+                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                    Dites adieu aux saisies manuelles fastidieuses. Notre technologie vous fait gagner du temps et vous apporte une clarté inégalée sur vos finances.
+                </p>
               </div>
             </div>
             <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 lg:grid-cols-3 mt-12">
@@ -196,42 +189,86 @@ export default function DesktopLandingPage() {
           </div>
         </section>
         
-        <section id="discover" className="w-full py-12 md:py-24 lg:py-32">
-          <div className="container px-4 md:px-6">
-            <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
-              <div className="space-y-4">
-                 <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary font-medium">
-                  Découvrez Wisebil
+        <section id="pricing" className="w-full py-12 md:py-24 lg:py-32">
+            <div className="container px-4 md:px-6">
+                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                    <div className="space-y-2">
+                         <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary font-medium">
+                            Tarifs Simples
+                        </div>
+                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Un plan pour chaque besoin</h2>
+                        <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                            Choisissez le plan qui vous convient et commencez à transformer vos finances dès aujourd'hui. Sans frais cachés.
+                        </p>
+                    </div>
                 </div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl font-headline">Un conseiller financier dans votre poche</h2>
-                <ul className="space-y-3 text-muted-foreground">
-                    <li className="flex items-start gap-3">
-                        <CheckCircle className="h-5 w-5 text-primary mt-1 shrink-0"/>
-                        <span>Adoptez la bonne mentalité en matière de finances personnelles et reprenez le contrôle de votre argent.</span>
-                    </li>
-                     <li className="flex items-start gap-3">
-                        <CheckCircle className="h-5 w-5 text-primary mt-1 shrink-0"/>
-                        <span>Fonctionne hors ligne. Vos données sont stockées localement sur votre téléphone, pas besoin d'être connecté.</span>
-                    </li>
-                     <li className="flex items-start gap-3">
-                        <CheckCircle className="h-5 w-5 text-primary mt-1 shrink-0"/>
-                        <span>Support multiple de devises. Wisebil est disponible dans plus de 20 pays et prend en charge plusieurs devises.</span>
-                    </li>
-                </ul>
-                <Button asChild>
-                    <Link href="/auth/signup">Voir toutes les fonctionnalités</Link>
-                </Button>
-              </div>
-              <Image
-                src="https://placehold.co/600x600.png"
-                width="600"
-                height="600"
-                alt="Discover Wisebil"
-                data-ai-hint="man jumping phone"
-                className="mx-auto aspect-square overflow-hidden rounded-xl object-contain"
-              />
+                <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-1 lg:grid-cols-3 mt-12">
+                    {/* Free Plan */}
+                    <Card className="flex flex-col">
+                        <CardHeader className="pb-4">
+                            <CardTitle className="font-headline text-2xl">Gratuit</CardTitle>
+                            <p className="text-4xl font-bold">0 F <span className="text-lg font-normal text-muted-foreground">/mois</span></p>
+                            <p className="text-muted-foreground text-sm pt-2">Pour commencer à suivre vos finances personnelles.</p>
+                        </CardHeader>
+                        <CardContent className="flex-1 space-y-4">
+                            <ul className="space-y-2 text-sm">
+                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Transactions illimitées</li>
+                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Budgets et objectifs</li>
+                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Agent Vocal (1 usage/mois)</li>
+                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Assistant IA (1 usage/mois)</li>
+                            </ul>
+                        </CardContent>
+                        <div className="p-6 pt-0">
+                             <Button asChild variant="outline" className="w-full">
+                                <Link href="/auth/signup">Choisir ce plan</Link>
+                            </Button>
+                        </div>
+                    </Card>
+                    {/* Premium Plan */}
+                    <Card className="flex flex-col border-primary shadow-2xl shadow-primary/10">
+                         <CardHeader className="pb-4">
+                            <p className="text-sm font-semibold text-primary">Le plus populaire</p>
+                            <CardTitle className="font-headline text-2xl">Premium</CardTitle>
+                            <p className="text-4xl font-bold">9 000 F <span className="text-lg font-normal text-muted-foreground">/mois</span></p>
+                            <p className="text-muted-foreground text-sm pt-2">Pour automatiser et optimiser vos finances.</p>
+                        </CardHeader>
+                        <CardContent className="flex-1 space-y-4">
+                             <ul className="space-y-2 text-sm">
+                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Tout du plan Gratuit</li>
+                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Agent Vocal (15 usages/mois)</li>
+                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Assistant IA (15 usages/mois)</li>
+                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Support prioritaire</li>
+                            </ul>
+                        </CardContent>
+                        <div className="p-6 pt-0">
+                            <Button asChild className="w-full">
+                                <Link href="/auth/signup">Passer au Premium</Link>
+                            </Button>
+                        </div>
+                    </Card>
+                    {/* Enterprise Plan */}
+                     <Card className="flex flex-col">
+                        <CardHeader className="pb-4">
+                            <CardTitle className="font-headline text-2xl">Entreprise</CardTitle>
+                            <p className="text-4xl font-bold">19 900 F <span className="text-lg font-normal text-muted-foreground">/mois</span></p>
+                            <p className="text-muted-foreground text-sm pt-2">Pour un accès illimité et des fonctionnalités en avant-première.</p>
+                        </CardHeader>
+                        <CardContent className="flex-1 space-y-4">
+                              <ul className="space-y-2 text-sm">
+                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Tout du plan Premium</li>
+                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Agent Vocal (illimité)</li>
+                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Assistant IA (illimité)</li>
+                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Accès anticipé aux nouveautés</li>
+                            </ul>
+                        </CardContent>
+                         <div className="p-6 pt-0">
+                            <Button asChild variant="outline" className="w-full">
+                                <Link href="/auth/signup">Choisir ce plan</Link>
+                            </Button>
+                        </div>
+                    </Card>
+                </div>
             </div>
-          </div>
         </section>
 
         <section id="testimonials" className="w-full py-12 md:py-24 lg:py-32 bg-secondary/30">
@@ -248,12 +285,17 @@ export default function DesktopLandingPage() {
                     {testimonials.map((testimonial) => (
                         <Card key={testimonial.name} className="bg-card/50 backdrop-blur-sm border-border/50">
                             <CardContent className="p-6">
+                                <div className="flex items-center mb-4 gap-3">
+                                    <Image src={testimonial.avatar} alt={testimonial.name} width={40} height={40} className="rounded-full" data-ai-hint="woman avatar" />
+                                    <div>
+                                      <div className="font-semibold">{testimonial.name}</div>
+                                      <div className="text-xs text-muted-foreground">{testimonial.role}</div>
+                                    </div>
+                                </div>
                                 <div className="flex items-center gap-1 mb-2">
                                     {[...Array(testimonial.rating)].map((_, i) => <Star key={i} className="h-5 w-5 text-yellow-400 fill-yellow-400" />)}
                                 </div>
-                                <p className="text-muted-foreground mb-4">"{testimonial.quote}"</p>
-                                <div className="font-semibold">{testimonial.name}</div>
-                                <div className="text-xs text-muted-foreground">{testimonial.role}</div>
+                                <p className="text-muted-foreground text-sm">"{testimonial.quote}"</p>
                             </CardContent>
                         </Card>
                     ))}
@@ -286,25 +328,24 @@ export default function DesktopLandingPage() {
             </div>
         </section>
 
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-primary/80 text-primary-foreground">
+        <section className="w-full py-12 md:py-24 lg:py-32 bg-primary text-primary-foreground">
             <div className="container px-4 md:px-6 text-center">
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Prêt à transformer votre vie financière ?</h2>
-                <p className="mx-auto max-w-[700px] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed my-4">
-                    Rejoignez plus de 500 000 utilisateurs qui ont décidé de prendre le contrôle de leur argent avec Wisebil.
+                <p className="mx-auto max-w-[700px] text-primary-foreground/80 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed my-4">
+                    Rejoignez des milliers d'utilisateurs qui ont décidé de prendre le contrôle de leur argent avec Wisebil.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
                    <Button size="lg" variant="secondary" asChild>
                      <Link href="#">
-                        <Image src="/google-play.svg" alt="Google Play" width={140} height={40} data-ai-hint="google play" />
+                        <GooglePlayLogo className="h-8" />
                      </Link>
                    </Button>
                     <Button size="lg" variant="secondary" asChild>
                      <Link href="#">
-                        <Image src="/app-store.svg" alt="App Store" width={125} height={40} data-ai-hint="app store" />
+                        <AppStoreLogo className="h-8" />
                      </Link>
                    </Button>
                 </div>
-                <p className="text-xs mt-4">Compatible avec tous les appareils iOS et Android. Téléchargement gratuit.</p>
             </div>
         </section>
 
@@ -325,8 +366,8 @@ export default function DesktopLandingPage() {
             <div>
               <h4 className="font-semibold mb-2">Produit</h4>
               <nav className="flex flex-col gap-2 text-sm">
-                <Link href="#" className="text-muted-foreground hover:text-primary">Fonctionnalités</Link>
-                <Link href="#" className="text-muted-foreground hover:text-primary">Tarifs</Link>
+                <Link href="#features" className="text-muted-foreground hover:text-primary">Fonctionnalités</Link>
+                <Link href="#pricing" className="text-muted-foreground hover:text-primary">Tarifs</Link>
                 <Link href="#" className="text-muted-foreground hover:text-primary">Mises à jour</Link>
               </nav>
             </div>
@@ -335,25 +376,24 @@ export default function DesktopLandingPage() {
               <nav className="flex flex-col gap-2 text-sm">
                 <Link href="#" className="text-muted-foreground hover:text-primary">Centre d'aide</Link>
                 <Link href="#" className="text-muted-foreground hover:text-primary">Contactez-nous</Link>
-                <Link href="#" className="text-muted-foreground hover:text-primary">FAQ</Link>
+                <Link href="#faq" className="text-muted-foreground hover:text-primary">FAQ</Link>
               </nav>
             </div>
              <div>
-              <h4 className="font-semibold mb-2">Entreprise</h4>
+              <h4 className="font-semibold mb-2">Légal</h4>
               <nav className="flex flex-col gap-2 text-sm">
-                <Link href="#" className="text-muted-foreground hover:text-primary">À propos</Link>
-                <Link href="#" className="text-muted-foreground hover:text-primary">Carrières</Link>
-                <Link href="#" className="text-muted-foreground hover:text-primary">Presse</Link>
+                <Link href="/terms-of-service" className="text-muted-foreground hover:text-primary">Conditions d'utilisation</Link>
+                <Link href="/privacy-policy" className="text-muted-foreground hover:text-primary">Politique de confidentialité</Link>
               </nav>
             </div>
           </div>
           <div className="mt-8 border-t border-border/50 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Wisebil. Tous droits réservés.</p>
+            <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Wisebil by Ocomstudio. Tous droits réservés.</p>
             <nav className="sm:ml-auto flex gap-4 sm:gap-6">
-              <Link className="text-xs hover:underline underline-offset-4" href="#">
-                Conditions d'utilisation
+              <Link className="text-xs hover:underline underline-offset-4" href="/terms-of-service">
+                Termes
               </Link>
-              <Link className="text-xs hover:underline underline-offset-4" href="#">
+              <Link className="text-xs hover:underline underline-offset-4" href="/privacy-policy">
                 Confidentialité
               </Link>
             </nav>
@@ -363,3 +403,5 @@ export default function DesktopLandingPage() {
     </div>
   );
 }
+
+    
