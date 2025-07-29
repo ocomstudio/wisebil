@@ -32,7 +32,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Bot, Loader2, CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { expenseCategories, incomeCategories } from "@/config/categories";
+import { expenseCategories, incomeCategories, allCategories } from "@/config/categories";
 import type { Transaction } from "@/types/transaction";
 
 const formSchema = z.object({
@@ -51,7 +51,7 @@ interface TransactionFormProps {
   transactionType: 'income' | 'expense';
   onSubmit: (data: Omit<Transaction, 'id' | 'type'>) => Promise<void>;
   isSubmitting: boolean;
-  initialData?: Omit<Transaction, 'id' | 'type'> | null;
+  initialData?: Transaction | null;
   submitButtonText?: string;
 }
 
@@ -66,15 +66,17 @@ export function TransactionForm({
   const { toast } = useToast();
 
   const categories = transactionType === 'expense' ? expenseCategories : incomeCategories;
+  
+  const isCustomCategory = initialData?.category && !categories.some(c => c.name === initialData.category);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       description: initialData?.description || "",
       amount: initialData?.amount || 0,
-      category: initialData?.category || "",
+      category: isCustomCategory ? "Autre" : initialData?.category || "",
       date: initialData?.date ? new Date(initialData.date) : new Date(),
-      customCategory: !categories.some(c => c.name === initialData?.category) ? initialData?.category : "",
+      customCategory: isCustomCategory ? initialData?.category : "",
     },
   });
 
