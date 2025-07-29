@@ -8,9 +8,8 @@
  * - ExpenseAssistantOutput - The return type for the askExpenseAssistant function.
  */
 
-import {ai} from '@/ai/genkit';
-import { googleAI } from '@genkit-ai/googleai';
 import {z} from 'genkit';
+import { getOpenRouterCompletion } from '@/services/openrouter';
 
 const ExpenseAssistantInputSchema = z.object({
   question: z.string().describe("The user's question about their finances."),
@@ -35,35 +34,26 @@ export type ExpenseAssistantOutput = z.infer<typeof ExpenseAssistantOutputSchema
 export async function askExpenseAssistant(
   input: ExpenseAssistantInput
 ): Promise<ExpenseAssistantOutput> {
-  return expenseAssistantFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'expenseAssistantPrompt',
-  input: {schema: ExpenseAssistantInputSchema},
-  output: {schema: ExpenseAssistantOutputSchema},
-  model: googleAI('gemini-1.5-flash'),
-  system: `You are Wise, a specialist AI in finance, with a strong focus on financial counseling, guidance, and education. Your primary role is to educate and train users to improve their financial health.
+  const systemPrompt = `You are Wise, a specialist AI in finance, with a strong focus on financial counseling, guidance, and education. Your primary role is to educate and train users to improve their financial health.
 
 Your tone should be encouraging, pedagogical, and professional. You must break down complex financial concepts into simple, understandable terms.
 
 You are NOT a financial advisor for investments and you must not provide any investment advice (stocks, crypto, etc.). Your focus is exclusively on personal finance management: budgeting, saving, debt management, and financial education.
 
-You must answer in the same language as the user's question.`,
-  messages: [
-    ...('{{history}}' as any),
-    {role: 'user', content: '{{{question}}}'},
-  ],
-});
+You must answer in the same language as the user's question.`;
 
-const expenseAssistantFlow = ai.defineFlow(
-  {
-    name: 'expenseAssistantFlow',
-    inputSchema: ExpenseAssistantInputSchema,
-    outputSchema: ExpenseAssistantOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...input.history.map(h => ({ role: h.role === 'model' ? 'assistant' : 'user', content: h.content })),
+    { role: 'user', content: input.question },
+  ];
+
+  try {
+    const answer = await getOpenRouterCompletion(messages);
+    return { answer };
+  } catch (error) {
+    console.error("Error getting completion from OpenRouter:", error);
+    // Fallback or error message
+    return { answer: "Désolé, je ne peux pas répondre pour le moment. Veuillez réessayer plus tard." };
   }
-);
+}
