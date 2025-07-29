@@ -15,6 +15,9 @@ import { BudgetProvider } from "@/context/budget-context";
 import { SavingsProvider } from "@/context/savings-context";
 import { SettingsProvider } from "@/context/settings-context";
 
+// Import AI flows to prevent tree-shaking
+import * as aiFlows from '@/ai/flows';
+
 export default function DashboardLayout({
   children,
 }: {
