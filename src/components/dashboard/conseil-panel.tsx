@@ -23,7 +23,7 @@ const assistantSchema = z.object({
 type AssistantFormValues = z.infer<typeof assistantSchema>;
 
 interface Message {
-  role: 'user' | 'assistant';
+  role: 'user' | 'model';
   content: string;
 }
 
@@ -131,9 +131,8 @@ export function ConseilPanel() {
     setIsThinking(true);
 
     try {
-      const history = newConversation.map(m => `${m.role}: ${m.content}`).join('\n');
-      const result = await askExpenseAssistant({ question: data.prompt, history });
-      const assistantMessage: Message = { role: 'assistant', content: result.answer };
+      const result = await askExpenseAssistant({ question: data.prompt, history: newConversation.slice(0, -1) });
+      const assistantMessage: Message = { role: 'model', content: result.answer };
       setCurrentConversation(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('AI assistant failed:', error);
@@ -169,7 +168,7 @@ export function ConseilPanel() {
                   message.role === 'user' ? 'justify-end' : 'justify-start'
                 }`}
               >
-                {message.role === 'assistant' && (
+                {message.role === 'model' && (
                   <Avatar className="h-8 w-8">
                     <AvatarFallback>AI</AvatarFallback>
                   </Avatar>
