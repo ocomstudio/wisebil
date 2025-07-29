@@ -74,7 +74,7 @@ export default function ReportsPage() {
       value: item.amount,
     }));
     
-    const topCategoryEmoji = sortedChartData.length > 0 ? getCategoryEmoji(sortedChartData[0].name) : '📊';
+    const topCategoryEmoji = sortedChartData.length > 0 ? getCategoryEmoji(sortedChartData[0]?.name) : '📊';
 
     return { chartData: sortedChartData, pieChartData, topCategoryEmoji };
   }, [transactions]);
