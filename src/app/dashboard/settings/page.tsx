@@ -1,3 +1,4 @@
+
 // src/app/dashboard/settings/page.tsx
 "use client";
 
@@ -16,12 +17,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, EyeOff, Lock, User } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { Camera, EyeOff, Lock } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useSettings } from "@/context/settings-context";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
 
 const profileSchema = z.object({
   fullName: z.string().min(2, "Le nom est requis."),
@@ -34,7 +33,6 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 export default function SettingsPage() {
   const { settings, updateSettings, checkPin } = useSettings();
   const { toast } = useToast();
-  const [pinInput, setPinInput] = useState("");
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -52,36 +50,46 @@ export default function SettingsPage() {
       description: "Vos informations ont été sauvegardées.",
     });
   };
-
-  const handleToggleBalanceVisibility = (isChecked: boolean) => {
-    if (!isChecked) { // If user is trying to show the balance
-      const pin = prompt("Veuillez entrer votre code PIN pour afficher le solde.");
-      if (pin && checkPin(pin)) {
-        updateSettings({ isBalanceHidden: false });
-        toast({ title: "Solde affiché" });
+  
+  const handleTogglePinLock = (isChecked: boolean) => {
+    if (isChecked) {
+      // Activating PIN lock
+      if (!settings.pin) {
+        const newPin = prompt("Veuillez définir un nouveau code PIN à 4 chiffres.");
+        if (newPin && /^\d{4}$/.test(newPin)) {
+          updateSettings({ isPinLockEnabled: true, pin: newPin });
+          toast({ title: "Verrouillage par code PIN activé." });
+        } else {
+          toast({ variant: "destructive", title: "Code PIN invalide. Veuillez entrer 4 chiffres." });
+        }
       } else {
-        toast({ variant: "destructive", title: "Code PIN incorrect" });
+         updateSettings({ isPinLockEnabled: true });
+         toast({ title: "Verrouillage par code PIN activé." });
       }
-    } else { // If user is trying to hide the balance
-      updateSettings({ isBalanceHidden: true });
-      toast({ title: "Solde masqué" });
+    } else {
+      // Deactivating PIN lock
+      const pin = prompt("Veuillez entrer votre code PIN pour désactiver le verrouillage.");
+      if (pin && checkPin(pin)) {
+        updateSettings({ isPinLockEnabled: false, isBalanceHidden: false }); // Also un-hide balance for safety
+        toast({ title: "Verrouillage par code PIN désactivé." });
+      } else if (pin !== null) { // User entered something, but it was wrong
+        toast({ variant: "destructive", title: "Code PIN incorrect." });
+      }
     }
   };
 
-  const handleTogglePinLock = (isChecked: boolean) => {
-    if (isChecked && !settings.pin) {
-        const newPin = prompt("Veuillez définir un nouveau code PIN à 4 chiffres.");
-        if (newPin && /^\d{4}$/.test(newPin)) {
-            updateSettings({ isPinLockEnabled: true, pin: newPin });
-            toast({ title: "Verrouillage par code PIN activé." });
-        } else {
-            toast({ variant: "destructive", title: "Code PIN invalide. Veuillez entrer 4 chiffres." });
-        }
-    } else {
-        updateSettings({ isPinLockEnabled: isChecked });
-        toast({ title: `Verrouillage par code PIN ${isChecked ? 'activé' : 'désactivé'}` });
+  const handleToggleBalanceVisibility = (isChecked: boolean) => {
+    if (!settings.isPinLockEnabled) {
+      toast({
+        variant: "destructive",
+        title: "Action requise",
+        description: "Veuillez d'abord activer le verrouillage par code PIN.",
+      });
+      return;
     }
-  }
+    updateSettings({ isBalanceHidden: isChecked });
+    toast({ title: `Visibilité du solde ${isChecked ? 'masquée' : 'affichée'}.` });
+  };
 
   return (
     <div className="space-y-8 pb-24 md:pb-8">
@@ -169,23 +177,23 @@ export default function SettingsPage() {
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <h3 className="font-medium flex items-center gap-2"><EyeOff className="h-4 w-4" /> Masquer le solde</h3>
-              <p className="text-sm text-muted-foreground">Cachez votre solde total sur le tableau de bord.</p>
-            </div>
-            <Switch
-              checked={settings.isBalanceHidden}
-              onCheckedChange={handleToggleBalanceVisibility}
-              disabled={!settings.isPinLockEnabled && !settings.isBalanceHidden}
-            />
-          </div>
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5">
               <h3 className="font-medium flex items-center gap-2"><Lock className="h-4 w-4" /> Verrouillage par code PIN</h3>
               <p className="text-sm text-muted-foreground">Activez un code PIN pour sécuriser certaines actions.</p>
             </div>
             <Switch
               checked={settings.isPinLockEnabled}
               onCheckedChange={handleTogglePinLock}
+            />
+          </div>
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <h3 className="font-medium flex items-center gap-2"><EyeOff className="h-4 w-4" /> Masquer le solde par défaut</h3>
+              <p className="text-sm text-muted-foreground">Cachez votre solde total sur le tableau de bord.</p>
+            </div>
+            <Switch
+              checked={settings.isBalanceHidden}
+              onCheckedChange={handleToggleBalanceVisibility}
+              disabled={!settings.isPinLockEnabled}
             />
           </div>
         </CardContent>
