@@ -6,17 +6,19 @@ import { usePathname } from 'next/navigation';
 import { Home, BarChart, Plus, User, Shield, Target, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AddTransactionDialog } from './add-transaction-dialog';
-
-const navItems = [
-  { href: '/dashboard', label: 'Accueil', icon: Home },
-  { href: '/dashboard/reports', label: 'Statistiques', icon: BarChart },
-  { href: '/dashboard/budget', label: 'Budgets', icon: Target },
-  { href: '/dashboard/savings', label: 'Épargne', icon: Shield },
-  { href: '/dashboard/conseil', label: 'Conseil', icon: Lightbulb },
-];
+import { useLocale } from '@/context/locale-context';
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { t } = useLocale();
+  
+  const navItems = [
+    { href: '/dashboard', label: t('nav_home'), icon: Home },
+    { href: '/dashboard/reports', label: t('nav_reports'), icon: BarChart },
+    { href: '/dashboard/budget', label: t('nav_budgets'), icon: Target },
+    { href: '/dashboard/savings', label: t('nav_savings'), icon: Shield },
+    { href: '/dashboard/conseil', label: t('nav_advice'), icon: Lightbulb },
+  ];
 
   return (
     <footer className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50">

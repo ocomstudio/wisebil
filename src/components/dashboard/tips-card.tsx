@@ -19,9 +19,10 @@ export function TipsCard() {
     ];
 
     useEffect(() => {
+        // Ensure tips are updated when language changes
         const randomTip = tips[Math.floor(Math.random() * tips.length)];
         setTip(randomTip);
-    }, [t]); 
+    }, [t]); // Re-run effect when t function (language) changes
 
     return (
         <Card className="bg-secondary/50 border-dashed">
