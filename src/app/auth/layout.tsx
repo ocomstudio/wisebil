@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AuthProvider } from "@/context/auth-context";
+import { ArrowLeft } from "lucide-react";
 
 export default function AuthLayout({
   children,
@@ -19,7 +20,17 @@ export default function AuthLayout({
   return (
     <AuthProvider>
       <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
-        <div className="flex flex-col items-center justify-center p-8 lg:p-12">
+        <div className="relative flex flex-col items-center justify-center p-8 lg:p-12">
+          
+          <div className="absolute top-8 left-8">
+            <Button variant="ghost" asChild>
+              <Link href="/">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Retour à l'accueil
+              </Link>
+            </Button>
+          </div>
+
           <div className="w-full max-w-md">
               <div className="flex justify-between items-center mb-8">
                   <Logo />
