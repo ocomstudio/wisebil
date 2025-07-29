@@ -1,17 +1,36 @@
 // src/components/dashboard/recent-expenses.tsx
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { PlusCircle, Receipt } from "lucide-react";
+import { PlusCircle, Receipt, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { Transaction } from "@/types/transaction";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { allCategories } from "@/config/categories";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { useTransactions } from "@/context/transactions-context";
 
 interface RecentExpensesProps {
   transactions: Transaction[];
 }
 
 export function RecentExpenses({ transactions }: RecentExpensesProps) {
+  const { deleteTransaction } = useTransactions();
   const recentTransactions = transactions.slice(-5).reverse();
 
   const getCategoryEmoji = (categoryName?: string) => {
@@ -48,9 +67,9 @@ export function RecentExpenses({ transactions }: RecentExpensesProps) {
                 </Button>
            </div>
         ) : (
-            <div className="space-y-4">
+            <div className="space-y-2">
                 {recentTransactions.map((transaction) => (
-                    <div key={transaction.id} className="flex items-center gap-4">
+                    <div key={transaction.id} className="flex items-center gap-4 p-2 rounded-md hover:bg-muted/50">
                         <Avatar>
                             <AvatarFallback className="text-xl bg-secondary">
                                 {getCategoryEmoji(transaction.category)}
@@ -71,6 +90,44 @@ export function RecentExpenses({ transactions }: RecentExpensesProps) {
                             {transaction.amount.toLocaleString('fr-FR')} FCFA
                            </p>
                         </div>
+                         <AlertDialog>
+                            <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                                    <MoreVertical className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/dashboard/edit-transaction/${transaction.id}`}>
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Modifier
+                                    </Link>
+                                </DropdownMenuItem>
+                                <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem className="text-destructive">
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Supprimer
+                                    </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                            </DropdownMenuContent>
+                            </DropdownMenu>
+
+                            <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                Cette action est irréversible. La transaction "{transaction.description}" sera supprimée définitivement.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => deleteTransaction(transaction.id)} className="bg-destructive hover:bg-destructive/90">
+                                Supprimer
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                 ))}
             </div>

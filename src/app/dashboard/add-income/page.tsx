@@ -1,53 +1,15 @@
-
 // src/app/dashboard/add-income/page.tsx
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTransactions } from "@/context/transactions-context";
-import { Loader2, ArrowLeft, CalendarIcon } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
-import { incomeCategories } from "@/config/categories";
-
-const incomeSchema = z.object({
-  description: z.string().min(3, "La description doit contenir au moins 3 caractères."),
-  amount: z.coerce.number().positive("Le montant doit être un nombre positif."),
-  category: z.string().min(1, "Veuillez sélectionner une catégorie."),
-  date: z.date({
-    required_error: "Veuillez sélectionner une date.",
-  }),
-  customCategory: z.string().optional(),
-});
-
-type IncomeFormValues = z.infer<typeof incomeSchema>;
+import { TransactionForm } from "@/components/dashboard/transaction-form";
+import type { Transaction } from "@/types/transaction";
 
 export default function AddIncomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,32 +17,13 @@ export default function AddIncomePage() {
   const router = useRouter();
   const { addTransaction } = useTransactions();
 
-  const form = useForm<IncomeFormValues>({
-    resolver: zodResolver(incomeSchema),
-    defaultValues: {
-      description: "",
-      amount: 0,
-      category: "",
-      date: new Date(),
-      customCategory: "",
-    },
-  });
-
-  const selectedCategoryValue = form.watch("category");
-  const selectedCategory = incomeCategories.find(c => c.name === selectedCategoryValue);
-
-  const onSubmit = async (data: IncomeFormValues) => {
+  const handleSubmit = async (data: Omit<Transaction, 'id' | 'type'>) => {
     setIsSubmitting(true);
     try {
-      const finalCategory = data.category === 'Autre' ? data.customCategory : data.category;
-      
-      const newTransaction = {
+      const newTransaction: Transaction = {
         id: new Date().toISOString(),
-        type: 'income' as const,
-        amount: data.amount,
-        description: data.description,
-        category: finalCategory || 'Autre',
-        date: data.date.toISOString(),
+        type: 'income',
+        ...data
       };
       await addTransaction(newTransaction);
       toast({
@@ -89,8 +32,8 @@ export default function AddIncomePage() {
       });
       router.push("/dashboard");
     } catch (error) {
-      console.error("Failed to add income:", error);
-      toast({
+       console.error("Failed to add income:", error);
+       toast({
         variant: "destructive",
         title: "Erreur",
         description: "Impossible d'ajouter le revenu. Veuillez réessayer.",
@@ -101,142 +44,20 @@ export default function AddIncomePage() {
 
   return (
     <div>
-       <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-4 mb-6">
         <Button variant="outline" size="icon" asChild>
           <Link href="/dashboard">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-         <h1 className="text-3xl font-bold font-headline">Ajouter un revenu</h1>
+        <h1 className="text-3xl font-bold font-headline">Ajouter un revenu</h1>
       </div>
-      <Card className="shadow-xl">
-        <CardContent className="pt-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Input placeholder="ex: Salaire mensuel" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Montant (FCFA)</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="0.00" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Catégorie</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                          <SelectTrigger>
-                             {selectedCategory ? (
-                                <span className="flex items-center gap-2">
-                                  {selectedCategory.emoji} {selectedCategory.name}
-                                </span>
-                              ) : (
-                                <SelectValue placeholder="Sélectionnez une catégorie" />
-                              )}
-                          </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {incomeCategories.map((cat) => (
-                          <SelectItem key={cat.name} value={cat.name}>
-                            <span className="mr-2">{cat.emoji}</span> {cat.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              {selectedCategoryValue === "Autre" && (
-                <FormField
-                  control={form.control}
-                  name="customCategory"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nom de la nouvelle catégorie</FormLabel>
-                      <FormControl>
-                        <Input placeholder="ex: Vente en ligne" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Date du revenu</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP", { locale: fr })
-                            ) : (
-                              <span>Choisissez une date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
-                          initialFocus
-                          locale={fr}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Ajouter le revenu
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+      <TransactionForm 
+        transactionType="income"
+        onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
+        submitButtonText="Ajouter le revenu"
+      />
     </div>
   );
 }
