@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <Link href="/" className={cn('flex items-center gap-2', className)}>
+    <div className={cn('flex items-center gap-2', className)}>
       <div className="bg-primary p-1.5 rounded-sm">
         <Leaf className="h-5 w-5 text-white" />
       </div>
@@ -12,6 +12,6 @@ export function Logo({ className }: { className?: string }) {
         <span className="text-foreground">Wise</span>
         <span className="text-primary">bil</span>
       </span>
-    </Link>
+    </div>
   );
 }
