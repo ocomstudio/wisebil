@@ -95,8 +95,10 @@ export default function ReportsPage() {
             </Link>
           </Button>
           <h1 className="text-lg font-bold">{t('nav_reports')}</h1>
-          <Button variant="ghost" size="icon">
-            <Settings />
+          <Button variant="ghost" size="icon" asChild>
+             <Link href="/dashboard/settings">
+                <Settings />
+             </Link>
           </Button>
         </div>
 
