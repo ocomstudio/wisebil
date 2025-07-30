@@ -6,18 +6,23 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { askExpenseAssistant } from '@/ai/flows/expense-assistant';
+import { runWiseAgent } from '@/ai/flows/wise-agent';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send, PlusCircle, Mic, MicOff, BrainCircuit } from 'lucide-react';
+import { Loader2, Send, PlusCircle, Mic, MicOff, BrainCircuit, Bot } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useLocale } from '@/context/locale-context';
 import { useTransactions } from '@/context/transactions-context';
 import { useBudgets } from '@/context/budget-context';
 import { useSavings } from '@/context/savings-context';
+import type { Transaction } from '@/types/transaction';
+import { v4 as uuidv4 } from 'uuid';
+import toast from 'react-hot-toast';
+
 
 const assistantSchema = z.object({
   prompt: z.string().min(1, 'Veuillez entrer une question.'),
@@ -36,7 +41,7 @@ const CONVERSATION_HISTORY_KEY = 'wisebil-conversation-history';
 
 export function ConseilPanel() {
   const { t, locale, currency } = useLocale();
-  const { transactions, income, expenses } = useTransactions();
+  const { transactions, income, expenses, addTransaction } = useTransactions();
   const { budgets } = useBudgets();
   const { savingsGoals } = useSavings();
 
@@ -46,7 +51,7 @@ export function ConseilPanel() {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
 
   const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState(false);
 
@@ -132,7 +137,7 @@ export function ConseilPanel() {
 
         recognition.onerror = (event: any) => {
             console.error('Speech recognition error', event.error);
-            toast({ variant: 'destructive', title: t('speech_recognition_error') });
+            uiToast({ variant: 'destructive', title: t('speech_recognition_error') });
             setIsListening(false);
         };
         
@@ -148,7 +153,7 @@ export function ConseilPanel() {
         recognitionRef.current.stop();
       }
     };
-  }, [form, toast, locale, t]);
+  }, [form, uiToast, locale, t]);
 
 
   const handleNewConversation = () => {
@@ -158,22 +163,68 @@ export function ConseilPanel() {
     setCurrentConversation([]);
   };
 
-  const onSubmit = async (data: AssistantFormValues) => {
-    if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
-    }
+  const processWiseAgent = async (prompt: string) => {
+    setIsThinking(true);
+    const agentPrompt = prompt.replace(/^wa\s*/i, '');
+    const userMessage: Message = { role: 'user', content: prompt };
+    setCurrentConversation(prev => [...prev, userMessage]);
     
-    const userMessage: Message = { role: 'user', content: data.prompt };
+    try {
+      const result = await runWiseAgent({ prompt: agentPrompt, currency });
+      const { incomes, expenses: extractedExpenses } = result;
+
+      const incomeCount = incomes.length;
+      const expenseCount = extractedExpenses.length;
+
+      // Add incomes to context
+      for (const income of incomes) {
+        const newTransaction: Transaction = {
+          id: uuidv4(),
+          type: 'income',
+          ...income,
+          date: new Date().toISOString(),
+        };
+        await addTransaction(newTransaction);
+      }
+
+      // Add expenses to context
+      for (const expense of extractedExpenses) {
+        const newTransaction: Transaction = {
+          id: uuidv4(),
+          type: 'expense',
+          ...expense,
+          date: new Date().toISOString(),
+        };
+        await addTransaction(newTransaction);
+      }
+      
+      const summaryMessage = `J'ai terminé ! J'ai ajouté ${incomeCount} revenu(s) et ${expenseCount} dépense(s) à votre registre.`;
+      const assistantMessage: Message = { role: 'assistant', content: summaryMessage };
+      setCurrentConversation(prev => [...prev, assistantMessage]);
+      toast.success(summaryMessage);
+
+    } catch (error) {
+      console.error('Wise Agent failed:', error);
+      const errorMessage = "Désolé, je n'ai pas pu traiter votre demande. Veuillez réessayer.";
+      const assistantMessage: Message = { role: 'assistant', content: errorMessage };
+      setCurrentConversation(prev => [...prev, assistantMessage]);
+      toast.error(errorMessage);
+    } finally {
+      setIsThinking(false);
+    }
+  };
+
+
+  const processWiseAssistant = async (prompt: string) => {
+    const userMessage: Message = { role: 'user', content: prompt };
     const newConversationWithUserMessage = [...currentConversation, userMessage];
     setCurrentConversation(newConversationWithUserMessage);
-    form.reset();
     setIsThinking(true);
   
     try {
       const result = await askExpenseAssistant({
-        question: data.prompt,
-        history: currentConversation, // Pass the conversation state *before* adding the new user message
+        question: prompt,
+        history: currentConversation,
         language: locale,
         currency,
         financialData: {
@@ -190,15 +241,30 @@ export function ConseilPanel() {
 
     } catch (error) {
       console.error('AI assistant failed:', error);
-      toast({
+      uiToast({
         variant: 'destructive',
         title: t('assistant_error_title'),
         description: t('assistant_error_desc'),
       });
-      // Revert to the state before the user's message was added
       setCurrentConversation(prev => prev.slice(0, -1));
     } finally {
       setIsThinking(false);
+    }
+  };
+
+  const onSubmit = async (data: AssistantFormValues) => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+    }
+    
+    const prompt = data.prompt.trim();
+    form.reset();
+
+    if (prompt.toLowerCase().startsWith('wa ')) {
+      await processWiseAgent(prompt);
+    } else {
+      await processWiseAssistant(prompt);
     }
   };
 
@@ -224,7 +290,7 @@ export function ConseilPanel() {
               >
                 {message.role === 'assistant' && (
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback>AI</AvatarFallback>
+                     <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
                   </Avatar>
                 )}
                 <div
@@ -246,7 +312,7 @@ export function ConseilPanel() {
              {isThinking && (
               <div className="flex items-start gap-3 justify-start">
                 <Avatar className="h-8 w-8">
-                  <AvatarFallback>AI</AvatarFallback>
+                  <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
                 </Avatar>
                 <div className="rounded-lg px-4 py-2 max-w-sm bg-muted flex items-center gap-2">
                   <BrainCircuit className="h-5 w-5 animate-pulse" />

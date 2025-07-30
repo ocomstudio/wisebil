@@ -5,7 +5,7 @@ import { ConseilPanel } from "@/components/dashboard/conseil-panel";
 
 export default function ConseilPage() {
   return (
-    <div className="md:hidden h-full flex flex-col">
+    <div className="md:hidden h-[calc(100vh-128px)] flex flex-col">
         <ConseilPanel />
     </div>
   );
