@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -45,7 +46,7 @@ You MUST answer in the user's specified language: ${language}. If the user asks 
     ];
 
     // Use a fallback model in case the primary one is unavailable
-    const models = ["deepseek/deepseek-chat:free", "mistralai/mistral-7b-instruct:free"];
+    const models = ["deepseek/deepseek-v2-chat", "deepseek/deepseek-chat", "mistralai/mistral-7b-instruct:free"];
     let response;
 
     for (const model of models) {
