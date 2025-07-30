@@ -54,7 +54,7 @@ export async function runWiseAgent(input: WiseAgentInput): Promise<WiseAgentOutp
               - For income, you MUST use one of these categories: ${validIncomeCategories}.
               - If no category fits perfectly, choose the most logical one or 'Autre'.
           3.  **Handle Currency:** The user's currency is ${currency}. All amounts should be treated as being in this currency.
-          4.  **Strict JSON Output:** You MUST respond ONLY with a JSON object conforming to this Zod schema. If no incomes are found, the 'incomes' array should be empty. If no expenses are found, the 'expenses' array should be empty.
+          4.  **Strict JSON Output:** You MUST respond ONLY with a JSON object conforming to this Zod schema. Do not include any apologies, explanations, or any text outside of the JSON structure. If no incomes are found, the 'incomes' array must be empty. If no expenses are found, the 'expenses' array must be empty.
           
           Zod Schema:
           ${JSON.stringify(WiseAgentOutputSchema.shape)}
@@ -75,3 +75,4 @@ export async function runWiseAgent(input: WiseAgentInput): Promise<WiseAgentOutp
     throw new Error(`Wise Agent failed to generate a response. Details: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
+
