@@ -29,26 +29,31 @@ export async function categorizeExpense(input: CategorizeExpenseInput): Promise<
   if (!apiKey) {
     throw new Error("OPENROUTER_API_KEY is not set in environment variables.");
   }
-
-  const completion = await openai.chat.completions.create({
-    model: "deepseek/deepseek-chat:free",
-    response_format: { type: 'json_object' },
-    messages: [
-      {
-        role: "system",
-        content: `You are an expert financial advisor. Your job is to categorize expenses based on their description.
-  Here are some example categories: Groceries, Utilities, Rent, Transportation, Entertainment, Dining, Shopping, Travel, Health, Education, Bills, Other.
-  You MUST respond ONLY with a JSON object conforming to this Zod schema:
-  ${JSON.stringify(CategorizeExpenseOutputSchema.shape)}
-  `
-      },
-      {
-        role: "user",
-        content: `Categorize the following expense description: "${description}"`
-      }
-    ],
-  }, { apiKey });
-
-  const result = JSON.parse(completion.choices[0].message.content || '{}');
-  return CategorizeExpenseOutputSchema.parse(result);
+  
+  try {
+      const completion = await openai.chat.completions.create({
+        model: "deepseek/deepseek-chat:free",
+        response_format: { type: 'json_object' },
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert financial advisor. Your job is to categorize expenses based on their description.
+      Here are some example categories: Groceries, Utilities, Rent, Transportation, Entertainment, Dining, Shopping, Travel, Health, Education, Bills, Other.
+      You MUST respond ONLY with a JSON object conforming to this Zod schema:
+      ${JSON.stringify(CategorizeExpenseOutputSchema.shape)}
+      `
+          },
+          {
+            role: "user",
+            content: `Categorize the following expense description: "${description}"`
+          }
+        ],
+      }, { apiKey });
+    
+      const result = JSON.parse(completion.choices[0].message.content || '{}');
+      return CategorizeExpenseOutputSchema.parse(result);
+  } catch (error) {
+      console.error(`AI model failed to generate a response for category expense:`, error);
+      throw new Error(`AI model failed to generate a response. Details: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }

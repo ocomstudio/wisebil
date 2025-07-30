@@ -55,41 +55,46 @@ export async function getFinancialSummary(input: FinancialSummaryInput): Promise
 
     const expensesByCategoryString = expensesByCategory.map(e => `- ${e.name}: ${e.amount} ${currency}`).join('\n');
 
-    const completion = await openai.chat.completions.create({
-        model: "deepseek/deepseek-chat:free",
-        response_format: { type: 'json_object' },
-        messages: [
-            {
-                role: 'system',
-                content: `You are a friendly and encouraging financial advisor for the Wisebil app. Your goal is to analyze the user's financial data and provide a simple, positive summary and one actionable piece of advice.
-                
-                You MUST speak in the user's specified language: ${language}.
-                You MUST respond ONLY with a JSON object conforming to this Zod schema:
-                ${JSON.stringify(FinancialSummaryOutputSchema.shape)}
-
-                Example Output (if language is 'fr'):
+    try {
+        const completion = await openai.chat.completions.create({
+            model: "deepseek/deepseek-chat:free",
+            response_format: { type: 'json_object' },
+            messages: [
                 {
-                    "summary": "Excellent ! Ce mois-ci, vos revenus ont dépassé vos dépenses. C'est une superbe gestion !",
-                    "advice": "Votre plus gros poste de dépense est l'Alimentation; cherchez des recettes économiques pour optimiser ce budget."
-                }
-                
-                Example Output (if language is 'en'):
-                {
-                    "summary": "Excellent! This month, your income exceeded your expenses. That's great management!",
-                    "advice": "Your biggest spending category is Food; look for budget-friendly recipes to optimize this budget."
-                }`
-            },
-            {
-                role: 'user',
-                content: `Here is my financial data:
-                - Total Income: ${income} ${currency}
-                - Total Expenses: ${expenses} ${currency}
-                - Expenses by Category:
-                ${expensesByCategoryString}`
-            }
-        ]
-    }, { apiKey });
+                    role: 'system',
+                    content: `You are a friendly and encouraging financial advisor for the Wisebil app. Your goal is to analyze the user's financial data and provide a simple, positive summary and one actionable piece of advice.
+                    
+                    You MUST speak in the user's specified language: ${language}.
+                    You MUST respond ONLY with a JSON object conforming to this Zod schema:
+                    ${JSON.stringify(FinancialSummaryOutputSchema.shape)}
     
-    const result = JSON.parse(completion.choices[0].message.content || '{}');
-    return FinancialSummaryOutputSchema.parse(result);
+                    Example Output (if language is 'fr'):
+                    {
+                        "summary": "Excellent ! Ce mois-ci, vos revenus ont dépassé vos dépenses. C'est une superbe gestion !",
+                        "advice": "Votre plus gros poste de dépense est l'Alimentation; cherchez des recettes économiques pour optimiser ce budget."
+                    }
+                    
+                    Example Output (if language is 'en'):
+                    {
+                        "summary": "Excellent! This month, your income exceeded your expenses. That's great management!",
+                        "advice": "Your biggest spending category is Food; look for budget-friendly recipes to optimize this budget."
+                    }`
+                },
+                {
+                    role: 'user',
+                    content: `Here is my financial data:
+                    - Total Income: ${income} ${currency}
+                    - Total Expenses: ${expenses} ${currency}
+                    - Expenses by Category:
+                    ${expensesByCategoryString}`
+                }
+            ]
+        }, { apiKey });
+        
+        const result = JSON.parse(completion.choices[0].message.content || '{}');
+        return FinancialSummaryOutputSchema.parse(result);
+    } catch (error) {
+        console.error(`AI model failed to generate a response for financial summary:`, error);
+        throw new Error(`AI model failed to generate a response. Details: ${error instanceof Error ? error.message : String(error)}`);
+    }
 }

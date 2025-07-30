@@ -66,6 +66,6 @@ You MUST answer in the user's specified language: ${language}. If the user asks 
 
     } catch (error) {
         console.error(`AI model failed to generate a response:`, error);
-        throw new Error(`All AI models failed to generate a response. Details: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`AI model failed to generate a response. Details: ${error instanceof Error ? error.message : String(error)}`);
     }
 }
