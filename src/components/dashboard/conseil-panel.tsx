@@ -173,9 +173,9 @@ export function ConseilPanel() {
         </Button>
       </header>
 
-      <main className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto">
         <ScrollArea className="h-full" ref={scrollAreaRef}>
-          <div className="p-4 md:p-6 space-y-6 pb-20 md:pb-6">
+          <div className="p-4 md:p-6 space-y-6">
             {currentConversation.map((message, index) => (
               <div
                 key={index}
@@ -217,7 +217,7 @@ export function ConseilPanel() {
             )}
           </div>
         </ScrollArea>
-      </main>
+      </div>
 
       <footer className='p-4 md:p-6 border-t space-y-4 flex-shrink-0 bg-background'>
         {conversationHistory.length > 0 && (
