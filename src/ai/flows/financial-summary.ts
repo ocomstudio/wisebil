@@ -52,7 +52,7 @@ export async function getFinancialSummary(input: FinancialSummaryInput): Promise
 
     try {
         const completion = await openai.chat.completions.create({
-            model: "google/gemma-7b-it:free",
+            model: "nousresearch/nous-hermes-2-mixtral-8x7b-dpo",
             response_format: { type: 'json_object' },
             messages: [
                 {
