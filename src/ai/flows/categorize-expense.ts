@@ -47,7 +47,7 @@ export async function categorizeExpense(input: CategorizeExpenseInput): Promise<
             content: `Categorize the following expense description: "${description}"`
           }
         ],
-      }, { apiKey });
+      });
     
       const result = JSON.parse(completion.choices[0].message.content || '{}');
       return CategorizeExpenseOutputSchema.parse(result);

@@ -53,7 +53,7 @@ You MUST answer in the user's specified language: ${language}. If the user asks 
         const completion = await openai.chat.completions.create({
             model: "deepseek/deepseek-chat:free",
             messages: messages,
-        }, { apiKey });
+        });
         
         const response = completion.choices[0]?.message?.content;
 

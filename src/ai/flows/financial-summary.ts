@@ -88,7 +88,7 @@ export async function getFinancialSummary(input: FinancialSummaryInput): Promise
                     ${expensesByCategoryString}`
                 }
             ]
-        }, { apiKey });
+        });
         
         const result = JSON.parse(completion.choices[0].message.content || '{}');
         return FinancialSummaryOutputSchema.parse(result);
