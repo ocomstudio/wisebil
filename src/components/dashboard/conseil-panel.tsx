@@ -15,6 +15,9 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2, Send, PlusCircle, Mic, MicOff, BrainCircuit } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useLocale } from '@/context/locale-context';
+import { useTransactions } from '@/context/transactions-context';
+import { useBudgets } from '@/context/budget-context';
+import { useSavings } from '@/context/savings-context';
 
 const assistantSchema = z.object({
   prompt: z.string().min(1, 'Veuillez entrer une question.'),
@@ -32,7 +35,11 @@ type Conversation = Message[];
 const CONVERSATION_HISTORY_KEY = 'wisebil-conversation-history';
 
 export function ConseilPanel() {
-  const { t, locale } = useLocale();
+  const { t, locale, currency } = useLocale();
+  const { transactions, income, expenses } = useTransactions();
+  const { budgets } = useBudgets();
+  const { savingsGoals } = useSavings();
+
   const [currentConversation, setCurrentConversation] = useState<Conversation>([]);
   const [conversationHistory, setConversationHistory] = useState<Conversation[]>([]);
   const [isThinking, setIsThinking] = useState(false);
@@ -168,6 +175,14 @@ export function ConseilPanel() {
         question: data.prompt,
         history: currentConversation, // Pass the conversation state *before* adding the new user message
         language: locale,
+        currency,
+        financialData: {
+          income,
+          expenses,
+          transactions,
+          budgets,
+          savingsGoals
+        }
       });
 
       const assistantMessage: Message = { role: 'assistant', content: result.answer };
@@ -199,7 +214,7 @@ export function ConseilPanel() {
 
       <div className="flex-1 overflow-y-auto">
         <ScrollArea className="h-full" ref={scrollAreaRef}>
-          <div className="p-4 md:p-6 space-y-6">
+          <div className="p-4 md:p-6 space-y-6 pb-8">
             {currentConversation.map((message, index) => (
               <div
                 key={index}
