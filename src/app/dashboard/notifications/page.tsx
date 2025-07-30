@@ -1,17 +1,20 @@
 // src/app/dashboard/notifications/page.tsx
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Bell, Lightbulb, TrendingUp, X } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "@/context/locale-context";
+import { cn } from "@/lib/utils";
 
 export default function NotificationsPage() {
   const { t } = useLocale();
 
-  const notifications = [
+  const initialNotifications = [
     {
+      id: 1,
       icon: <Lightbulb className="h-6 w-6 text-yellow-400" />,
       title: t('notification_tip_title'),
       description: t('notification_tip_desc'),
@@ -19,6 +22,7 @@ export default function NotificationsPage() {
       isNew: true,
     },
     {
+      id: 2,
       icon: <TrendingUp className="h-6 w-6 text-green-500" />,
       title: t('notification_goal_title'),
       description: t('notification_goal_desc'),
@@ -26,6 +30,7 @@ export default function NotificationsPage() {
       isNew: true,
     },
     {
+      id: 3,
       icon: <Bell className="h-6 w-6 text-primary" />,
       title: t('notification_bill_title'),
       description: t('notification_bill_desc'),
@@ -33,6 +38,7 @@ export default function NotificationsPage() {
       isNew: false,
     },
     {
+      id: 4,
       icon: <Lightbulb className="h-6 w-6 text-yellow-400" />,
       title: t('notification_advice_title'),
       description: t('notification_advice_desc'),
@@ -40,6 +46,17 @@ export default function NotificationsPage() {
       isNew: false,
     },
   ];
+
+  const [notifications, setNotifications] = useState(initialNotifications);
+  const [closingId, setClosingId] = useState<number | null>(null);
+
+  const handleClose = (id: number) => {
+    setClosingId(id);
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      setClosingId(null);
+    }, 300); // Wait for fade-out animation
+  };
 
   return (
     <div className="space-y-6">
@@ -61,21 +78,35 @@ export default function NotificationsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {notifications.map((notification, index) => (
-              <div key={index} className={`p-4 rounded-lg flex items-start gap-4 transition-colors ${notification.isNew ? 'bg-primary/10' : 'bg-muted/50'}`}>
-                <div className="p-2 bg-background rounded-full mt-1">
-                    {notification.icon}
+            {notifications.length > 0 ? (
+              notifications.map((notification) => (
+                <div 
+                  key={notification.id} 
+                  className={cn(
+                    `p-4 rounded-lg flex items-start gap-4 transition-all duration-300 ease-in-out`,
+                    notification.isNew ? 'bg-primary/10' : 'bg-muted/50',
+                    closingId === notification.id ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+                  )}
+                >
+                  <div className="p-2 bg-background rounded-full mt-1">
+                      {notification.icon}
+                  </div>
+                  <div className="flex-grow">
+                    <p className="font-semibold">{notification.title}</p>
+                    <p className="text-sm text-muted-foreground">{notification.description}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{notification.time}</p>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => handleClose(notification.id)}>
+                      <X className="h-4 w-4"/>
+                  </Button>
                 </div>
-                <div className="flex-grow">
-                  <p className="font-semibold">{notification.title}</p>
-                  <p className="text-sm text-muted-foreground">{notification.description}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{notification.time}</p>
-                </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                    <X className="h-4 w-4"/>
-                </Button>
+              ))
+            ) : (
+              <div className="text-center py-10 text-muted-foreground">
+                <Bell className="h-12 w-12 mx-auto mb-4"/>
+                <p>Aucune nouvelle notification.</p>
               </div>
-            ))}
+            )}
           </div>
         </CardContent>
       </Card>

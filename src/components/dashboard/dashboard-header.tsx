@@ -10,7 +10,15 @@ import { useLocale } from '@/context/locale-context';
 
 export function DashboardHeader() {
   const { t } = useLocale();
+  
+  const playNotificationSound = () => {
+    // Note for developer: Place your notification sound file (e.g., notification.mp3) in the /public folder.
+    const audio = new Audio('/notification.mp3');
+    audio.play().catch(error => console.error("Error playing sound:", error));
+  };
+
   const handleNotificationClick = () => {
+    playNotificationSound();
     toast.custom((toastObject) => (
       <div
         className={`${
@@ -44,7 +52,7 @@ export function DashboardHeader() {
         </div>
       </div>
     ), {
-        vibrate: 1,
+        vibrate: 1, // Add vibration on notification
     });
   }
 
