@@ -366,5 +366,6 @@
     "current_plan_button": "Current Plan",
     "phone_or_email_required": "Email or phone number is required.",
     "email_or_phone_label": "Email or Phone Number",
-    "email_or_phone_placeholder": "votre@email.com or +221 77..."
+    "email_or_phone_placeholder": "votre@email.com or +221 77...",
+    "all_transactions": "All Transactions"
 }

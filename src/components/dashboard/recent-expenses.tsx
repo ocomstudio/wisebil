@@ -54,7 +54,7 @@ export function RecentExpenses({ transactions }: RecentExpensesProps) {
             </Button>
         )}
       </div>
-      <div className="bg-background rounded-lg p-4 space-y-4">
+      <div className="bg-card rounded-lg p-4 space-y-4 shadow-sm">
         {transactions.length === 0 ? (
            <div className="flex flex-col items-center justify-center text-center py-8">
                 <div className="bg-secondary p-3 rounded-full mb-4">
