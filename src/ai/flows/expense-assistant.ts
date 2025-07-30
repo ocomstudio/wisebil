@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -9,6 +8,7 @@
  */
 import { z } from 'zod';
 import { openai } from '@/lib/openai';
+import 'dotenv/config';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
@@ -30,6 +30,11 @@ export type ExpenseAssistantInput = z.infer<typeof ExpenseAssistantInputSchema>;
 export async function askExpenseAssistant(input: ExpenseAssistantInput) {
     const { question, history, language } = ExpenseAssistantInputSchema.parse(input);
 
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+      throw new Error("OPENROUTER_API_KEY is not set in environment variables.");
+    }
+
     const messages = [
         {
             role: "system" as const,
@@ -49,7 +54,7 @@ You MUST answer in the user's specified language: ${language}. If the user asks 
         const completion = await openai.chat.completions.create({
             model: "deepseek/deepseek-chat:free",
             messages: messages,
-        });
+        }, { apiKey });
         
         const response = completion.choices[0]?.message?.content;
 

@@ -9,6 +9,7 @@
  */
 import { z } from 'zod';
 import { openai } from '@/lib/openai';
+import 'dotenv/config';
 
 const CategorizeExpenseInputSchema = z.object({
   description: z.string().describe('The description of the expense transaction.'),
@@ -23,6 +24,11 @@ export type CategorizeExpenseOutput = z.infer<typeof CategorizeExpenseOutputSche
 
 export async function categorizeExpense(input: CategorizeExpenseInput): Promise<CategorizeExpenseOutput> {
   const { description } = CategorizeExpenseInputSchema.parse(input);
+
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENROUTER_API_KEY is not set in environment variables.");
+  }
 
   const completion = await openai.chat.completions.create({
     model: "deepseek/deepseek-chat:free",
@@ -41,7 +47,7 @@ export async function categorizeExpense(input: CategorizeExpenseInput): Promise<
         content: `Categorize the following expense description: "${description}"`
       }
     ],
-  });
+  }, { apiKey });
 
   const result = JSON.parse(completion.choices[0].message.content || '{}');
   return CategorizeExpenseOutputSchema.parse(result);
