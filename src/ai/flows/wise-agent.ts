@@ -5,9 +5,9 @@
 /**
  * @fileOverview An AI agent that parses a natural language text to extract and structure financial transactions.
  *
- * - runWiseAgent - A function that takes a user's prompt and returns a list of structured income and expense transactions.
- * - WiseAgentInput - The input type for the runWiseAgent function.
- * - WiseAgentOutput - The return type for the runWiseAgent function.
+ * - runAgentW - A function that takes a user's prompt and returns a list of structured income and expense transactions.
+ * - AgentWInput - The input type for the runAgentW function.
+ * - AgentWOutput - The return type for the runAgentW function.
  */
 
 import { z } from 'zod';
@@ -20,20 +20,20 @@ const TransactionSchema = z.object({
   category: z.string().describe("The most relevant category for the transaction."),
 });
 
-const WiseAgentInputSchema = z.object({
+const AgentWInputSchema = z.object({
   prompt: z.string().describe("The user's text describing their daily financial activities."),
   currency: z.string().describe("The user's currency to provide context for amounts."),
 });
-export type WiseAgentInput = z.infer<typeof WiseAgentInputSchema>;
+export type AgentWInput = z.infer<typeof AgentWInputSchema>;
 
-const WiseAgentOutputSchema = z.object({
+const AgentWOutputSchema = z.object({
   incomes: z.array(TransactionSchema).optional().default([]).describe("A list of all income transactions found in the text."),
   expenses: z.array(TransactionSchema).optional().default([]).describe("A list of all expense transactions found in the text."),
 });
-export type WiseAgentOutput = z.infer<typeof WiseAgentOutputSchema>;
+export type AgentWOutput = z.infer<typeof AgentWOutputSchema>;
 
-export async function runWiseAgent(input: WiseAgentInput): Promise<WiseAgentOutput> {
-  const { prompt, currency } = WiseAgentInputSchema.parse(input);
+export async function runAgentW(input: AgentWInput): Promise<AgentWOutput> {
+  const { prompt, currency } = AgentWInputSchema.parse(input);
 
   const validExpenseCategories = expenseCategories.map(c => c.name).join(', ');
   const validIncomeCategories = incomeCategories.map(c => c.name).join(', ');
@@ -45,7 +45,7 @@ export async function runWiseAgent(input: WiseAgentInput): Promise<WiseAgentOutp
       messages: [
         {
           role: "system",
-          content: `You are "Wise Agent" (WA), an expert financial data entry specialist. Your sole purpose is to analyze a user's text, identify every single financial transaction (both income and expenses), and structure them into a JSON object.
+          content: `You are "Agent W", an expert financial data entry specialist. Your sole purpose is to analyze a user's text, identify every single financial transaction (both income and expenses), and structure them into a JSON object.
 
           **Instructions:**
           1.  **Parse Thoroughly:** Read the user's entire prompt and extract all monetary transactions.
@@ -57,7 +57,7 @@ export async function runWiseAgent(input: WiseAgentInput): Promise<WiseAgentOutp
           4.  **Strict JSON Output:** You MUST respond ONLY with a JSON object conforming to this Zod schema. Do not include any apologies, explanations, or any text outside of the JSON structure. If no incomes are found, the 'incomes' array must be empty. If no expenses are found, the 'expenses' array must be empty.
           
           Zod Schema:
-          ${JSON.stringify(WiseAgentOutputSchema.shape)}
+          ${JSON.stringify(AgentWOutputSchema.shape)}
           `
         },
         {
@@ -68,11 +68,12 @@ export async function runWiseAgent(input: WiseAgentInput): Promise<WiseAgentOutp
     });
 
     const result = JSON.parse(completion.choices[0].message.content || '{}');
-    return WiseAgentOutputSchema.parse(result);
+    return AgentWOutputSchema.parse(result);
 
   } catch (error) {
-    console.error(`Wise Agent failed to generate a response:`, error);
-    throw new Error(`Wise Agent failed to generate a response. Details: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`Agent W failed to generate a response:`, error);
+    throw new Error(`Agent W failed to generate a response. Details: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
+
 

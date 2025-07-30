@@ -1,3 +1,4 @@
+
 // src/components/dashboard/conseil-panel.tsx
 'use client';
 
@@ -6,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { askExpenseAssistant } from '@/ai/flows/expense-assistant';
-import { runWiseAgent } from '@/ai/flows/wise-agent';
+import { runAgentW } from '@/ai/flows/wise-agent';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
@@ -170,13 +171,13 @@ export function ConseilPanel() {
     setCurrentConversation([]);
   };
 
-  const processWiseAgent = async (prompt: string) => {
+  const processAgentW = async (prompt: string) => {
     setIsThinking(true);
     const userMessage: Message = { role: 'user', content: prompt };
     setCurrentConversation(prev => [...prev, userMessage]);
     
     try {
-      const result = await runWiseAgent({ prompt, currency });
+      const result = await runAgentW({ prompt, currency });
       const { incomes, expenses: extractedExpenses } = result;
 
       const incomeCount = incomes.length;
@@ -210,7 +211,7 @@ export function ConseilPanel() {
       toast.success(summaryMessage);
 
     } catch (error) {
-      console.error('Wise Agent failed:', error);
+      console.error('Agent W failed:', error);
       const errorMessage = "Désolé, je n'ai pas pu traiter votre demande. Veuillez réessayer.";
       const assistantMessage: Message = { role: 'assistant', content: errorMessage };
       setCurrentConversation(prev => [...prev, assistantMessage]);
@@ -269,7 +270,7 @@ export function ConseilPanel() {
     form.reset();
 
     if (agentMode === 'agent') {
-      await processWiseAgent(prompt);
+      await processAgentW(prompt);
     } else {
       await processWiseAssistant(prompt);
     }
@@ -370,7 +371,7 @@ export function ConseilPanel() {
             </Button>
             <Button variant={agentMode === 'agent' ? 'secondary' : 'ghost'} onClick={() => setAgentMode('agent')}>
                 <ScanLine className="mr-2 h-4 w-4" />
-                Agent WA
+                Agent W
             </Button>
         </div>
 
