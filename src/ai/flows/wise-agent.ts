@@ -54,7 +54,7 @@ export async function runAgentW(input: AgentWInput): Promise<AgentWOutput> {
               - **Incomes (money received, salary, payments, gifts):** You MUST use one of these categories: ${validIncomeCategories}.
               - Use the context of the sentence to determine the most logical category. If no category fits, use 'Autre'.
           4.  **Handle Currency:** The user's currency is ${currency}. All amounts are in this currency.
-          5.  **Strict JSON Output:** You MUST respond ONLY with a JSON object conforming to the Zod schema below. Do not include any apologies, explanations, or any text outside of the JSON. If no incomes are found, the 'incomes' array must be `[]`. If no expenses are found, the 'expenses' array must be `[]`.
+          5.  **Strict JSON Output:** You MUST respond ONLY with a JSON object conforming to the Zod schema below. Do not include any apologies, explanations, or any text outside of the JSON. If no incomes are found, the 'incomes' array must be '[]'. If no expenses are found, the 'expenses' array must be '[]'.
 
           **Example of complex analysis:**
           User Prompt: "Ok so today was crazy, I went to the supermarket and spent 25000 on groceries, then I grabbed a taxi for 3500. Oh and my client finally paid me the 150000 he owed me for the project. I also paid my internet bill which was 15000."
