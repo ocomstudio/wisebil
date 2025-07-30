@@ -1,4 +1,3 @@
-
 // src/components/dashboard/conseil-panel.tsx
 'use client';
 
@@ -175,6 +174,7 @@ export function ConseilPanel() {
     setIsThinking(true);
     const userMessage: Message = { role: 'user', content: prompt };
     setCurrentConversation(prev => [...prev, userMessage]);
+    form.reset();
     
     try {
       const result = await runAgentW({ prompt, currency });
@@ -189,7 +189,7 @@ export function ConseilPanel() {
           id: uuidv4(),
           type: 'income',
           ...income,
-          date: new Date().toISOString(),
+          date: income.date ? new Date(income.date).toISOString() : new Date().toISOString(),
         };
         await addTransaction(newTransaction);
       }
@@ -200,7 +200,7 @@ export function ConseilPanel() {
           id: uuidv4(),
           type: 'expense',
           ...expense,
-          date: new Date().toISOString(),
+          date: expense.date ? new Date(expense.date).toISOString() : new Date().toISOString(),
         };
         await addTransaction(newTransaction);
       }
@@ -227,6 +227,7 @@ export function ConseilPanel() {
     const newConversationWithUserMessage = [...currentConversation, userMessage];
     setCurrentConversation(newConversationWithUserMessage);
     setIsThinking(true);
+    form.reset();
   
     try {
       const result = await askExpenseAssistant({
@@ -267,7 +268,6 @@ export function ConseilPanel() {
     
     const prompt = data.prompt.trim();
     if (!prompt) return;
-    form.reset();
 
     if (agentMode === 'agent') {
       await processAgentW(prompt);
@@ -278,7 +278,7 @@ export function ConseilPanel() {
   
   const placeholderText = agentMode === 'wise' 
     ? t('ask_a_question_placeholder')
-    : "Ex: J'ai acheté un café à 1500 et reçu mon salaire de 500000";
+    : "Ex: Hier j'ai acheté un café à 1500...";
 
   return (
     <div className="flex flex-col h-full bg-background md:bg-transparent">

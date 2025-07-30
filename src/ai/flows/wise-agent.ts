@@ -17,6 +17,7 @@ const TransactionSchema = z.object({
   description: z.string().describe("The detailed description of the transaction."),
   amount: z.number().describe("The numeric amount of the transaction."),
   category: z.string().describe("The most relevant category for the transaction."),
+  date: z.string().optional().describe("The date of the transaction in YYYY-MM-DD format. If not specified, it's today."),
 });
 
 const AgentWInputSchema = z.object({
@@ -33,6 +34,7 @@ export type AgentWOutput = z.infer<typeof AgentWOutputSchema>;
 
 export async function runAgentW(input: AgentWInput): Promise<AgentWOutput> {
   const { prompt, currency } = AgentWInputSchema.parse(input);
+  const today = new Date().toISOString().split('T')[0];
 
   const validExpenseCategories = expenseCategories.map(c => c.name).join(', ');
   const validIncomeCategories = incomeCategories.map(c => c.name).join(', ');
@@ -49,24 +51,26 @@ export async function runAgentW(input: AgentWInput): Promise<AgentWOutput> {
           **Core Instructions:**
           1.  **Parse Complex Text:** The user's prompt is a raw stream of thought. Your primary task is to meticulously read the entire text and hunt for any mention of money being spent (expenses) or received (incomes). Ignore any non-financial chatter or irrelevant details.
           2.  **Identify ALL Transactions:** Do not miss a single transaction. If the user mentions buying coffee, paying a bill, receiving a salary, or getting money from a friend, you must capture it.
-          3.  **Categorize Accurately:** For each transaction, you must assign a category.
+          3.  **Extract the Date:** Today's date is ${today}. You MUST analyze the text to find the date of each transaction. Look for terms like "hier", "avant-hier", or specific dates like "le 29". If no date is mentioned for a transaction, you MUST use today's date (${today}). The date format MUST be YYYY-MM-DD.
+          4.  **Categorize Accurately:** For each transaction, you must assign a category.
               - **Expenses (money spent, purchases, bills paid):** You MUST use one of these categories: ${validExpenseCategories}.
               - **Incomes (money received, salary, payments, gifts):** You MUST use one of these categories: ${validIncomeCategories}.
               - Use the context of the sentence to determine the most logical category. If no category fits, use 'Autre'.
-          4.  **Handle Currency:** The user's currency is ${currency}. All amounts are in this currency.
-          5.  **Strict JSON Output:** You MUST respond ONLY with a JSON object conforming to the Zod schema below. Do not include any apologies, explanations, or any text outside of the JSON. If no incomes are found, the 'incomes' array must be '[]'. If no expenses are found, the 'expenses' array must be '[]'.
+          5.  **Handle Currency:** The user's currency is ${currency}. All amounts are in this currency.
+          6.  **Strict JSON Output:** You MUST respond ONLY with a JSON object conforming to the Zod schema below. Do not include any apologies, explanations, or any text outside of the JSON. If no incomes are found, the 'incomes' array must be '[]'. If no expenses are found, the 'expenses' array must be '[]'.
 
           **Example of complex analysis:**
-          User Prompt: "Ok so today was crazy, I went to the supermarket and spent 25000 on groceries, then I grabbed a taxi for 3500. Oh and my client finally paid me the 150000 he owed me for the project. I also paid my internet bill which was 15000."
+          User Prompt: "Ok so today was crazy, I went to the supermarket and spent 25000 on groceries, then I grabbed a taxi for 3500. Oh and my client finally paid me the 150000 he owed me for the project. Yesterday, I also paid my internet bill which was 15000."
+          (Assuming today is 2024-07-30)
           Expected JSON Output:
           {
             "incomes": [
-              { "description": "Payment from client for project", "amount": 150000, "category": "Vente" }
+              { "description": "Payment from client for project", "amount": 150000, "category": "Vente", "date": "2024-07-30" }
             ],
             "expenses": [
-              { "description": "Groceries at supermarket", "amount": 25000, "category": "Alimentation" },
-              { "description": "Taxi ride", "amount": 3500, "category": "Transport" },
-              { "description": "Internet bill payment", "amount": 15000, "category": "Factures" }
+              { "description": "Groceries at supermarket", "amount": 25000, "category": "Alimentation", "date": "2024-07-30" },
+              { "description": "Taxi ride", "amount": 3500, "category": "Transport", "date": "2024-07-30" },
+              { "description": "Internet bill payment", "amount": 15000, "category": "Factures", "date": "2024-07-29" }
             ]
           }
           
