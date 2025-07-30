@@ -19,9 +19,6 @@ import { Toaster as HotToaster } from 'react-hot-toast';
 import Link from "next/link";
 import { LocaleProvider, useLocale } from "@/context/locale-context";
 
-// Import AI flows to prevent tree-shaking
-import * as aiFlows from '@/ai/flows';
-
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { t } = useLocale();
 

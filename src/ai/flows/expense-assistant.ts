@@ -45,28 +45,22 @@ You MUST answer in the user's specified language: ${language}. If the user asks 
         { role: 'user' as const, content: question },
     ];
 
-    // Use a fallback model in case the primary one is unavailable
-    const models = ["deepseek/deepseek-chat:free", "mistralai/mistral-7b-instruct:free"];
-    let response;
+    try {
+        const completion = await openai.chat.completions.create({
+            model: "deepseek/deepseek-chat:free",
+            messages: messages,
+        });
+        
+        const response = completion.choices[0]?.message?.content;
 
-    for (const model of models) {
-        try {
-            const completion = await openai.chat.completions.create({
-                model: model,
-                messages: messages,
-            });
-            if (completion.choices[0].message.content) {
-                response = completion.choices[0].message.content;
-                break; // Success, exit loop
-            }
-        } catch (error) {
-            console.warn(`Model ${model} failed, trying next...`, error);
+        if (!response) {
+            throw new Error("AI model returned an empty response.");
         }
-    }
-
-    if (!response) {
-        throw new Error("All AI models failed to generate a response.");
-    }
     
-    return { answer: response };
+        return { answer: response };
+
+    } catch (error) {
+        console.error(`AI model failed to generate a response:`, error);
+        throw new Error(`All AI models failed to generate a response. Details: ${error instanceof Error ? error.message : String(error)}`);
+    }
 }
