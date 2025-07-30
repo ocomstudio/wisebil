@@ -8,7 +8,6 @@
  */
 import { z } from 'zod';
 import { openai } from '@/lib/openai';
-import 'dotenv/config';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'assistant']),

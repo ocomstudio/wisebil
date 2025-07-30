@@ -9,7 +9,6 @@
  */
 import { z } from 'zod';
 import { openai } from '@/lib/openai';
-import 'dotenv/config';
 
 const CategorizeExpenseInputSchema = z.object({
   description: z.string().describe('The description of the expense transaction.'),

@@ -10,7 +10,6 @@
 
 import { z } from 'zod';
 import { openai } from '@/lib/openai';
-import 'dotenv/config';
 
 const FinancialSummaryInputSchema = z.object({
   income: z.number().describe('Total income for the period.'),
