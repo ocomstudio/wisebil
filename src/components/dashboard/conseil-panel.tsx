@@ -290,49 +290,51 @@ export function ConseilPanel() {
       </header>
 
       <div className="flex-1 overflow-y-auto">
-        <ScrollArea className="h-full" ref={scrollAreaRef}>
-          <div className="p-4 md:p-6 space-y-6 pb-8">
-            {currentConversation.map((message, index) => (
-              <div
-                key={index}
-                className={`flex items-start gap-3 ${
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                {message.role === 'assistant' && (
-                  <Avatar className="h-8 w-8">
-                     <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
-                  </Avatar>
-                )}
-                <div
-                  className={`rounded-lg px-4 py-2 max-w-sm ${
-                    message.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
-                  }`}
-                >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                </div>
-                {message.role === 'user' && (
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>U</AvatarFallback>
-                  </Avatar>
+        <div className="h-full">
+            <ScrollArea className="h-full" ref={scrollAreaRef}>
+              <div className="p-4 md:p-6 space-y-6 pb-8">
+                {currentConversation.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`flex items-start gap-3 ${
+                      message.role === 'user' ? 'justify-end' : 'justify-start'
+                    }`}
+                  >
+                    {message.role === 'assistant' && (
+                      <Avatar className="h-8 w-8">
+                         <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
+                      </Avatar>
+                    )}
+                    <div
+                      className={`rounded-lg px-4 py-2 max-w-sm ${
+                        message.role === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted'
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    </div>
+                    {message.role === 'user' && (
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback>U</AvatarFallback>
+                      </Avatar>
+                    )}
+                  </div>
+                ))}
+                 {isThinking && (
+                  <div className="flex items-start gap-3 justify-start">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
+                    </Avatar>
+                    <div className="rounded-lg px-4 py-2 max-w-sm bg-muted flex items-center gap-2">
+                      <BrainCircuit className="h-5 w-5 animate-pulse" />
+                      <span className="text-sm text-muted-foreground italic">Réflexion en cours...</span>
+                    </div>
+                  </div>
                 )}
               </div>
-            ))}
-             {isThinking && (
-              <div className="flex items-start gap-3 justify-start">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
-                </Avatar>
-                <div className="rounded-lg px-4 py-2 max-w-sm bg-muted flex items-center gap-2">
-                  <BrainCircuit className="h-5 w-5 animate-pulse" />
-                  <span className="text-sm text-muted-foreground italic">Réflexion en cours...</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
+            </ScrollArea>
+        </div>
       </div>
 
       <footer className='p-4 md:p-6 border-t space-y-4 flex-shrink-0 bg-background'>
