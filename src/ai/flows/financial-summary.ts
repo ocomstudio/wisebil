@@ -25,7 +25,7 @@ export type FinancialSummaryInput = z.infer<typeof FinancialSummaryInputSchema>;
 
 const FinancialSummaryOutputSchema = z.object({
   summary: z.string().describe("A concise, encouraging summary of the user's financial situation. It should be one or two sentences long. Be direct and human."),
-  advice: z.string().describe("A single, actionable piece of advice to help the user improve their financial habits. It should be one sentence long. Be direct and human."),
+  advice: z.string().describe("A single, actionable piece of advice to help the user improve their financial habits. It should be one sentence long. Be direct, positive, and human."),
 });
 export type FinancialSummaryOutput = z.infer<typeof FinancialSummaryOutputSchema>;
 
@@ -51,7 +51,7 @@ export async function getFinancialSummary(input: FinancialSummaryInput): Promise
 
     try {
         const completion = await openai.chat.completions.create({
-            model: "mistralai/mistral-7b-instruct:free",
+            model: "google/gemma-7b-it:free",
             response_format: { type: 'json_object' },
             messages: [
                 {
