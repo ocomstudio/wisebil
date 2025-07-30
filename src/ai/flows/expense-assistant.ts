@@ -29,11 +29,6 @@ export type ExpenseAssistantInput = z.infer<typeof ExpenseAssistantInputSchema>;
 export async function askExpenseAssistant(input: ExpenseAssistantInput) {
     const { question, history, language } = ExpenseAssistantInputSchema.parse(input);
 
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
-      throw new Error("OPENROUTER_API_KEY is not set in environment variables.");
-    }
-
     const messages = [
         {
             role: "system" as const,

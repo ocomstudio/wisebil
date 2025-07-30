@@ -32,11 +32,6 @@ export type FinancialSummaryOutput = z.infer<typeof FinancialSummaryOutputSchema
 export async function getFinancialSummary(input: FinancialSummaryInput): Promise<FinancialSummaryOutput> {
   const { income, expenses, expensesByCategory, language, currency } = FinancialSummaryInputSchema.parse(input);
   
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) {
-    throw new Error("OPENROUTER_API_KEY is not set in environment variables.");
-  }
-
   // Avoid calling the AI if there's no data to analyze
   if (income === 0 && expenses === 0) {
       if (language === 'fr') {

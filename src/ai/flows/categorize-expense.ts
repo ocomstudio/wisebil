@@ -23,11 +23,6 @@ export type CategorizeExpenseOutput = z.infer<typeof CategorizeExpenseOutputSche
 
 export async function categorizeExpense(input: CategorizeExpenseInput): Promise<CategorizeExpenseOutput> {
   const { description } = CategorizeExpenseInputSchema.parse(input);
-
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) {
-    throw new Error("OPENROUTER_API_KEY is not set in environment variables.");
-  }
   
   try {
       const completion = await openai.chat.completions.create({
