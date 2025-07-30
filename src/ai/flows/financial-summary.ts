@@ -24,8 +24,8 @@ const FinancialSummaryInputSchema = z.object({
 export type FinancialSummaryInput = z.infer<typeof FinancialSummaryInputSchema>;
 
 const FinancialSummaryOutputSchema = z.object({
-  summary: z.string().describe("A concise, encouraging summary of the user's financial situation. It should be one or two sentences long."),
-  advice: z.string().describe("A single, actionable piece of advice to help the user improve their financial habits. It should be one sentence long."),
+  summary: z.string().describe("A concise, encouraging summary of the user's financial situation. It should be one or two sentences long. Be direct and human."),
+  advice: z.string().describe("A single, actionable piece of advice to help the user improve their financial habits. It should be one sentence long. Be direct and human."),
 });
 export type FinancialSummaryOutput = z.infer<typeof FinancialSummaryOutputSchema>;
 
@@ -56,7 +56,9 @@ export async function getFinancialSummary(input: FinancialSummaryInput): Promise
             messages: [
                 {
                     role: 'system',
-                    content: `You are a friendly and encouraging financial advisor for the Wisebil app. Your goal is to analyze the user's financial data and provide a simple, positive summary and one actionable piece of advice.
+                    content: `You are a friendly and encouraging financial advisor. Your goal is to analyze the user's financial data and provide a simple, positive summary and one actionable piece of advice.
+                    
+                    Your tone must be human, simple, and direct. The summary should be one or two sentences MAX. The advice must be one sentence MAX.
                     
                     You MUST speak in the user's specified language: ${language}.
                     You MUST respond ONLY with a JSON object conforming to this Zod schema:
