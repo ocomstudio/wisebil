@@ -13,7 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send, PlusCircle, Mic, MicOff, BrainCircuit, Bot } from 'lucide-react';
+import { Loader2, Send, PlusCircle, Mic, MicOff, BrainCircuit, Bot, MessageSquare, ScanLine } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useLocale } from '@/context/locale-context';
 import { useTransactions } from '@/context/transactions-context';
@@ -22,6 +22,7 @@ import { useSavings } from '@/context/savings-context';
 import type { Transaction } from '@/types/transaction';
 import { v4 as uuidv4 } from 'uuid';
 import toast from 'react-hot-toast';
+import { cn } from '@/lib/utils';
 
 
 const assistantSchema = z.object({
@@ -36,6 +37,7 @@ interface Message {
 }
 
 type Conversation = Message[];
+type AgentMode = 'wise' | 'agent';
 
 const CONVERSATION_HISTORY_KEY = 'wisebil-conversation-history';
 
@@ -49,6 +51,7 @@ export function ConseilPanel() {
   const [conversationHistory, setConversationHistory] = useState<Conversation[]>([]);
   const [isThinking, setIsThinking] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [agentMode, setAgentMode] = useState<AgentMode>('wise');
   const recognitionRef = useRef<any>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast: uiToast } = useToast();
@@ -165,12 +168,11 @@ export function ConseilPanel() {
 
   const processWiseAgent = async (prompt: string) => {
     setIsThinking(true);
-    const agentPrompt = prompt.replace(/^wa\s*/i, '');
     const userMessage: Message = { role: 'user', content: prompt };
     setCurrentConversation(prev => [...prev, userMessage]);
     
     try {
-      const result = await runWiseAgent({ prompt: agentPrompt, currency });
+      const result = await runWiseAgent({ prompt, currency });
       const { incomes, expenses: extractedExpenses } = result;
 
       const incomeCount = incomes.length;
@@ -261,12 +263,16 @@ export function ConseilPanel() {
     const prompt = data.prompt.trim();
     form.reset();
 
-    if (prompt.toLowerCase().startsWith('wa ')) {
+    if (agentMode === 'agent') {
       await processWiseAgent(prompt);
     } else {
       await processWiseAssistant(prompt);
     }
   };
+  
+  const placeholderText = agentMode === 'wise' 
+    ? t('ask_a_question_placeholder')
+    : "Ex: J'ai acheté un café à 1500 et reçu mon salaire de 500000";
 
   return (
     <div className="flex flex-col h-full bg-background md:bg-transparent">
@@ -350,6 +356,17 @@ export function ConseilPanel() {
           </Accordion>
         )}
 
+        <div className="grid grid-cols-2 gap-2 mb-2">
+            <Button variant={agentMode === 'wise' ? 'secondary' : 'ghost'} onClick={() => setAgentMode('wise')}>
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Conseil
+            </Button>
+            <Button variant={agentMode === 'agent' ? 'secondary' : 'ghost'} onClick={() => setAgentMode('agent')}>
+                <ScanLine className="mr-2 h-4 w-4" />
+                Agent WA
+            </Button>
+        </div>
+
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
@@ -367,10 +384,13 @@ export function ConseilPanel() {
                 <FormItem className="flex-1">
                   <FormControl>
                     <Input
-                      placeholder={t('ask_a_question_placeholder')}
+                      placeholder={placeholderText}
                       {...field}
                       disabled={isThinking}
-                      className="pr-10"
+                      className={cn(
+                        "pr-10 transition-colors",
+                        agentMode === 'agent' && 'bg-primary/10 border-primary/50 focus-visible:ring-primary/50'
+                      )}
                     />
                   </FormControl>
                   <FormMessage />
