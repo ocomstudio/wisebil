@@ -26,8 +26,8 @@ const WiseAgentInputSchema = z.object({
 export type WiseAgentInput = z.infer<typeof WiseAgentInputSchema>;
 
 const WiseAgentOutputSchema = z.object({
-  incomes: z.array(TransactionSchema).describe("A list of all income transactions found in the text."),
-  expenses: z.array(TransactionSchema).describe("A list of all expense transactions found in the text."),
+  incomes: z.array(TransactionSchema).optional().default([]).describe("A list of all income transactions found in the text."),
+  expenses: z.array(TransactionSchema).optional().default([]).describe("A list of all expense transactions found in the text."),
 });
 export type WiseAgentOutput = z.infer<typeof WiseAgentOutputSchema>;
 
@@ -53,7 +53,7 @@ export async function runWiseAgent(input: WiseAgentInput): Promise<WiseAgentOutp
               - For income, you MUST use one of these categories: ${validIncomeCategories}.
               - If no category fits perfectly, choose the most logical one or 'Autre'.
           3.  **Handle Currency:** The user's currency is ${currency}. All amounts should be treated as being in this currency.
-          4.  **Strict JSON Output:** You MUST respond ONLY with a JSON object conforming to this Zod schema. Do not include any other text, explanation, or apology.
+          4.  **Strict JSON Output:** You MUST respond ONLY with a JSON object conforming to this Zod schema. If no incomes are found, the 'incomes' array should be empty. If no expenses are found, the 'expenses' array should be empty.
           
           Zod Schema:
           ${JSON.stringify(WiseAgentOutputSchema.shape)}
