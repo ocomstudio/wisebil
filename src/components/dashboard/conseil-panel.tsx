@@ -63,7 +63,11 @@ export function ConseilPanel() {
     try {
       const storedHistory = localStorage.getItem(CONVERSATION_HISTORY_KEY);
       if (storedHistory) {
-        setConversationHistory(JSON.parse(storedHistory));
+        const parsedHistory = JSON.parse(storedHistory);
+        if(Array.isArray(parsedHistory) && parsedHistory.length > 0) {
+            setCurrentConversation(parsedHistory[0]);
+            setConversationHistory(parsedHistory.slice(1));
+        }
       }
     } catch (error) {
       console.error("Failed to load conversation history from localStorage", error);
@@ -89,7 +93,7 @@ export function ConseilPanel() {
 
   useEffect(() => {
     if (scrollAreaRef.current) {
-      const scrollEl = scrollAreaRef.current.querySelector('div');
+      const scrollEl = scrollAreaRef.current.querySelector('div[data-radix-scroll-area-viewport]');
       if (scrollEl) {
         scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' });
       }
@@ -261,6 +265,7 @@ export function ConseilPanel() {
     }
     
     const prompt = data.prompt.trim();
+    if (!prompt) return;
     form.reset();
 
     if (agentMode === 'agent') {
@@ -398,7 +403,7 @@ export function ConseilPanel() {
               )}
             />
             <Button type="submit" size="icon" disabled={isThinking || !form.formState.isValid}>
-              <Send className="h-5 w-5" />
+              {isThinking ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
             </Button>
           </form>
         </Form>
