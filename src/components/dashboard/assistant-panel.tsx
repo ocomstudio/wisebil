@@ -8,12 +8,11 @@ import { z } from 'zod';
 import { askExpenseAssistant } from '@/ai/flows/expense-assistant';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send } from 'lucide-react';
+import { BrainCircuit, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLocale } from '@/context/locale-context';
 
@@ -28,7 +27,7 @@ export function AssistantPanel() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isThinking, setIsThinking] = useState(false);
   const { toast } = useToast();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
 
   const assistantSchema = (t: (key: string) => string) => z.object({
     prompt: z.string().min(1, t('prompt_min_error')),
@@ -48,15 +47,12 @@ export function AssistantPanel() {
     setIsThinking(true);
 
     try {
-      const history = messages.map((m) => ({
-        role: m.role === 'user' ? 'user' : ('model' as 'user' | 'model'),
-        content: [{ text: m.content }],
-      }));
+      const history = messages.map(m => ({ role: m.role, content: m.content }));
 
       const result = await askExpenseAssistant({
         question: data.prompt,
         history,
-        language: 'en', // This should be dynamic based on locale
+        language: locale,
       });
       const assistantMessage: Message = { role: 'assistant', content: result.answer };
       setMessages((prev) => [...prev, assistantMessage]);
@@ -111,13 +107,14 @@ export function AssistantPanel() {
                 </div>
               ))}
                {isThinking && (
-                <div className="flex items-start gap-3 justify-start">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>AI</AvatarFallback>
-                  </Avatar>
-                  <div className="rounded-lg px-4 py-2 max-w-sm bg-muted flex items-center">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  </div>
+                 <div className="flex items-start gap-3 justify-start">
+                    <Avatar className="h-8 w-8">
+                        <AvatarFallback>AI</AvatarFallback>
+                    </Avatar>
+                    <div className="rounded-lg px-4 py-2 max-w-sm bg-muted flex items-center gap-2">
+                        <BrainCircuit className="h-5 w-5 animate-pulse" />
+                         <span className="text-sm text-muted-foreground italic">Réflexion en cours...</span>
+                    </div>
                 </div>
               )}
             </div>

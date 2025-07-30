@@ -7,9 +7,8 @@
  * - CategorizeExpenseInput - The input type for the categorizeExpense function.
  * - CategorizeExpenseOutput - The return type for the categorizeExpense function.
  */
-
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { z } from 'zod';
+import { openai } from '@/lib/openai';
 
 const CategorizeExpenseInputSchema = z.object({
   description: z.string().describe('The description of the expense transaction.'),
@@ -23,33 +22,27 @@ const CategorizeExpenseOutputSchema = z.object({
 export type CategorizeExpenseOutput = z.infer<typeof CategorizeExpenseOutputSchema>;
 
 export async function categorizeExpense(input: CategorizeExpenseInput): Promise<CategorizeExpenseOutput> {
-  return categorizeExpenseFlow(input);
-}
+  const { description } = CategorizeExpenseInputSchema.parse(input);
 
-const prompt = ai.definePrompt({
-  name: 'categorizeExpensePrompt',
-  input: {schema: CategorizeExpenseInputSchema},
-  output: {schema: CategorizeExpenseOutputSchema},
-  prompt: `You are an expert financial advisor.  Your job is to categorize expenses based on their description.
-
+  const completion = await openai.chat.completions.create({
+    model: "deepseek/deepseek-chat:free",
+    response_format: { type: 'json_object' },
+    messages: [
+      {
+        role: "system",
+        content: `You are an expert financial advisor. Your job is to categorize expenses based on their description.
   Here are some example categories: Groceries, Utilities, Rent, Transportation, Entertainment, Dining, Shopping, Travel, Health, Education, Bills, Other.
+  You MUST respond ONLY with a JSON object conforming to this Zod schema:
+  ${JSON.stringify(CategorizeExpenseOutputSchema.shape)}
+  `
+      },
+      {
+        role: "user",
+        content: `Categorize the following expense description: "${description}"`
+      }
+    ],
+  });
 
-  Given the following expense description, determine the most appropriate category and a confidence level (0-1) for your prediction.
-
-  Description: {{{description}}}
-
-  Respond ONLY with a JSON object conforming to the schema.
-  `,
-});
-
-const categorizeExpenseFlow = ai.defineFlow(
-  {
-    name: 'categorizeExpenseFlow',
-    inputSchema: CategorizeExpenseInputSchema,
-    outputSchema: CategorizeExpenseOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
-  }
-);
+  const result = JSON.parse(completion.choices[0].message.content || '{}');
+  return CategorizeExpenseOutputSchema.parse(result);
+}

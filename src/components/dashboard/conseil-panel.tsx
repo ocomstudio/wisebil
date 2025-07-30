@@ -12,9 +12,8 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send, PlusCircle, Mic, MicOff } from 'lucide-react';
+import { Loader2, Send, PlusCircle, Mic, MicOff, BrainCircuit } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Message } from '@/types/message';
 import { useLocale } from '@/context/locale-context';
 
 const assistantSchema = z.object({
@@ -22,6 +21,11 @@ const assistantSchema = z.object({
 });
 
 type AssistantFormValues = z.infer<typeof assistantSchema>;
+
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 type Conversation = Message[];
 
@@ -51,7 +55,7 @@ export function ConseilPanel() {
         scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' });
       }
     }
-  }, [currentConversation]);
+  }, [currentConversation, isThinking]);
 
   const handleToggleListening = useCallback(() => {
     if (!recognitionRef.current) return;
@@ -129,7 +133,7 @@ export function ConseilPanel() {
       setIsListening(false);
     }
     
-    const userMessage: Message = { role: 'user', content: [{ text: data.prompt }] };
+    const userMessage: Message = { role: 'user', content: data.prompt };
     const newConversation = [...currentConversation, userMessage];
     setCurrentConversation(newConversation);
     form.reset();
@@ -142,7 +146,7 @@ export function ConseilPanel() {
         language: locale,
       });
 
-      const assistantMessage: Message = { role: 'model', content: [{ text: result.answer }] };
+      const assistantMessage: Message = { role: 'assistant', content: result.answer };
       setCurrentConversation(prev => [...prev, assistantMessage]);
 
     } catch (error) {
@@ -178,7 +182,7 @@ export function ConseilPanel() {
                   message.role === 'user' ? 'justify-end' : 'justify-start'
                 }`}
               >
-                {message.role === 'model' && (
+                {message.role === 'assistant' && (
                   <Avatar className="h-8 w-8">
                     <AvatarFallback>AI</AvatarFallback>
                   </Avatar>
@@ -190,7 +194,7 @@ export function ConseilPanel() {
                       : 'bg-muted'
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{message.content[0].text}</p>
+                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                 </div>
                 {message.role === 'user' && (
                   <Avatar className="h-8 w-8">
@@ -204,8 +208,9 @@ export function ConseilPanel() {
                 <Avatar className="h-8 w-8">
                   <AvatarFallback>AI</AvatarFallback>
                 </Avatar>
-                <div className="rounded-lg px-4 py-2 max-w-sm bg-muted flex items-center">
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                <div className="rounded-lg px-4 py-2 max-w-sm bg-muted flex items-center gap-2">
+                  <BrainCircuit className="h-5 w-5 animate-pulse" />
+                  <span className="text-sm text-muted-foreground italic">Réflexion en cours...</span>
                 </div>
               </div>
             )}
@@ -229,7 +234,7 @@ export function ConseilPanel() {
                           }
                           setCurrentConversation(convo);
                         }}>
-                          {convo[0]?.content[0]?.text || t('empty_conversation')}
+                          {convo[0]?.content || t('empty_conversation')}
                         </div>
                     ))}
                   </div>

@@ -5,21 +5,19 @@
  *
  * - askExpenseAssistant - A function that takes a user's question and conversation history to provide an answer.
  * - ExpenseAssistantInput - The input type for the askExpenseAssistant function.
- * - ExpenseAssistantOutput - The return type for the askExpenseAssistant function.
  */
+import { z } from 'zod';
+import { openai } from '@/lib/openai';
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+const MessageSchema = z.object({
+  role: z.enum(['user', 'assistant']),
+  content: z.string(),
+});
 
 const ExpenseAssistantInputSchema = z.object({
   question: z.string().describe("The user's question about their finances."),
   history: z
-    .array(
-      z.object({
-        role: z.enum(['user', 'model']),
-        content: z.array(z.object({text: z.string()})),
-      })
-    )
+    .array(MessageSchema)
     .describe(
       'The previous conversation history between the user and the assistant.'
     ),
@@ -28,32 +26,46 @@ const ExpenseAssistantInputSchema = z.object({
 export type ExpenseAssistantInput = z.infer<typeof ExpenseAssistantInputSchema>;
 
 
-export async function askExpenseAssistant(
-  input: ExpenseAssistantInput
-) {
-  const result = await expenseAssistantFlow(input);
-  return { answer: result };
-}
+export async function askExpenseAssistant(input: ExpenseAssistantInput) {
+    const { question, history, language } = ExpenseAssistantInputSchema.parse(input);
 
-async function expenseAssistantFlow(
-  { history, question, language }: ExpenseAssistantInput,
-): Promise<string> {
-  const messages = [
-    ...history,
-    { role: 'user' as const, content: [{ text: question }] },
-  ];
-
-  const response = await ai.generate({
-    model: 'googleai/gemini-1.5-flash',
-    messages: messages,
-    system: `You are Wise, a specialist AI in finance, created by the communication and technological innovation agency Ocomstudio. Your focus is on financial counseling, guidance, and education. Your primary role is to educate and train users to improve their financial health.
+    const messages = [
+        {
+            role: "system" as const,
+            content: `You are Wise, a specialist AI in finance, created by the communication and technological innovation agency Ocomstudio. Your focus is on financial counseling, guidance, and education. Your primary role is to educate and train users to improve their financial health.
 
 Your tone should be encouraging, pedagogical, and professional. You must break down complex financial concepts into simple, understandable terms.
 
 You are NOT a financial advisor for investments and you must not provide any investment advice (stocks, crypto, etc.). Your focus is exclusively on personal finance management: budgeting, saving, debt management, and financial education.
 
 You MUST answer in the user's specified language: ${language}. If the user asks a question in a different language, still respond in the specified language: ${language}.`
-  });
-  
-  return response.text;
+        },
+        ...history,
+        { role: 'user' as const, content: question },
+    ];
+
+    // Use a fallback model in case the primary one is unavailable
+    const models = ["deepseek/deepseek-chat:free", "mistralai/mistral-7b-instruct:free"];
+    let response;
+
+    for (const model of models) {
+        try {
+            const completion = await openai.chat.completions.create({
+                model: model,
+                messages: messages,
+            });
+            if (completion.choices[0].message.content) {
+                response = completion.choices[0].message.content;
+                break; // Success, exit loop
+            }
+        } catch (error) {
+            console.warn(`Model ${model} failed, trying next...`, error);
+        }
+    }
+
+    if (!response) {
+        throw new Error("All AI models failed to generate a response.");
+    }
+    
+    return { answer: response };
 }

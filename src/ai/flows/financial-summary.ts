@@ -8,8 +8,8 @@
  * - FinancialSummaryOutput - The return type for the getFinancialSummary function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { z } from 'zod';
+import { openai } from '@/lib/openai';
 
 const FinancialSummaryInputSchema = z.object({
   income: z.number().describe('Total income for the period.'),
@@ -30,56 +30,11 @@ const FinancialSummaryOutputSchema = z.object({
 export type FinancialSummaryOutput = z.infer<typeof FinancialSummaryOutputSchema>;
 
 export async function getFinancialSummary(input: FinancialSummaryInput): Promise<FinancialSummaryOutput> {
-  return financialSummaryFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'financialSummaryPrompt',
-  input: {schema: FinancialSummaryInputSchema},
-  output: {schema: FinancialSummaryOutputSchema},
-  model: 'googleai/gemini-1.5-flash',
-  prompt: `You are a friendly and encouraging financial advisor for the Wisebil app. Your goal is to analyze the user's financial data and provide a simple, positive summary and one actionable piece of advice. 
+  const { income, expenses, expensesByCategory, language, currency } = FinancialSummaryInputSchema.parse(input);
   
-  You MUST speak in the user's specified language: {{{language}}}.
-
-  Financial Data:
-  - Total Income: {{{income}}} {{{currency}}}
-  - Total Expenses: {{{expenses}}} {{{currency}}}
-  - Expenses by Category:
-  {{#each expensesByCategory}}
-    - {{name}}: {{amount}} {{{../currency}}}
-  {{/each}}
-
-  Based on this data, provide:
-  1.  A short, positive summary of their financial activity. For example, if they spent less than they earned, congratulate them. If not, be encouraging about taking control.
-  2.  One clear, simple, and actionable piece of advice. Focus on the largest spending category or the relationship between income and expenses.
-
-  Example Output (if language is 'fr'):
-  {
-    "summary": "Excellent ! Ce mois-ci, vos revenus ont dépassé vos dépenses. C'est une superbe gestion !",
-    "advice": "Votre plus gros poste de dépense est l'Alimentation; cherchez des recettes économiques pour optimiser ce budget."
-  }
-  
-  Example Output (if language is 'en'):
-  {
-    "summary": "Excellent! This month, your income exceeded your expenses. That's great management!",
-    "advice": "Your biggest spending category is Food; look for budget-friendly recipes to optimize this budget."
-  }
-
-  Respond ONLY with a JSON object conforming to the schema.
-  `,
-});
-
-const financialSummaryFlow = ai.defineFlow(
-  {
-    name: 'financialSummaryFlow',
-    inputSchema: FinancialSummaryInputSchema,
-    outputSchema: FinancialSummaryOutputSchema,
-  },
-  async input => {
-    // Avoid calling the AI if there's no data to analyze
-    if (input.income === 0 && input.expenses === 0) {
-      if (input.language === 'fr') {
+  // Avoid calling the AI if there's no data to analyze
+  if (income === 0 && expenses === 0) {
+      if (language === 'fr') {
         return {
           summary: "Bienvenue ! Ajoutez vos premières transactions pour voir votre résumé financier ici.",
           advice: "Commencez par enregistrer une dépense ou un revenu pour prendre le contrôle de vos finances."
@@ -92,7 +47,43 @@ const financialSummaryFlow = ai.defineFlow(
       }
     }
 
-    const {output} = await prompt(input);
-    return output!;
-  }
-);
+    const expensesByCategoryString = expensesByCategory.map(e => `- ${e.name}: ${e.amount} ${currency}`).join('\n');
+
+    const completion = await openai.chat.completions.create({
+        model: "deepseek/deepseek-chat:free",
+        response_format: { type: 'json_object' },
+        messages: [
+            {
+                role: 'system',
+                content: `You are a friendly and encouraging financial advisor for the Wisebil app. Your goal is to analyze the user's financial data and provide a simple, positive summary and one actionable piece of advice.
+                
+                You MUST speak in the user's specified language: ${language}.
+                You MUST respond ONLY with a JSON object conforming to this Zod schema:
+                ${JSON.stringify(FinancialSummaryOutputSchema.shape)}
+
+                Example Output (if language is 'fr'):
+                {
+                    "summary": "Excellent ! Ce mois-ci, vos revenus ont dépassé vos dépenses. C'est une superbe gestion !",
+                    "advice": "Votre plus gros poste de dépense est l'Alimentation; cherchez des recettes économiques pour optimiser ce budget."
+                }
+                
+                Example Output (if language is 'en'):
+                {
+                    "summary": "Excellent! This month, your income exceeded your expenses. That's great management!",
+                    "advice": "Your biggest spending category is Food; look for budget-friendly recipes to optimize this budget."
+                }`
+            },
+            {
+                role: 'user',
+                content: `Here is my financial data:
+                - Total Income: ${income} ${currency}
+                - Total Expenses: ${expenses} ${currency}
+                - Expenses by Category:
+                ${expensesByCategoryString}`
+            }
+        ]
+    });
+    
+    const result = JSON.parse(completion.choices[0].message.content || '{}');
+    return FinancialSummaryOutputSchema.parse(result);
+}
