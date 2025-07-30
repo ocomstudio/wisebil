@@ -29,6 +29,8 @@ interface Message {
 
 type Conversation = Message[];
 
+const CONVERSATION_HISTORY_KEY = 'wisebil-conversation-history';
+
 export function ConseilPanel() {
   const { t, locale } = useLocale();
   const [currentConversation, setCurrentConversation] = useState<Conversation>([]);
@@ -40,6 +42,28 @@ export function ConseilPanel() {
   const { toast } = useToast();
 
   const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState(false);
+
+  // Load conversation from localStorage on initial render
+  useEffect(() => {
+    try {
+      const storedHistory = localStorage.getItem(CONVERSATION_HISTORY_KEY);
+      if (storedHistory) {
+        setConversationHistory(JSON.parse(storedHistory));
+      }
+    } catch (error) {
+      console.error("Failed to load conversation history from localStorage", error);
+    }
+  }, []);
+
+  // Save conversation to localStorage whenever it changes
+  useEffect(() => {
+    try {
+        const historyToSave = [currentConversation, ...conversationHistory].filter(c => c.length > 0);
+        localStorage.setItem(CONVERSATION_HISTORY_KEY, JSON.stringify(historyToSave));
+    } catch (error) {
+        console.error("Failed to save conversation history to localStorage", error);
+    }
+  }, [currentConversation, conversationHistory]);
 
   const form = useForm<AssistantFormValues>({
     resolver: zodResolver(assistantSchema),

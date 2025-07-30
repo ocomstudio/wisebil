@@ -41,7 +41,7 @@
     "signup_title": "Create an account",
     "signup_subtitle": "Start your journey to financial freedom.",
     "fullname_label": "Full Name",
-    "email_label_optional": "Email Address (Optional)",
+    "email_label": "Email Address",
     "confirm_password_label": "Confirm Password",
     "i_agree_to_the": "I agree to the",
     "terms": "Terms",
@@ -314,9 +314,7 @@
     "settings_subtitle": "Manage your account settings and set e-mail preferences.",
     "profile_title": "Profile",
     "profile_desc": "Update your personal information.",
-    "email_label": "Email Address",
     "fullname_error": "Full name must be at least 2 characters.",
-    "email_error": "Invalid email address.",
     "phone_error": "Phone number must be at least 9 digits.",
     "profile_updated_title": "Profile Updated",
     "profile_updated_desc": "Your profile information has been updated.",
@@ -365,5 +363,8 @@
     "advice_for_you_title": "Advice For You",
     "billing_page_title": "Manage your Plan",
     "billing_page_subtitle": "Choose the plan that's right for you. Upgrade or downgrade anytime.",
-    "current_plan_button": "Current Plan"
+    "current_plan_button": "Current Plan",
+    "phone_or_email_required": "Email or phone number is required.",
+    "email_or_phone_label": "Email or Phone Number",
+    "email_or_phone_placeholder": "votre@email.com or +221 77..."
 }

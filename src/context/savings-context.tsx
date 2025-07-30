@@ -1,10 +1,12 @@
 // src/context/savings-context.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { SavingsGoal } from '@/types/savings-goal';
 import { useToast } from '@/hooks/use-toast';
 import { useLocale } from './locale-context';
+
+const SAVINGS_GOALS_STORAGE_KEY = 'wisebil-savings-goals';
 
 interface SavingsContextType {
   savingsGoals: SavingsGoal[];
@@ -19,6 +21,29 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
   const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
   const { toast } = useToast();
   const { t, formatCurrency } = useLocale();
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    try {
+      const storedGoals = localStorage.getItem(SAVINGS_GOALS_STORAGE_KEY);
+      if (storedGoals) {
+        setSavingsGoals(JSON.parse(storedGoals));
+      }
+    } catch (error) {
+      console.error("Failed to load savings goals from localStorage", error);
+    }
+    setIsLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+        try {
+            localStorage.setItem(SAVINGS_GOALS_STORAGE_KEY, JSON.stringify(savingsGoals));
+        } catch (error) {
+            console.error("Failed to save savings goals to localStorage", error);
+        }
+    }
+  }, [savingsGoals, isLoaded]);
 
   const addSavingsGoal = useCallback(async (goal: SavingsGoal) => {
     setSavingsGoals(prev => [...prev, goal]);

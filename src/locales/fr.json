@@ -41,7 +41,7 @@
     "signup_title": "Créer un compte",
     "signup_subtitle": "Commencez votre voyage vers la liberté financière.",
     "fullname_label": "Nom complet",
-    "email_label_optional": "Adresse e-mail (Facultatif)",
+    "email_label": "Adresse e-mail",
     "confirm_password_label": "Confirmer le mot de passe",
     "i_agree_to_the": "J'accepte les",
     "terms": "Termes",
@@ -314,9 +314,7 @@
     "settings_subtitle": "Gérez les paramètres de votre compte et définissez vos préférences.",
     "profile_title": "Profil",
     "profile_desc": "Mettez à jour vos informations personnelles.",
-    "email_label": "Adresse e-mail",
     "fullname_error": "Le nom complet doit comporter au moins 2 caractères.",
-    "email_error": "Adresse e-mail invalide.",
     "phone_error": "Le numéro de téléphone doit comporter au moins 9 chiffres.",
     "profile_updated_title": "Profil mis à jour",
     "profile_updated_desc": "Vos informations de profil ont été mises à jour.",
@@ -365,5 +363,8 @@
     "advice_for_you_title": "Conseils pour vous",
     "billing_page_title": "Gérez votre abonnement",
     "billing_page_subtitle": "Choisissez le plan qui vous convient. Mettez à niveau ou rétrogradez à tout moment.",
-    "current_plan_button": "Plan actuel"
+    "current_plan_button": "Plan actuel",
+    "phone_or_email_required": "L'e-mail ou le numéro de téléphone est requis.",
+    "email_or_phone_label": "E-mail ou Numéro de téléphone",
+    "email_or_phone_placeholder": "votre@email.com ou +221 77..."
 }

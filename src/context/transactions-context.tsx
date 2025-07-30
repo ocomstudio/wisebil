@@ -1,10 +1,12 @@
 // src/context/transactions-context.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useMemo, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useMemo, useCallback, useEffect } from 'react';
 import { Transaction } from '@/types/transaction';
 import { useToast } from '@/hooks/use-toast';
 import { useLocale } from './locale-context';
+
+const TRANSACTIONS_STORAGE_KEY = 'wisebil-transactions';
 
 interface TransactionsContextType {
   transactions: Transaction[];
@@ -23,6 +25,29 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const { toast } = useToast();
   const { t } = useLocale();
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    try {
+        const storedTransactions = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
+        if (storedTransactions) {
+            setTransactions(JSON.parse(storedTransactions));
+        }
+    } catch (error) {
+        console.error("Failed to load transactions from localStorage", error);
+    }
+    setIsLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if(isLoaded) {
+        try {
+            localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(transactions));
+        } catch (error) {
+            console.error("Failed to save transactions to localStorage", error);
+        }
+    }
+  }, [transactions, isLoaded]);
 
   const addTransaction = useCallback(async (transaction: Transaction) => {
     setTransactions(prevTransactions => [...prevTransactions, transaction].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));

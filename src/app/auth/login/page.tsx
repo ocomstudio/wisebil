@@ -31,7 +31,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   
   const loginSchema = z.object({
-    phone: z.string().min(1, t('phone_required')),
+    loginId: z.string().min(1, t('phone_or_email_required')),
     password: z.string().min(1, t('password_required')),
   });
 
@@ -40,7 +40,7 @@ export default function LoginPage() {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      phone: "",
+      loginId: "",
       password: "",
     },
   });
@@ -65,12 +65,12 @@ export default function LoginPage() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
-            name="phone"
+            name="loginId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('phone_number_label')}</FormLabel>
+                <FormLabel>{t('email_or_phone_label')}</FormLabel>
                 <FormControl>
-                  <Input type="tel" placeholder="+221 77 123 45 67" {...field} />
+                  <Input type="text" placeholder={t('email_or_phone_placeholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

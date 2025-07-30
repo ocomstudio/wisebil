@@ -34,7 +34,7 @@ export default function SignupPage() {
   const signupSchema = z.object({
     fullName: z.string().min(2, t('signup_fullname_error')),
     phone: z.string().min(9, t('signup_phone_error')),
-    email: z.string().email(t('signup_email_error')).optional().or(z.literal('')),
+    email: z.string().email(t('signup_email_error')),
     password: z.string().min(8, t('signup_password_error')),
     confirmPassword: z.string(),
     terms: z.boolean().refine(val => val === true, {
@@ -109,7 +109,7 @@ export default function SignupPage() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('email_label_optional')}</FormLabel>
+                <FormLabel>{t('email_label')} <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <Input type="email" placeholder="votre@email.com" {...field} />
                 </FormControl>

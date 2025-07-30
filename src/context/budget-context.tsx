@@ -1,9 +1,11 @@
 // src/context/budget-context.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { Budget } from '@/types/budget';
 import { useToast } from '@/hooks/use-toast';
+
+const BUDGETS_STORAGE_KEY = 'wisebil-budgets';
 
 interface BudgetContextType {
   budgets: Budget[];
@@ -16,6 +18,29 @@ const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
 export const BudgetProvider = ({ children }: { children: ReactNode }) => {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const { toast } = useToast();
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    try {
+      const storedBudgets = localStorage.getItem(BUDGETS_STORAGE_KEY);
+      if (storedBudgets) {
+        setBudgets(JSON.parse(storedBudgets));
+      }
+    } catch (error) {
+      console.error("Failed to load budgets from localStorage", error);
+    }
+    setIsLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+      try {
+        localStorage.setItem(BUDGETS_STORAGE_KEY, JSON.stringify(budgets));
+      } catch (error) {
+        console.error("Failed to save budgets to localStorage", error);
+      }
+    }
+  }, [budgets, isLoaded]);
 
   const addBudget = useCallback(async (budget: Omit<Budget, 'id'>) => {
     setBudgets(prevBudgets => [...prevBudgets, { ...budget, id: new Date().toISOString() }]);
