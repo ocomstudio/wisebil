@@ -134,15 +134,15 @@ export function ConseilPanel() {
     }
     
     const userMessage: Message = { role: 'user', content: data.prompt };
-    const newConversation = [...currentConversation, userMessage];
-    setCurrentConversation(newConversation);
+    const newConversationWithUserMessage = [...currentConversation, userMessage];
+    setCurrentConversation(newConversationWithUserMessage);
     form.reset();
     setIsThinking(true);
   
     try {
       const result = await askExpenseAssistant({
         question: data.prompt,
-        history: newConversation.slice(0, -1),
+        history: currentConversation, // Pass the conversation state *before* adding the new user message
         language: locale,
       });
 
@@ -156,6 +156,7 @@ export function ConseilPanel() {
         title: t('assistant_error_title'),
         description: t('assistant_error_desc'),
       });
+      // Revert to the state before the user's message was added
       setCurrentConversation(prev => prev.slice(0, -1));
     } finally {
       setIsThinking(false);
