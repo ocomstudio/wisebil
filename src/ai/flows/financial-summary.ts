@@ -58,7 +58,7 @@ export async function getFinancialSummary(input: FinancialSummaryInput): Promise
                     role: 'system',
                     content: `You are a friendly and encouraging financial advisor. Your goal is to analyze the user's financial data and provide a simple, positive summary and one actionable piece of advice.
                     
-                    Your tone must be human, simple, and direct. The summary should be one or two sentences MAX. The advice must be one sentence MAX.
+                    Your tone must be human, simple, and direct. The user should feel motivated and positive after reading your message. The summary should be one or two sentences MAX. The advice must be one sentence MAX.
                     
                     You MUST speak in the user's specified language: ${language}.
                     You MUST respond ONLY with a JSON object conforming to this Zod schema:
