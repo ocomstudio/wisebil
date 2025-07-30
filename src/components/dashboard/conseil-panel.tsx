@@ -165,17 +165,17 @@ export function ConseilPanel() {
 
   return (
     <div className="flex flex-col h-full bg-background md:bg-transparent">
-      <div className='p-4 md:p-6 border-b flex justify-between items-center flex-shrink-0'>
+      <header className='p-4 md:p-6 border-b flex justify-between items-center flex-shrink-0'>
         <h1 className="text-xl font-bold font-headline">{t('nav_advice')} IA</h1>
         <Button variant="ghost" size="sm" onClick={handleNewConversation}>
           <PlusCircle className="mr-2 h-4 w-4" />
           {t('new_chat_button')}
         </Button>
-      </div>
+      </header>
 
-      <div className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto">
         <ScrollArea className="h-full" ref={scrollAreaRef}>
-          <div className="p-4 md:p-6 space-y-6">
+          <div className="p-4 md:p-6 space-y-6 pb-20 md:pb-6">
             {currentConversation.map((message, index) => (
               <div
                 key={index}
@@ -217,9 +217,9 @@ export function ConseilPanel() {
             )}
           </div>
         </ScrollArea>
-      </div>
+      </main>
 
-      <div className='p-4 md:p-6 border-t space-y-4 flex-shrink-0'>
+      <footer className='p-4 md:p-6 border-t space-y-4 flex-shrink-0 bg-background'>
         {conversationHistory.length > 0 && (
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1">
@@ -277,7 +277,7 @@ export function ConseilPanel() {
             </Button>
           </form>
         </Form>
-      </div>
+      </footer>
     </div>
   );
 }
