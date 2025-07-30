@@ -1,4 +1,3 @@
-
 // src/ai/flows/wise-agent.ts
 'use server';
 
@@ -45,24 +44,39 @@ export async function runAgentW(input: AgentWInput): Promise<AgentWOutput> {
       messages: [
         {
           role: "system",
-          content: `You are "Agent W", an expert financial data entry specialist. Your sole purpose is to analyze a user's text, identify every single financial transaction (both income and expenses), and structure them into a JSON object.
+          content: `You are "Agent W", an expert financial data entry specialist. Your sole purpose is to analyze a user's text, which may be complex, conversational, and unstructured, to identify every single financial transaction and structure them into a JSON object.
 
-          **Instructions:**
-          1.  **Parse Thoroughly:** Read the user's entire prompt and extract ALL monetary transactions. This includes both money spent (expenses) and money received (incomes). Pay equal attention to both.
-          2.  **Categorize Accurately:** Assign a category to each transaction.
-              - For expenses (money spent, purchases, bills paid), you MUST use one of these categories: ${validExpenseCategories}.
-              - For incomes (money received, salary, payments, gifts), you MUST use one of these categories: ${validIncomeCategories}.
-              - If no category fits perfectly, choose the most logical one or 'Autre'.
-          3.  **Handle Currency:** The user's currency is ${currency}. All amounts should be treated as being in this currency.
-          4.  **Strict JSON Output:** You MUST respond ONLY with a JSON object conforming to this Zod schema. Do not include any apologies, explanations, or any text outside of the JSON structure. If no incomes are found, the 'incomes' array must be an empty list []. If no expenses are found, the 'expenses' array must be an empty list [].
+          **Core Instructions:**
+          1.  **Parse Complex Text:** The user's prompt is a raw stream of thought. Your primary task is to meticulously read the entire text and hunt for any mention of money being spent (expenses) or received (incomes). Ignore any non-financial chatter or irrelevant details.
+          2.  **Identify ALL Transactions:** Do not miss a single transaction. If the user mentions buying coffee, paying a bill, receiving a salary, or getting money from a friend, you must capture it.
+          3.  **Categorize Accurately:** For each transaction, you must assign a category.
+              - **Expenses (money spent, purchases, bills paid):** You MUST use one of these categories: ${validExpenseCategories}.
+              - **Incomes (money received, salary, payments, gifts):** You MUST use one of these categories: ${validIncomeCategories}.
+              - Use the context of the sentence to determine the most logical category. If no category fits, use 'Autre'.
+          4.  **Handle Currency:** The user's currency is ${currency}. All amounts are in this currency.
+          5.  **Strict JSON Output:** You MUST respond ONLY with a JSON object conforming to the Zod schema below. Do not include any apologies, explanations, or any text outside of the JSON. If no incomes are found, the 'incomes' array must be `[]`. If no expenses are found, the 'expenses' array must be `[]`.
+
+          **Example of complex analysis:**
+          User Prompt: "Ok so today was crazy, I went to the supermarket and spent 25000 on groceries, then I grabbed a taxi for 3500. Oh and my client finally paid me the 150000 he owed me for the project. I also paid my internet bill which was 15000."
+          Expected JSON Output:
+          {
+            "incomes": [
+              { "description": "Payment from client for project", "amount": 150000, "category": "Vente" }
+            ],
+            "expenses": [
+              { "description": "Groceries at supermarket", "amount": 25000, "category": "Alimentation" },
+              { "description": "Taxi ride", "amount": 3500, "category": "Transport" },
+              { "description": "Internet bill payment", "amount": 15000, "category": "Factures" }
+            ]
+          }
           
-          Zod Schema:
+          Zod Schema for your output:
           ${JSON.stringify(AgentWOutputSchema.shape)}
           `
         },
         {
           role: "user",
-          content: `Here is my day: ${prompt}`
+          content: `Here is my day, please analyze it: ${prompt}`
         }
       ],
     });
@@ -75,6 +89,3 @@ export async function runAgentW(input: AgentWInput): Promise<AgentWOutput> {
     throw new Error(`Agent W failed to generate a response. Details: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
-
-
-
