@@ -46,7 +46,7 @@ You MUST answer in the user's specified language: ${language}. If the user asks 
 
     try {
         const completion = await openai.chat.completions.create({
-            model: "deepseek/deepseek-chat:free",
+            model: "mistralai/mistral-7b-instruct:free",
             messages: messages,
         });
         

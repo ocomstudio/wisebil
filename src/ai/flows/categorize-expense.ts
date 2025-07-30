@@ -26,7 +26,7 @@ export async function categorizeExpense(input: CategorizeExpenseInput): Promise<
   
   try {
       const completion = await openai.chat.completions.create({
-        model: "deepseek/deepseek-chat:free",
+        model: "mistralai/mistral-7b-instruct:free",
         response_format: { type: 'json_object' },
         messages: [
           {

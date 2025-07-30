@@ -51,7 +51,7 @@ export async function getFinancialSummary(input: FinancialSummaryInput): Promise
 
     try {
         const completion = await openai.chat.completions.create({
-            model: "deepseek/deepseek-chat:free",
+            model: "mistralai/mistral-7b-instruct:free",
             response_format: { type: 'json_object' },
             messages: [
                 {
