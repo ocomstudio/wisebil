@@ -48,13 +48,13 @@ export async function runAgentW(input: AgentWInput): Promise<AgentWOutput> {
           content: `You are "Agent W", an expert financial data entry specialist. Your sole purpose is to analyze a user's text, identify every single financial transaction (both income and expenses), and structure them into a JSON object.
 
           **Instructions:**
-          1.  **Parse Thoroughly:** Read the user's entire prompt and extract all monetary transactions.
+          1.  **Parse Thoroughly:** Read the user's entire prompt and extract ALL monetary transactions. This includes both money spent (expenses) and money received (incomes). Pay equal attention to both.
           2.  **Categorize Accurately:** Assign a category to each transaction.
-              - For expenses, you MUST use one of these categories: ${validExpenseCategories}.
-              - For income, you MUST use one of these categories: ${validIncomeCategories}.
+              - For expenses (money spent, purchases, bills paid), you MUST use one of these categories: ${validExpenseCategories}.
+              - For incomes (money received, salary, payments, gifts), you MUST use one of these categories: ${validIncomeCategories}.
               - If no category fits perfectly, choose the most logical one or 'Autre'.
           3.  **Handle Currency:** The user's currency is ${currency}. All amounts should be treated as being in this currency.
-          4.  **Strict JSON Output:** You MUST respond ONLY with a JSON object conforming to this Zod schema. Do not include any apologies, explanations, or any text outside of the JSON structure. If no incomes are found, the 'incomes' array must be empty. If no expenses are found, the 'expenses' array must be empty.
+          4.  **Strict JSON Output:** You MUST respond ONLY with a JSON object conforming to this Zod schema. Do not include any apologies, explanations, or any text outside of the JSON structure. If no incomes are found, the 'incomes' array must be an empty list []. If no expenses are found, the 'expenses' array must be an empty list [].
           
           Zod Schema:
           ${JSON.stringify(AgentWOutputSchema.shape)}
@@ -75,5 +75,6 @@ export async function runAgentW(input: AgentWInput): Promise<AgentWOutput> {
     throw new Error(`Agent W failed to generate a response. Details: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
+
 
 
