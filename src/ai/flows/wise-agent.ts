@@ -63,7 +63,7 @@ export async function runAgentW(input: AgentWInput): Promise<AgentWOutput> {
 
           **Core Instructions:**
           1.  **Parse Complex Text:** The user's prompt is a raw stream of thought. Your primary task is to meticulously read the entire text and hunt for any financial actions: spending money (expenses), receiving money (incomes), creating a budget, creating a savings goal, or adding money to an existing goal. Ignore all non-financial chatter.
-          2.  **Identify ALL Financial Actions:** Do not miss a single action. You must capture everything from buying coffee to setting up a new savings plan.
+          2.  **Identify ALL Financial Actions:** Do not miss a single action. You must capture everything from buying coffee to setting up a new savings plan. Each action MUST have all required fields (description, amount, category).
           3.  **Extract the Date for Transactions:** Today's date is ${new Date().toISOString().split('T')[0]}. You MUST analyze the text to find the date of each transaction. Look for terms like "hier", "avant-hier", or specific dates like "le 29". If no date is mentioned for a transaction, you MUST use today's date. The date format MUST be YYYY-MM-DD. This applies only to incomes and expenses.
           4.  **Categorize Accurately:** For each transaction, assign a category.
               - **Expenses (money spent):** Use one of these: ${expenseCategories.map(c => c.name).join(', ')}.
@@ -74,7 +74,7 @@ export async function runAgentW(input: AgentWInput): Promise<AgentWOutput> {
               - If the user says "crée un budget pour les courses de 50000", add it to 'newBudgets'.
               - If the user says "ajoute 10000 à mon épargne 'Voiture'", and 'Voiture' is in the existing list, add it to 'savingsContributions'. If 'Voiture' does not exist, create it under 'newSavingsGoals'.
           6.  **Handle Currency:** The user's currency is ${currency}. All amounts are in this currency.
-          7.  **STRICT JSON-ONLY OUTPUT:** You MUST respond ONLY with a JSON object conforming to the output schema. Do not include apologies, explanations, or ANY text outside of the JSON brackets. If no actions of a certain type are found, its corresponding array MUST be empty, for example: "incomes": [].
+          7.  **STRICT JSON-ONLY OUTPUT:** You MUST respond ONLY with a JSON object conforming to the output schema. Do not include apologies, explanations, or ANY text outside of the JSON brackets. If no actions of a certain type are found, its corresponding array MUST be empty, for example: "incomes": []. NEVER return a list with an empty object like "incomes": [{}].
 
           Here is my day, please analyze it: "${prompt}"
   `;
@@ -90,9 +90,18 @@ export async function runAgentW(input: AgentWInput): Promise<AgentWOutput> {
     }
 
     const jsonString = aiResponse.match(/\{[\s\S]*\}/)?.[0] ?? '{}';
-    const parsed = JSON.parse(jsonString);
+    let parsed = JSON.parse(jsonString);
 
-    const result = AgentWOutputSchema.safeParse(parsed);
+    // Pre-validation and cleaning step
+    const cleanParsed = {
+        incomes: (parsed.incomes || []).filter((i: any) => i && i.description && i.amount && i.category),
+        expenses: (parsed.expenses || []).filter((e: any) => e && e.description && e.amount && e.category),
+        newBudgets: (parsed.newBudgets || []).filter((b: any) => b && b.name && b.amount && b.category),
+        newSavingsGoals: (parsed.newSavingsGoals || []).filter((g: any) => g && g.name && g.targetAmount),
+        savingsContributions: (parsed.savingsContributions || []).filter((c: any) => c && c.goalName && c.amount),
+    };
+
+    const result = AgentWOutputSchema.safeParse(cleanParsed);
      if (!result.success) {
         throw new Error(`AI response validation failed: ${result.error.message}`);
     }
