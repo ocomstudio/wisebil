@@ -369,5 +369,13 @@
     "phone_or_email_required": "L'e-mail ou le numéro de téléphone est requis.",
     "email_or_phone_label": "E-mail ou Numéro de téléphone",
     "email_or_phone_placeholder": "votre@email.com ou +221 77...",
-    "all_transactions": "Toutes les transactions"
+    "all_transactions": "Toutes les transactions",
+    "danger_zone_title": "Zone de Danger",
+    "danger_zone_desc": "Ces actions sont destructrices et irréversibles.",
+    "reset_app_button": "Réinitialiser l'application",
+    "reset_warning_title": "Êtes-vous absolument sûr ?",
+    "reset_warning_desc": "Cette action supprimera définitivement toutes vos données, y compris les transactions, les budgets et les objectifs. Cette action ne peut pas être annulée.",
+    "reset_confirm_button": "Oui, tout supprimer",
+    "reset_success_title": "Application réinitialisée",
+    "reset_success_desc": "Toutes vos données ont été effacées. Vous pouvez recommencer à zéro."
 }

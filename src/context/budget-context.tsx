@@ -11,6 +11,7 @@ interface BudgetContextType {
   budgets: Budget[];
   addBudget: (budget: Omit<Budget, 'id'>) => Promise<void>;
   deleteBudget: (id: string) => Promise<void>;
+  resetBudgets: () => void;
 }
 
 const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
@@ -54,8 +55,13 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
     });
   }, [toast]);
 
+  const resetBudgets = useCallback(() => {
+    setBudgets([]);
+    localStorage.removeItem(BUDGETS_STORAGE_KEY);
+  }, []);
+
   return (
-    <BudgetContext.Provider value={{ budgets, addBudget, deleteBudget }}>
+    <BudgetContext.Provider value={{ budgets, addBudget, deleteBudget, resetBudgets }}>
       {children}
     </BudgetContext.Provider>
   );

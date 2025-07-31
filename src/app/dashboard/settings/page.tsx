@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck, Languages, Wallet } from "lucide-react";
+import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck, Languages, Wallet, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useSettings } from "@/context/settings-context";
 import { useToast } from "@/hooks/use-toast";
@@ -25,11 +25,25 @@ import Link from "next/link";
 import { useLocale } from "@/context/locale-context";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Language, Currency } from "@/context/locale-context";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useTransactions } from "@/context/transactions-context";
+import { useBudgets } from "@/context/budget-context";
+import { useSavings } from "@/context/savings-context";
+import { useAuth } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
+
 
 export default function SettingsPage() {
   const { settings, updateSettings, checkPin } = useSettings();
   const { toast } = useToast();
   const { t, locale, setLocale, currency, setCurrency } = useLocale();
+
+  const { resetTransactions } = useTransactions();
+  const { resetBudgets } = useBudgets();
+  const { resetSavings } = useSavings();
+  const { logout } = useAuth();
+  const router = useRouter();
+
 
   const profileSchema = z.object({
     fullName: z.string().min(2, t('fullname_error')),
@@ -89,6 +103,31 @@ export default function SettingsPage() {
     } else if (pin !== null) {
         toast({ variant: "destructive", title: t('incorrect_pin') });
     }
+  };
+
+  const handleResetApp = () => {
+    // Clear all data
+    resetTransactions();
+    resetBudgets();
+    resetSavings();
+    // This is handled in conseil-panel, but we can clear it here too for good measure
+    localStorage.removeItem('wisebil-conversation-history');
+
+    // Reset settings to default
+    updateSettings({
+      isBalanceHidden: false,
+      isPinLockEnabled: false,
+      pin: null,
+    });
+    
+    toast({
+        title: t('reset_success_title'),
+        description: t('reset_success_desc')
+    });
+    
+    // Log out and redirect
+    logout();
+    router.push('/auth/login');
   };
 
   return (
@@ -237,6 +276,37 @@ export default function SettingsPage() {
               disabled={!settings.isPinLockEnabled}
             />
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-destructive">
+        <CardHeader>
+          <CardTitle className="text-destructive">{t('danger_zone_title')}</CardTitle>
+          <CardDescription>{t('danger_zone_desc')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">{t('reset_app_button')}</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+                    <Trash2 className="h-6 w-6 text-red-600" />
+                  </div>
+                  <AlertDialogTitle>{t('reset_warning_title')}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t('reset_warning_desc')}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleResetApp} className="bg-destructive hover:bg-destructive/90">
+                    {t('reset_confirm_button')}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
         </CardContent>
       </Card>
       

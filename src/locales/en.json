@@ -369,5 +369,13 @@
     "phone_or_email_required": "Email or phone number is required.",
     "email_or_phone_label": "Email or Phone Number",
     "email_or_phone_placeholder": "votre@email.com or +221 77...",
-    "all_transactions": "All Transactions"
+    "all_transactions": "All Transactions",
+    "danger_zone_title": "Danger Zone",
+    "danger_zone_desc": "These actions are destructive and irreversible.",
+    "reset_app_button": "Reset Application",
+    "reset_warning_title": "Are you absolutely sure?",
+    "reset_warning_desc": "This will permanently delete all your data, including transactions, budgets, and goals. This action cannot be undone.",
+    "reset_confirm_button": "Yes, delete everything",
+    "reset_success_title": "Application Reset",
+    "reset_success_desc": "All your data has been erased. You can start fresh now."
 }

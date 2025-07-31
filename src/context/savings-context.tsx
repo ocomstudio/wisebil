@@ -13,6 +13,7 @@ interface SavingsContextType {
   addSavingsGoal: (goal: SavingsGoal) => Promise<void>;
   deleteSavingsGoal: (id: string) => Promise<void>;
   addFunds: (id: string, amount: number) => Promise<void>;
+  resetSavings: () => void;
 }
 
 const SavingsContext = createContext<SavingsContextType | undefined>(undefined);
@@ -69,8 +70,13 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     });
   }, [t, toast, formatCurrency]);
 
+  const resetSavings = useCallback(() => {
+    setSavingsGoals([]);
+    localStorage.removeItem(SAVINGS_GOALS_STORAGE_KEY);
+  }, []);
+
   return (
-    <SavingsContext.Provider value={{ savingsGoals, addSavingsGoal, deleteSavingsGoal, addFunds }}>
+    <SavingsContext.Provider value={{ savingsGoals, addSavingsGoal, deleteSavingsGoal, addFunds, resetSavings }}>
       {children}
     </SavingsContext.Provider>
   );

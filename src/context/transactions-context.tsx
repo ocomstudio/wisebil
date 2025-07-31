@@ -14,6 +14,7 @@ interface TransactionsContextType {
   updateTransaction: (id: string, updatedTransaction: Transaction) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   getTransactionById: (id: string) => Transaction | undefined;
+  resetTransactions: () => void;
   balance: number;
   income: number;
   expenses: number;
@@ -68,6 +69,11 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
     return transactions.find(t => t.id === id);
   }, [transactions]);
 
+  const resetTransactions = useCallback(() => {
+    setTransactions([]);
+    localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
+  }, []);
+
   const { balance, income, expenses } = useMemo(() => {
     let income = 0;
     let expenses = 0;
@@ -91,6 +97,7 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
         updateTransaction,
         deleteTransaction,
         getTransactionById,
+        resetTransactions,
         balance, 
         income, 
         expenses 
