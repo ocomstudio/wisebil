@@ -1,3 +1,4 @@
+
 // src/ai/flows/wise-agent.ts
 'use server';
 
@@ -68,7 +69,7 @@ export async function runAgentW(input: AgentWInput): Promise<string> {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "google/gemma-7b-it:free",
+      model: "mistralai/mistral-7b-instruct:free",
       response_format: { type: 'json_object' },
       messages: [
         {
