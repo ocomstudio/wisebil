@@ -12,7 +12,7 @@ interface SavingsContextType {
   savingsGoals: SavingsGoal[];
   addSavingsGoal: (goal: SavingsGoal) => Promise<void>;
   deleteSavingsGoal: (id: string) => Promise<void>;
-  addFunds: (id: string, amount: number) => Promise<void>;
+  addFunds: (id: string | string, amount: number) => Promise<void>;
   resetSavings: () => void;
 }
 
@@ -58,9 +58,9 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     });
   }, [t, toast]);
 
-  const addFunds = useCallback(async (id: string, amount: number) => {
+  const addFunds = useCallback(async (idOrName: string, amount: number) => {
     setSavingsGoals(prev => prev.map(g => 
-      g.id === id 
+      (g.id === idOrName || g.name === idOrName)
         ? { ...g, currentAmount: g.currentAmount + amount } 
         : g
     ));
@@ -72,7 +72,11 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
 
   const resetSavings = useCallback(() => {
     setSavingsGoals([]);
-    localStorage.removeItem(SAVINGS_GOALS_STORAGE_KEY);
+    try {
+        localStorage.removeItem(SAVINGS_GOALS_STORAGE_KEY);
+    } catch(e) {
+        console.error("Could not remove savings from local storage", e)
+    }
   }, []);
 
   return (

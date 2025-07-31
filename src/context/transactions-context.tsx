@@ -71,7 +71,11 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
 
   const resetTransactions = useCallback(() => {
     setTransactions([]);
-    localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
+    try {
+        localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
+    } catch(e) {
+        console.error("Could not remove transactions from local storage", e)
+    }
   }, []);
 
   const { balance, income, expenses } = useMemo(() => {

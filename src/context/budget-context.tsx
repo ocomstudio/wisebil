@@ -9,7 +9,7 @@ const BUDGETS_STORAGE_KEY = 'wisebil-budgets';
 
 interface BudgetContextType {
   budgets: Budget[];
-  addBudget: (budget: Omit<Budget, 'id'>) => Promise<void>;
+  addBudget: (budget: Budget) => Promise<void>;
   deleteBudget: (id: string) => Promise<void>;
   resetBudgets: () => void;
 }
@@ -43,8 +43,8 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [budgets, isLoaded]);
 
-  const addBudget = useCallback(async (budget: Omit<Budget, 'id'>) => {
-    setBudgets(prevBudgets => [...prevBudgets, { ...budget, id: new Date().toISOString() }]);
+  const addBudget = useCallback(async (budget: Budget) => {
+    setBudgets(prevBudgets => [...prevBudgets, budget]);
   }, []);
   
   const deleteBudget = useCallback(async (id: string) => {
@@ -57,7 +57,11 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
 
   const resetBudgets = useCallback(() => {
     setBudgets([]);
-    localStorage.removeItem(BUDGETS_STORAGE_KEY);
+    try {
+        localStorage.removeItem(BUDGETS_STORAGE_KEY);
+    } catch(e) {
+        console.error("Could not remove budgets from local storage", e)
+    }
   }, []);
 
   return (
