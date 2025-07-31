@@ -27,7 +27,7 @@ export async function categorizeExpense(input: CategorizeExpenseInput): Promise<
   
   try {
       const completion = await openai.chat.completions.create({
-        model: "nousresearch/nous-hermes-2-mixtral-8x7b-dpo",
+        model: "google/gemma-7b-it:free",
         response_format: { type: 'json_object' },
         messages: [
           {

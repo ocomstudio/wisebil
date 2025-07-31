@@ -87,7 +87,7 @@ ${financialContext}
 
     try {
         const completion = await openai.chat.completions.create({
-            model: "nousresearch/nous-hermes-2-mixtral-8x7b-dpo",
+            model: "google/gemma-7b-it:free",
             messages: messages,
         });
         
