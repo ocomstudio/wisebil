@@ -1,4 +1,4 @@
-
+// src/ai/flows/financial-summary.ts
 'use server';
 
 /**
@@ -10,8 +10,7 @@
  */
 
 import { z } from 'zod';
-import { ai } from '@/ai/genkit';
-import { googleAI } from '@genkit-ai/googleai';
+import { generateWithFallback } from '@/lib/ai-service';
 
 const FinancialSummaryInputSchema = z.object({
   income: z.number().describe('Total income for the period.'),
@@ -31,57 +30,57 @@ const FinancialSummaryOutputSchema = z.object({
 });
 export type FinancialSummaryOutput = z.infer<typeof FinancialSummaryOutputSchema>;
 
-const financialSummaryPrompt = ai.definePrompt({
-  name: 'financialSummaryPrompt',
-  input: { schema: FinancialSummaryInputSchema },
-  output: { schema: FinancialSummaryOutputSchema },
-  model: googleAI('gemini-1.5-flash'),
-  prompt: `You are a friendly and encouraging financial advisor. Your goal is to analyze the user's financial data and provide a simple, positive summary and one actionable piece of advice.
-                    
-  Your tone must be human, simple, and direct. The user should feel motivated and positive after reading your message. The summary should be one or two sentences MAX. The advice must be one sentence MAX.
-  
-  You MUST speak in the user's specified language: {{language}}.
-  You MUST respond ONLY with a JSON object conforming to the output schema.
-
-  User's financial data:
-  - Total Income: {{income}} {{currency}}
-  - Total Expenses: {{expenses}} {{currency}}
-  - Expenses by Category:
-  {{#each expensesByCategory}}- {{name}}: {{amount}} {{../currency}}
-  {{/each}}
-  `,
-});
-
-const financialSummaryFlow = ai.defineFlow(
-  {
-    name: 'financialSummaryFlow',
-    inputSchema: FinancialSummaryInputSchema,
-    outputSchema: FinancialSummaryOutputSchema,
-  },
-  async (input) => {
-     if (input.income === 0 && input.expenses === 0) {
-      if (input.language === 'fr') {
-        return {
-          summary: "Bienvenue ! Ajoutez vos premières transactions pour voir votre résumé financier ici.",
-          advice: "Commencez par enregistrer une dépense ou un revenu pour prendre le contrôle de vos finances."
-        };
-      } else {
-         return {
-          summary: "Welcome! Add your first transactions to see your financial summary here.",
-          advice: "Start by recording an expense or income to take control of your finances."
-        };
-      }
-    }
-    
-    const { output } = await financialSummaryPrompt(input);
-    if (!output) {
-      throw new Error('AI model failed to generate a response.');
-    }
-    return output;
-  }
-);
-
 
 export async function getFinancialSummary(input: FinancialSummaryInput): Promise<FinancialSummaryOutput> {
-  return await financialSummaryFlow(input);
+   if (input.income === 0 && input.expenses === 0) {
+    if (input.language === 'fr') {
+      return {
+        summary: "Bienvenue ! Ajoutez vos premières transactions pour voir votre résumé financier ici.",
+        advice: "Commencez par enregistrer une dépense ou un revenu pour prendre le contrôle de vos finances."
+      };
+    } else {
+       return {
+        summary: "Welcome! Add your first transactions to see your financial summary here.",
+        advice: "Start by recording an expense or income to take control of your finances."
+      };
+    }
+  }
+
+  const systemPrompt = `You are a friendly and encouraging financial advisor. Your goal is to analyze the user's financial data and provide a simple, positive summary and one actionable piece of advice.
+                  
+Your tone must be human, simple, and direct. The user should feel motivated and positive after reading your message. The summary should be one or two sentences MAX. The advice must be one sentence MAX.
+
+You MUST speak in the user's specified language: ${input.language}.
+You MUST respond ONLY with a JSON object conforming to the output schema.
+
+User's financial data:
+- Total Income: ${input.income} ${input.currency}
+- Total Expenses: ${input.expenses} ${input.currency}
+- Expenses by Category:
+${input.expensesByCategory.map(e => `- ${e.name}: ${e.amount} ${input.currency}`).join('\n')}
+`;
+
+  try {
+    const aiResponse = await generateWithFallback({
+        prompt: systemPrompt,
+        isJson: true,
+    });
+
+    if (!aiResponse) {
+      throw new Error('AI model failed to generate a response.');
+    }
+
+    const jsonString = aiResponse.match(/\{[\s\S]*\}/)?.[0] ?? '{}';
+    const parsed = JSON.parse(jsonString);
+
+    const result = FinancialSummaryOutputSchema.safeParse(parsed);
+     if (!result.success) {
+        throw new Error(`AI response validation failed: ${result.error.message}`);
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error("Failed to get financial summary:", error);
+    throw new Error(`Failed to get financial summary. Details: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }

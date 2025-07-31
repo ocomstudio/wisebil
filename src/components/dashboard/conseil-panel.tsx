@@ -190,21 +190,13 @@ export function ConseilPanel() {
     setCurrentConversation(prev => [...prev, userMessage]);
     form.reset();
     
-    // Clean the prompt to extract only the JSON part
-    const cleanJSONString = (str: string) => {
-        const match = str.match(/\{[\s\S]*\}/);
-        return match ? match[0] : '{}';
-    };
-
     try {
-      const agentResultString = await runAgentW({
+      const result = await runAgentW({
         prompt,
         currency,
         budgets,
         savingsGoals
       });
-
-      const result: AgentWOutput = JSON.parse(cleanJSONString(agentResultString));
       
       const { incomes, expenses: extractedExpenses, newBudgets, newSavingsGoals, savingsContributions } = result;
 
@@ -281,7 +273,7 @@ export function ConseilPanel() {
     try {
       const result = await askExpenseAssistant({
         question: prompt,
-        history: currentConversation.filter(m => m.agentMode === 'wise'),
+        history: currentConversation.filter(m => m.agentMode === 'wise').map(m => ({role: m.role, content: m.content})),
         language: locale,
         currency,
         financialData: {

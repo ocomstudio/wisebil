@@ -1,4 +1,4 @@
-
+// src/ai/flows/expense-assistant.ts
 'use server';
 
 /**
@@ -8,8 +8,7 @@
  * - ExpenseAssistantInput - The input type for the askExpenseAssistant function.
  */
 import { z } from 'zod';
-import { ai } from '@/ai/genkit';
-import { googleAI } from '@genkit-ai/googleai';
+import { generateWithFallback, type Message } from '@/lib/ai-service';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
@@ -51,17 +50,7 @@ const ExpenseAssistantInputSchema = z.object({
 });
 export type ExpenseAssistantInput = z.infer<typeof ExpenseAssistantInputSchema>;
 
-const ExpenseAssistantOutputSchema = z.object({
-  answer: z.string().describe("The AI assistant's response."),
-});
-
-const expenseAssistantFlow = ai.defineFlow(
-  {
-    name: 'expenseAssistantFlow',
-    inputSchema: ExpenseAssistantInputSchema,
-    outputSchema: ExpenseAssistantOutputSchema,
-  },
-  async (input) => {
+export async function askExpenseAssistant(input: ExpenseAssistantInput) {
     const { question, history, language, currency, financialData } = input;
 
     const financialContext = `
@@ -85,24 +74,27 @@ Your tone should always be human, honest, and direct. The user should feel like 
 5.  **Strictly No External Recommendations:** You are NOT a financial advisor for investments and you must not provide any investment advice (stocks, crypto, etc.). You must NEVER recommend external platforms, banks, or any financial service. Your focus is exclusively on personal finance management within this application: budgeting, saving, debt management, and financial education based on the user's data.
 
 You MUST answer in the user's specified language: ${language}.
-
-${financialContext}
 `;
+    
+    // Construct the message history for the AI
+    const messages: Message[] = [
+        { role: 'system', content: `${systemPrompt}\n${financialContext}` },
+        ...history.map(h => ({ role: h.role === 'assistant' ? 'assistant' : 'user', content: h.content })),
+        { role: 'user', content: question }
+    ];
 
-    const { text } = await ai.generate({
-      model: googleAI('gemini-1.5-flash'),
-      prompt: question,
-      system: systemPrompt,
-      history: history.map(h => ({ role: h.role === 'assistant' ? 'model' : 'user', parts: [{ text: h.content }] })),
-    });
+    try {
+        const text = await generateWithFallback({
+            messages,
+        });
 
-    if (!text) {
-      throw new Error("AI model returned an empty response.");
+        if (!text) {
+          throw new Error("AI model returned an empty response.");
+        }
+        return { answer: text };
+
+    } catch (error) {
+        console.error(`AI model failed to generate a response:`, error);
+        throw new Error(`AI model failed to generate a response. Details: ${error instanceof Error ? error.message : String(error)}`);
     }
-    return { answer: text };
-  }
-);
-
-export async function askExpenseAssistant(input: ExpenseAssistantInput) {
-  return await expenseAssistantFlow(input);
 }

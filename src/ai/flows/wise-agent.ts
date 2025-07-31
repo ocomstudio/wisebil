@@ -1,4 +1,4 @@
-
+// src/ai/flows/wise-agent.ts
 'use server';
 
 /**
@@ -10,8 +10,7 @@
  */
 
 import { z } from 'zod';
-import { ai } from '@/ai/genkit';
-import { googleAI } from '@genkit-ai/googleai';
+import { generateWithFallback } from '@/lib/ai-service';
 import { expenseCategories, incomeCategories } from '@/config/categories';
 
 const TransactionSchema = z.object({
@@ -56,12 +55,11 @@ const AgentWOutputSchema = z.object({
 });
 export type AgentWOutput = z.infer<typeof AgentWOutputSchema>;
 
-const agentWPrompt = ai.definePrompt({
-  name: 'agentWPrompt',
-  input: { schema: AgentWInputSchema },
-  output: { schema: AgentWOutputSchema },
-  model: googleAI('gemini-1.5-flash'),
-  prompt: `You are "Agent W", an expert financial data entry specialist. Your sole purpose is to analyze a user's text, which may be complex, conversational, and unstructured, to identify every single financial action and structure them into a SINGLE JSON object.
+
+export async function runAgentW(input: AgentWInput): Promise<AgentWOutput> {
+    const { prompt, currency, budgets, savingsGoals } = input;
+    
+    const systemPrompt = `You are "Agent W", an expert financial data entry specialist. Your sole purpose is to analyze a user's text, which may be complex, conversational, and unstructured, to identify every single financial action and structure them into a SINGLE JSON object.
 
           **Core Instructions:**
           1.  **Parse Complex Text:** The user's prompt is a raw stream of thought. Your primary task is to meticulously read the entire text and hunt for any financial actions: spending money (expenses), receiving money (incomes), creating a budget, creating a savings goal, or adding money to an existing goal. Ignore all non-financial chatter.
@@ -71,30 +69,37 @@ const agentWPrompt = ai.definePrompt({
               - **Expenses (money spent):** Use one of these: ${expenseCategories.map(c => c.name).join(', ')}.
               - **Incomes (money received):** Use one of these: ${incomeCategories.map(c => c.name).join(', ')}.
           5.  **Distinguish New vs. Existing:**
-              - Existing Budgets: {{#each budgets}}{{name}}, {{/each}}
-              - Existing Savings Goals: {{#each savingsGoals}}{{name}}, {{/each}}
+              - Existing Budgets: ${budgets.map(b => b.name).join(', ') || 'None'}
+              - Existing Savings Goals: ${savingsGoals.map(s => s.name).join(', ') || 'None'}
               - If the user says "crée un budget pour les courses de 50000", add it to 'newBudgets'.
               - If the user says "ajoute 10000 à mon épargne 'Voiture'", and 'Voiture' is in the existing list, add it to 'savingsContributions'. If 'Voiture' does not exist, create it under 'newSavingsGoals'.
-          6.  **Handle Currency:** The user's currency is {{currency}}. All amounts are in this currency.
+          6.  **Handle Currency:** The user's currency is ${currency}. All amounts are in this currency.
           7.  **STRICT JSON-ONLY OUTPUT:** You MUST respond ONLY with a JSON object conforming to the output schema. Do not include apologies, explanations, or ANY text outside of the JSON brackets. If no actions of a certain type are found, its corresponding array MUST be empty, for example: "incomes": [].
 
-          Here is my day, please analyze it: {{prompt}}
-  `,
-});
+          Here is my day, please analyze it: "${prompt}"
+  `;
 
-const agentWFlow = ai.defineFlow(
-  {
-    name: 'agentWFlow',
-    inputSchema: AgentWInputSchema,
-    outputSchema: z.string(), // We expect a raw JSON string
-  },
-  async (input) => {
-    const { text } = await agentWPrompt(input);
-    return text;
+  try {
+    const aiResponse = await generateWithFallback({
+        prompt: systemPrompt,
+        isJson: true
+    });
+    
+    if (!aiResponse) {
+        throw new Error('AI model failed to generate a response.');
+    }
+
+    const jsonString = aiResponse.match(/\{[\s\S]*\}/)?.[0] ?? '{}';
+    const parsed = JSON.parse(jsonString);
+
+    const result = AgentWOutputSchema.safeParse(parsed);
+     if (!result.success) {
+        throw new Error(`AI response validation failed: ${result.error.message}`);
+    }
+    
+    return result.data;
+  } catch (error) {
+    console.error(`Agent W failed to generate a response:`, error);
+    throw new Error(`Agent W failed to generate a response. Details: ${error instanceof Error ? error.message : String(error)}`);
   }
-);
-
-
-export async function runAgentW(input: AgentWInput): Promise<string> {
-    return await agentWFlow(input);
 }

@@ -1,6 +1,4 @@
-// This file is no longer used by the AI flows, which have been migrated to Genkit.
-// It is kept for potential other uses or can be deleted if no longer needed.
-
+// src/lib/openai.ts
 import OpenAI from 'openai';
 
 // The API key is now set during initialization.
