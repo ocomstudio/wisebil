@@ -37,6 +37,7 @@ import type { SavingsGoal } from '@/types/savings-goal';
 import { v4 as uuidv4 } from 'uuid';
 import toast from 'react-hot-toast';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '../ui/skeleton';
 
 
 const assistantSchema = z.object({
@@ -62,6 +63,7 @@ export function ConseilPanel() {
   const { budgets, addBudget } = useBudgets();
   const { savingsGoals, addSavingsGoal, addFunds } = useSavings();
 
+  const [isClient, setIsClient] = useState(false);
   const [currentConversation, setCurrentConversation] = useState<Conversation>([]);
   const [conversationHistory, setConversationHistory] = useState<Conversation[]>([]);
   const [isThinking, setIsThinking] = useState(false);
@@ -74,8 +76,13 @@ export function ConseilPanel() {
 
   const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState(false);
 
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   // Load conversation from localStorage on initial render
   useEffect(() => {
+    if (!isClient) return;
     try {
       const storedHistory = localStorage.getItem(CONVERSATION_HISTORY_KEY);
       if (storedHistory) {
@@ -88,17 +95,18 @@ export function ConseilPanel() {
     } catch (error) {
       console.error("Failed to load conversation history from localStorage", error);
     }
-  }, []);
+  }, [isClient]);
 
   // Save conversation to localStorage whenever it changes
   useEffect(() => {
+    if (!isClient) return;
     try {
         const historyToSave = [currentConversation, ...conversationHistory].filter(c => c.length > 0);
         localStorage.setItem(CONVERSATION_HISTORY_KEY, JSON.stringify(historyToSave));
     } catch (error) {
         console.error("Failed to save conversation history to localStorage", error);
     }
-  }, [currentConversation, conversationHistory]);
+  }, [currentConversation, conversationHistory, isClient]);
 
   const form = useForm<AssistantFormValues>({
     resolver: zodResolver(assistantSchema),
@@ -142,6 +150,7 @@ export function ConseilPanel() {
   }, [isListening, form]);
 
   useEffect(() => {
+    if (!isClient) return;
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const supported = !!SpeechRecognition;
     setIsSpeechRecognitionSupported(supported);
@@ -186,7 +195,7 @@ export function ConseilPanel() {
         recognitionRef.current.stop();
       }
     };
-  }, [form, uiToast, locale, t]);
+  }, [isClient, form, uiToast, locale, t]);
 
 
   const handleNewConversation = () => {
@@ -337,6 +346,19 @@ export function ConseilPanel() {
   const placeholderText = agentMode === 'wise' 
     ? t('ask_a_question_placeholder')
     : "Ex: Hier j'ai acheté un café à 1500...";
+
+  if (!isClient) {
+    return (
+      <div className="flex flex-col h-full bg-background md:bg-transparent p-4">
+        <Skeleton className="h-10 w-1/2 mb-4" />
+        <div className="flex-1 space-y-4">
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+        <Skeleton className="h-20 w-full mt-4" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-background md:bg-transparent">
