@@ -208,14 +208,14 @@ export function ConseilPanel() {
     form.reset();
     
     try {
-      const result = await runAgentW({
+      const aiResponse = await runAgentW({
         prompt,
         currency,
         budgets,
         savingsGoals
       });
       
-      const { incomes, expenses: extractedExpenses, newBudgets, newSavingsGoals, savingsContributions } = result;
+      const { incomes, expenses: extractedExpenses, newBudgets, newSavingsGoals, savingsContributions } = aiResponse;
 
       const actions: string[] = [];
 
@@ -402,11 +402,11 @@ export function ConseilPanel() {
               <AccordionTrigger>{t('history_button')}</AccordionTrigger>
               <AccordionContent>
                 <ScrollArea className="h-32">
-                  <div className='space-y-2 pr-4'>
+                  <div className='space-y-2 pr-2'>
                     {conversationHistory.map((convo, index) => (
-                      <div key={index} className="p-2 bg-muted/50 rounded-md text-sm flex justify-between items-center">
+                      <div key={index} className="p-2 bg-muted/50 rounded-md text-sm flex justify-between items-center gap-2">
                         <span
-                          className="truncate flex-grow cursor-pointer hover:text-primary"
+                          className="flex-grow cursor-pointer hover:text-primary overflow-hidden text-ellipsis whitespace-nowrap min-w-0"
                           onClick={() => {
                             setConversationHistory(prev => prev.filter((_, i) => i !== index));
                             if (currentConversation.length > 0) {
@@ -425,6 +425,9 @@ export function ConseilPanel() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
+                               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+                                    <Trash2 className="h-6 w-6 text-red-600" />
+                                </div>
                               <AlertDialogTitle>{t('are_you_sure')}</AlertDialogTitle>
                               <AlertDialogDescription>
                                 {t('history_delete_confirmation')}
