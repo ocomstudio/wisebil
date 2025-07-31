@@ -6,11 +6,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { askExpenseAssistant } from '@/ai/flows/expense-assistant';
-import { runAgentW } from '@/ai/flows/wise-agent';
+import { runAgentW, AgentWOutput } from '@/ai/flows/wise-agent';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2, Send, PlusCircle, Mic, MicOff, BrainCircuit, Bot, MessageSquare, ScanLine } from 'lucide-react';
@@ -20,6 +20,8 @@ import { useTransactions } from '@/context/transactions-context';
 import { useBudgets } from '@/context/budget-context';
 import { useSavings } from '@/context/savings-context';
 import type { Transaction } from '@/types/transaction';
+import type { Budget } from '@/types/budget';
+import type { SavingsGoal } from '@/types/savings-goal';
 import { v4 as uuidv4 } from 'uuid';
 import toast from 'react-hot-toast';
 import { cn } from '@/lib/utils';
@@ -34,6 +36,7 @@ type AssistantFormValues = z.infer<typeof assistantSchema>;
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  agentMode?: AgentMode;
 }
 
 type Conversation = Message[];
@@ -44,8 +47,8 @@ const CONVERSATION_HISTORY_KEY = 'wisebil-conversation-history';
 export function ConseilPanel() {
   const { t, locale, currency } = useLocale();
   const { transactions, income, expenses, addTransaction } = useTransactions();
-  const { budgets } = useBudgets();
-  const { savingsGoals } = useSavings();
+  const { budgets, addBudget } = useBudgets();
+  const { savingsGoals, addSavingsGoal, addFunds } = useSavings();
 
   const [currentConversation, setCurrentConversation] = useState<Conversation>([]);
   const [conversationHistory, setConversationHistory] = useState<Conversation[]>([]);
@@ -53,6 +56,7 @@ export function ConseilPanel() {
   const [isListening, setIsListening] = useState(false);
   const [agentMode, setAgentMode] = useState<AgentMode>('wise');
   const recognitionRef = useRef<any>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast: uiToast } = useToast();
 
@@ -90,6 +94,16 @@ export function ConseilPanel() {
       prompt: '',
     },
   });
+
+  const promptValue = form.watch('prompt');
+
+  useEffect(() => {
+    if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [promptValue]);
+
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -172,50 +186,86 @@ export function ConseilPanel() {
 
   const processAgentW = async (prompt: string) => {
     setIsThinking(true);
-    const userMessage: Message = { role: 'user', content: prompt };
+    const userMessage: Message = { role: 'user', content: prompt, agentMode };
     setCurrentConversation(prev => [...prev, userMessage]);
     form.reset();
     
+    // Clean the prompt to extract only the JSON part
+    const cleanJSONString = (str: string) => {
+        const match = str.match(/\{[\s\S]*\}/);
+        return match ? match[0] : '{}';
+    };
+
     try {
-      const result = await runAgentW({ prompt, currency });
-      const { incomes, expenses: extractedExpenses } = result;
+      const agentResultString = await runAgentW({
+        prompt,
+        currency,
+        budgets,
+        savingsGoals
+      });
 
-      const incomeCount = incomes.length;
-      const expenseCount = extractedExpenses.length;
+      const result: AgentWOutput = JSON.parse(cleanJSONString(agentResultString));
+      
+      const { incomes, expenses: extractedExpenses, newBudgets, newSavingsGoals, savingsContributions } = result;
 
-      // Add incomes to context
+      const actions: string[] = [];
+
+      // Add incomes
       for (const income of incomes) {
         const newTransaction: Transaction = {
           id: uuidv4(),
-          type: 'income',
-          ...income,
+          type: 'income', ...income,
           date: income.date ? new Date(income.date).toISOString() : new Date().toISOString(),
         };
         await addTransaction(newTransaction);
+        actions.push(`- Revenu ajouté : ${income.description} (${income.amount})`);
       }
 
-      // Add expenses to context
+      // Add expenses
       for (const expense of extractedExpenses) {
         const newTransaction: Transaction = {
           id: uuidv4(),
-          type: 'expense',
-          ...expense,
+          type: 'expense', ...expense,
           date: expense.date ? new Date(expense.date).toISOString() : new Date().toISOString(),
         };
         await addTransaction(newTransaction);
+        actions.push(`- Dépense ajoutée : ${expense.description} (${expense.amount})`);
+      }
+
+      // Create new budgets
+      for (const budget of newBudgets) {
+        const newBudgetItem: Budget = { ...budget, id: uuidv4() };
+        await addBudget(newBudgetItem);
+        actions.push(`- Budget créé : ${budget.name} (${budget.amount})`);
       }
       
-      const summaryMessage = `J'ai terminé ! J'ai ajouté ${incomeCount} revenu(s) et ${expenseCount} dépense(s) à votre registre.`;
-      const assistantMessage: Message = { role: 'assistant', content: summaryMessage };
+      // Create new savings goals
+      for (const goal of newSavingsGoals) {
+        const newGoalItem: SavingsGoal = { ...goal, id: uuidv4(), currentAmount: goal.currentAmount ?? 0 };
+        await addSavingsGoal(newGoalItem);
+        actions.push(`- Objectif d'épargne créé : ${goal.name} (${goal.targetAmount})`);
+      }
+
+      // Add funds to savings
+      for (const contribution of savingsContributions) {
+        await addFunds(contribution.goalName, contribution.amount);
+         actions.push(`- Fonds ajouté à l'épargne '${contribution.goalName}' : ${contribution.amount}`);
+      }
+
+      const summaryMessage = actions.length > 0
+        ? `J'ai terminé les actions suivantes :\n${actions.join('\n')}`
+        : "Je n'ai détecté aucune action à effectuer dans votre message.";
+
+      const assistantMessage: Message = { role: 'assistant', content: summaryMessage, agentMode };
       setCurrentConversation(prev => [...prev, assistantMessage]);
-      toast.success(summaryMessage);
+      toast.success(actions.length > 0 ? "Actions effectuées avec succès !" : "Aucune action détectée.");
 
     } catch (error) {
       console.error('Agent W failed:', error);
-      const errorMessage = "Désolé, je n'ai pas pu traiter votre demande. Veuillez réessayer.";
-      const assistantMessage: Message = { role: 'assistant', content: errorMessage };
+      const errorMessage = `Désolé, je n'ai pas pu traiter votre demande. Détails: ${error instanceof Error ? error.message : String(error)}`;
+      const assistantMessage: Message = { role: 'assistant', content: errorMessage, agentMode };
       setCurrentConversation(prev => [...prev, assistantMessage]);
-      toast.error(errorMessage);
+      toast.error("L'agent W a rencontré une erreur.");
     } finally {
       setIsThinking(false);
     }
@@ -223,16 +273,15 @@ export function ConseilPanel() {
 
 
   const processWiseAssistant = async (prompt: string) => {
-    const userMessage: Message = { role: 'user', content: prompt };
-    const newConversationWithUserMessage = [...currentConversation, userMessage];
-    setCurrentConversation(newConversationWithUserMessage);
+    const userMessage: Message = { role: 'user', content: prompt, agentMode };
+    setCurrentConversation(prev => [...prev, userMessage]);
     setIsThinking(true);
     form.reset();
   
     try {
       const result = await askExpenseAssistant({
         question: prompt,
-        history: currentConversation,
+        history: currentConversation.filter(m => m.agentMode === 'wise'),
         language: locale,
         currency,
         financialData: {
@@ -244,7 +293,7 @@ export function ConseilPanel() {
         }
       });
 
-      const assistantMessage: Message = { role: 'assistant', content: result.answer };
+      const assistantMessage: Message = { role: 'assistant', content: result.answer, agentMode };
       setCurrentConversation(prev => [...prev, assistantMessage]);
 
     } catch (error) {
@@ -307,11 +356,10 @@ export function ConseilPanel() {
                       </Avatar>
                     )}
                     <div
-                      className={`rounded-lg px-4 py-2 max-w-sm ${
-                        message.role === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted'
-                      }`}
+                      className={cn(`rounded-lg px-4 py-2 max-w-sm`, 
+                        message.role === 'user' ? 'bg-primary text-primary-foreground'
+                        : message.agentMode === 'agent' ? 'bg-accent text-accent-foreground' : 'bg-muted'
+                      )}
                     >
                       <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                     </div>
@@ -378,7 +426,7 @@ export function ConseilPanel() {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="flex items-center gap-2"
+            className="flex items-start gap-2"
           >
              {isSpeechRecognitionSupported && (
               <Button type="button" size="icon" variant={isListening ? "destructive" : "outline"} onClick={handleToggleListening} disabled={isThinking}>
@@ -391,12 +439,14 @@ export function ConseilPanel() {
               render={({ field }) => (
                 <FormItem className="flex-1">
                   <FormControl>
-                    <Input
+                    <Textarea
+                      ref={textareaRef}
+                      rows={1}
                       placeholder={placeholderText}
                       {...field}
                       disabled={isThinking}
                       className={cn(
-                        "pr-10 transition-colors",
+                        "resize-none overflow-hidden pr-10 transition-colors max-h-36",
                         agentMode === 'agent' && 'bg-primary/10 border-primary/50 focus-visible:ring-primary/50'
                       )}
                     />
