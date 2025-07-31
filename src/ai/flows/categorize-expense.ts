@@ -9,7 +9,8 @@
  * - CategorizeExpenseOutput - The return type for the categorizeExpense function.
  */
 import { z } from 'zod';
-import { openai } from '@/lib/openai';
+import { ai } from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/googleai';
 
 const CategorizeExpenseInputSchema = z.object({
   description: z.string().describe('The description of the expense transaction.'),
@@ -22,33 +23,34 @@ const CategorizeExpenseOutputSchema = z.object({
 });
 export type CategorizeExpenseOutput = z.infer<typeof CategorizeExpenseOutputSchema>;
 
-export async function categorizeExpense(input: CategorizeExpenseInput): Promise<CategorizeExpenseOutput> {
-  const { description } = CategorizeExpenseInputSchema.parse(input);
-  
-  try {
-      const completion = await openai.chat.completions.create({
-        model: "mistralai/mistral-7b-instruct:free",
-        response_format: { type: 'json_object' },
-        messages: [
-          {
-            role: "system",
-            content: `You are an expert financial advisor. Your job is to categorize expenses based on their description.
+
+const categorizeExpensePrompt = ai.definePrompt({
+  name: 'categorizeExpensePrompt',
+  input: { schema: CategorizeExpenseInputSchema },
+  output: { schema: CategorizeExpenseOutputSchema },
+  model: googleAI('gemini-1.5-flash'),
+  prompt: `You are an expert financial advisor. Your job is to categorize expenses based on their description.
       Here are some example categories: Groceries, Utilities, Rent, Transportation, Entertainment, Dining, Shopping, Travel, Health, Education, Bills, Other.
-      You MUST respond ONLY with a JSON object conforming to this Zod schema:
-      ${JSON.stringify(CategorizeExpenseOutputSchema.shape)}
-      `
-          },
-          {
-            role: "user",
-            content: `Categorize the following expense description: "${description}"`
-          }
-        ],
-      });
-    
-      const result = JSON.parse(completion.choices[0].message.content || '{}');
-      return CategorizeExpenseOutputSchema.parse(result);
-  } catch (error) {
-      console.error(`AI model failed to generate a response for category expense:`, error);
-      throw new Error(`AI model failed to generate a response. Details: ${error instanceof Error ? error.message : String(error)}`);
+      You MUST respond ONLY with a JSON object conforming to the output schema.
+      Categorize the following expense description: "{{description}}"
+  `,
+});
+
+const categorizeExpenseFlow = ai.defineFlow(
+  {
+    name: 'categorizeExpenseFlow',
+    inputSchema: CategorizeExpenseInputSchema,
+    outputSchema: CategorizeExpenseOutputSchema,
+  },
+  async (input) => {
+    const { output } = await categorizeExpensePrompt(input);
+    if (!output) {
+      throw new Error('AI model failed to generate a response.');
+    }
+    return output;
   }
+);
+
+export async function categorizeExpense(input: CategorizeExpenseInput): Promise<CategorizeExpenseOutput> {
+  return await categorizeExpenseFlow(input);
 }

@@ -8,23 +8,15 @@
  * - ExpenseAssistantInput - The input type for the askExpenseAssistant function.
  */
 import { z } from 'zod';
-import { openai } from '@/lib/openai';
+import { ai } from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/googleai';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
   content: z.string(),
 });
 
-const ExpenseAssistantInputSchema = z.object({
-  question: z.string().describe("The user's question about their finances."),
-  history: z
-    .array(MessageSchema)
-    .describe(
-      'The previous conversation history between the user and the assistant.'
-    ),
-  language: z.string().describe("The user's preferred language (e.g., 'fr', 'en')."),
-  currency: z.string().describe("The user's preferred currency (e.g., 'XOF', 'EUR', 'USD')."),
-  financialData: z.object({
+const FinancialDataSchema = z.object({
     income: z.number().optional(),
     expenses: z.number().optional(),
     transactions: z.array(z.object({
@@ -44,15 +36,34 @@ const ExpenseAssistantInputSchema = z.object({
         targetAmount: z.number(),
         currentAmount: z.number(),
     })).optional(),
-  }).describe("The user's complete financial data for context."),
+  });
+
+const ExpenseAssistantInputSchema = z.object({
+  question: z.string().describe("The user's question about their finances."),
+  history: z
+    .array(MessageSchema)
+    .describe(
+      'The previous conversation history between the user and the assistant.'
+    ),
+  language: z.string().describe("The user's preferred language (e.g., 'fr', 'en')."),
+  currency: z.string().describe("The user's preferred currency (e.g., 'XOF', 'EUR', 'USD')."),
+  financialData: FinancialDataSchema.describe("The user's complete financial data for context."),
 });
 export type ExpenseAssistantInput = z.infer<typeof ExpenseAssistantInputSchema>;
 
+const ExpenseAssistantOutputSchema = z.object({
+  answer: z.string().describe("The AI assistant's response."),
+});
 
-export async function askExpenseAssistant(input: ExpenseAssistantInput) {
-    const { question, history, language, currency, financialData } = ExpenseAssistantInputSchema.parse(input);
+const expenseAssistantFlow = ai.defineFlow(
+  {
+    name: 'expenseAssistantFlow',
+    inputSchema: ExpenseAssistantInputSchema,
+    outputSchema: ExpenseAssistantOutputSchema,
+  },
+  async (input) => {
+    const { question, history, language, currency, financialData } = input;
 
-    // Prepare a summary of the financial data to include in the system prompt
     const financialContext = `
     User's Financial Context (Currency: ${currency}):
     - Total Income: ${financialData.income ?? 'N/A'}
@@ -62,10 +73,7 @@ export async function askExpenseAssistant(input: ExpenseAssistantInput) {
     - Savings Goals: ${financialData.savingsGoals?.map(s => `${s.name} (${s.currentAmount}/${s.targetAmount})`).join(', ') || 'None'}
     `;
 
-    const messages = [
-        {
-            role: "system" as const,
-            content: `You are "Wise", a financial assistant. Your goal is to make the user feel empowered when talking about their finances.
+    const systemPrompt = `You are "Wise", a financial assistant. Your goal is to make the user feel empowered when talking about their finances.
 
 Your tone should always be human, honest, and direct. The user should feel like they are talking to an authentic and intelligent partner.
 
@@ -79,28 +87,22 @@ Your tone should always be human, honest, and direct. The user should feel like 
 You MUST answer in the user's specified language: ${language}.
 
 ${financialContext}
-`
-        },
-        ...history,
-        { role: 'user' as const, content: question },
-    ];
+`;
 
-    try {
-        const completion = await openai.chat.completions.create({
-            model: "mistralai/mistral-7b-instruct:free",
-            messages: messages,
-        });
-        
-        const response = completion.choices[0]?.message?.content;
+    const { text } = await ai.generate({
+      model: googleAI('gemini-1.5-flash'),
+      prompt: question,
+      system: systemPrompt,
+      history: history.map(h => ({ role: h.role === 'assistant' ? 'model' : 'user', parts: [{ text: h.content }] })),
+    });
 
-        if (!response) {
-            throw new Error("AI model returned an empty response.");
-        }
-    
-        return { answer: response };
-
-    } catch (error) {
-        console.error(`AI model failed to generate a response:`, error);
-        throw new Error(`AI model failed to generate a response. Details: ${error instanceof Error ? error.message : String(error)}`);
+    if (!text) {
+      throw new Error("AI model returned an empty response.");
     }
+    return { answer: text };
+  }
+);
+
+export async function askExpenseAssistant(input: ExpenseAssistantInput) {
+  return await expenseAssistantFlow(input);
 }
