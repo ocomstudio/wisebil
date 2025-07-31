@@ -13,8 +13,19 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send, PlusCircle, Mic, MicOff, BrainCircuit, Bot, MessageSquare, ScanLine } from 'lucide-react';
+import { Loader2, Send, PlusCircle, Mic, MicOff, BrainCircuit, Bot, MessageSquare, ScanLine, Trash2 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useLocale } from '@/context/locale-context';
 import { useTransactions } from '@/context/transactions-context';
 import { useBudgets } from '@/context/budget-context';
@@ -69,7 +80,7 @@ export function ConseilPanel() {
       if (storedHistory) {
         const parsedHistory = JSON.parse(storedHistory);
         if(Array.isArray(parsedHistory) && parsedHistory.length > 0) {
-            setCurrentConversation(parsedHistory[0]);
+            setCurrentConversation(parsedHistory[0] || []);
             setConversationHistory(parsedHistory.slice(1));
         }
       }
@@ -182,6 +193,11 @@ export function ConseilPanel() {
       setConversationHistory(prev => [currentConversation, ...prev]);
     }
     setCurrentConversation([]);
+  };
+
+  const deleteConversationFromHistory = (indexToDelete: number) => {
+    setConversationHistory(prev => prev.filter((_, i) => i !== indexToDelete));
+    toast.success(t('history_deleted_success'));
   };
 
   const processAgentW = async (prompt: string) => {
@@ -387,15 +403,41 @@ export function ConseilPanel() {
                 <ScrollArea className="h-32">
                   <div className='space-y-2 pr-4'>
                     {conversationHistory.map((convo, index) => (
-                        <div key={index} className="p-2 bg-muted/50 rounded-md text-sm truncate cursor-pointer hover:bg-muted" onClick={() => {
-                          setConversationHistory(prev => prev.filter((_, i) => i !== index));
-                          if (currentConversation.length > 0) {
-                            setConversationHistory(prev => [currentConversation, ...prev]);
-                          }
-                          setCurrentConversation(convo);
-                        }}>
-                          {convo[0]?.content || t('empty_conversation')}
+                      <AlertDialog key={index}>
+                        <div className="p-2 bg-muted/50 rounded-md text-sm flex justify-between items-center">
+                          <span
+                            className="truncate flex-grow cursor-pointer hover:text-primary"
+                            onClick={() => {
+                              setConversationHistory(prev => prev.filter((_, i) => i !== index));
+                              if (currentConversation.length > 0) {
+                                setConversationHistory(prev => [currentConversation, ...prev]);
+                              }
+                              setCurrentConversation(convo);
+                            }}
+                          >
+                            {convo[0]?.content || t('empty_conversation')}
+                          </span>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
                         </div>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>{t('are_you_sure')}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {t('history_delete_confirmation')}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteConversationFromHistory(index)} className="bg-destructive hover:bg-destructive/90">
+                              {t('delete')}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     ))}
                   </div>
                 </ScrollArea>

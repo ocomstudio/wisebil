@@ -252,6 +252,8 @@
     "new_chat_button": "Nouvelle discussion",
     "history_button": "Historique",
     "empty_conversation": "Conversation vide",
+    "history_delete_confirmation": "Cette action est irréversible. La conversation sera supprimée définitivement.",
+    "history_deleted_success": "Conversation supprimée de l'historique.",
     "toast_tip_desc": "Pensez à noter vos petites dépenses, elles s'additionnent vite !",
     "toast_close_button": "Fermer",
     "tip_of_the_day": "Astuce du jour",
