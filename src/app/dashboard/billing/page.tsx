@@ -78,7 +78,7 @@ export default function BillingPage() {
     ]
 
     return (
-        <div className="space-y-8 pb-24 md:pb-0">
+        <div className="space-y-8 pb-20 md:pb-8">
             <div className="text-center">
                 <h1 className="text-3xl font-bold font-headline">{t('billing_page_title')}</h1>
                 <p className="text-muted-foreground mt-2">{t('billing_page_subtitle')}</p>

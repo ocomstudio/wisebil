@@ -10,19 +10,17 @@ export function TipsCard() {
     const { t } = useLocale();
     const [tip, setTip] = useState(t('loading_tip'));
 
-    const tips = [
-        t('tip1'),
-        t('tip2'),
-        t('tip3'),
-        t('tip4'),
-        t('tip5')
-    ];
-
     useEffect(() => {
-        // Ensure tips are updated when language changes
+        const tips = [
+            t('tip1'),
+            t('tip2'),
+            t('tip3'),
+            t('tip4'),
+            t('tip5')
+        ];
         const randomTip = tips[Math.floor(Math.random() * tips.length)];
         setTip(randomTip);
-    }, [t]); // Re-run effect when t function (language) changes
+    }, [t]);
 
     return (
         <Card className="bg-secondary/50 border-dashed">

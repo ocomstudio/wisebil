@@ -9,14 +9,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { LocaleProvider } from "@/context/locale-context";
 
 function HomePageContent() {
-  const isMobile = useIsMobile();
   const [isClient, setIsClient] = useState(false);
-
+  
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  if (!isClient || isMobile === undefined) {
+  const isMobile = useIsMobile();
+
+  if (!isClient) {
     return (
       <div className="flex h-screen w-screen items-center justify-center">
         <Skeleton className="h-full w-full" />

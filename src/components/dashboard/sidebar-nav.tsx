@@ -32,11 +32,6 @@ export function SidebarNav() {
       label: t('nav_savings'),
       icon: <Shield />,
     },
-     {
-      href: "/dashboard/conseil",
-      label: t('nav_advice'),
-      icon: <Lightbulb />,
-    },
     {
       href: "/dashboard/accounts",
       label: t('nav_accounts'),
