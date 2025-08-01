@@ -111,13 +111,13 @@ export default function DesktopLandingPage() {
     };
 
     const pricing = {
-        premium: { XOF: 9000 },
-        business: { XOF: 19900 },
+        premium: { XOF: 3000 },
+        business: { XOF: 9900 },
     };
 
     const conversionRates: Record<Currency, number> = {
         XOF: 1,
-        EUR: 655.957,
+        EUR: 656, 
         USD: 610,
     };
 
@@ -125,9 +125,8 @@ export default function DesktopLandingPage() {
         if (targetCurrency === 'XOF') {
             return basePriceXOF;
         }
-        const priceInXOF = basePriceXOF;
         const rate = conversionRates[targetCurrency];
-        return Math.round(priceInXOF / rate);
+        return Math.round(basePriceXOF / rate);
     };
 
   return (
@@ -286,8 +285,8 @@ export default function DesktopLandingPage() {
                             <ul className="space-y-2 text-sm">
                                 <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_transactions')}</li>
                                 <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_budgets')}</li>
-                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_voice_free')}</li>
                                 <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_assistant_free')}</li>
+                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_agent_free')}</li>
                             </ul>
                         </CardContent>
                         <div className="p-6 pt-0 mt-auto">
@@ -306,8 +305,8 @@ export default function DesktopLandingPage() {
                         <CardContent className="flex-1 space-y-4">
                              <ul className="space-y-2 text-sm">
                                 <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_all_free')}</li>
-                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_voice_premium')}</li>
                                 <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_assistant_premium')}</li>
+                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_agent_premium')}</li>
                                 <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_support')}</li>
                             </ul>
                         </CardContent>
@@ -326,8 +325,8 @@ export default function DesktopLandingPage() {
                         <CardContent className="flex-1 space-y-4">
                               <ul className="space-y-2 text-sm">
                                 <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_all_premium')}</li>
-                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_voice_business')}</li>
                                 <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_assistant_business')}</li>
+                                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_agent_business')}</li>
                                 <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_early_access')}</li>
                             </ul>
                         </CardContent>

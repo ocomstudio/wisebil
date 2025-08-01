@@ -9,8 +9,8 @@ import Link from "next/link";
 import type { Currency } from "@/context/locale-context";
 
 const pricing = {
-    premium: { XOF: 9000 },
-    business: { XOF: 19900 },
+    premium: { XOF: 3000 },
+    business: { XOF: 9900 },
 };
 
 const conversionRates: Record<Currency, number> = {
@@ -39,8 +39,8 @@ export default function BillingPage() {
             features: [
                 t('plan_feature_transactions'),
                 t('plan_feature_budgets'),
-                t('plan_feature_voice_free'),
-                t('plan_feature_assistant_free')
+                t('plan_feature_assistant_free'),
+                t('plan_feature_agent_free')
             ],
             isCurrent: true,
             buttonText: t('current_plan_button'),
@@ -52,8 +52,8 @@ export default function BillingPage() {
             description: t('plan_premium_desc'),
             features: [
                 t('plan_feature_all_free'),
-                t('plan_feature_voice_premium'),
                 t('plan_feature_assistant_premium'),
+                t('plan_feature_agent_premium'),
                 t('plan_feature_support')
             ],
             isCurrent: false,
@@ -67,8 +67,8 @@ export default function BillingPage() {
             description: t('plan_business_desc'),
             features: [
                 t('plan_feature_all_premium'),
-                t('plan_feature_voice_business'),
                 t('plan_feature_assistant_business'),
+                t('plan_feature_agent_business'),
                 t('plan_feature_early_access')
             ],
             isCurrent: false,
@@ -84,7 +84,7 @@ export default function BillingPage() {
                 <p className="text-muted-foreground mt-2">{t('billing_page_subtitle')}</p>
             </div>
 
-             <div className="mx-auto grid max-w-5xl items-stretch gap-8 sm:grid-cols-1 lg:grid-cols-3 mt-12">
+             <div className="mx-auto grid max-w-5xl items-stretch gap-8 grid-cols-1 lg:grid-cols-3 mt-12">
                 {plans.map(plan => (
                      <Card key={plan.title} className={`flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/20 shadow-xl ${plan.isPopular ? 'border-primary shadow-2xl shadow-primary/20 scale-105' : ''}`}>
                         <CardHeader className="pb-4">
