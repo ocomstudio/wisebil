@@ -27,7 +27,6 @@ import { useTransactions } from "@/context/transactions-context";
 import { useSettings } from "@/context/settings-context";
 import { useLocale } from "@/context/locale-context";
 
-// Extracted TransactionItem component
 function TransactionItem({ transaction }: { transaction: Transaction }) {
   const { deleteTransaction } = useTransactions();
   const { settings, isTemporarilyVisible } = useSettings();
