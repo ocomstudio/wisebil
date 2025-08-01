@@ -54,10 +54,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const login = useCallback((userData: Partial<User> = {}) => {
+    // Create a generic user object. Real data should be fetched from a secure backend.
     const newUser: User = {
-        fullName: userData.fullName || '',
-        email: userData.email || '',
-        phone: userData.phone || '',
+        fullName: userData.fullName || "Utilisateur",
+        email: userData.email || "",
+        phone: userData.phone || "",
         avatar: userData.avatar || `https://placehold.co/80x80.png`,
     }
     setIsAuthenticated(true);

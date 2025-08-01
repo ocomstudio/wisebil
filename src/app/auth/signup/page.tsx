@@ -62,11 +62,8 @@ export default function SignupPage() {
 
   const onSubmit = (data: SignupFormValues) => {
     console.log("Signup data:", data);
-    login({
-        fullName: data.fullName,
-        email: data.email,
-        phone: data.phone,
-    });
+    // Login without passing any user data to the context
+    login();
     toast({
       title: t('signup_success_title'),
       description: t('signup_success_desc'),
