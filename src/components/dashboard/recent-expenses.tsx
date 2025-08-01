@@ -27,22 +27,98 @@ import { useTransactions } from "@/context/transactions-context";
 import { useSettings } from "@/context/settings-context";
 import { useLocale } from "@/context/locale-context";
 
-interface RecentExpensesProps {
-  transactions: Transaction[];
-}
-
-export function RecentExpenses({ transactions }: RecentExpensesProps) {
+// Extracted TransactionItem component
+function TransactionItem({ transaction }: { transaction: Transaction }) {
   const { deleteTransaction } = useTransactions();
   const { settings, isTemporarilyVisible } = useSettings();
   const { t, formatCurrency, formatDate } = useLocale();
   const isVisible = !settings.isBalanceHidden || isTemporarilyVisible;
-  const recentTransactions = transactions.slice(0, 5);
 
   const getCategoryEmoji = (categoryName?: string) => {
     if (!categoryName) return '💸';
     const category = allCategories.find(c => c.name === categoryName);
     return category ? category.emoji : '💸';
   }
+
+  return (
+    <div className="flex items-center gap-4 p-2 rounded-md hover:bg-muted/50">
+      <Avatar>
+          <AvatarFallback className="text-xl bg-secondary">
+              {getCategoryEmoji(transaction.category)}
+          </AvatarFallback>
+      </Avatar>
+      <div className="flex-grow">
+          <p className="font-semibold">{transaction.description}</p>
+          <p className="text-sm text-muted-foreground">
+              {formatDate(transaction.date)}
+          </p>
+      </div>
+      <div className="text-right">
+         <p className={cn(
+           "font-bold",
+            transaction.type === 'income' ? 'text-green-600' : 'text-foreground'
+         )}>
+          {isVisible ? (
+              <>
+                  {transaction.type === 'income' ? '+' : '-'}
+                  {formatCurrency(transaction.amount)}
+              </>
+          ) : '******'}
+         </p>
+      </div>
+       <AlertDialog>
+          <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                  <MoreVertical className="h-4 w-4" />
+              </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                  <Link href={`/dashboard/edit-transaction/${transaction.id}`}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      {t('edit')}
+                  </Link>
+              </DropdownMenuItem>
+              <AlertDialogTrigger asChild>
+                  <DropdownMenuItem className="text-destructive">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      {t('delete')}
+                  </DropdownMenuItem>
+              </AlertDialogTrigger>
+          </DropdownMenuContent>
+          </DropdownMenu>
+
+          <AlertDialogContent>
+          <AlertDialogHeader>
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+                  <Trash2 className="h-6 w-6 text-red-600" />
+              </div>
+              <AlertDialogTitle>{t('are_you_sure')}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t('transaction_delete_confirmation', { transactionDesc: transaction.description })}
+              </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+              <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+              <AlertDialogAction onClick={() => deleteTransaction(transaction.id)} className="bg-destructive hover:bg-destructive/90">
+              {t('delete')}
+              </AlertDialogAction>
+          </AlertDialogFooter>
+          </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
+
+interface RecentExpensesProps {
+  transactions: Transaction[];
+}
+
+export function RecentExpenses({ transactions }: RecentExpensesProps) {
+  const { t } = useLocale();
+  const recentTransactions = transactions.slice(0, 5);
 
   return (
     <div>
@@ -74,73 +150,7 @@ export function RecentExpenses({ transactions }: RecentExpensesProps) {
         ) : (
             <div className="space-y-2">
                 {recentTransactions.map((transaction) => (
-                    <div key={transaction.id} className="flex items-center gap-4 p-2 rounded-md hover:bg-muted/50">
-                        <Avatar>
-                            <AvatarFallback className="text-xl bg-secondary">
-                                {getCategoryEmoji(transaction.category)}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-grow">
-                            <p className="font-semibold">{transaction.description}</p>
-                            <p className="text-sm text-muted-foreground">
-                                {formatDate(transaction.date)}
-                            </p>
-                        </div>
-                        <div className="text-right">
-                           <p className={cn(
-                             "font-bold",
-                              transaction.type === 'income' ? 'text-green-600' : 'text-foreground'
-                           )}>
-                            {isVisible ? (
-                                <>
-                                    {transaction.type === 'income' ? '+' : '-'}
-                                    {formatCurrency(transaction.amount)}
-                                </>
-                            ) : '******'}
-                           </p>
-                        </div>
-                         <AlertDialog>
-                            <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                                    <MoreVertical className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem asChild>
-                                    <Link href={`/dashboard/edit-transaction/${transaction.id}`}>
-                                        <Edit className="mr-2 h-4 w-4" />
-                                        {t('edit')}
-                                    </Link>
-                                </DropdownMenuItem>
-                                <AlertDialogTrigger asChild>
-                                    <DropdownMenuItem className="text-destructive">
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        {t('delete')}
-                                    </DropdownMenuItem>
-                                </AlertDialogTrigger>
-                            </DropdownMenuContent>
-                            </DropdownMenu>
-
-                            <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
-                                    <Trash2 className="h-6 w-6 text-red-600" />
-                                </div>
-                                <AlertDialogTitle>{t('are_you_sure')}</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  {t('transaction_delete_confirmation', { transactionDesc: transaction.description })}
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => deleteTransaction(transaction.id)} className="bg-destructive hover:bg-destructive/90">
-                                {t('delete')}
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    </div>
+                    <TransactionItem key={transaction.id} transaction={transaction} />
                 ))}
             </div>
         )}
