@@ -27,6 +27,7 @@ import { useTransactions } from "@/context/transactions-context";
 import { useSettings } from "@/context/settings-context";
 import { useLocale } from "@/context/locale-context";
 
+// Moved TransactionItem outside of RecentExpenses to make it a stable component
 function TransactionItem({ transaction }: { transaction: Transaction }) {
   const { deleteTransaction } = useTransactions();
   const { settings, isTemporarilyVisible } = useSettings();
