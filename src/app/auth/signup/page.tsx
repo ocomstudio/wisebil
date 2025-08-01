@@ -62,7 +62,11 @@ export default function SignupPage() {
 
   const onSubmit = (data: SignupFormValues) => {
     console.log("Signup data:", data);
-    login(); // Set authenticated state
+    login({
+        fullName: data.fullName,
+        email: data.email,
+        phone: data.phone,
+    });
     toast({
       title: t('signup_success_title'),
       description: t('signup_success_desc'),

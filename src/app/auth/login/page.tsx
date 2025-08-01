@@ -47,7 +47,14 @@ export default function LoginPage() {
 
   const onSubmit = (data: LoginFormValues) => {
     console.log("Login data:", data);
-    login(); // Set authenticated state
+    // For demo purposes, we log in with placeholder data.
+    // In a real app, you would fetch user data from your backend.
+    login({
+        fullName: "Demo User",
+        email: "demo@example.com",
+        phone: "123456789",
+        avatar: `https://placehold.co/80x80.png`
+    });
     toast({
       title: t('login_success_title'),
       description: t('welcome_back'),

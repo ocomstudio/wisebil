@@ -31,17 +31,19 @@ import { useBudgets } from "@/context/budget-context";
 import { useSavings } from "@/context/savings-context";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 
 export default function SettingsPage() {
   const { settings, updateSettings, checkPin } = useSettings();
+  const { user, updateUser, logout } = useAuth();
   const { toast } = useToast();
   const { t, locale, setLocale, currency, setCurrency } = useLocale();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { resetTransactions } = useTransactions();
   const { resetBudgets } = useBudgets();
   const { resetSavings } = useSavings();
-  const { logout } = useAuth();
   const router = useRouter();
 
 
@@ -56,14 +58,24 @@ export default function SettingsPage() {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      fullName: "John Doe",
-      email: "john.doe@example.com",
-      phone: "+221 77 123 45 67",
+      fullName: "",
+      email: "",
+      phone: "",
     },
   });
 
+  useEffect(() => {
+    if (user) {
+        form.reset({
+            fullName: user.fullName,
+            email: user.email,
+            phone: user.phone,
+        });
+    }
+  }, [user, form]);
+
   const onProfileSubmit = (data: ProfileFormValues) => {
-    console.log("Profile updated:", data);
+    updateUser(data);
     toast({
       title: t('profile_updated_title'),
       description: t('profile_updated_desc'),
@@ -130,6 +142,26 @@ export default function SettingsPage() {
     router.push('/auth/login');
   };
 
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        updateUser({ avatar: base64String });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  }
+
   return (
     <div className="space-y-8 pb-24 md:pb-8">
       <div>
@@ -148,12 +180,19 @@ export default function SettingsPage() {
               <div className="flex items-center gap-6">
                 <div className="relative">
                   <Avatar className="h-20 w-20">
-                    <AvatarImage src="https://placehold.co/80x80.png" alt="User avatar" data-ai-hint="man avatar"/>
-                    <AvatarFallback>JD</AvatarFallback>
+                    <AvatarImage src={user?.avatar} alt="User avatar" data-ai-hint="man avatar"/>
+                    <AvatarFallback>{user ? getInitials(user.fullName) : 'U'}</AvatarFallback>
                   </Avatar>
-                  <Button size="icon" className="absolute bottom-0 right-0 rounded-full h-7 w-7">
+                  <Button size="icon" className="absolute bottom-0 right-0 rounded-full h-7 w-7" type="button" onClick={handleAvatarClick}>
                     <Camera className="h-4 w-4" />
                   </Button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    className="hidden"
+                    accept="image/png, image/jpeg, image/gif"
+                  />
                 </div>
                 <div className="flex-1">
                   <FormField

@@ -22,7 +22,7 @@ import { useLocale } from "@/context/locale-context"
 export function UserProfile() {
   const router = useRouter();
   const { toast } = useToast();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const { t } = useLocale();
 
   const handleLogout = () => {
@@ -34,22 +34,27 @@ export function UserProfile() {
     router.push('/auth/login');
   };
 
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
-            <AvatarImage src="https://placehold.co/40x40.png" alt="User avatar" data-ai-hint="man avatar" />
-            <AvatarFallback>U</AvatarFallback>
+            <AvatarImage src={user?.avatar} alt={user?.fullName || "User avatar"} data-ai-hint="man avatar" />
+            <AvatarFallback>{user ? getInitials(user.fullName) : 'U'}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{t('user_name_placeholder')}</p>
+            <p className="text-sm font-medium leading-none">{user?.fullName || t('user_name_placeholder')}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              {t('user_email_placeholder')}
+              {user?.email || t('user_email_placeholder')}
             </p>
           </div>
         </DropdownMenuLabel>
