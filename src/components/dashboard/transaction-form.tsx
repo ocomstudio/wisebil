@@ -32,7 +32,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Bot, Loader2, CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { expenseCategories, incomeCategories, allCategories } from "@/config/categories";
+import { expenseCategories, incomeCategories } from "@/config/categories";
 import type { Transaction } from "@/types/transaction";
 import { categorizeExpense } from "@/ai/flows/categorize-expense";
 
@@ -97,7 +97,6 @@ export function TransactionForm({
         if(result.category && categories.some(c => c.name === result.category)) {
             form.setValue("category", result.category);
         } else {
-            // Fallback if AI returns an invalid category
             form.setValue("category", "Autre");
         }
     } catch(error) {

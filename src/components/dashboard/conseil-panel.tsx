@@ -1,4 +1,3 @@
-// src/components/dashboard/conseil-panel.tsx
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
