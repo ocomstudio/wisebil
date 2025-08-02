@@ -4,7 +4,7 @@ import { genkit, Ai } from '@genkit-ai/ai';
 import { googleAI } from '@genkit-ai/googleai';
 import { z } from 'zod';
 
-configureGenkit({
+genkit({
   plugins: [googleAI({ apiVersion: 'v1beta' })],
 });
 
