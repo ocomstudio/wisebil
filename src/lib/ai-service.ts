@@ -15,12 +15,12 @@ interface GenerateOptions {
 }
 
 // Prioritized list of models. The service will try them in this order.
+// Using free, reliable models first to optimize for speed and cost.
 const AI_MODELS = [
-  'google/gemini-pro',
-  'openai/gpt-3.5-turbo',
   'mistralai/mistral-7b-instruct:free',
+  'google/gemma-7b-it:free',
   'qwen/qwen-72b-chat',
-  'deepseek/deepseek-coder'
+  'openai/gpt-3.5-turbo',
 ];
 
 export async function generateWithFallback(options: GenerateOptions): Promise<string | null> {
