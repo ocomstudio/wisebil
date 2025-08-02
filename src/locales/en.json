@@ -1,5 +1,6 @@
 
 {
+    "lang_code": "en",
     "back_to_home": "Back to Home",
     "auth_promo_title": "Take control of your finances.",
     "auth_promo_description": "Join thousands of users and start making smarter financial decisions today.",
@@ -105,6 +106,9 @@
     "description_required_for_ai": "Please enter a description first.",
     "ai_categorization_failed": "AI categorization failed",
     "ai_categorization_failed_desc": "Could not suggest a category.",
+    "ai_temporarily_disabled_title": "AI Feature Disabled",
+    "ai_temporarily_disabled_desc": "This feature is temporarily unavailable. Please categorize manually.",
+    "assistant_welcome_message": "Hello! How can I help you with your finances today? Please note that AI features are currently under maintenance.",
     "description_label": "Description",
     "description_placeholder": "e.g., Coffee with a friend",
     "amount_label": "Amount",

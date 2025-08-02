@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { categorizeExpense } from "@/ai/flows/categorize-expense";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { useLocale } from "@/context/locale-context";
@@ -92,25 +91,15 @@ export function TransactionForm({
       return;
     }
     setIsCategorizing(true);
-    try {
-      const result = await categorizeExpense({ description });
-      const existingCategory = expenseCategories.find(c => c.name.toLowerCase() === result.category.toLowerCase());
-      if (existingCategory) {
-        form.setValue("category", existingCategory.name, { shouldValidate: true });
-      } else {
-        form.setValue("category", "Autre", { shouldValidate: true });
-        form.setValue("customCategory", result.category, { shouldValidate: true });
-      }
-    } catch (error) {
-      console.error(t('ai_categorization_failed'), error);
-      toast({
-        variant: "destructive",
-        title: t('ai_categorization_failed'),
-        description: t('ai_categorization_failed_desc'),
-      });
-    } finally {
-      setIsCategorizing(false);
-    }
+    // AI functionality is temporarily disabled.
+    setTimeout(() => {
+        toast({
+            variant: "destructive",
+            title: t('ai_temporarily_disabled_title'),
+            description: t('ai_temporarily_disabled_desc'),
+        });
+        setIsCategorizing(false);
+    }, 1000);
   };
   
   const handleFormSubmit = (data: FormValues) => {

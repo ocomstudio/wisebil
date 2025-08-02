@@ -1,5 +1,6 @@
 
 {
+    "lang_code": "fr",
     "back_to_home": "Retour à l'accueil",
     "auth_promo_title": "Prenez le contrôle de vos finances.",
     "auth_promo_description": "Rejoignez des milliers d'utilisateurs et commencez à prendre des décisions financières plus intelligentes dès aujourd'hui.",
@@ -105,6 +106,9 @@
     "description_required_for_ai": "Veuillez d'abord entrer une description.",
     "ai_categorization_failed": "La catégorisation par l'IA a échoué",
     "ai_categorization_failed_desc": "Impossible de suggérer une catégorie.",
+    "ai_temporarily_disabled_title": "Fonctionnalité IA désactivée",
+    "ai_temporarily_disabled_desc": "Cette fonctionnalité est temporairement indisponible. Veuillez choisir une catégorie manuellement.",
+    "assistant_welcome_message": "Bonjour ! Comment puis-je vous aider avec vos finances aujourd'hui ? Veuillez noter que les fonctionnalités IA sont actuellement en maintenance.",
     "description_label": "Description",
     "description_placeholder": "ex: Café avec un ami",
     "amount_label": "Montant",

@@ -5,9 +5,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { runAgentW } from '@/ai/flows/wise-agent';
-import type { AgentWOutput } from '@/ai/flows/wise-agent';
-import { askExpenseAssistant } from '@/ai/flows/expense-assistant';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
@@ -28,17 +25,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useLocale } from '@/context/locale-context';
-import { useTransactions } from '@/context/transactions-context';
-import { useBudgets } from '@/context/budget-context';
-import { useSavings } from '@/context/savings-context';
-import type { Transaction } from '@/types/transaction';
-import type { Budget } from '@/types/budget';
-import type { SavingsGoal } from '@/types/savings-goal';
-import { v4 as uuidv4 } from 'uuid';
+import { useAuth } from '@/context/auth-context';
 import toast from 'react-hot-toast';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '../ui/skeleton';
-import { useAuth } from '@/context/auth-context';
 
 
 const assistantSchema = z.object({
@@ -60,9 +50,6 @@ const CONVERSATION_HISTORY_KEY = 'wisebil-conversation-history';
 
 export function ConseilPanel() {
   const { t, locale, currency } = useLocale();
-  const { transactions, income, expenses, addTransaction } = useTransactions();
-  const { budgets, addBudget } = useBudgets();
-  const { savingsGoals, addSavingsGoal, addFunds } = useSavings();
   const { user } = useAuth();
 
   const [isClient, setIsClient] = useState(false);
@@ -93,11 +80,18 @@ export function ConseilPanel() {
             setCurrentConversation(parsedHistory[0] || []);
             setConversationHistory(parsedHistory.slice(1));
         }
+      } else {
+        // Add a welcome message if no history
+        setCurrentConversation([{
+            role: 'model',
+            content: t('assistant_welcome_message'),
+            agentMode: 'wise'
+        }]);
       }
     } catch (error) {
       console.error("Failed to load conversation history from localStorage", error);
     }
-  }, [isClient]);
+  }, [isClient, t]);
 
   // Save conversation to localStorage whenever it changes
   useEffect(() => {
@@ -204,130 +198,16 @@ export function ConseilPanel() {
     if (currentConversation.length > 0) {
       setConversationHistory(prev => [currentConversation, ...prev].filter(c => c.length > 0));
     }
-    setCurrentConversation([]);
+    setCurrentConversation([{
+        role: 'model',
+        content: t('assistant_welcome_message'),
+        agentMode: 'wise'
+    }]);
   };
 
   const deleteConversationFromHistory = (indexToDelete: number) => {
     setConversationHistory(prev => prev.filter((_, i) => i !== indexToDelete));
     toast.success(t('history_deleted_success'));
-  };
-
-  const processAgentW = async (prompt: string) => {
-    setIsThinking(true);
-    const userMessage: Message = { role: 'user', content: prompt, agentMode };
-    setCurrentConversation(prev => [...prev, userMessage]);
-    form.reset();
-    
-    try {
-      const aiResponse = await runAgentW({
-        prompt,
-        currency,
-        budgets,
-        savingsGoals
-      });
-      
-      const { incomes, expenses: extractedExpenses, newBudgets, newSavingsGoals, savingsContributions } = aiResponse;
-
-      const actions: string[] = [];
-
-      // Add incomes
-      for (const income of incomes) {
-        const newTransaction: Transaction = {
-          id: uuidv4(),
-          type: 'income', ...income,
-          date: income.date ? new Date(income.date).toISOString() : new Date().toISOString(),
-        };
-        await addTransaction(newTransaction);
-        actions.push(`- Revenu ajouté : ${income.description} (${income.amount})`);
-      }
-
-      // Add expenses
-      for (const expense of extractedExpenses) {
-        const newTransaction: Transaction = {
-          id: uuidv4(),
-          type: 'expense', ...expense,
-          date: expense.date ? new Date(expense.date).toISOString() : new Date().toISOString(),
-        };
-        await addTransaction(newTransaction);
-        actions.push(`- Dépense ajoutée : ${expense.description} (${expense.amount})`);
-      }
-
-      // Create new budgets
-      for (const budget of newBudgets) {
-        const newBudgetItem: Budget = { ...budget, id: uuidv4() };
-        await addBudget(newBudgetItem);
-        actions.push(`- Budget créé : ${budget.name} (${budget.amount})`);
-      }
-      
-      // Create new savings goals
-      for (const goal of newSavingsGoals) {
-        const newGoalItem: SavingsGoal = { ...goal, id: uuidv4(), currentAmount: goal.currentAmount ?? 0 };
-        await addSavingsGoal(newGoalItem);
-        actions.push(`- Objectif d'épargne créé : ${goal.name} (${goal.targetAmount})`);
-      }
-
-      // Add funds to savings
-      for (const contribution of savingsContributions) {
-        await addFunds(contribution.goalName, contribution.amount);
-         actions.push(`- Fonds ajouté à l'épargne '${contribution.goalName}' : ${contribution.amount}`);
-      }
-
-      const summaryMessage = actions.length > 0
-        ? `J'ai terminé les actions suivantes :\n${actions.join('\n')}`
-        : "Je n'ai détecté aucune action à effectuer dans votre message.";
-
-      const assistantMessage: Message = { role: 'model', content: summaryMessage, agentMode };
-      setCurrentConversation(prev => [...prev, assistantMessage]);
-      toast.success(actions.length > 0 ? "Actions effectuées avec succès !" : "Aucune action détectée.");
-
-    } catch (error) {
-      console.error('Agent W failed:', error);
-      const errorMessage = `Désolé, je n'ai pas pu traiter votre demande. Détails: ${error instanceof Error ? error.message : String(error)}`;
-      const assistantMessage: Message = { role: 'model', content: errorMessage, agentMode };
-      setCurrentConversation(prev => [...prev, assistantMessage]);
-      toast.error("L'agent W a rencontré une erreur.");
-    } finally {
-      setIsThinking(false);
-    }
-  };
-
-
-  const processWiseAssistant = async (prompt: string) => {
-    const userMessage: Message = { role: 'user', content: prompt, agentMode };
-    setCurrentConversation(prev => [...prev, userMessage]);
-    setIsThinking(true);
-    form.reset();
-  
-    try {
-      const result = await askExpenseAssistant({
-        question: prompt,
-        history: currentConversation.filter(m => m.agentMode === 'wise').map(m => ({role: m.role, content: m.content})),
-        language: locale,
-        currency,
-        financialData: {
-          income,
-          expenses,
-          transactions,
-          budgets,
-          savingsGoals
-        },
-        userName: user?.fullName || t('user_name_placeholder')
-      });
-
-      const assistantMessage: Message = { role: 'model', content: result.answer, agentMode };
-      setCurrentConversation(prev => [...prev, assistantMessage]);
-
-    } catch (error) {
-      console.error('AI assistant failed:', error);
-      uiToast({
-        variant: 'destructive',
-        title: t('assistant_error_title'),
-        description: t('assistant_error_desc'),
-      });
-      setCurrentConversation(prev => prev.slice(0, -1));
-    } finally {
-      setIsThinking(false);
-    }
   };
 
   const onSubmit = async (data: AssistantFormValues) => {
@@ -339,11 +219,21 @@ export function ConseilPanel() {
     const prompt = data.prompt.trim();
     if (!prompt) return;
 
-    if (agentMode === 'agent') {
-      await processAgentW(prompt);
-    } else {
-      await processWiseAssistant(prompt);
-    }
+    const userMessage: Message = { role: 'user', content: prompt, agentMode };
+    setCurrentConversation(prev => [...prev, userMessage]);
+    form.reset();
+    setIsThinking(true);
+
+    // Simulate AI response
+    setTimeout(() => {
+        const aiResponse = agentMode === 'agent' 
+            ? "Désolé, l'Agent W est actuellement en maintenance. Veuillez réessayer plus tard."
+            : "Désolé, l'assistant IA est en cours de maintenance. Je serai bientôt de retour pour répondre à vos questions.";
+
+        const assistantMessage: Message = { role: 'model', content: aiResponse, agentMode };
+        setCurrentConversation(prev => [...prev, assistantMessage]);
+        setIsThinking(false);
+    }, 1500);
   };
   
   const placeholderText = agentMode === 'wise' 
