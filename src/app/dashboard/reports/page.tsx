@@ -154,15 +154,17 @@ export default function ReportsPage() {
                     <CardDescription>{t('this_month')}</CardDescription>
                   )}
                 </div>
-                <Select defaultValue="monthly">
-                    <SelectTrigger className="w-[130px] hidden md:flex">
-                        <SelectValue placeholder={t('filter_placeholder')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="monthly">{t('filter_monthly')}</SelectItem>
-                        <SelectItem value="yearly">{t('filter_yearly')}</SelectItem>
-                    </SelectContent>
-                </Select>
+                <div className="hidden md:block">
+                  <Select defaultValue="monthly">
+                      <SelectTrigger className="w-[130px]">
+                          <SelectValue placeholder={t('filter_placeholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="monthly">{t('filter_monthly')}</SelectItem>
+                          <SelectItem value="yearly">{t('filter_yearly')}</SelectItem>
+                      </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardHeader>
             <CardContent>

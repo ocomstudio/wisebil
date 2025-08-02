@@ -7,36 +7,47 @@
  * - askExpenseAssistant - A function that takes a user's question and conversation history to provide an answer.
  * - ExpenseAssistantInput - The input type for the askExpenseAssistant function.
  */
-import { ai } from '@/ai/genkit';
-import { z } from 'zod';
-import { useAuth } from '@/context/auth-context';
+import {ai} from '@/ai/genkit';
+import {z} from 'zod';
 
 const MessageSchema = z.object({
-  role: z.enum(['user', 'assistant']),
+  role: z.enum(['user', 'model']),
   content: z.string(),
 });
 
 const FinancialDataSchema = z.object({
-    income: z.number().optional(),
-    expenses: z.number().optional(),
-    transactions: z.array(z.object({
-      type: z.enum(['income', 'expense']),
-      amount: z.number(),
-      description: z.string(),
-      category: z.string().optional(),
-      date: z.string(),
-    })).optional(),
-    budgets: z.array(z.object({
-      name: z.string(),
-      amount: z.number(),
-      category: z.string(),
-    })).optional(),
-    savingsGoals: z.array(z.object({
+  income: z.number().optional(),
+  expenses: z.number().optional(),
+  transactions: z
+    .array(
+      z.object({
+        type: z.enum(['income', 'expense']),
+        amount: z.number(),
+        description: z.string(),
+        category: z.string().optional(),
+        date: z.string(),
+      })
+    )
+    .optional(),
+  budgets: z
+    .array(
+      z.object({
+        name: z.string(),
+        amount: z.number(),
+        category: z.string(),
+      })
+    )
+    .optional(),
+  savingsGoals: z
+    .array(
+      z.object({
         name: z.string(),
         targetAmount: z.number(),
         currentAmount: z.number(),
-    })).optional(),
-  });
+      })
+    )
+    .optional(),
+});
 
 const ExpenseAssistantInputSchema = z.object({
   question: z.string().describe("The user's question about their finances."),
@@ -45,41 +56,58 @@ const ExpenseAssistantInputSchema = z.object({
     .describe(
       'The previous conversation history between the user and the assistant.'
     ),
-  language: z.string().describe("The user's preferred language (e.g., 'fr', 'en')."),
-  currency: z.string().describe("The user's preferred currency (e.g., 'XOF', 'EUR', 'USD')."),
-  financialData: FinancialDataSchema.describe("The user's complete financial data for context."),
+  language: z
+    .string()
+    .describe("The user's preferred language (e.g., 'fr', 'en')."),
+  currency: z
+    .string()
+    .describe("The user's preferred currency (e.g., 'XOF', 'EUR', 'USD')."),
+  financialData: FinancialDataSchema.describe(
+    "The user's complete financial data for context."
+  ),
   userName: z.string().describe("The user's name."),
 });
 export type ExpenseAssistantInput = z.infer<typeof ExpenseAssistantInputSchema>;
 
 const ExpenseAssistantOutputSchema = z.object({
-    answer: z.string().describe("The assistant's response to the user's question.")
+  answer: z
+    .string()
+    .describe("The assistant's response to the user's question."),
 });
 
-export async function askExpenseAssistant(input: ExpenseAssistantInput): Promise<{ answer: string }> {
-    return expenseAssistantFlow(input);
+export async function askExpenseAssistant(
+  input: ExpenseAssistantInput
+): Promise<{answer: string}> {
+  return expenseAssistantFlow(input);
 }
 
-
 const expenseAssistantFlow = ai.defineFlow(
-    {
-        name: 'expenseAssistantFlow',
-        inputSchema: ExpenseAssistantInputSchema,
-        outputSchema: ExpenseAssistantOutputSchema,
-    },
-    async (input) => {
-        const { question, history, language, currency, financialData, userName } = input;
+  {
+    name: 'expenseAssistantFlow',
+    inputSchema: ExpenseAssistantInputSchema,
+    outputSchema: ExpenseAssistantOutputSchema,
+  },
+  async (input) => {
+    const {question, history, language, currency, financialData, userName} =
+      input;
 
-        const financialContext = `
+    const financialContext = `
 User's Financial Context (Currency: ${currency}):
 - Total Income: ${financialData.income ?? 'N/A'}
 - Total Expenses: ${financialData.expenses ?? 'N/A'}
 - Recent Transactions: ${financialData.transactions?.length ?? 0}
-- Budgets: ${financialData.budgets?.map(b => `${b.name} (${b.amount})`).join(', ') || 'None'}
-- Savings Goals: ${financialData.savingsGoals?.map(s => `${s.name} (${s.currentAmount}/${s.targetAmount})`).join(', ') || 'None'}
+- Budgets: ${
+      financialData.budgets?.map((b) => `${b.name} (${b.amount})`).join(', ') ||
+      'None'
+    }
+- Savings Goals: ${
+      financialData.savingsGoals
+        ?.map((s) => `${s.name} (${s.currentAmount}/${s.targetAmount})`)
+        .join(', ') || 'None'
+    }
 `;
 
-        const systemPrompt = `Tu es "Wise", un assistant financier conçu par Ocomstudio, une agence de communication et d'innovation technologique. Ton but est de rendre l'utilisateur autonome et confiant avec ses finances.
+    const systemPrompt = `Tu es "Wise", un assistant financier conçu par Ocomstudio, une agence de communication et d'innovation technologique. Ton but est de rendre l'utilisateur autonome et confiant avec ses finances.
 
 Ton ton doit toujours être **clair, simple, court, original et profondément humain**. L'utilisateur doit sentir qu'il parle à un partenaire authentique, intelligent et qui ressent des émotions.
 
@@ -94,33 +122,34 @@ Ton ton doit toujours être **clair, simple, court, original et profondément hu
 Tu DOIS répondre dans la langue de l'utilisateur : ${language}.
 `;
 
-        // Construct the message history for the AI
-        const messages = [
-            { role: 'system' as const, content: `${systemPrompt}\n${financialContext}` },
-            ...history,
-            { role: 'user' as const, content: question }
-        ];
+    const messages = [
+      ...history,
+      {role: 'user' as const, content: question},
+    ];
 
-        try {
-            const llmResponse = await ai.generate({
-                model: 'googleai/gemini-1.5-flash-preview',
-                messages: messages,
-                config: { temperature: 0.5 },
-                output: {
-                    format: 'text'
-                }
-            });
+    try {
+      const llmResponse = await ai.generate({
+        model: 'googleai/gemini-1.5-flash-preview',
+        system: `${systemPrompt}\n${financialContext}`,
+        messages: messages,
+        config: {temperature: 0.5},
+        output: {
+          format: 'text',
+        },
+      });
 
-            const text = llmResponse.text;
-            if (!text) {
-                throw new Error("AI model returned an empty response.");
-            }
-            return { answer: text };
-
-        } catch (error) {
-            console.error(`AI model failed to generate a response:`, error);
-            // Fallback logic can be added here if needed
-            throw new Error(`AI model failed to generate a response. Details: ${error instanceof Error ? error.message : String(error)}`);
-        }
+      const text = llmResponse.text;
+      if (!text) {
+        throw new Error('AI model returned an empty response.');
+      }
+      return {answer: text};
+    } catch (error) {
+      console.error(`AI model failed to generate a response:`, error);
+      throw new Error(
+        `AI model failed to generate a response. Details: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
     }
+  }
 );

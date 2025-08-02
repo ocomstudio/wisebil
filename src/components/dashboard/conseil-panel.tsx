@@ -48,7 +48,7 @@ const assistantSchema = z.object({
 type AssistantFormValues = z.infer<typeof assistantSchema>;
 
 interface Message {
-  role: 'user' | 'assistant';
+  role: 'user' | 'model';
   content: string;
   agentMode?: AgentMode;
 }
@@ -276,14 +276,14 @@ export function ConseilPanel() {
         ? `J'ai terminé les actions suivantes :\n${actions.join('\n')}`
         : "Je n'ai détecté aucune action à effectuer dans votre message.";
 
-      const assistantMessage: Message = { role: 'assistant', content: summaryMessage, agentMode };
+      const assistantMessage: Message = { role: 'model', content: summaryMessage, agentMode };
       setCurrentConversation(prev => [...prev, assistantMessage]);
       toast.success(actions.length > 0 ? "Actions effectuées avec succès !" : "Aucune action détectée.");
 
     } catch (error) {
       console.error('Agent W failed:', error);
       const errorMessage = `Désolé, je n'ai pas pu traiter votre demande. Détails: ${error instanceof Error ? error.message : String(error)}`;
-      const assistantMessage: Message = { role: 'assistant', content: errorMessage, agentMode };
+      const assistantMessage: Message = { role: 'model', content: errorMessage, agentMode };
       setCurrentConversation(prev => [...prev, assistantMessage]);
       toast.error("L'agent W a rencontré une erreur.");
     } finally {
@@ -314,7 +314,7 @@ export function ConseilPanel() {
         userName: user?.fullName || t('user_name_placeholder')
       });
 
-      const assistantMessage: Message = { role: 'assistant', content: result.answer, agentMode };
+      const assistantMessage: Message = { role: 'model', content: result.answer, agentMode };
       setCurrentConversation(prev => [...prev, assistantMessage]);
 
     } catch (error) {
@@ -384,7 +384,7 @@ export function ConseilPanel() {
                       message.role === 'user' ? 'justify-end' : 'justify-start'
                     }`}
                   >
-                    {message.role === 'assistant' && (
+                    {message.role === 'model' && (
                       <Avatar className="h-8 w-8">
                          <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
                       </Avatar>
