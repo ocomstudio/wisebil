@@ -1,3 +1,4 @@
+// src/ai/genkit.ts
 'use server';
 
 import { genkit, Ai } from '@genkit-ai/ai';
