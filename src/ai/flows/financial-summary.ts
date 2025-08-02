@@ -8,8 +8,11 @@ import {
 } from '@/types/ai-schemas';
 
 export async function getFinancialSummary(input: FinancialSummaryInput): Promise<FinancialSummaryOutput> {
-  if (input.income === 0 && input.expenses === 0) {
-    if (input.language === 'fr') {
+  const { income, expenses, expensesByCategory, language, currency } = input;
+
+  // Handle the case where there is no financial data yet.
+  if (income === 0 && expenses === 0) {
+    if (language === 'fr') {
       return {
         summary: 'Bienvenue ! Ajoutez vos premières transactions pour voir votre résumé financier ici.',
         advice: 'Commencez par enregistrer une dépense ou un revenu pour prendre le contrôle de vos finances.',
@@ -22,8 +25,6 @@ export async function getFinancialSummary(input: FinancialSummaryInput): Promise
     }
   }
 
-  const { income, expenses, expensesByCategory, language, currency } = input;
-  
   const expensesByCategoryString = expensesByCategory.map(e => `- ${e.name}: ${e.amount} ${currency}`).join('\n');
 
   const prompt = `You are a friendly and encouraging financial advisor. Your goal is to analyze the user's financial data and provide a simple, positive summary and one actionable piece of advice.
