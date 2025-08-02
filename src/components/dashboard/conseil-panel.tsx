@@ -38,6 +38,7 @@ import { v4 as uuidv4 } from 'uuid';
 import toast from 'react-hot-toast';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '../ui/skeleton';
+import { useAuth } from '@/context/auth-context';
 
 
 const assistantSchema = z.object({
@@ -62,6 +63,7 @@ export function ConseilPanel() {
   const { transactions, income, expenses, addTransaction } = useTransactions();
   const { budgets, addBudget } = useBudgets();
   const { savingsGoals, addSavingsGoal, addFunds } = useSavings();
+  const { user } = useAuth();
 
   const [isClient, setIsClient] = useState(false);
   const [currentConversation, setCurrentConversation] = useState<Conversation>([]);
@@ -308,7 +310,8 @@ export function ConseilPanel() {
           transactions,
           budgets,
           savingsGoals
-        }
+        },
+        userName: user?.fullName || t('user_name_placeholder')
       });
 
       const assistantMessage: Message = { role: 'assistant', content: result.answer, agentMode };
@@ -396,7 +399,7 @@ export function ConseilPanel() {
                     </div>
                     {message.role === 'user' && (
                       <Avatar className="h-8 w-8">
-                        <AvatarFallback>U</AvatarFallback>
+                        <AvatarFallback>{user ? user.fullName.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
                       </Avatar>
                     )}
                   </div>
