@@ -1,4 +1,3 @@
-// src/ai/flows/expense-assistant.ts
 'use server';
 
 /**
@@ -8,7 +7,7 @@
  * - ExpenseAssistantInput - The input type for the askExpenseAssistant function.
  */
 import {ai} from '@/ai/genkit';
-import {z} from 'zod';
+import {z} from 'genkit';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'model']),
@@ -69,12 +68,6 @@ const ExpenseAssistantInputSchema = z.object({
 });
 export type ExpenseAssistantInput = z.infer<typeof ExpenseAssistantInputSchema>;
 
-const ExpenseAssistantOutputSchema = z.object({
-  answer: z
-    .string()
-    .describe("The assistant's response to the user's question."),
-});
-
 export async function askExpenseAssistant(
   input: ExpenseAssistantInput
 ): Promise<{answer: string}> {
@@ -85,7 +78,7 @@ const expenseAssistantFlow = ai.defineFlow(
   {
     name: 'expenseAssistantFlow',
     inputSchema: ExpenseAssistantInputSchema,
-    outputSchema: ExpenseAssistantOutputSchema,
+    outputSchema: z.object({answer: z.string()}),
   },
   async (input) => {
     const {question, history, language, currency, financialData, userName} =

@@ -108,7 +108,7 @@
     "ai_categorization_failed_desc": "Impossible de suggérer une catégorie.",
     "ai_temporarily_disabled_title": "Fonctionnalité IA désactivée",
     "ai_temporarily_disabled_desc": "Cette fonctionnalité est temporairement indisponible. Veuillez choisir une catégorie manuellement.",
-    "assistant_welcome_message": "Bonjour ! Comment puis-je vous aider avec vos finances aujourd'hui ? Veuillez noter que les fonctionnalités IA sont actuellement en maintenance.",
+    "assistant_welcome_message": "Bonjour {{name}} ! Comment puis-je vous aider avec vos finances aujourd'hui ?",
     "description_label": "Description",
     "description_placeholder": "ex: Café avec un ami",
     "amount_label": "Montant",
@@ -381,5 +381,13 @@
     "reset_warning_desc": "Cette action supprimera définitivement toutes vos données, y compris les transactions, les budgets et les objectifs. Cette action ne peut pas être annulée.",
     "reset_confirm_button": "Oui, tout supprimer",
     "reset_success_title": "Application réinitialisée",
-    "reset_success_desc": "Toutes vos données ont été effacées. Vous pouvez recommencer à zéro."
+    "reset_success_desc": "Toutes vos données ont été effacées. Vous pouvez recommencer à zéro.",
+    "thinking_in_progress": "Réflexion en cours...",
+    "agent_w_placeholder": "Ex: Hier j'ai acheté un café à 1500 et créé un budget pour les courses de 50000...",
+    "agent_w_summary_title": "J'ai ajouté les éléments suivants :",
+    "expense": "Dépense",
+    "budget": "Budget",
+    "contribution": "Contribution",
+    "agent_w_no_action": "Je n'ai trouvé aucune action financière à enregistrer dans votre message. Vous pouvez réessayer en étant plus précis.",
+    "agent_w_success": "Vos données financières ont été mises à jour !"
 }

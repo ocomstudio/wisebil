@@ -1,4 +1,3 @@
-// src/ai/flows/financial-summary.ts
 'use server';
 
 /**
@@ -9,7 +8,7 @@
  * - FinancialSummaryOutput - The return type for the getFinancialSummary function.
  */
 
-import {z} from 'zod';
+import {z} from 'genkit';
 import {ai} from '@/ai/genkit';
 
 const FinancialSummaryInputSchema = z.object({
@@ -41,7 +40,7 @@ const FinancialSummaryOutputSchema = z.object({
   advice: z
     .string()
     .describe(
-      "A single, actionable piece of advice to help the user improve their financial habits. It should be one sentence long. Be direct, positive, and human."
+      'A single, actionable piece of advice to help the user improve their financial habits. It should be one sentence long. Be direct, positive, and human.'
     ),
 });
 export type FinancialSummaryOutput = z.infer<
@@ -57,7 +56,7 @@ export async function getFinancialSummary(
         summary:
           'Bienvenue ! Ajoutez vos premières transactions pour voir votre résumé financier ici.',
         advice:
-          "Commencez par enregistrer une dépense ou un revenu pour prendre le contrôle de vos finances.",
+          'Commencez par enregistrer une dépense ou un revenu pour prendre le contrôle de vos finances.',
       };
     } else {
       return {

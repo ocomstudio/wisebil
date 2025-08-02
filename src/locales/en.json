@@ -108,7 +108,7 @@
     "ai_categorization_failed_desc": "Could not suggest a category.",
     "ai_temporarily_disabled_title": "AI Feature Disabled",
     "ai_temporarily_disabled_desc": "This feature is temporarily unavailable. Please categorize manually.",
-    "assistant_welcome_message": "Hello! How can I help you with your finances today? Please note that AI features are currently under maintenance.",
+    "assistant_welcome_message": "Hello {{name}}! How can I help you with your finances today?",
     "description_label": "Description",
     "description_placeholder": "e.g., Coffee with a friend",
     "amount_label": "Amount",
@@ -381,5 +381,13 @@
     "reset_warning_desc": "This will permanently delete all your data, including transactions, budgets, and goals. This action cannot be undone.",
     "reset_confirm_button": "Yes, delete everything",
     "reset_success_title": "Application Reset",
-    "reset_success_desc": "All your data has been erased. You can start fresh now."
+    "reset_success_desc": "All your data has been erased. You can start fresh now.",
+    "thinking_in_progress": "Thinking...",
+    "agent_w_placeholder": "e.g. Yesterday I bought a coffee for 1500 and created a budget for groceries of 50000...",
+    "agent_w_summary_title": "I've added the following items:",
+    "expense": "Expense",
+    "budget": "Budget",
+    "contribution": "Contribution",
+    "agent_w_no_action": "I didn't find any financial actions to record in your message. You can try again by being more specific.",
+    "agent_w_success": "Your financial data has been updated!"
 }

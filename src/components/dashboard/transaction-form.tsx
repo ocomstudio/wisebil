@@ -34,6 +34,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { expenseCategories, incomeCategories, allCategories } from "@/config/categories";
 import type { Transaction } from "@/types/transaction";
+import { categorizeExpense } from "@/ai/flows/categorize-expense";
 
 interface TransactionFormProps {
   transactionType: 'income' | 'expense';
@@ -91,15 +92,23 @@ export function TransactionForm({
       return;
     }
     setIsCategorizing(true);
-    // AI functionality is temporarily disabled.
-    setTimeout(() => {
-        toast({
+    try {
+        const result = await categorizeExpense({ description });
+        if(result.category && categories.some(c => c.name === result.category)) {
+            form.setValue("category", result.category);
+        } else {
+            // Fallback if AI returns an invalid category
+            form.setValue("category", "Autre");
+        }
+    } catch(error) {
+         toast({
             variant: "destructive",
-            title: t('ai_temporarily_disabled_title'),
-            description: t('ai_temporarily_disabled_desc'),
+            title: t('ai_categorization_failed'),
+            description: t('ai_categorization_failed_desc'),
         });
+    } finally {
         setIsCategorizing(false);
-    }, 1000);
+    }
   };
   
   const handleFormSubmit = (data: FormValues) => {

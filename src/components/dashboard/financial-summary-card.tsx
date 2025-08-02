@@ -2,10 +2,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Lightbulb, Activity } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 import { useLocale } from "@/context/locale-context";
+import { getFinancialSummary } from "@/ai/flows/financial-summary";
+import type { FinancialSummaryInput } from "@/ai/flows/financial-summary";
 
 interface FinancialSummaryCardProps {
     income: number;
@@ -14,7 +16,7 @@ interface FinancialSummaryCardProps {
 }
 
 export function FinancialSummaryCard({ income, expenses, chartData }: FinancialSummaryCardProps) {
-    const { t } = useLocale();
+    const { t, language, currency } = useLocale();
     const [summary, setSummary] = useState("");
     const [advice, setAdvice] = useState("");
     const [isLoading, setIsLoading] = useState(true);
@@ -22,29 +24,28 @@ export function FinancialSummaryCard({ income, expenses, chartData }: FinancialS
     useEffect(() => {
         const fetchSummary = async () => {
             setIsLoading(true);
-            // AI functionality is temporarily disabled.
-            if (income === 0 && expenses === 0) {
-                 if (t('lang_code') === 'fr') {
-                    setSummary('Bienvenue ! Ajoutez vos premières transactions pour voir votre résumé financier ici.');
-                    setAdvice("Commencez par enregistrer une dépense ou un revenu pour prendre le contrôle de vos finances.");
-                } else {
-                    setSummary('Welcome! Add your first transactions to see your financial summary here.');
-                    setAdvice('Start by recording an expense or income to take control of your finances.');
-                }
-            } else {
-                if (t('lang_code') === 'fr') {
-                    setSummary(`Ce mois-ci, vous avez gagné ${income} et dépensé ${expenses}. Continuez comme ça !`);
-                    setAdvice("Essayez de revoir vos abonnements pour trouver des économies potentielles.");
-                } else {
-                     setSummary(`This month, you've earned ${income} and spent ${expenses}. Keep it up!`);
-                    setAdvice("Try reviewing your subscriptions to find potential savings.");
-                }
+            try {
+                const input: FinancialSummaryInput = {
+                    income,
+                    expenses,
+                    expensesByCategory: chartData.map(d => ({ name: d.name, amount: d.amount })),
+                    language,
+                    currency,
+                };
+                const result = await getFinancialSummary(input);
+                setSummary(result.summary);
+                setAdvice(result.advice);
+            } catch (error) {
+                console.error("Error fetching financial summary:", error);
+                setSummary(t('summary_generation_error'));
+                setAdvice(t('advice_generation_error'));
+            } finally {
+                setIsLoading(false);
             }
-            setIsLoading(false);
         };
 
         fetchSummary();
-    }, [income, expenses, t]);
+    }, [income, expenses, chartData, t, language, currency]);
 
     if (isLoading) {
         return (

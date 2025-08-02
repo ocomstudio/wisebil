@@ -1,4 +1,3 @@
-// src/ai/flows/wise-agent.ts
 'use server';
 
 /**
@@ -9,12 +8,14 @@
  * - AgentWOutput - The return type for the runAgentW function.
  */
 
-import {z} from 'zod';
+import {z} from 'genkit';
 import {ai} from '@/ai/genkit';
 import {expenseCategories, incomeCategories} from '@/config/categories';
 
 const TransactionSchema = z.object({
-  description: z.string().describe('The detailed description of the transaction.'),
+  description: z
+    .string()
+    .describe('The detailed description of the transaction.'),
   amount: z.number().describe('The numeric amount of the transaction.'),
   category: z
     .string()

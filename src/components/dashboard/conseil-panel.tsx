@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,12 @@ import { useAuth } from '@/context/auth-context';
 import toast from 'react-hot-toast';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '../ui/skeleton';
+import { askExpenseAssistant } from '@/ai/flows/expense-assistant';
+import { runAgentW } from '@/ai/flows/wise-agent';
+import { useTransactions } from '@/context/transactions-context';
+import { useBudgets } from '@/context/budget-context';
+import { useSavings } from '@/context/savings-context';
+import { v4 as uuidv4 } from "uuid";
 
 
 const assistantSchema = z.object({
@@ -49,8 +55,11 @@ type AgentMode = 'wise' | 'agent';
 const CONVERSATION_HISTORY_KEY = 'wisebil-conversation-history';
 
 export function ConseilPanel() {
-  const { t, locale, currency } = useLocale();
+  const { t, locale, currency, formatCurrency } = useLocale();
   const { user } = useAuth();
+  const { transactions, income, expenses, addTransaction } = useTransactions();
+  const { budgets, addBudget } = useBudgets();
+  const { savingsGoals, addSavingsGoal, addFunds } = useSavings();
 
   const [isClient, setIsClient] = useState(false);
   const [currentConversation, setCurrentConversation] = useState<Conversation>([]);
@@ -84,14 +93,14 @@ export function ConseilPanel() {
         // Add a welcome message if no history
         setCurrentConversation([{
             role: 'model',
-            content: t('assistant_welcome_message'),
+            content: t('assistant_welcome_message').replace('{{name}}', user?.fullName.split(' ')[0] || ''),
             agentMode: 'wise'
         }]);
       }
     } catch (error) {
       console.error("Failed to load conversation history from localStorage", error);
     }
-  }, [isClient, t]);
+  }, [isClient, t, user]);
 
   // Save conversation to localStorage whenever it changes
   useEffect(() => {
@@ -200,7 +209,7 @@ export function ConseilPanel() {
     }
     setCurrentConversation([{
         role: 'model',
-        content: t('assistant_welcome_message'),
+        content: t('assistant_welcome_message').replace('{{name}}', user?.fullName.split(' ')[0] || ''),
         agentMode: 'wise'
     }]);
   };
@@ -208,6 +217,53 @@ export function ConseilPanel() {
   const deleteConversationFromHistory = (indexToDelete: number) => {
     setConversationHistory(prev => prev.filter((_, i) => i !== indexToDelete));
     toast.success(t('history_deleted_success'));
+  };
+
+  const processAgentWResponse = (response: any) => {
+    let summary = t('agent_w_summary_title') + '\n';
+    let itemsAdded = 0;
+
+    if (response.incomes?.length) {
+        response.incomes.forEach((i: any) => {
+            addTransaction({ ...i, type: 'income', id: uuidv4() });
+            summary += `- ${t('income')}: ${i.description} (${formatCurrency(i.amount)})\n`;
+            itemsAdded++;
+        });
+    }
+    if (response.expenses?.length) {
+        response.expenses.forEach((e: any) => {
+            addTransaction({ ...e, type: 'expense', id: uuidv4() });
+            summary += `- ${t('expense')}: ${e.description} (${formatCurrency(e.amount)})\n`;
+            itemsAdded++;
+        });
+    }
+    if (response.newBudgets?.length) {
+        response.newBudgets.forEach((b: any) => {
+            addBudget({ ...b, id: uuidv4() });
+            summary += `- ${t('budget')}: ${b.name} (${formatCurrency(b.amount)})\n`;
+            itemsAdded++;
+        });
+    }
+    if (response.newSavingsGoals?.length) {
+        response.newSavingsGoals.forEach((g: any) => {
+            addSavingsGoal({ ...g, id: uuidv4() });
+            summary += `- ${t('goal')}: ${g.name} (${formatCurrency(g.targetAmount)})\n`;
+            itemsAdded++;
+        });
+    }
+    if (response.savingsContributions?.length) {
+        response.savingsContributions.forEach((c: any) => {
+            addFunds(c.goalName, c.amount);
+            summary += `- ${t('contribution')}: ${c.goalName} (+${formatCurrency(c.amount)})\n`;
+            itemsAdded++;
+        });
+    }
+
+    if (itemsAdded === 0) {
+        return t('agent_w_no_action');
+    }
+
+    return summary;
   };
 
   const onSubmit = async (data: AssistantFormValues) => {
@@ -224,23 +280,54 @@ export function ConseilPanel() {
     form.reset();
     setIsThinking(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-        const aiResponse = agentMode === 'agent' 
-            ? "Désolé, l'Agent W est actuellement en maintenance. Veuillez réessayer plus tard."
-            : "Désolé, l'assistant IA est en cours de maintenance. Je serai bientôt de retour pour répondre à vos questions.";
+    let assistantMessage: Message;
 
-        const assistantMessage: Message = { role: 'model', content: aiResponse, agentMode };
+    try {
+        if (agentMode === 'wise') {
+            const history = currentConversation
+                .filter(m => m.agentMode === 'wise')
+                .map(m => ({role: m.role, content: m.content}));
+
+            const result = await askExpenseAssistant({
+                question: prompt,
+                history,
+                language: locale,
+                currency: currency,
+                userName: user?.fullName || 'User',
+                financialData: { income, expenses, transactions, budgets, savingsGoals }
+            });
+            assistantMessage = { role: 'model', content: result.answer, agentMode };
+
+        } else { // AgentW mode
+            const result = await runAgentW({
+                prompt,
+                currency,
+                budgets,
+                savingsGoals
+            });
+            const summary = processAgentWResponse(result);
+            assistantMessage = { role: 'model', content: summary, agentMode };
+            toast.success(t('agent_w_success'));
+        }
+    } catch (error) {
+        console.error('AI assistant failed:', error);
+        assistantMessage = { role: 'model', content: t('assistant_error_desc'), agentMode };
+        uiToast({
+            variant: 'destructive',
+            title: t('assistant_error_title'),
+            description: t('assistant_error_desc'),
+        });
+    } finally {
         setCurrentConversation(prev => [...prev, assistantMessage]);
         setIsThinking(false);
-    }, 1500);
+    }
   };
   
   const placeholderText = agentMode === 'wise' 
     ? t('ask_a_question_placeholder')
-    : "Ex: Hier j'ai acheté un café à 1500...";
+    : t('agent_w_placeholder');
 
-  if (!isClient) {
+  if (!isClient || !user) {
     return (
       <div className="flex flex-col h-full bg-background md:bg-transparent p-4">
         <Skeleton className="h-10 w-1/2 mb-4" />
@@ -301,7 +388,7 @@ export function ConseilPanel() {
                     </Avatar>
                     <div className="rounded-lg px-4 py-2 max-w-sm bg-muted flex items-center gap-2">
                       <BrainCircuit className="h-5 w-5 animate-pulse" />
-                      <span className="text-sm text-muted-foreground italic">Réflexion en cours...</span>
+                      <span className="text-sm text-muted-foreground italic">{t('thinking_in_progress')}</span>
                     </div>
                   </div>
                 )}
@@ -330,7 +417,7 @@ export function ConseilPanel() {
                             setCurrentConversation(convo);
                           }}
                         >
-                          {convo[0]?.content || t('empty_conversation')}
+                          {convo.find(m => m.role === 'user')?.content || convo[0]?.content || t('empty_conversation')}
                         </span>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
