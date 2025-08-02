@@ -1,11 +1,13 @@
 'use server';
 
-import { genkit, Ai } from '@genkit-ai/ai';
+import { genkit, configureGenkit, Ai } from '@genkit-ai/ai';
 import { googleAI } from '@genkit-ai/googleai';
 import { z } from 'zod';
 
-export const ai: Ai = genkit({
+configureGenkit({
   plugins: [googleAI({ apiVersion: 'v1beta' })],
 });
+
+export const ai: Ai = genkit;
 
 export { z };
