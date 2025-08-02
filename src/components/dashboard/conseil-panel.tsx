@@ -46,6 +46,7 @@ interface Message {
   role: 'user' | 'model';
   content: string;
   agentMode?: AgentMode;
+  isError?: boolean;
 }
 
 type Conversation = Message[];
@@ -203,7 +204,7 @@ export function ConseilPanel() {
 
 
   const handleNewConversation = () => {
-    if (currentConversation.length > 0) {
+    if (currentConversation.length > 0 && !currentConversation.every(m => m.isError)) {
       setConversationHistory(prev => [currentConversation, ...prev].filter(c => c.length > 0));
     }
     setCurrentConversation([{
@@ -283,13 +284,13 @@ export function ConseilPanel() {
 
     try {
         if (agentMode === 'wise') {
-            const history = currentConversation
-                .filter(m => m.agentMode === 'wise')
+            const historyForApi = currentConversation
+                .filter(m => m.agentMode === 'wise' && !m.isError)
                 .map(m => ({role: m.role, content: m.content}));
 
             const result = await askExpenseAssistant({
                 question: prompt,
-                history,
+                history: historyForApi,
                 language: locale,
                 currency: currency,
                 userName: user?.fullName || 'User',
@@ -310,12 +311,7 @@ export function ConseilPanel() {
         }
     } catch (error) {
         console.error('AI assistant failed:', error);
-        assistantMessage = { role: 'model', content: t('assistant_error_desc'), agentMode };
-        uiToast({
-            variant: 'destructive',
-            title: t('assistant_error_title'),
-            description: t('assistant_error_desc'),
-        });
+        assistantMessage = { role: 'model', content: t('assistant_error_desc'), agentMode, isError: true };
     } finally {
         setCurrentConversation(prev => [...prev, assistantMessage]);
         setIsThinking(false);
@@ -368,6 +364,7 @@ export function ConseilPanel() {
                     <div
                       className={cn(`rounded-lg px-4 py-2 max-w-sm`, 
                         message.role === 'user' ? 'bg-primary text-primary-foreground'
+                        : message.isError ? 'bg-destructive text-destructive-foreground'
                         : message.agentMode === 'agent' ? 'bg-accent text-accent-foreground' : 'bg-muted'
                       )}
                     >
