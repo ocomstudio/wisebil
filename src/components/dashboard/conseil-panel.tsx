@@ -312,11 +312,12 @@ export function ConseilPanel() {
             assistantMessage = { role: 'model', content: summary, agentMode };
             toast.success(t('agent_w_success'));
         }
+        setCurrentConversation(prev => [...prev, assistantMessage]);
     } catch (error) {
         console.error('AI assistant failed:', error);
         assistantMessage = { role: 'model', content: t('assistant_error_desc'), agentMode, isError: true };
-    } finally {
         setCurrentConversation(prev => [...prev, assistantMessage]);
+    } finally {
         setIsThinking(false);
     }
   };
