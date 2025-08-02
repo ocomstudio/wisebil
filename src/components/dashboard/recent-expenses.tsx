@@ -27,18 +27,18 @@ import { useTransactions } from "@/context/transactions-context";
 import { useSettings } from "@/context/settings-context";
 import { useLocale } from "@/context/locale-context";
 
+const getCategoryEmoji = (categoryName?: string) => {
+    if (!categoryName) return '💸';
+    const category = allCategories.find(c => c.name === categoryName);
+    return category ? category.emoji : '💸';
+};
+
 // Moved TransactionItem outside of RecentExpenses to make it a stable component
 function TransactionItem({ transaction }: { transaction: Transaction }) {
   const { deleteTransaction } = useTransactions();
   const { settings, isTemporarilyVisible } = useSettings();
   const { t, formatCurrency, formatDate } = useLocale();
   const isVisible = !settings.isBalanceHidden || isTemporarilyVisible;
-
-  const getCategoryEmoji = (categoryName?: string) => {
-    if (!categoryName) return '💸';
-    const category = allCategories.find(c => c.name === categoryName);
-    return category ? category.emoji : '💸';
-  }
 
   return (
     <div className="flex items-center gap-4 p-2 rounded-md hover:bg-muted/50">
