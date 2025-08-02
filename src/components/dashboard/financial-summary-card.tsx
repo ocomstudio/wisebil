@@ -7,7 +7,7 @@ import { Lightbulb, Activity } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 import { useLocale } from "@/context/locale-context";
 import { getFinancialSummary } from "@/ai/flows/financial-summary";
-import type { FinancialSummaryInput } from "@/ai/flows/financial-summary";
+import type { FinancialSummaryInput } from "@/types/ai-schemas";
 
 interface FinancialSummaryCardProps {
     income: number;

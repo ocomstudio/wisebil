@@ -1,29 +1,11 @@
 'use server';
 
-import { z } from 'zod';
 import { generateWithFallback } from '@/lib/ai-service';
-
-export const FinancialSummaryInputSchema = z.object({
-  income: z.number().describe('Total income for the period.'),
-  expenses: z.number().describe('Total expenses for the period.'),
-  expensesByCategory: z
-    .array(
-      z.object({
-        name: z.string(),
-        amount: z.number(),
-      })
-    )
-    .describe('An array of expense categories with their total amounts.'),
-  language: z.string().describe("The user's preferred language (e.g., 'fr', 'en')."),
-  currency: z.string().describe("The user's preferred currency (e.g., 'XOF', 'EUR', 'USD')."),
-});
-export type FinancialSummaryInput = z.infer<typeof FinancialSummaryInputSchema>;
-
-export const FinancialSummaryOutputSchema = z.object({
-  summary: z.string().describe("A concise, encouraging summary of the user's financial situation. It should be one or two sentences long. Be direct and human."),
-  advice: z.string().describe('A single, actionable piece of advice to help the user improve their financial habits. It should be one sentence long. Be direct, positive, and human.'),
-});
-export type FinancialSummaryOutput = z.infer<typeof FinancialSummaryOutputSchema>;
+import { 
+  FinancialSummaryInput, 
+  FinancialSummaryOutput,
+  FinancialSummaryOutputSchema
+} from '@/types/ai-schemas';
 
 export async function getFinancialSummary(input: FinancialSummaryInput): Promise<FinancialSummaryOutput> {
   if (input.income === 0 && input.expenses === 0) {

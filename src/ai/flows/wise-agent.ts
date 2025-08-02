@@ -1,49 +1,12 @@
 'use server';
 
-import { z } from 'zod';
 import { generateWithFallback } from '@/lib/ai-service';
 import { expenseCategories, incomeCategories } from '@/config/categories';
-
-const TransactionSchema = z.object({
-  description: z.string().describe('The detailed description of the transaction.'),
-  amount: z.number().describe('The numeric amount of the transaction.'),
-  category: z.string().describe('The most relevant category for the transaction.'),
-  date: z.string().optional().describe("The date of the transaction in YYYY-MM-DD format. If not specified, it's today."),
-});
-
-const NewBudgetSchema = z.object({
-  name: z.string().describe('The name for the new budget.'),
-  amount: z.number().describe('The allocated amount for the budget.'),
-  category: z.string().describe('The expense category for the budget.'),
-});
-
-const NewSavingsGoalSchema = z.object({
-  name: z.string().describe('The name for the new savings goal.'),
-  targetAmount: z.number().describe('The target amount for the savings goal.'),
-  currentAmount: z.number().optional().default(0).describe('The starting amount, defaults to 0.'),
-});
-
-const SavingsContributionSchema = z.object({
-  goalName: z.string().describe('The name of the existing savings goal to contribute to.'),
-  amount: z.number().describe('The amount to add to the savings goal.'),
-});
-
-export const AgentWInputSchema = z.object({
-  prompt: z.string().describe("The user's text describing their daily financial activities."),
-  currency: z.string().describe("The user's currency to provide context for amounts."),
-  budgets: z.array(z.any()).describe('List of existing user budgets.'),
-  savingsGoals: z.array(z.any()).describe('List of existing user savings goals.'),
-});
-export type AgentWInput = z.infer<typeof AgentWInputSchema>;
-
-export const AgentWOutputSchema = z.object({
-  incomes: z.array(TransactionSchema).optional().default([]).describe('A list of all income transactions found.'),
-  expenses: z.array(TransactionSchema).optional().default([]).describe('A list of all expense transactions found.'),
-  newBudgets: z.array(NewBudgetSchema).optional().default([]).describe('A list of new budgets to be created.'),
-  newSavingsGoals: z.array(NewSavingsGoalSchema).optional().default([]).describe('A list of new savings goals to be created.'),
-  savingsContributions: z.array(SavingsContributionSchema).optional().default([]).describe('A list of contributions to existing savings goals.'),
-});
-export type AgentWOutput = z.infer<typeof AgentWOutputSchema>;
+import { 
+  AgentWInput, 
+  AgentWOutput,
+  AgentWOutputSchema
+} from '@/types/ai-schemas';
 
 export async function runAgentW(input: AgentWInput): Promise<AgentWOutput> {
   const { prompt, currency, budgets, savingsGoals } = input;

@@ -34,6 +34,7 @@ import { useTransactions } from '@/context/transactions-context';
 import { useBudgets } from '@/context/budget-context';
 import { useSavings } from '@/context/savings-context';
 import { v4 as uuidv4 } from "uuid";
+import type { ExpenseAssistantInput, AgentWInput, AgentWOutput } from '@/types/ai-schemas';
 
 
 const assistantSchema = z.object({
@@ -219,7 +220,7 @@ export function ConseilPanel() {
     toast.success(t('history_deleted_success'));
   };
 
-  const processAgentWResponse = (response: any) => {
+  const processAgentWResponse = (response: AgentWOutput) => {
     let summary = t('agent_w_summary_title') + '\n';
     let itemsAdded = 0;
 
@@ -288,23 +289,25 @@ export function ConseilPanel() {
                 .filter(m => m.agentMode === 'wise' && !m.isError)
                 .map(m => ({role: m.role, content: m.content}));
 
-            const result = await askExpenseAssistant({
+            const input: ExpenseAssistantInput = {
                 question: prompt,
                 history: historyForApi,
                 language: locale,
                 currency: currency,
                 userName: user?.fullName || 'User',
                 financialData: { income, expenses, transactions, budgets, savingsGoals }
-            });
+            };
+            const result = await askExpenseAssistant(input);
             assistantMessage = { role: 'model', content: result.answer, agentMode };
 
         } else { // AgentW mode
-            const result = await runAgentW({
+             const input: AgentWInput = {
                 prompt,
                 currency,
                 budgets,
                 savingsGoals
-            });
+            };
+            const result = await runAgentW(input);
             const summary = processAgentWResponse(result);
             assistantMessage = { role: 'model', content: summary, agentMode };
             toast.success(t('agent_w_success'));

@@ -1,54 +1,7 @@
 'use server';
 
-import { z } from 'zod';
 import { generateWithFallback, type Message } from '@/lib/ai-service';
-
-const FinancialDataSchema = z.object({
-  income: z.number().optional(),
-  expenses: z.number().optional(),
-  transactions: z
-    .array(
-      z.object({
-        type: z.enum(['income', 'expense']),
-        amount: z.number(),
-        description: z.string(),
-        category: z.string().optional(),
-        date: z.string(),
-      })
-    )
-    .optional(),
-  budgets: z
-    .array(
-      z.object({
-        name: z.string(),
-        amount: z.number(),
-        category: z.string(),
-      })
-    )
-    .optional(),
-  savingsGoals: z
-    .array(
-      z.object({
-        name: z.string(),
-        targetAmount: z.number(),
-        currentAmount: z.number(),
-      })
-    )
-    .optional(),
-});
-
-export const ExpenseAssistantInputSchema = z.object({
-  question: z.string().describe("The user's question about their finances."),
-  history: z
-    .array(z.object({ role: z.enum(['user', 'model']), content: z.string() }))
-    .describe('The previous conversation history between the user and the assistant.'),
-  language: z.string().describe("The user's preferred language (e.g., 'fr', 'en')."),
-  currency: z.string().describe("The user's preferred currency (e.g., 'XOF', 'EUR', 'USD')."),
-  financialData: FinancialDataSchema.describe("The user's complete financial data for context."),
-  userName: z.string().describe("The user's name."),
-});
-
-export type ExpenseAssistantInput = z.infer<typeof ExpenseAssistantInputSchema>;
+import { ExpenseAssistantInput } from '@/types/ai-schemas';
 
 export async function askExpenseAssistant(input: ExpenseAssistantInput): Promise<{ answer: string }> {
   const { question, history, language, currency, financialData, userName } = input;

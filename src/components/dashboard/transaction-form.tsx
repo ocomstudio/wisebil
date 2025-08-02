@@ -35,6 +35,7 @@ import { cn } from "@/lib/utils";
 import { expenseCategories, incomeCategories } from "@/config/categories";
 import type { Transaction } from "@/types/transaction";
 import { categorizeExpense } from "@/ai/flows/categorize-expense";
+import type { CategorizeExpenseInput } from "@/types/ai-schemas";
 
 interface TransactionFormProps {
   transactionType: 'income' | 'expense';
@@ -93,7 +94,8 @@ export function TransactionForm({
     }
     setIsCategorizing(true);
     try {
-        const result = await categorizeExpense({ description });
+        const input: CategorizeExpenseInput = { description };
+        const result = await categorizeExpense(input);
         if(result.category && categories.some(c => c.name === result.category)) {
             form.setValue("category", result.category);
         } else {

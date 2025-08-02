@@ -1,23 +1,12 @@
 'use server';
 
-import { z } from 'zod';
 import { generateWithFallback } from '@/lib/ai-service';
 import { expenseCategories } from '@/config/categories';
-
-export const CategorizeExpenseInputSchema = z.object({
-  description: z
-    .string()
-    .describe('The description of the expense transaction.'),
-});
-export type CategorizeExpenseInput = z.infer<typeof CategorizeExpenseInputSchema>;
-
-export const CategorizeExpenseOutputSchema = z.object({
-  category: z.string().describe('The predicted category of the expense.'),
-  confidence: z
-    .number()
-    .describe('The confidence level of the categorization (0-1).'),
-});
-export type CategorizeExpenseOutput = z.infer<typeof CategorizeExpenseOutputSchema>;
+import { 
+  CategorizeExpenseInput, 
+  CategorizeExpenseOutput,
+  CategorizeExpenseOutputSchema
+} from '@/types/ai-schemas';
 
 export async function categorizeExpense(input: CategorizeExpenseInput): Promise<CategorizeExpenseOutput> {
   const { description } = input;
