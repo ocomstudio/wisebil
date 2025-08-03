@@ -27,7 +27,7 @@ export async function runAgentW(input: AgentWInput): Promise<AgentWOutput> {
     - If the user says "crée un budget pour les courses de 50000", add it to 'newBudgets'.
     - If the user says "ajoute 10000 à mon épargne 'Voiture'", and 'Voiture' is in the existing list, add it to 'savingsContributions'. If 'Voiture' does not exist, create it under 'newSavingsGoals'.
 6.  **Handle Currency:** The user's currency is ${currency}. All amounts are in this currency.
-7.  **STRICT JSON-ONLY OUTPUT:** You MUST respond ONLY with a JSON object conforming to the output schema. Do not include apologies, explanations, or ANY text outside of the JSON brackets. If no actions of a certain type are found, its corresponding array MUST be empty, for example: "incomes": []. NEVER return a list with an empty object like "incomes": [{}]. The 'date' field for transactions is OPTIONAL, but if you provide it, it MUST be in YYYY-MM-DD format.
+7.  **STRICT JSON-ONLY OUTPUT:** You MUST respond ONLY with a JSON object conforming to the output schema. Do not include apologies, explanations, or ANY text outside of the JSON brackets. If no actions of a certain type are found, its corresponding array MUST be empty, for example: "incomes": []. NEVER return a list with an empty object like "incomes": [{}]. The 'date' field for transactions is REQUIRED, and it MUST be in YYYY-MM-DD format.
 
 User prompt: "${prompt}"`;
 

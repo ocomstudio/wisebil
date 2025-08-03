@@ -47,7 +47,7 @@ const TransactionSchema = z.object({
   description: z.string().describe('The detailed description of the transaction.'),
   amount: z.number().describe('The numeric amount of the transaction.'),
   category: z.string().describe('The most relevant category for the transaction.'),
-  date: z.string().optional().describe("The date of the transaction in YYYY-MM-DD format. If not specified, it's today."),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format.").describe("The date of the transaction in YYYY-MM-DD format. This is required."),
 });
 
 const NewBudgetSchema = z.object({
@@ -60,6 +60,7 @@ const NewSavingsGoalSchema = z.object({
   name: z.string().describe('The name for the new savings goal.'),
   targetAmount: z.number().describe('The target amount for the savings goal.'),
   currentAmount: z.number().optional().default(0).describe('The starting amount, defaults to 0.'),
+  emoji: z.string().optional().describe("An optional emoji for the goal.")
 });
 
 const SavingsContributionSchema = z.object({
