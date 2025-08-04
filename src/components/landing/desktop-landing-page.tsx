@@ -170,10 +170,10 @@ export default function DesktopLandingPage() {
           animate="visible"
           variants={sectionVariants}
         >
-             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-primary/10 z-0"></div>
+             <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-primary/5 z-0"></div>
              <div className="w-full max-w-7xl px-4 md:px-6 z-10 relative">
                  <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:gap-24 items-center">
-                    <div className="flex flex-col justify-center space-y-4 lg:order-last">
+                    <div className="flex flex-col justify-center space-y-6">
                         <div className="space-y-4">
                             <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-foreground">
                                 {t('hero_title_part1')} <span className="text-primary">{t('hero_title_part2')}</span>
@@ -182,8 +182,8 @@ export default function DesktopLandingPage() {
                                 {t('hero_subtitle')}
                             </p>
                         </div>
-                        <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                            <Button asChild size="lg">
+                        <div className="flex flex-col gap-4 min-[400px]:flex-row">
+                            <Button asChild size="lg" className="shadow-lg shadow-primary/20">
                                 <Link href="/auth/signup">{t('hero_cta_free')}</Link>
                             </Button>
                             <Button asChild size="lg" variant="outline">
@@ -191,17 +191,19 @@ export default function DesktopLandingPage() {
                             </Button>
                         </div>
                     </div>
-                     <motion.div 
+                     <motion.div
+                        className="relative"
                         animate={{ y: [0, -10, 0] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                     >
+                        <div className="absolute -inset-4 bg-primary/20 rounded-full blur-3xl opacity-50"></div>
                         <Image
                             src="https://placehold.co/600x600.png"
                             width="600"
                             height="600"
                             alt="Hero"
                             data-ai-hint="finance app mobile"
-                            className="mx-auto aspect-square overflow-hidden rounded-xl object-contain sm:w-full transform-gpu shadow-2xl"
+                            className="mx-auto aspect-square overflow-hidden rounded-2xl object-contain sm:w-full transform-gpu shadow-2xl shadow-primary/10"
                         />
                     </motion.div>
                 </div>
@@ -239,9 +241,11 @@ export default function DesktopLandingPage() {
                     whileInView={{ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.5 } }}
                     viewport={{ once: true, amount: 0.5 }}
                 >
-                    <Card className="text-left bg-card/50 backdrop-blur-sm border-border/50 p-4 h-full transform-gpu transition-transform hover:scale-105 hover:shadow-primary/20 shadow-xl">
+                    <Card className="text-left bg-card/50 backdrop-blur-sm border-border/50 p-4 h-full transform-gpu transition-transform hover:-translate-y-2 hover:shadow-primary/20 shadow-xl">
                         <CardHeader className="p-2">
-                            {feature.icon}
+                            <div className="bg-primary/10 rounded-lg w-fit p-3 mb-4 border border-primary/20">
+                                {feature.icon}
+                            </div>
                             <CardTitle className="mt-4 text-lg font-headline">{feature.title}</CardTitle>
                         </CardHeader>
                         <CardContent className="p-2">
@@ -275,7 +279,7 @@ export default function DesktopLandingPage() {
                     </div>
                 </div>
                 <div className="mx-auto grid max-w-5xl items-stretch gap-8 sm:grid-cols-1 lg:grid-cols-3 mt-12">
-                    <Card className="flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/20 shadow-xl">
+                    <Card className="flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/10 shadow-lg">
                         <CardHeader className="pb-4">
                             <CardTitle className="font-headline text-2xl">{t('plan_free_title')}</CardTitle>
                             <p className="text-4xl font-bold">{formatCurrency(0)} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
@@ -316,7 +320,7 @@ export default function DesktopLandingPage() {
                             </Button>
                         </div>
                     </Card>
-                     <Card className="flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/20 shadow-xl">
+                     <Card className="flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/10 shadow-lg">
                         <CardHeader className="pb-4">
                             <CardTitle className="font-headline text-2xl">{t('plan_business_title')}</CardTitle>
                             <p className="text-4xl font-bold">{formatCurrency(getConvertedPrice(pricing.business.XOF, currency))} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
