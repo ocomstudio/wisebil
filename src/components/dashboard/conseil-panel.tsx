@@ -94,7 +94,7 @@ export function ConseilPanel() {
         // Add a welcome message if no history
         setCurrentConversation([{
             role: 'model',
-            content: t('assistant_welcome_message').replace('{{name}}', user?.fullName.split(' ')[0] || ''),
+            content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || ''),
             agentMode: 'wise'
         }]);
       }
@@ -210,7 +210,7 @@ export function ConseilPanel() {
     }
     setCurrentConversation([{
         role: 'model',
-        content: t('assistant_welcome_message').replace('{{name}}', user?.fullName.split(' ')[0] || ''),
+        content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || ''),
         agentMode: 'wise'
     }]);
   };
@@ -294,7 +294,7 @@ export function ConseilPanel() {
                 history: historyForApi,
                 language: locale,
                 currency: currency,
-                userName: user?.fullName || 'User',
+                userName: user?.displayName || 'User',
                 financialData: { income, expenses, transactions, budgets, savingsGoals }
             };
             const result = await askExpenseAssistant(input);
@@ -339,6 +339,11 @@ export function ConseilPanel() {
     );
   }
 
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return 'U';
+    return name.charAt(0).toUpperCase();
+  }
+
   return (
     <div className="flex flex-col h-full bg-background md:bg-transparent">
       <header className='p-4 md:p-6 border-b flex justify-between items-center flex-shrink-0'>
@@ -376,7 +381,7 @@ export function ConseilPanel() {
                     </div>
                     {message.role === 'user' && (
                       <Avatar className="h-8 w-8">
-                        <AvatarFallback>{user ? user.fullName.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
+                        <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
                       </Avatar>
                     )}
                   </div>
