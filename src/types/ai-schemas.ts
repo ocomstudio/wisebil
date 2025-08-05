@@ -1,5 +1,9 @@
 // src/types/ai-schemas.ts
 import { z } from 'zod';
+import type { Budget } from './budget';
+import type { SavingsGoal } from './savings-goal';
+import type { Transaction } from './transaction';
+
 
 // Schema for categorize-expense.ts
 export const CategorizeExpenseInputSchema = z.object({
@@ -43,7 +47,7 @@ export type FinancialSummaryOutput = z.infer<typeof FinancialSummaryOutputSchema
 
 
 // Schema for wise-agent.ts
-const TransactionSchema = z.object({
+const TransactionSchemaForAgent = z.object({
   description: z.string().describe('The detailed description of the transaction.'),
   amount: z.number().describe('The numeric amount of the transaction.'),
   category: z.string().describe('The most relevant category for the transaction.'),
@@ -77,8 +81,8 @@ export const AgentWInputSchema = z.object({
 export type AgentWInput = z.infer<typeof AgentWInputSchema>;
 
 export const AgentWOutputSchema = z.object({
-  incomes: z.array(TransactionSchema).optional().default([]).describe('A list of all income transactions found.'),
-  expenses: z.array(TransactionSchema).optional().default([]).describe('A list of all expense transactions found.'),
+  incomes: z.array(TransactionSchemaForAgent).optional().default([]).describe('A list of all income transactions found.'),
+  expenses: z.array(TransactionSchemaForAgent).optional().default([]).describe('A list of all expense transactions found.'),
   newBudgets: z.array(NewBudgetSchema).optional().default([]).describe('A list of new budgets to be created.'),
   newSavingsGoals: z.array(NewSavingsGoalSchema).optional().default([]).describe('A list of new savings goals to be created.'),
   savingsContributions: z.array(SavingsContributionSchema).optional().default([]).describe('A list of contributions to existing savings goals.'),
@@ -90,35 +94,9 @@ export type AgentWOutput = z.infer<typeof AgentWOutputSchema>;
 const FinancialDataSchema = z.object({
   income: z.number().optional(),
   expenses: z.number().optional(),
-  transactions: z
-    .array(
-      z.object({
-        type: z.enum(['income', 'expense']),
-        amount: z.number(),
-        description: z.string(),
-        category: z.string().optional(),
-        date: z.string(),
-      })
-    )
-    .optional(),
-  budgets: z
-    .array(
-      z.object({
-        name: z.string(),
-        amount: z.number(),
-        category: z.string(),
-      })
-    )
-    .optional(),
-  savingsGoals: z
-    .array(
-      z.object({
-        name: z.string(),
-        targetAmount: z.number(),
-        currentAmount: z.number(),
-      })
-    )
-    .optional(),
+  transactions: z.array(z.custom<Transaction>()).optional(),
+  budgets: z.array(z.custom<Budget>()).optional(),
+  savingsGoals: z.array(z.custom<SavingsGoal>()).optional(),
 });
 
 export const ExpenseAssistantInputSchema = z.object({
