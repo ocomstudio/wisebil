@@ -5,82 +5,129 @@ import React, { createContext, useContext, useState, ReactNode, useCallback, use
 import { SavingsGoal } from '@/types/savings-goal';
 import { useToast } from '@/hooks/use-toast';
 import { useLocale } from './locale-context';
-
-const SAVINGS_GOALS_STORAGE_KEY = 'wisebil-savings-goals';
+import { useAuth } from './auth-context';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 
 interface SavingsContextType {
   savingsGoals: SavingsGoal[];
   addSavingsGoal: (goal: SavingsGoal) => Promise<void>;
   deleteSavingsGoal: (id: string) => Promise<void>;
-  addFunds: (id: string | string, amount: number) => Promise<void>;
-  resetSavings: () => void;
+  addFunds: (id: string, amount: number) => Promise<void>;
+  resetSavings: () => Promise<void>;
+  isLoading: boolean;
 }
 
 const SavingsContext = createContext<SavingsContextType | undefined>(undefined);
 
 export const SavingsProvider = ({ children }: { children: ReactNode }) => {
   const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { t, formatCurrency } = useLocale();
-  const [isLoaded, setIsLoaded] = useState(false);
+  const { user } = useAuth();
+
+  const getUserDocRef = useCallback(() => {
+    if (!user) return null;
+    return doc(db, 'users', user.uid);
+  }, [user]);
 
   useEffect(() => {
-    try {
-      const storedGoals = localStorage.getItem(SAVINGS_GOALS_STORAGE_KEY);
-      if (storedGoals) {
-        setSavingsGoals(JSON.parse(storedGoals));
+    const fetchSavingsGoals = async () => {
+      if (!user) {
+        setSavingsGoals([]);
+        setIsLoading(false);
+        return;
       }
-    } catch (error) {
-      console.error("Failed to load savings goals from localStorage", error);
-    }
-    setIsLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    if (isLoaded) {
+      setIsLoading(true);
+      const userDocRef = getUserDocRef();
+      if (userDocRef) {
         try {
-            localStorage.setItem(SAVINGS_GOALS_STORAGE_KEY, JSON.stringify(savingsGoals));
+          const docSnap = await getDoc(userDocRef);
+          if (docSnap.exists() && docSnap.data().savingsGoals) {
+            setSavingsGoals(docSnap.data().savingsGoals);
+          } else {
+            setSavingsGoals([]);
+          }
         } catch (error) {
-            console.error("Failed to save savings goals to localStorage", error);
+          console.error("Failed to load savings goals from Firestore", error);
+        } finally {
+          setIsLoading(false);
         }
-    }
-  }, [savingsGoals, isLoaded]);
+      }
+    };
+    fetchSavingsGoals();
+  }, [user, getUserDocRef]);
 
   const addSavingsGoal = useCallback(async (goal: SavingsGoal) => {
-    setSavingsGoals(prev => [...prev, goal]);
-  }, []);
+    const userDocRef = getUserDocRef();
+    if (!userDocRef) return;
+
+    try {
+      await setDoc(userDocRef, { savingsGoals: arrayUnion(goal) }, { merge: true });
+      setSavingsGoals(prev => [...prev, goal]);
+    } catch(e) {
+      console.error("Failed to add savings goal to Firestore", e);
+      toast({ variant: "destructive", title: "Error", description: "Failed to save goal." });
+    }
+  }, [getUserDocRef, toast]);
 
   const deleteSavingsGoal = useCallback(async (id: string) => {
-    setSavingsGoals(prev => prev.filter(g => g.id !== id));
-    toast({
-      title: t('goal_deleted_title'),
-      description: t('goal_deleted_desc'),
-    });
-  }, [t, toast]);
+    const userDocRef = getUserDocRef();
+    if (!userDocRef) return;
+    
+    const goalToDelete = savingsGoals.find(g => g.id === id);
+    if (!goalToDelete) return;
+
+    try {
+      await updateDoc(userDocRef, { savingsGoals: arrayRemove(goalToDelete) });
+      setSavingsGoals(prev => prev.filter(g => g.id !== id));
+      toast({
+        title: t('goal_deleted_title'),
+        description: t('goal_deleted_desc'),
+      });
+    } catch(e) {
+      console.error("Failed to delete savings goal from Firestore", e);
+      toast({ variant: "destructive", title: "Error", description: "Failed to delete goal." });
+    }
+  }, [savingsGoals, getUserDocRef, toast, t]);
 
   const addFunds = useCallback(async (idOrName: string, amount: number) => {
-    setSavingsGoals(prev => prev.map(g => 
-      (g.id === idOrName || g.name === idOrName)
-        ? { ...g, currentAmount: g.currentAmount + amount } 
-        : g
-    ));
-    toast({
-      title: t('funds_added_title'),
-      description: t('funds_added_desc', { amount: formatCurrency(amount) }),
-    });
-  }, [t, toast, formatCurrency]);
+    const userDocRef = getUserDocRef();
+    if (!userDocRef) return;
 
-  const resetSavings = useCallback(() => {
-    setSavingsGoals([]);
+    const goalToUpdate = savingsGoals.find(g => g.id === idOrName || g.name === idOrName);
+    if (!goalToUpdate) return;
+    
+    const updatedGoal = { ...goalToUpdate, currentAmount: goalToUpdate.currentAmount + amount };
+
     try {
-        localStorage.removeItem(SAVINGS_GOALS_STORAGE_KEY);
+      await updateDoc(userDocRef, { savingsGoals: arrayRemove(goalToUpdate) });
+      await updateDoc(userDocRef, { savingsGoals: arrayUnion(updatedGoal) });
+      setSavingsGoals(prev => prev.map(g => g.id === goalToUpdate.id ? updatedGoal : g));
+      toast({
+        title: t('funds_added_title'),
+        description: t('funds_added_desc', { amount: formatCurrency(amount) }),
+      });
     } catch(e) {
-        console.error("Could not remove savings from local storage", e)
+      console.error("Failed to add funds in Firestore", e);
+      toast({ variant: "destructive", title: "Error", description: "Failed to add funds." });
     }
-  }, []);
+  }, [savingsGoals, getUserDocRef, toast, t, formatCurrency]);
+
+  const resetSavings = async () => {
+    const userDocRef = getUserDocRef();
+    if (!userDocRef) return;
+    try {
+      await updateDoc(userDocRef, { savingsGoals: [] });
+      setSavingsGoals([]);
+    } catch(e) {
+      console.error("Could not reset savings in Firestore", e);
+    }
+  };
 
   return (
-    <SavingsContext.Provider value={{ savingsGoals, addSavingsGoal, deleteSavingsGoal, addFunds, resetSavings }}>
+    <SavingsContext.Provider value={{ savingsGoals, addSavingsGoal, deleteSavingsGoal, addFunds, resetSavings, isLoading }}>
       {children}
     </SavingsContext.Provider>
   );

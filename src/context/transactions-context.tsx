@@ -5,8 +5,9 @@ import React, { createContext, useContext, useState, ReactNode, useMemo, useCall
 import { Transaction } from '@/types/transaction';
 import { useToast } from '@/hooks/use-toast';
 import { useLocale } from './locale-context';
-
-const TRANSACTIONS_STORAGE_KEY = 'wisebil-transactions';
+import { useAuth } from './auth-context';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 
 interface TransactionsContextType {
   transactions: Transaction[];
@@ -14,69 +15,126 @@ interface TransactionsContextType {
   updateTransaction: (id: string, updatedTransaction: Transaction) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   getTransactionById: (id: string) => Transaction | undefined;
-  resetTransactions: () => void;
+  resetTransactions: () => Promise<void>;
   balance: number;
   income: number;
   expenses: number;
+  isLoading: boolean;
 }
 
 const TransactionsContext = createContext<TransactionsContextType | undefined>(undefined);
 
 export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { t } = useLocale();
-  const [isLoaded, setIsLoaded] = useState(false);
+  const { user } = useAuth();
+
+  const getUserDocRef = useCallback(() => {
+    if (!user) return null;
+    return doc(db, 'users', user.uid);
+  }, [user]);
 
   useEffect(() => {
-    try {
-        const storedTransactions = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
-        if (storedTransactions) {
-            setTransactions(JSON.parse(storedTransactions));
+    const fetchTransactions = async () => {
+      if (!user) {
+        setTransactions([]);
+        setIsLoading(false);
+        return;
+      }
+      setIsLoading(true);
+      try {
+        const userDocRef = getUserDocRef();
+        if (userDocRef) {
+          const docSnap = await getDoc(userDocRef);
+          if (docSnap.exists() && docSnap.data().transactions) {
+            setTransactions(docSnap.data().transactions.sort((a: Transaction, b: Transaction) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+          } else {
+            setTransactions([]);
+          }
         }
-    } catch (error) {
-        console.error("Failed to load transactions from localStorage", error);
-    }
-    setIsLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    if(isLoaded) {
-        try {
-            localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(transactions));
-        } catch (error) {
-            console.error("Failed to save transactions to localStorage", error);
-        }
-    }
-  }, [transactions, isLoaded]);
+      } catch (error) {
+        console.error("Failed to load transactions from Firestore", error);
+        toast({ variant: "destructive", title: t('error_title'), description: "Failed to load transactions." });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTransactions();
+  }, [user, toast, t, getUserDocRef]);
 
   const addTransaction = useCallback(async (transaction: Transaction) => {
-    setTransactions(prevTransactions => [...prevTransactions, transaction].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-  }, []);
-
+    const userDocRef = getUserDocRef();
+    if (!userDocRef) return;
+    
+    try {
+      // Use setDoc with merge to create the document if it doesn't exist
+      await setDoc(userDocRef, { transactions: arrayUnion(transaction) }, { merge: true });
+      setTransactions(prev => [...prev, transaction].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    } catch(error) {
+       console.error("Failed to add transaction to Firestore", error);
+       toast({ variant: "destructive", title: t('error_title'), description: "Failed to save transaction." });
+    }
+  }, [getUserDocRef, toast, t]);
+  
   const updateTransaction = useCallback(async (id: string, updatedTransaction: Transaction) => {
-    setTransactions(prev => prev.map(t => (t.id === id ? updatedTransaction : t)).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-  }, []);
+    const userDocRef = getUserDocRef();
+    if (!userDocRef) return;
+
+    const oldTransaction = transactions.find(t => t.id === id);
+    if (!oldTransaction) return;
+
+    try {
+      await updateDoc(userDocRef, {
+        transactions: arrayRemove(oldTransaction)
+      });
+      await updateDoc(userDocRef, {
+        transactions: arrayUnion(updatedTransaction)
+      });
+      setTransactions(prev => prev.map(t => t.id === id ? updatedTransaction : t).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    } catch(error) {
+      console.error("Failed to update transaction in Firestore", error);
+      toast({ variant: "destructive", title: t('error_title'), description: "Failed to update transaction." });
+    }
+  }, [transactions, getUserDocRef, toast, t]);
+
 
   const deleteTransaction = useCallback(async (id: string) => {
-    setTransactions(prev => prev.filter(t => t.id !== id));
-    toast({
-        title: t('transaction_deleted_title'),
-    });
-  }, [toast, t]);
+    const userDocRef = getUserDocRef();
+    if (!userDocRef) return;
+
+    const transactionToDelete = transactions.find(t => t.id === id);
+    if (!transactionToDelete) return;
+
+    try {
+      await updateDoc(userDocRef, {
+        transactions: arrayRemove(transactionToDelete)
+      });
+      setTransactions(prev => prev.filter(t => t.id !== id));
+      toast({
+          title: t('transaction_deleted_title'),
+      });
+    } catch(error) {
+      console.error("Failed to delete transaction from Firestore", error);
+      toast({ variant: "destructive", title: t('error_title'), description: "Failed to delete transaction." });
+    }
+  }, [transactions, getUserDocRef, toast, t]);
 
   const getTransactionById = useCallback((id: string) => {
     return transactions.find(t => t.id === id);
   }, [transactions]);
 
-  const resetTransactions = useCallback(() => {
-    setTransactions([]);
+  const resetTransactions = async () => {
+    const userDocRef = getUserDocRef();
+    if (!userDocRef) return;
     try {
-        localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
+      await updateDoc(userDocRef, { transactions: [] });
+      setTransactions([]);
     } catch(e) {
-        console.error("Could not remove transactions from local storage", e)
+      console.error("Could not reset transactions in Firestore", e)
     }
-  }, []);
+  };
 
   const { balance, income, expenses } = useMemo(() => {
     let income = 0;
@@ -104,7 +162,8 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
         resetTransactions,
         balance, 
         income, 
-        expenses 
+        expenses,
+        isLoading
     }}>
       {children}
     </TransactionsContext.Provider>

@@ -115,10 +115,11 @@ export default function SettingsPage() {
   };
 
   const handleResetApp = async () => {
-    // Clear local data
-    resetTransactions();
-    resetBudgets();
-    resetSavings();
+    await Promise.all([
+      resetTransactions(),
+      resetBudgets(),
+      resetSavings()
+    ]);
     
     // In a real app, you would also delete data from Firestore.
     // This is a placeholder for that functionality.
@@ -161,7 +162,11 @@ export default function SettingsPage() {
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    const nameParts = name.split(' ');
+    if (nameParts.length > 1) {
+        return (nameParts[0].charAt(0) + nameParts[1].charAt(0)).toUpperCase();
+    }
+    return name.charAt(0).toUpperCase();
   }
 
   return (

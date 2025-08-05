@@ -1,3 +1,4 @@
+// src/components/dashboard/conseil-panel.tsx
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -35,7 +36,8 @@ import { useBudgets } from '@/context/budget-context';
 import { useSavings } from '@/context/savings-context';
 import { v4 as uuidv4 } from "uuid";
 import type { ExpenseAssistantInput, AgentWInput, AgentWOutput } from '@/types/ai-schemas';
-
+import { db } from '@/lib/firebase';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 const assistantSchema = z.object({
   prompt: z.string().min(1, 'Veuillez entrer une question.'),
@@ -53,7 +55,6 @@ interface Message {
 type Conversation = Message[];
 type AgentMode = 'wise' | 'agent';
 
-const CONVERSATION_HISTORY_KEY = 'wisebil-conversation-history';
 
 export function ConseilPanel() {
   const { t, locale, currency, formatCurrency } = useLocale();
@@ -72,47 +73,72 @@ export function ConseilPanel() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast: uiToast } = useToast();
-
   const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Load conversation from localStorage on initial render
-  useEffect(() => {
-    if (!isClient) return;
-    try {
-      const storedHistory = localStorage.getItem(CONVERSATION_HISTORY_KEY);
-      if (storedHistory) {
-        const parsedHistory = JSON.parse(storedHistory);
-        if(Array.isArray(parsedHistory) && parsedHistory.length > 0) {
-            setCurrentConversation(parsedHistory[0] || []);
-            setConversationHistory(parsedHistory.slice(1));
-        }
-      } else {
-        // Add a welcome message if no history
-        setCurrentConversation([{
-            role: 'model',
-            content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || ''),
-            agentMode: 'wise'
-        }]);
-      }
-    } catch (error) {
-      console.error("Failed to load conversation history from localStorage", error);
-    }
-  }, [isClient, t, user]);
+  const getUserDocRef = useCallback(() => {
+    if (!user) return null;
+    return doc(db, 'users', user.uid);
+  }, [user]);
 
-  // Save conversation to localStorage whenever it changes
+  // Load conversation from Firestore on initial render
   useEffect(() => {
-    if (!isClient) return;
-    try {
-        const historyToSave = [currentConversation, ...conversationHistory].filter(c => c.length > 0);
-        localStorage.setItem(CONVERSATION_HISTORY_KEY, JSON.stringify(historyToSave));
-    } catch (error) {
-        console.error("Failed to save conversation history to localStorage", error);
+    if (!isClient || !user) return;
+    
+    const fetchHistory = async () => {
+      const userDocRef = getUserDocRef();
+      if (!userDocRef) return;
+      try {
+        const docSnap = await getDoc(userDocRef);
+        if (docSnap.exists() && docSnap.data().conversations) {
+          const allConversations = docSnap.data().conversations;
+          if (Array.isArray(allConversations) && allConversations.length > 0) {
+            setCurrentConversation(allConversations[0] || []);
+            setConversationHistory(allConversations.slice(1));
+          } else {
+             setCurrentConversation([{
+                role: 'model',
+                content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || ''),
+                agentMode: 'wise'
+            }]);
+          }
+        } else {
+           setCurrentConversation([{
+                role: 'model',
+                content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || ''),
+                agentMode: 'wise'
+            }]);
+        }
+      } catch (error) {
+        console.error("Failed to load conversation history from Firestore", error);
+      }
+    };
+    fetchHistory();
+  }, [isClient, user, t, getUserDocRef]);
+
+  // Save conversation to Firestore whenever it changes
+  useEffect(() => {
+    if (!isClient || !user) return;
+    
+    const saveHistory = async () => {
+        const userDocRef = getUserDocRef();
+        if (!userDocRef) return;
+        try {
+            const historyToSave = [currentConversation, ...conversationHistory].filter(c => c.length > 0);
+            if (historyToSave.length > 0) {
+              await setDoc(userDocRef, { conversations: historyToSave }, { merge: true });
+            }
+        } catch (error) {
+            console.error("Failed to save conversation history to Firestore", error);
+        }
     }
-  }, [currentConversation, conversationHistory, isClient]);
+    // Debounce saving to avoid too many writes
+    const timer = setTimeout(saveHistory, 1000);
+    return () => clearTimeout(timer);
+  }, [currentConversation, conversationHistory, isClient, user, getUserDocRef]);
 
   const form = useForm<AssistantFormValues>({
     resolver: zodResolver(assistantSchema),
@@ -341,6 +367,10 @@ export function ConseilPanel() {
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
+    const nameParts = name.split(' ');
+    if (nameParts.length > 1) {
+        return (nameParts[0].charAt(0) + nameParts[1].charAt(0)).toUpperCase();
+    }
     return name.charAt(0).toUpperCase();
   }
 
