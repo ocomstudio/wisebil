@@ -1,94 +1,88 @@
 // src/context/auth-context.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface User {
-  fullName: string;
-  email: string;
-  phone: string;
-  avatar: string; // Data URL for the image
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  avatar: string | null;
 }
 
 interface AuthContextType {
-  isAuthenticated: boolean;
-  isLoading: boolean;
   user: User | null;
-  login: (userData?: Partial<User>) => void;
-  logout: () => void;
-  updateUser: (newUserData: Partial<User>) => void;
+  firebaseUser: FirebaseUser | null;
+  isLoading: boolean;
+  loginWithEmail: typeof signInWithEmailAndPassword;
+  signupWithEmail: typeof createUserWithEmailAndPassword;
+  loginWithGoogle: () => Promise<any>;
+  logout: () => Promise<void>;
+  updateUser: (newUserData: Partial<User>) => void; // This will need to be implemented with Firestore later
 }
-
-const AUTH_STORAGE_KEY = 'wisebil-auth';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const storedAuth = sessionStorage.getItem(AUTH_STORAGE_KEY);
-      if (storedAuth) {
-        const { isAuthenticated, user } = JSON.parse(storedAuth);
-        if (isAuthenticated && user) {
-          setIsAuthenticated(true);
-          setUser(user);
-        }
+    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+      if (fbUser) {
+        setFirebaseUser(fbUser);
+        // In a real app, you would fetch profile data from Firestore here
+        setUser({
+          uid: fbUser.uid,
+          email: fbUser.email,
+          displayName: fbUser.displayName || 'Wisebil User',
+          avatar: fbUser.photoURL
+        });
+      } else {
+        setFirebaseUser(null);
+        setUser(null);
       }
-    } catch (error) {
-        console.error("Could not access sessionStorage:", error);
-    } finally {
-        setIsLoading(false);
-    }
-  }, []);
+      setIsLoading(false);
+    });
 
-  const saveToSession = (data: {isAuthenticated: boolean, user: User | null}) => {
-    try {
-        sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data));
-    } catch (error) {
-        console.error("Could not access sessionStorage:", error);
-    }
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
+  
+  const loginWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    return signInWithPopup(auth, provider);
   }
 
-  const login = useCallback((userData: Partial<User> = {}) => {
-    // Create a generic user object. Real data should be fetched from a secure backend.
-    const newUser: User = {
-        fullName: userData.fullName || "Utilisateur",
-        email: userData.email || "",
-        phone: userData.phone || "",
-        avatar: userData.avatar || `https://placehold.co/80x80.png`,
-    }
-    setIsAuthenticated(true);
-    setUser(newUser);
-    saveToSession({ isAuthenticated: true, user: newUser });
-  }, []);
+  const logout = () => signOut(auth);
 
-  const logout = () => {
-    try {
-        sessionStorage.removeItem(AUTH_STORAGE_KEY);
-        setIsAuthenticated(false);
-        setUser(null);
-    } catch (error) {
-        console.error("Could not access sessionStorage:", error);
+  const updateUser = (newUserData: Partial<User>) => {
+    // This will be implemented with Firestore in the next step.
+    // For now, we can update the local state for visual feedback.
+    if(user){
+      setUser(prev => prev ? {...prev, ...newUserData} : null);
     }
+    console.log("User data update requested. Firestore integration needed.", newUserData);
+  };
+  
+  const value = {
+    user,
+    firebaseUser,
+    isLoading,
+    loginWithEmail: signInWithEmailAndPassword.bind(null, auth),
+    signupWithEmail: createUserWithEmailAndPassword.bind(null, auth),
+    loginWithGoogle,
+    logout,
+    updateUser,
   };
 
-  const updateUser = useCallback((newUserData: Partial<User>) => {
-    setUser(currentUser => {
-        if (!currentUser) return null;
-        const updatedUser = { ...currentUser, ...newUserData };
-        saveToSession({ isAuthenticated: true, user: updatedUser });
-        return updatedUser;
-    });
-  }, []);
-
-
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, login, logout, updateUser }}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {isLoading ? <Skeleton className="h-screen w-screen" /> : children}
     </AuthContext.Provider>
   );
 };

@@ -6,6 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useState } from "react";
+import { updateProfile } from "firebase/auth";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,13 +25,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from "@/context/auth-context";
 import { useLocale } from "@/context/locale-context";
+import { Loader2 } from "lucide-react";
+import { FirebaseError } from "firebase/app";
 
 
 export default function SignupPage() {
   const { t } = useLocale();
   const { toast } = useToast();
   const router = useRouter();
-  const { login } = useAuth();
+  const { signupWithEmail, loginWithGoogle } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   const signupSchema = z.object({
     fullName: z.string().min(2, t('signup_fullname_error')),
@@ -60,16 +65,64 @@ export default function SignupPage() {
     },
   });
 
-  const onSubmit = (data: SignupFormValues) => {
-    console.log("Signup data:", data);
-    // Pass user data to the context on login
-    login(data);
+  const handleAuthError = (error: any) => {
+    let description = t('An unknown error occurred.');
+    if (error instanceof FirebaseError) {
+        switch (error.code) {
+            case 'auth/email-already-in-use':
+                description = t('This email is already in use by another account.');
+                break;
+            case 'auth/weak-password':
+                description = t('The password is too weak. Please choose a stronger password.');
+                break;
+            default:
+                description = error.message;
+        }
+    }
     toast({
-      title: t('signup_success_title'),
-      description: t('signup_success_desc'),
+        variant: "destructive",
+        title: t('Signup failed'),
+        description,
     });
-    router.push("/auth/onboarding");
+  }
+
+  const onSubmit = async (data: SignupFormValues) => {
+    setIsLoading(true);
+    try {
+      const userCredential = await signupWithEmail(data.email, data.password);
+      
+      // Update the user's profile with the full name
+      await updateProfile(userCredential.user, {
+        displayName: data.fullName
+      });
+
+      toast({
+        title: t('signup_success_title'),
+        description: t('signup_success_desc'),
+      });
+      router.push("/auth/onboarding");
+    } catch (error) {
+      handleAuthError(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
+  
+  const onGoogleLogin = async () => {
+    setIsLoading(true);
+    try {
+      await loginWithGoogle();
+      toast({
+        title: t('login_success_title'),
+        description: t('welcome_back'),
+      });
+      router.push("/dashboard");
+    } catch (error) {
+      handleAuthError(error);
+    } finally {
+        setIsLoading(false);
+    }
+  }
 
   return (
     <>
@@ -167,14 +220,15 @@ export default function SignupPage() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading && <Loader2 className="animate-spin" />}
             {t('create_account_button')}
           </Button>
         </form>
       </Form>
       <Separator className="my-6" />
-      <Button variant="outline" className="w-full">
-        <FcGoogle className="mr-2 h-5 w-5" />
+      <Button variant="outline" className="w-full" onClick={onGoogleLogin} disabled={isLoading}>
+        {isLoading ? <Loader2 className="animate-spin" /> : <FcGoogle className="mr-2 h-5 w-5" />}
         {t('signup_with_google')}
       </Button>
       <p className="mt-6 text-center text-sm text-muted-foreground">

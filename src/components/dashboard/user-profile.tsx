@@ -25,16 +25,24 @@ export function UserProfile() {
   const { user, logout } = useAuth();
   const { t } = useLocale();
 
-  const handleLogout = () => {
-    logout();
-    toast({
-      title: t('logout_success_title'),
-      description: t('see_you_soon'),
-    });
-    router.push('/auth/login');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({
+        title: t('logout_success_title'),
+        description: t('see_you_soon'),
+      });
+      router.push('/auth/login');
+    } catch (error) {
+       toast({
+        variant: "destructive",
+        title: "Logout failed",
+        description: "An error occurred while logging out.",
+      });
+    }
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   }
@@ -44,15 +52,15 @@ export function UserProfile() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={user?.avatar} alt={user?.fullName || "User avatar"} data-ai-hint="man avatar" />
-            <AvatarFallback>{user ? getInitials(user.fullName) : 'U'}</AvatarFallback>
+            <AvatarImage src={user?.avatar || undefined} alt={user?.displayName || "User avatar"} data-ai-hint="man avatar" />
+            <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user?.fullName || t('user_name_placeholder')}</p>
+            <p className="text-sm font-medium leading-none">{user?.displayName || t('user_name_placeholder')}</p>
             <p className="text-xs leading-none text-muted-foreground">
               {user?.email || t('user_email_placeholder')}
             </p>

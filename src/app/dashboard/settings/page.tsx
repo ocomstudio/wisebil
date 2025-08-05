@@ -48,9 +48,8 @@ export default function SettingsPage() {
 
 
   const profileSchema = z.object({
-    fullName: z.string().min(2, t('fullname_error')),
+    displayName: z.string().min(2, t('fullname_error')),
     email: z.string().email(t('email_error')),
-    phone: z.string().min(9, t('phone_error')),
   });
 
   type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -58,18 +57,16 @@ export default function SettingsPage() {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      fullName: "",
+      displayName: "",
       email: "",
-      phone: "",
     },
   });
 
   useEffect(() => {
     if (user) {
         form.reset({
-            fullName: user.fullName,
-            email: user.email,
-            phone: user.phone,
+            displayName: user.displayName || '',
+            email: user.email || '',
         });
     }
   }, [user, form]);
@@ -117,12 +114,15 @@ export default function SettingsPage() {
     }
   };
 
-  const handleResetApp = () => {
-    // Clear all data
+  const handleResetApp = async () => {
+    // Clear local data
     resetTransactions();
     resetBudgets();
     resetSavings();
-    // This is handled in conseil-panel, but we can clear it here too for good measure
+    
+    // In a real app, you would also delete data from Firestore.
+    // This is a placeholder for that functionality.
+    
     localStorage.removeItem('wisebil-conversation-history');
 
     // Reset settings to default
@@ -138,7 +138,7 @@ export default function SettingsPage() {
     });
     
     // Log out and redirect
-    logout();
+    await logout();
     router.push('/auth/login');
   };
 
@@ -153,12 +153,14 @@ export default function SettingsPage() {
       reader.onloadend = () => {
         const base64String = reader.result as string;
         updateUser({ avatar: base64String });
+        // In a real app, you would upload this to Firebase Storage and update the user's photoURL.
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   }
 
@@ -180,8 +182,8 @@ export default function SettingsPage() {
               <div className="flex items-center gap-6">
                 <div className="relative">
                   <Avatar className="h-20 w-20">
-                    <AvatarImage src={user?.avatar} alt="User avatar" data-ai-hint="man avatar"/>
-                    <AvatarFallback>{user ? getInitials(user.fullName) : 'U'}</AvatarFallback>
+                    <AvatarImage src={user?.avatar || undefined} alt="User avatar" data-ai-hint="man avatar"/>
+                    <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
                   </Avatar>
                   <Button size="icon" className="absolute bottom-0 right-0 rounded-full h-7 w-7" type="button" onClick={handleAvatarClick}>
                     <Camera className="h-4 w-4" />
@@ -197,7 +199,7 @@ export default function SettingsPage() {
                 <div className="flex-1">
                   <FormField
                     control={form.control}
-                    name="fullName"
+                    name="displayName"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t('fullname_label')}</FormLabel>
@@ -218,21 +220,7 @@ export default function SettingsPage() {
                   <FormItem>
                     <FormLabel>{t('email_label')}</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="votre@email.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('phone_number_label')}</FormLabel>
-                    <FormControl>
-                      <Input type="tel" placeholder="+221 77 123 45 67" {...field} />
+                      <Input type="email" placeholder="votre@email.com" {...field} readOnly />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
