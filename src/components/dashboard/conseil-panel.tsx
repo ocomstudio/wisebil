@@ -406,9 +406,9 @@ export function ConseilPanel() {
                 <ScrollArea className="h-32">
                   <div className='space-y-2 pr-2'>
                     {conversationHistory.map((convo, index) => (
-                      <div key={index} className="p-2 bg-muted/50 rounded-md text-sm flex justify-between items-center gap-2">
+                      <div key={index} className="grid grid-cols-[1fr_auto] items-center gap-2 p-2 bg-muted/50 rounded-md text-sm">
                         <span
-                          className="flex-grow cursor-pointer hover:text-primary overflow-hidden text-ellipsis whitespace-nowrap min-w-0"
+                          className="truncate cursor-pointer hover:text-primary"
                           onClick={() => {
                             setConversationHistory(prev => prev.filter((_, i) => i !== index));
                             if (currentConversation.length > 0) {
