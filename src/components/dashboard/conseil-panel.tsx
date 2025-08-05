@@ -55,6 +55,11 @@ interface Message {
 type Conversation = Message[];
 type AgentMode = 'wise' | 'agent';
 
+interface ConversationHistory {
+    current: Conversation;
+    history: Conversation[];
+}
+
 
 export function ConseilPanel() {
   const { t, locale, currency, formatCurrency } = useLocale();
@@ -94,17 +99,9 @@ export function ConseilPanel() {
       try {
         const docSnap = await getDoc(userDocRef);
         if (docSnap.exists() && docSnap.data().conversations) {
-          const allConversations = docSnap.data().conversations;
-          if (Array.isArray(allConversations) && allConversations.length > 0) {
-            setCurrentConversation(allConversations[0] || []);
-            setConversationHistory(allConversations.slice(1));
-          } else {
-             setCurrentConversation([{
-                role: 'model',
-                content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || ''),
-                agentMode: 'wise'
-            }]);
-          }
+          const conversationData = docSnap.data().conversations as ConversationHistory;
+          setCurrentConversation(conversationData.current || []);
+          setConversationHistory(conversationData.history || []);
         } else {
            setCurrentConversation([{
                 role: 'model',
@@ -121,16 +118,25 @@ export function ConseilPanel() {
 
   // Save conversation to Firestore whenever it changes
   useEffect(() => {
-    if (!isClient || !user) return;
+    if (!isClient || !user || !currentConversation) return;
     
     const saveHistory = async () => {
         const userDocRef = getUserDocRef();
         if (!userDocRef) return;
+        
         try {
-            const historyToSave = [currentConversation, ...conversationHistory].filter(c => c.length > 0);
-            if (historyToSave.length > 0) {
-              await setDoc(userDocRef, { conversations: historyToSave }, { merge: true });
+            // Prevent saving an empty initial conversation
+            const isInitialWelcome = currentConversation.length === 1 && currentConversation[0].role === 'model';
+            if (isInitialWelcome && conversationHistory.length === 0) {
+                return;
             }
+
+            const historyToSave: ConversationHistory = {
+                current: currentConversation,
+                history: conversationHistory
+            };
+            
+            await setDoc(userDocRef, { conversations: historyToSave }, { merge: true });
         } catch (error) {
             console.error("Failed to save conversation history to Firestore", error);
         }
@@ -231,7 +237,7 @@ export function ConseilPanel() {
 
 
   const handleNewConversation = () => {
-    if (currentConversation.length > 0 && !currentConversation.every(m => m.isError)) {
+    if (currentConversation.length > 0 && !(currentConversation.length === 1 && currentConversation[0].role === 'model')) {
       setConversationHistory(prev => [currentConversation, ...prev].filter(c => c.length > 0));
     }
     setCurrentConversation([{
@@ -445,10 +451,14 @@ export function ConseilPanel() {
                         <span
                           className="truncate cursor-pointer hover:text-primary"
                           onClick={() => {
-                            setConversationHistory(prev => prev.filter((_, i) => i !== index));
-                            if (currentConversation.length > 0) {
-                              setConversationHistory(prev => [currentConversation, ...prev]);
-                            }
+                            setConversationHistory(prev => {
+                                const newHistory = [...prev];
+                                newHistory.splice(index, 1);
+                                if (currentConversation && currentConversation.length > 1) {
+                                    newHistory.unshift(currentConversation);
+                                }
+                                return newHistory;
+                            });
                             setCurrentConversation(convo);
                           }}
                         >
