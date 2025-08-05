@@ -10,5 +10,6 @@ export const openai = new OpenAI({
   defaultHeaders: {
     "HTTP-Referer": "https://wisebil.com", 
     "X-Title": "Wisebil",
+    "Authorization": `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY}`,
   },
 });
