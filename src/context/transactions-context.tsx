@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLocale } from './locale-context';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField, onSnapshot, getDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField, onSnapshot } from 'firebase/firestore';
 
 interface TransactionsContextType {
   transactions: Transaction[];
@@ -64,7 +64,7 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
     });
 
-    return () => unsubscribe(); // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, [user, getUserDocRef, toast, t]);
 
   const addTransaction = useCallback(async (transaction: Transaction) => {
@@ -76,39 +76,32 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
     } catch(error) {
        console.error("Failed to add transaction to Firestore", error);
        toast({ variant: "destructive", title: t('error_title'), description: "Failed to save transaction." });
+       throw error;
     }
   }, [getUserDocRef, toast, t]);
   
   const updateTransaction = useCallback(async (id: string, updatedTransactionData: Partial<Omit<Transaction, 'id' | 'type'>>) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) return;
-  
-    // Use a local copy of transactions from state to avoid stale data
+
     const currentTransactions = [...transactions];
     const transactionIndex = currentTransactions.findIndex(t => t.id === id);
-  
+
     if (transactionIndex === -1) {
       console.error("Transaction to update not found");
+      toast({ variant: "destructive", title: t('error_title'), description: t('transaction_not_found') });
       return;
     }
-  
-    // Create the fully updated transaction object
-    const updatedTransaction = { 
-      ...currentTransactions[transactionIndex], 
-      ...updatedTransactionData 
-    };
-  
-    // Update the local array
+
+    const updatedTransaction = { ...currentTransactions[transactionIndex], ...updatedTransactionData };
     currentTransactions[transactionIndex] = updatedTransaction;
-  
+
     try {
-      // Overwrite the entire array in Firestore with the updated version
       await setDoc(userDocRef, { transactions: currentTransactions }, { merge: true });
     } catch (error) {
       console.error("Failed to update transaction in Firestore", error);
       toast({ variant: "destructive", title: t('error_title'), description: t('transaction_update_error_desc') });
-      // Revert local state on failure
-      setTransactions(transactions);
+      throw error;
     }
   }, [transactions, getUserDocRef, toast, t]);
 
@@ -130,6 +123,7 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
     } catch(error) {
       console.error("Failed to delete transaction from Firestore", error);
       toast({ variant: "destructive", title: t('error_title'), description: "Failed to delete transaction." });
+      throw error;
     }
   }, [transactions, getUserDocRef, toast, t]);
 

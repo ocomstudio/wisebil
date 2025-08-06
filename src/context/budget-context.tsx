@@ -6,7 +6,7 @@ import { Budget } from '@/types/budget';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField, onSnapshot } from 'firebase/firestore';
 
 interface BudgetContextType {
   budgets: Budget[];
@@ -67,6 +67,7 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
     } catch(e) {
       console.error("Failed to add budget to Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to save budget." });
+      throw e;
     }
   }, [getUserDocRef, toast]);
   
@@ -86,6 +87,7 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
     } catch (e) {
       console.error("Failed to delete budget from Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to delete budget." });
+      throw e;
     }
   }, [budgets, getUserDocRef, toast]);
 

@@ -70,6 +70,7 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     } catch(e) {
       console.error("Failed to add savings goal to Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to save goal." });
+      throw e;
     }
   }, [getUserDocRef, toast]);
 
@@ -89,32 +90,31 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     } catch(e) {
       console.error("Failed to delete savings goal from Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to delete goal." });
+      throw e;
     }
   }, [savingsGoals, getUserDocRef, toast, t]);
 
   const addFunds = useCallback(async (idOrName: string, amount: number) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) return;
-
+  
     const currentGoals = [...savingsGoals];
     const goalIndex = currentGoals.findIndex(g => g.id === idOrName || g.name === idOrName);
-
+  
     if (goalIndex === -1) {
-      console.error("Goal to update not found");
       toast({ variant: "destructive", title: "Error", description: "Savings goal not found." });
+      console.error("Goal to update not found: ", idOrName);
       return;
     }
     
     const updatedGoal = { 
-        ...currentGoals[goalIndex], 
-        currentAmount: currentGoals[goalIndex].currentAmount + amount 
+      ...currentGoals[goalIndex], 
+      currentAmount: (currentGoals[goalIndex].currentAmount || 0) + amount 
     };
     currentGoals[goalIndex] = updatedGoal;
     
     try {
-      // Overwrite the entire array in Firestore with the updated version
       await setDoc(userDocRef, { savingsGoals: currentGoals }, { merge: true });
-      
       toast({
         title: t('funds_added_title'),
         description: t('funds_added_desc', { amount: formatCurrency(amount), goalName: updatedGoal.name }),
@@ -122,6 +122,7 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     } catch(e) {
       console.error("Failed to add funds in Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to add funds." });
+      throw e;
     }
   }, [savingsGoals, getUserDocRef, toast, t, formatCurrency]);
 
