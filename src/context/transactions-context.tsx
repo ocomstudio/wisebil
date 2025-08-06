@@ -7,12 +7,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useLocale } from './locale-context';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField, onSnapshot, getDoc } from 'firebase/firestore';
 
 interface TransactionsContextType {
   transactions: Transaction[];
   addTransaction: (transaction: Transaction) => Promise<void>;
-  updateTransaction: (id: string, updatedTransaction: Transaction) => Promise<void>;
+  updateTransaction: (id: string, updatedTransactionData: Partial<Omit<Transaction, 'id' | 'type'>>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   getTransactionById: (id: string) => Transaction | undefined;
   resetTransactions: () => Promise<void>;
@@ -79,23 +79,36 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [getUserDocRef, toast, t]);
   
-  const updateTransaction = useCallback(async (id: string, updatedTransaction: Transaction) => {
+  const updateTransaction = useCallback(async (id: string, updatedTransactionData: Partial<Omit<Transaction, 'id' | 'type'>>) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) return;
-
-    const oldTransaction = transactions.find(t => t.id === id);
-    if (!oldTransaction) return;
-
+  
+    // Use a local copy of transactions from state to avoid stale data
+    const currentTransactions = [...transactions];
+    const transactionIndex = currentTransactions.findIndex(t => t.id === id);
+  
+    if (transactionIndex === -1) {
+      console.error("Transaction to update not found");
+      return;
+    }
+  
+    // Create the fully updated transaction object
+    const updatedTransaction = { 
+      ...currentTransactions[transactionIndex], 
+      ...updatedTransactionData 
+    };
+  
+    // Update the local array
+    currentTransactions[transactionIndex] = updatedTransaction;
+  
     try {
-      await updateDoc(userDocRef, {
-        transactions: arrayRemove(oldTransaction)
-      });
-      await updateDoc(userDocRef, {
-        transactions: arrayUnion(updatedTransaction)
-      });
-    } catch(error) {
+      // Overwrite the entire array in Firestore with the updated version
+      await setDoc(userDocRef, { transactions: currentTransactions }, { merge: true });
+    } catch (error) {
       console.error("Failed to update transaction in Firestore", error);
-      toast({ variant: "destructive", title: t('error_title'), description: "Failed to update transaction." });
+      toast({ variant: "destructive", title: t('error_title'), description: t('transaction_update_error_desc') });
+      // Revert local state on failure
+      setTransactions(transactions);
     }
   }, [transactions, getUserDocRef, toast, t]);
 

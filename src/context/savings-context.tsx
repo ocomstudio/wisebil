@@ -96,18 +96,28 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) return;
 
-    const goalToUpdate = savingsGoals.find(g => g.id === idOrName || g.name === idOrName);
-    if (!goalToUpdate) return;
+    const currentGoals = [...savingsGoals];
+    const goalIndex = currentGoals.findIndex(g => g.id === idOrName || g.name === idOrName);
+
+    if (goalIndex === -1) {
+      console.error("Goal to update not found");
+      toast({ variant: "destructive", title: "Error", description: "Savings goal not found." });
+      return;
+    }
     
-    const updatedGoal = { ...goalToUpdate, currentAmount: goalToUpdate.currentAmount + amount };
+    const updatedGoal = { 
+        ...currentGoals[goalIndex], 
+        currentAmount: currentGoals[goalIndex].currentAmount + amount 
+    };
+    currentGoals[goalIndex] = updatedGoal;
     
     try {
-      await updateDoc(userDocRef, { savingsGoals: arrayRemove(goalToUpdate) });
-      await updateDoc(userDocRef, { savingsGoals: arrayUnion(updatedGoal) });
+      // Overwrite the entire array in Firestore with the updated version
+      await setDoc(userDocRef, { savingsGoals: currentGoals }, { merge: true });
       
       toast({
         title: t('funds_added_title'),
-        description: t('funds_added_desc', { amount: formatCurrency(amount) }),
+        description: t('funds_added_desc', { amount: formatCurrency(amount), goalName: updatedGoal.name }),
       });
     } catch(e) {
       console.error("Failed to add funds in Firestore", e);

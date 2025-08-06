@@ -43,22 +43,23 @@ export default function EditTransactionPage() {
   const handleSubmit = async (data: Omit<Transaction, 'id' | 'type'>) => {
     if (!initialData) return;
     setIsSubmitting(true);
-    try {
-      await updateTransaction(id, { ...initialData, ...data, id });
-      toast({
-        title: t('transaction_updated_title'),
-        description: t('transaction_updated_desc'),
-      });
-      router.push("/dashboard");
-    } catch (error) {
-       console.error("Failed to update transaction:", error);
-       toast({
-        variant: "destructive",
-        title: t('error_title'),
-        description: t('transaction_update_error_desc'),
-      });
-      setIsSubmitting(false);
-    }
+    
+    // Use the callback-based version of updateTransaction
+    await updateTransaction(id, {
+      description: data.description,
+      amount: data.amount,
+      category: data.category,
+      date: data.date
+    });
+
+    toast({
+      title: t('transaction_updated_title'),
+      description: t('transaction_updated_desc'),
+    });
+    router.push("/dashboard");
+
+    // No need for a catch block here as the context handles it
+    // No need to setIsSubmitting(false) as we navigate away
   };
 
   if (isLoading) {

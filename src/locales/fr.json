@@ -362,7 +362,7 @@
     "goal_deleted_title": "Objectif supprimé",
     "goal_deleted_desc": "Votre objectif d'épargne a été supprimé.",
     "funds_added_title": "Fonds ajoutés",
-    "funds_added_desc": "{{amount}} ont été ajoutés à votre objectif.",
+    "funds_added_desc": "{{amount}} ont été ajoutés à votre objectif '{{goalName}}'.",
     "summary_generation_error": "Impossible de générer le résumé financier.",
     "advice_generation_error": "Impossible de générer des conseils financiers.",
     "monthly_summary_title": "Résumé mensuel",

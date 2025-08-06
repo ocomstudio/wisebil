@@ -362,7 +362,7 @@
     "goal_deleted_title": "Goal Deleted",
     "goal_deleted_desc": "Your savings goal has been deleted.",
     "funds_added_title": "Funds Added",
-    "funds_added_desc": "{{amount}} has been added to your goal.",
+    "funds_added_desc": "{{amount}} has been added to your '{{goalName}}' goal.",
     "summary_generation_error": "Could not generate financial summary.",
     "advice_generation_error": "Could not generate financial advice.",
     "monthly_summary_title": "Monthly Summary",
