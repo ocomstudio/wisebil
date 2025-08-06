@@ -68,13 +68,16 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) return;
     
+    // Optimistic UI update
+    setTransactions(prev => [...prev, transaction].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    
     try {
-      // Use setDoc with merge to create the document if it doesn't exist
       await setDoc(userDocRef, { transactions: arrayUnion(transaction) }, { merge: true });
-      setTransactions(prev => [...prev, transaction].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     } catch(error) {
        console.error("Failed to add transaction to Firestore", error);
        toast({ variant: "destructive", title: t('error_title'), description: "Failed to save transaction." });
+       // Rollback optimistic update
+       setTransactions(prev => prev.filter(t => t.id !== transaction.id));
     }
   }, [getUserDocRef, toast, t]);
   

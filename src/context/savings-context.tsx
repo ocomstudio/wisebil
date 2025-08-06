@@ -63,12 +63,15 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) return;
 
+    setSavingsGoals(prev => [...prev, goal]);
+
     try {
       await setDoc(userDocRef, { savingsGoals: arrayUnion(goal) }, { merge: true });
-      setSavingsGoals(prev => [...prev, goal]);
     } catch(e) {
       console.error("Failed to add savings goal to Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to save goal." });
+      // Rollback
+      setSavingsGoals(prev => prev.filter(g => g.id !== goal.id));
     }
   }, [getUserDocRef, toast]);
 
@@ -101,10 +104,14 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     
     const updatedGoal = { ...goalToUpdate, currentAmount: goalToUpdate.currentAmount + amount };
 
+    // Optimistic update
+    setSavingsGoals(prev => prev.map(g => g.id === goalToUpdate.id ? updatedGoal : g));
+    
     try {
+      // Perform the update in Firestore
       await updateDoc(userDocRef, { savingsGoals: arrayRemove(goalToUpdate) });
       await updateDoc(userDocRef, { savingsGoals: arrayUnion(updatedGoal) });
-      setSavingsGoals(prev => prev.map(g => g.id === goalToUpdate.id ? updatedGoal : g));
+      
       toast({
         title: t('funds_added_title'),
         description: t('funds_added_desc', { amount: formatCurrency(amount) }),
@@ -112,6 +119,8 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     } catch(e) {
       console.error("Failed to add funds in Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to add funds." });
+      // Rollback on error
+      setSavingsGoals(prev => prev.map(g => g.id === goalToUpdate.id ? goalToUpdate : g));
     }
   }, [savingsGoals, getUserDocRef, toast, t, formatCurrency]);
 

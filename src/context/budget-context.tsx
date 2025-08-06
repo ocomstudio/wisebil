@@ -59,13 +59,16 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
   const addBudget = useCallback(async (budget: Budget) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) return;
+    
+    setBudgets(prev => [...prev, budget]);
 
     try {
       await setDoc(userDocRef, { budgets: arrayUnion(budget) }, { merge: true });
-      setBudgets(prev => [...prev, budget]);
     } catch(e) {
       console.error("Failed to add budget to Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to save budget." });
+      // Rollback
+      setBudgets(prev => prev.filter(b => b.id !== budget.id));
     }
   }, [getUserDocRef, toast]);
   
