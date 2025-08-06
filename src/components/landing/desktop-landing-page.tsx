@@ -3,7 +3,6 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/common/logo';
@@ -101,15 +100,6 @@ export default function DesktopLandingPage() {
         }
     ]
 
-    const sectionVariants = {
-      hidden: { opacity: 0, y: 50 },
-      visible: { 
-        opacity: 1, 
-        y: 0, 
-        transition: { duration: 0.6, ease: "easeOut" } 
-      },
-    };
-
     const pricing = {
         premium: { XOF: 3000 },
         business: { XOF: 9900 },
@@ -164,11 +154,8 @@ export default function DesktopLandingPage() {
       </header>
 
       <main className="flex-1">
-        <motion.section 
+        <section 
           className="w-full py-20 md:py-32 lg:py-40 relative overflow-hidden flex justify-center"
-          initial="hidden"
-          animate="visible"
-          variants={sectionVariants}
         >
              <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-primary/5 z-0"></div>
              <div className="w-full max-w-7xl px-4 md:px-6 z-10 relative">
@@ -191,10 +178,8 @@ export default function DesktopLandingPage() {
                             </Button>
                         </div>
                     </div>
-                     <motion.div
+                     <div
                         className="relative"
-                        animate={{ y: [0, -10, 0] }}
-                        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                     >
                         <div className="absolute -inset-4 bg-primary/20 rounded-full blur-3xl opacity-50"></div>
                         <Image
@@ -205,18 +190,14 @@ export default function DesktopLandingPage() {
                             data-ai-hint="finance app mobile"
                             className="mx-auto aspect-square overflow-hidden rounded-2xl object-contain sm:w-full transform-gpu shadow-2xl shadow-primary/10"
                         />
-                    </motion.div>
+                    </div>
                 </div>
             </div>
-        </motion.section>
+        </section>
 
-        <motion.section 
+        <section 
           id="features" 
           className="w-full py-12 md:py-24 lg:py-32 bg-secondary/30 flex justify-center"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={sectionVariants}
         >
           <div className="w-full max-w-7xl px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
@@ -234,12 +215,8 @@ export default function DesktopLandingPage() {
             </div>
             <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 lg:grid-cols-3 mt-12">
               {features.map((feature, i) => (
-                <motion.div
+                <div
                     key={feature.title}
-                    custom={i}
-                    initial={{ opacity: 0, y: 50 }}
-                    whileInView={{ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.5 } }}
-                    viewport={{ once: true, amount: 0.5 }}
                 >
                     <Card className="text-left bg-card/50 backdrop-blur-sm border-border/50 p-4 h-full transform-gpu transition-transform hover:-translate-y-2 hover:shadow-primary/20 shadow-xl">
                         <CardHeader className="p-2">
@@ -252,19 +229,15 @@ export default function DesktopLandingPage() {
                             <p className="text-muted-foreground text-sm">{feature.description}</p>
                         </CardContent>
                     </Card>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
-        </motion.section>
+        </section>
         
-        <motion.section 
+        <section 
           id="pricing" 
           className="w-full py-12 md:py-24 lg:py-32 flex justify-center"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={sectionVariants}
         >
             <div className="w-full max-w-7xl px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
@@ -342,15 +315,11 @@ export default function DesktopLandingPage() {
                     </Card>
                 </div>
             </div>
-        </motion.section>
+        </section>
 
-        <motion.section 
+        <section 
           id="testimonials" 
           className="w-full py-12 md:py-24 lg:py-32 bg-secondary/30 flex justify-center"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={sectionVariants}
         >
             <div className="w-full max-w-7xl px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
@@ -381,15 +350,11 @@ export default function DesktopLandingPage() {
                     ))}
                 </div>
             </div>
-        </motion.section>
+        </section>
 
-        <motion.section 
+        <section 
           id="faq" 
           className="w-full py-12 md:py-24 lg:py-32 flex justify-center"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={sectionVariants}
         >
             <div className="w-full max-w-7xl px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
@@ -413,14 +378,10 @@ export default function DesktopLandingPage() {
                     </Accordion>
                 </div>
             </div>
-        </motion.section>
+        </section>
 
-        <motion.section 
+        <section 
           className="w-full py-12 md:py-24 lg:py-32 bg-primary text-primary-foreground flex justify-center"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={sectionVariants}
         >
             <div className="w-full max-w-7xl px-4 md:px-6 text-center">
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">{t('cta_title')}</h2>
@@ -440,7 +401,7 @@ export default function DesktopLandingPage() {
                    </Button>
                 </div>
             </div>
-        </motion.section>
+        </section>
 
       </main>
 
