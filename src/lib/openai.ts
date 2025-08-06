@@ -8,8 +8,7 @@ export const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
   apiKey: process.env.NEXT_PUBLIC_OPENROUTER_API_KEY || '',
   defaultHeaders: {
-    "HTTP-Referer": "https://wisebil.com", 
-    "X-Title": "Wisebil",
-    "Authorization": `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY}`,
+    "HTTP-Referer": "https://wisebil.com", // Replace with your actual site URL in production
+    "X-Title": "Wisebil", // Replace with your actual app name in production
   },
 });
