@@ -19,29 +19,31 @@ export default function AddIncomePage() {
   const router = useRouter();
   const { addTransaction } = useTransactions();
 
-  const handleSubmit = async (data: Omit<Transaction, 'id' | 'type'>) => {
+  const handleSubmit = (data: Omit<Transaction, 'id' | 'type'>) => {
     setIsSubmitting(true);
-    try {
-      const newTransaction: Transaction = {
-        id: new Date().toISOString(),
-        type: 'income',
-        ...data
-      };
-      await addTransaction(newTransaction);
-      toast({
-        title: t('income_added_title'),
-        description: t('income_added_desc', { incomeDesc: data.description }),
-      });
-      router.push("/dashboard");
-    } catch (error) {
+    
+    const newTransaction: Transaction = {
+      id: new Date().toISOString(),
+      type: 'income',
+      ...data
+    };
+
+    // Optimistic UI update
+    toast({
+      title: t('income_added_title'),
+      description: t('income_added_desc', { incomeDesc: data.description }),
+    });
+    router.push("/dashboard");
+
+    // Sync in background
+    addTransaction(newTransaction).catch(error => {
        console.error("Failed to add income:", error);
        toast({
         variant: "destructive",
         title: t('error_title'),
         description: t('income_add_error_desc'),
       });
-      setIsSubmitting(false);
-    }
+    });
   };
 
   return (

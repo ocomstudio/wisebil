@@ -19,29 +19,34 @@ export default function AddExpensePage() {
   const router = useRouter();
   const { addTransaction } = useTransactions();
 
-  const handleSubmit = async (data: Omit<Transaction, 'id' | 'type'>) => {
+  const handleSubmit = (data: Omit<Transaction, 'id' | 'type'>) => {
     setIsSubmitting(true);
-    try {
-      const newTransaction: Transaction = {
-        id: new Date().toISOString(),
-        type: 'expense',
-        ...data
-      };
-      await addTransaction(newTransaction);
+    
+    const newTransaction: Transaction = {
+      id: new Date().toISOString(),
+      type: 'expense',
+      ...data
+    };
+    
+    // Optimistic UI update: navigate away and show toast immediately.
+    toast({
+      title: t('expense_added_title'),
+      description: t('expense_added_desc', { expenseDesc: data.description }),
+    });
+    router.push("/dashboard");
+
+    // Send to server in the background.
+    addTransaction(newTransaction).catch(error => {
+      console.error("Failed to add expense:", error);
+      // Optionally, handle the error more gracefully, e.g., by showing a persistent error message
+      // or providing a "retry" option. For now, a toast is sufficient.
       toast({
-        title: t('expense_added_title'),
-        description: t('expense_added_desc', { expenseDesc: data.description }),
-      });
-      router.push("/dashboard");
-    } catch (error) {
-       console.error("Failed to add expense:", error);
-       toast({
         variant: "destructive",
         title: t('error_title'),
         description: t('expense_add_error_desc'),
       });
-      setIsSubmitting(false);
-    }
+      // We don't need to `setIsSubmitting(false)` because we've already navigated away.
+    });
   };
 
   return (
