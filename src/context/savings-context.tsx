@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLocale } from './locale-context';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField, onSnapshot } from 'firebase/firestore';
 
 interface SavingsContextType {
   savingsGoals: SavingsGoal[];
@@ -33,45 +33,43 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   useEffect(() => {
-    const fetchSavingsGoals = async () => {
-      if (!user) {
-        setSavingsGoals([]);
+    if (!user) {
+      setSavingsGoals([]);
+      setIsLoading(false);
+      return;
+    }
+
+    const userDocRef = getUserDocRef();
+    if (!userDocRef) {
         setIsLoading(false);
         return;
+    }
+
+    setIsLoading(true);
+    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+      if (docSnap.exists() && docSnap.data().savingsGoals) {
+        setSavingsGoals(docSnap.data().savingsGoals);
+      } else {
+        setSavingsGoals([]);
       }
-      setIsLoading(true);
-      const userDocRef = getUserDocRef();
-      if (userDocRef) {
-        try {
-          const docSnap = await getDoc(userDocRef);
-          if (docSnap.exists() && docSnap.data().savingsGoals) {
-            setSavingsGoals(docSnap.data().savingsGoals);
-          } else {
-            setSavingsGoals([]);
-          }
-        } catch (error) {
-          console.error("Failed to load savings goals from Firestore", error);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-    fetchSavingsGoals();
+      setIsLoading(false);
+    }, (error) => {
+        console.error("Failed to listen to savings goals from Firestore", error);
+        setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, [user, getUserDocRef]);
 
   const addSavingsGoal = useCallback(async (goal: SavingsGoal) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) return;
 
-    setSavingsGoals(prev => [...prev, goal]);
-
     try {
       await setDoc(userDocRef, { savingsGoals: arrayUnion(goal) }, { merge: true });
     } catch(e) {
       console.error("Failed to add savings goal to Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to save goal." });
-      // Rollback
-      setSavingsGoals(prev => prev.filter(g => g.id !== goal.id));
     }
   }, [getUserDocRef, toast]);
 
@@ -82,8 +80,6 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     const goalToDelete = savingsGoals.find(g => g.id === id);
     if (!goalToDelete) return;
 
-    setSavingsGoals(prev => prev.filter(g => g.id !== id));
-
     try {
       await updateDoc(userDocRef, { savingsGoals: arrayRemove(goalToDelete) });
       toast({
@@ -93,7 +89,6 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     } catch(e) {
       console.error("Failed to delete savings goal from Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to delete goal." });
-      setSavingsGoals(prev => [...prev, goalToDelete]);
     }
   }, [savingsGoals, getUserDocRef, toast, t]);
 
@@ -105,12 +100,8 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     if (!goalToUpdate) return;
     
     const updatedGoal = { ...goalToUpdate, currentAmount: goalToUpdate.currentAmount + amount };
-
-    // Optimistic update
-    setSavingsGoals(prev => prev.map(g => g.id === goalToUpdate.id ? updatedGoal : g));
     
     try {
-      // Perform the update in Firestore
       await updateDoc(userDocRef, { savingsGoals: arrayRemove(goalToUpdate) });
       await updateDoc(userDocRef, { savingsGoals: arrayUnion(updatedGoal) });
       
@@ -121,8 +112,6 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     } catch(e) {
       console.error("Failed to add funds in Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to add funds." });
-      // Rollback on error
-      setSavingsGoals(prev => prev.map(g => g.id === goalToUpdate.id ? goalToUpdate : g));
     }
   }, [savingsGoals, getUserDocRef, toast, t, formatCurrency]);
 
@@ -131,7 +120,6 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     if (!userDocRef) return;
     try {
       await updateDoc(userDocRef, { savingsGoals: deleteField() });
-      setSavingsGoals([]);
     } catch(e) {
       console.error("Could not reset savings in Firestore", e);
       throw e;
