@@ -1,4 +1,3 @@
-// src/lib/ai-service.ts
 'use server';
 
 import { openai } from './openai';
@@ -19,7 +18,6 @@ interface GenerateOptions {
 const AI_MODELS = [
   'mistralai/mistral-7b-instruct:free',
   'google/gemma-7b-it:free',
-  'qwen/qwen-72b-chat',
   'openai/gpt-3.5-turbo',
 ];
 
@@ -42,7 +40,7 @@ export async function generateWithFallback(options: GenerateOptions): Promise<st
         model: model,
         messages: apiMessages,
         temperature: 0.2, // Lower temperature for more predictable, structured output
-        max_tokens: 1024,
+        max_tokens: 1500,
         response_format: isJson ? { type: "json_object" } : { type: "text" },
       });
 
@@ -55,14 +53,11 @@ export async function generateWithFallback(options: GenerateOptions): Promise<st
 
     } catch (error) {
       console.warn(`Model ${model} failed with error:`, error instanceof Error ? error.message : String(error));
-      // If the error is a 402 (payment required) or 404 (not found), we continue to the next model.
-      if (error instanceof Error && (error.message.includes('402') || error.message.includes('404'))) {
-        continue; // Try the next model
-      }
-      // For other errors, we might want to throw immediately, but for robustness, we'll try the next model.
+      // For any error, we'll try the next model. This provides maximum resilience.
+      continue;
     }
   }
 
-  // If all models fail, throw an error.
+  // If all models fail, throw a specific, user-friendly error.
   throw new Error('All AI models failed to generate a response.');
 }

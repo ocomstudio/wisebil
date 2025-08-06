@@ -1,4 +1,3 @@
-// src/ai/flows/expense-assistant.ts
 'use server';
 
 import { generateWithFallback, type Message } from '@/lib/ai-service';
