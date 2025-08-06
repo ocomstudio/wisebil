@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLocale } from './locale-context';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField } from 'firebase/firestore';
 
 interface SavingsContextType {
   savingsGoals: SavingsGoal[];
@@ -82,9 +82,10 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     const goalToDelete = savingsGoals.find(g => g.id === id);
     if (!goalToDelete) return;
 
+    setSavingsGoals(prev => prev.filter(g => g.id !== id));
+
     try {
       await updateDoc(userDocRef, { savingsGoals: arrayRemove(goalToDelete) });
-      setSavingsGoals(prev => prev.filter(g => g.id !== id));
       toast({
         title: t('goal_deleted_title'),
         description: t('goal_deleted_desc'),
@@ -92,6 +93,7 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     } catch(e) {
       console.error("Failed to delete savings goal from Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to delete goal." });
+      setSavingsGoals(prev => [...prev, goalToDelete]);
     }
   }, [savingsGoals, getUserDocRef, toast, t]);
 
@@ -128,10 +130,11 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) return;
     try {
-      await updateDoc(userDocRef, { savingsGoals: [] });
+      await updateDoc(userDocRef, { savingsGoals: deleteField() });
       setSavingsGoals([]);
     } catch(e) {
       console.error("Could not reset savings in Firestore", e);
+      throw e;
     }
   };
 

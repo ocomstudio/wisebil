@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLocale } from './locale-context';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField } from 'firebase/firestore';
 
 interface TransactionsContextType {
   transactions: Transaction[];
@@ -88,6 +88,8 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
     const oldTransaction = transactions.find(t => t.id === id);
     if (!oldTransaction) return;
 
+    setTransactions(prev => prev.map(t => t.id === id ? updatedTransaction : t).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+
     try {
       await updateDoc(userDocRef, {
         transactions: arrayRemove(oldTransaction)
@@ -95,10 +97,10 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
       await updateDoc(userDocRef, {
         transactions: arrayUnion(updatedTransaction)
       });
-      setTransactions(prev => prev.map(t => t.id === id ? updatedTransaction : t).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     } catch(error) {
       console.error("Failed to update transaction in Firestore", error);
       toast({ variant: "destructive", title: t('error_title'), description: "Failed to update transaction." });
+      setTransactions(prev => prev.map(t => t.id === id ? oldTransaction : t).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     }
   }, [transactions, getUserDocRef, toast, t]);
 
@@ -110,17 +112,19 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
     const transactionToDelete = transactions.find(t => t.id === id);
     if (!transactionToDelete) return;
 
+    setTransactions(prev => prev.filter(t => t.id !== id));
+
     try {
       await updateDoc(userDocRef, {
         transactions: arrayRemove(transactionToDelete)
       });
-      setTransactions(prev => prev.filter(t => t.id !== id));
       toast({
           title: t('transaction_deleted_title'),
       });
     } catch(error) {
       console.error("Failed to delete transaction from Firestore", error);
       toast({ variant: "destructive", title: t('error_title'), description: "Failed to delete transaction." });
+      setTransactions(prev => [...prev, transactionToDelete].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     }
   }, [transactions, getUserDocRef, toast, t]);
 
@@ -132,10 +136,11 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) return;
     try {
-      await updateDoc(userDocRef, { transactions: [] });
+      await updateDoc(userDocRef, { transactions: deleteField() });
       setTransactions([]);
     } catch(e) {
       console.error("Could not reset transactions in Firestore", e)
+      throw e;
     }
   };
 

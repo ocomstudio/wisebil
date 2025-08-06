@@ -6,7 +6,7 @@ import { Budget } from '@/types/budget';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField } from 'firebase/firestore';
 
 interface BudgetContextType {
   budgets: Budget[];
@@ -79,9 +79,10 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
     const budgetToDelete = budgets.find(b => b.id === id);
     if (!budgetToDelete) return;
 
+    setBudgets(prev => prev.filter(b => b.id !== id));
+    
     try {
       await updateDoc(userDocRef, { budgets: arrayRemove(budgetToDelete) });
-      setBudgets(prev => prev.filter(b => b.id !== id));
       toast({
           title: "Budget supprimé",
           description: "Le budget a été supprimé avec succès.",
@@ -89,6 +90,8 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
     } catch (e) {
       console.error("Failed to delete budget from Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to delete budget." });
+      // Rollback
+      setBudgets(prev => [...prev, budgetToDelete]);
     }
   }, [budgets, getUserDocRef, toast]);
 
@@ -96,10 +99,11 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) return;
     try {
-      await updateDoc(userDocRef, { budgets: [] });
+      await updateDoc(userDocRef, { budgets: deleteField() });
       setBudgets([]);
     } catch(e) {
-        console.error("Could not reset budgets in Firestore", e)
+        console.error("Could not reset budgets in Firestore", e);
+        throw e;
     }
   };
 

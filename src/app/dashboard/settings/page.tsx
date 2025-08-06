@@ -115,32 +115,41 @@ export default function SettingsPage() {
   };
 
   const handleResetApp = async () => {
-    await Promise.all([
-      resetTransactions(),
-      resetBudgets(),
-      resetSavings()
-    ]);
-    
-    // In a real app, you would also delete data from Firestore.
-    // This is a placeholder for that functionality.
-    
-    localStorage.removeItem('wisebil-conversation-history');
-
-    // Reset settings to default
-    updateSettings({
-      isBalanceHidden: false,
-      isPinLockEnabled: false,
-      pin: null,
-    });
-    
-    toast({
-        title: t('reset_success_title'),
-        description: t('reset_success_desc')
-    });
-    
-    // Log out and redirect
-    await logout();
-    router.push('/auth/login');
+    try {
+      await Promise.all([
+        resetTransactions(),
+        resetBudgets(),
+        resetSavings()
+      ]);
+      
+      // In a real app, you would also delete data from Firestore.
+      // This is a placeholder for that functionality.
+      
+      localStorage.removeItem('wisebil-conversation-history');
+  
+      // Reset settings to default
+      updateSettings({
+        isBalanceHidden: false,
+        isPinLockEnabled: false,
+        pin: null,
+      });
+      
+      toast({
+          title: t('reset_success_title'),
+          description: t('reset_success_desc')
+      });
+      
+      // Log out and redirect
+      await logout();
+      router.push('/auth/login');
+    } catch (error) {
+      console.error("Failed to reset app:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to reset application data.",
+      });
+    }
   };
 
   const handleAvatarClick = () => {
