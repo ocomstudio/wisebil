@@ -37,7 +37,7 @@ function AuthLayoutContent({ children }: { children: React.ReactNode }) {
         <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent z-0"></div>
         <div className="z-10 relative">
           <Image
-            src="https://images.unsplash.com/photo-1531987428847-95ad50737a07?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxNnx8cHJlbmV6JTIwbGUlMjBjb250cm9sZSUyMGRlJTIwdm9zJTIwZmluYW5jZXxlbnwwfHx8fDE3NTQ5OTQ2NTV8MA&ixlib=rb-4.1.0&q=80&w=1080"
+            src="https://images.unsplash.com/photo-1607863680198-23d4b2565df0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxiYW5xdWV8ZW58MHx8fHwxNzU0OTk0NzgwfDA&ixlib=rb-4.1.0&q=80&w=1080"
             width={500}
             height={500}
             alt="Wisebil illustration"
