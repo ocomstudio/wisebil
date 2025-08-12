@@ -1,16 +1,19 @@
 // src/app/dashboard/billing/page.tsx
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocale } from "@/context/locale-context";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import Link from "next/link";
 import type { Currency } from "@/context/locale-context";
+import { useAuth } from "@/context/auth-context";
+import { toast } from 'react-hot-toast';
 
 const pricing = {
-    premium: { XOF: 3000 },
-    business: { XOF: 9900 },
+    premium: { XOF: 3000, priceId: 'price_1PgQj5RxH3iN5fA2z3B1gH4e' },
+    business: { XOF: 9900, priceId: 'price_1PgQkLRxH3iN5fA2a9d8vE8f' },
 };
 
 const conversionRates: Record<Currency, number> = {
@@ -22,6 +25,8 @@ const conversionRates: Record<Currency, number> = {
 
 export default function BillingPage() {
     const { t, currency, formatCurrency } = useLocale();
+    const { user } = useAuth();
+    const [isLoading, setIsLoading] = useState<string | null>(null);
 
     const getConvertedPrice = (basePriceXOF: number, targetCurrency: Currency): number => {
         if (targetCurrency === 'XOF') {
@@ -30,6 +35,45 @@ export default function BillingPage() {
         const rate = conversionRates[targetCurrency];
         return Math.round(basePriceXOF / rate);
     };
+
+    const handleCheckout = async (priceId: string) => {
+        if (!user) {
+            toast.error(t('login_required_for_subscription'));
+            return;
+        }
+
+        setIsLoading(priceId);
+
+        try {
+            const response = await fetch('/api/stripe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    priceId: priceId,
+                    userId: user.uid,
+                    userEmail: user.email,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create checkout session');
+            }
+
+            const { url } = await response.json();
+            window.location.href = url;
+        } catch (error) {
+            console.error("Stripe checkout error:", error);
+            toast.error(t('subscription_error'));
+            setIsLoading(null);
+        }
+    }
+    
+    const isCurrentPlan = (plan: 'premium' | 'business') => {
+        return user?.subscriptionStatus === 'active'; // This is a simplified check
+    };
+
 
     const plans = [
         {
@@ -42,9 +86,10 @@ export default function BillingPage() {
                 t('plan_feature_assistant_free'),
                 t('plan_feature_agent_free')
             ],
-            isCurrent: true,
+            isCurrent: user?.subscriptionStatus === 'inactive' || !user?.subscriptionStatus,
             buttonText: t('current_plan_button'),
-            buttonVariant: "outline"
+            buttonVariant: "outline",
+            action: () => {}
         },
         {
             title: t('plan_premium_title'),
@@ -56,10 +101,12 @@ export default function BillingPage() {
                 t('plan_feature_agent_premium'),
                 t('plan_feature_support')
             ],
-            isCurrent: false,
-            buttonText: t('upgrade_premium_button'),
+            isCurrent: isCurrentPlan('premium'),
+            buttonText: isCurrentPlan('premium') ? t('current_plan_button') : t('upgrade_premium_button'),
             buttonVariant: "default",
-            isPopular: true
+            isPopular: true,
+            priceId: pricing.premium.priceId,
+            action: () => handleCheckout(pricing.premium.priceId)
         },
         {
             title: t('plan_business_title'),
@@ -71,9 +118,11 @@ export default function BillingPage() {
                 t('plan_feature_agent_business'),
                 t('plan_feature_early_access')
             ],
-            isCurrent: false,
-            buttonText: t('choose_plan_button'),
-            buttonVariant: "outline"
+            isCurrent: isCurrentPlan('business'),
+            buttonText: isCurrentPlan('business') ? t('current_plan_button') : t('choose_plan_button'),
+            buttonVariant: "outline",
+            priceId: pricing.business.priceId,
+            action: () => handleCheckout(pricing.business.priceId)
         }
     ]
 
@@ -101,8 +150,9 @@ export default function BillingPage() {
                             </ul>
                         </CardContent>
                         <div className="p-6 pt-0 mt-auto">
-                             <Button asChild variant={plan.buttonVariant as any} className="w-full" disabled={plan.isCurrent}>
-                                <Link href="#">{plan.buttonText}</Link>
+                             <Button onClick={plan.action} variant={plan.buttonVariant as any} className="w-full" disabled={plan.isCurrent || (!!isLoading && isLoading !== plan.priceId)}>
+                                {isLoading === plan.priceId ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                {plan.buttonText}
                             </Button>
                         </div>
                     </Card>

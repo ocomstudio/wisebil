@@ -5,13 +5,15 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 
 interface User {
   uid: string;
   email: string | null;
   displayName: string | null;
   avatar: string | null;
+  stripeCustomerId?: string;
+  subscriptionStatus?: 'active' | 'inactive';
 }
 
 interface AuthContextType {
@@ -33,36 +35,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (fbUser) => {
       if (fbUser) {
         setFirebaseUser(fbUser);
         const userDocRef = doc(db, 'users', fbUser.uid);
-        const docSnap = await getDoc(userDocRef);
+        
+        const unsubscribeDoc = onSnapshot(userDocRef, (docSnap) => {
+          if (docSnap.exists() && docSnap.data().profile) {
+              setUser({ uid: fbUser.uid, ...docSnap.data().profile });
+          } else {
+               const profileData = {
+                  email: fbUser.email,
+                  displayName: fbUser.displayName || 'Wisebil User',
+                  avatar: fbUser.photoURL,
+                  subscriptionStatus: 'inactive'
+               };
+               setUser({ uid: fbUser.uid, ...profileData });
+               // Save this initial profile to Firestore
+               setDoc(userDocRef, { profile: profileData }, { merge: true }).catch(e => {
+                  console.error("Failed to save initial user profile", e);
+               });
+          }
+          setIsLoading(false);
+        });
 
-        if (docSnap.exists() && docSnap.data().profile) {
-            setUser({ uid: fbUser.uid, ...docSnap.data().profile });
-        } else {
-             const profileData = {
-                email: fbUser.email,
-                displayName: fbUser.displayName || 'Wisebil User',
-                avatar: fbUser.photoURL
-             };
-             setUser({ uid: fbUser.uid, ...profileData });
-             // Save this initial profile to Firestore
-             try {
-                await setDoc(userDocRef, { profile: profileData }, { merge: true });
-             } catch(e) {
-                console.error("Failed to save initial user profile", e);
-             }
-        }
+        return () => unsubscribeDoc(); // Unsubscribe from doc listener when auth state changes
       } else {
         setFirebaseUser(null);
         setUser(null);
+        setIsLoading(false);
       }
-      setIsLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => unsubscribeAuth(); // Unsubscribe from auth listener on cleanup
   }, []);
   
   const loginWithGoogle = async () => {
@@ -77,22 +82,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const updatedLocalUser = { ...user, ...newUserData };
         setUser(updatedLocalUser);
         
-        // Update Firebase Auth profile
-        await updateProfile(firebaseUser, {
-            displayName: updatedLocalUser.displayName,
-            photoURL: updatedLocalUser.avatar
-        });
+        // Update Firebase Auth profile if display name or avatar changes
+        if(newUserData.displayName || newUserData.avatar) {
+            await updateProfile(firebaseUser, {
+                displayName: updatedLocalUser.displayName,
+                photoURL: updatedLocalUser.avatar
+            });
+        }
         
         // Update Firestore profile
         const userDocRef = doc(db, 'users', user.uid);
-        const profileToSave = {
-            email: updatedLocalUser.email,
-            displayName: updatedLocalUser.displayName,
-            avatar: updatedLocalUser.avatar
-        };
-        await setDoc(userDocRef, { profile: profileToSave }, { merge: true });
+        await setDoc(userDocRef, { profile: updatedLocalUser }, { merge: true });
     }
-    console.log("User data update requested. Firestore integration needed.", newUserData);
   };
   
   const value = {
