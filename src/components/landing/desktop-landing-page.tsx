@@ -183,12 +183,12 @@ export default function DesktopLandingPage() {
                     >
                         <div className="absolute -inset-4 bg-primary/20 rounded-full blur-3xl opacity-50"></div>
                         <Image
-                            src="https://placehold.co/600x600.png"
+                            src="https://images.unsplash.com/photo-1579621970795-87facc2f976d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxmaW5hbmNlfGVufDB8fHx8MTc1NDk1NTgxNXww&ixlib=rb-4.1.0&q=80&w=1080"
                             width="600"
                             height="600"
                             alt="Hero"
                             data-ai-hint="finance app mobile"
-                            className="mx-auto aspect-square overflow-hidden rounded-2xl object-contain sm:w-full transform-gpu shadow-2xl shadow-primary/10"
+                            className="mx-auto aspect-square overflow-hidden rounded-2xl object-cover sm:w-full transform-gpu shadow-2xl shadow-primary/10"
                         />
                     </div>
                 </div>
