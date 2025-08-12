@@ -41,7 +41,7 @@ function AuthLayoutContent({ children }: { children: React.ReactNode }) {
             width={500}
             height={500}
             alt="Wisebil illustration"
-            data-ai-hint="finance app mobile"
+            data-ai-hint="happy man finance"
             className="rounded-2xl shadow-2xl mb-8 transform-gpu transition-transform hover:scale-105"
           />
           <h2 className="text-3xl font-bold font-headline mb-4">
