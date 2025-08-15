@@ -86,20 +86,36 @@ export function MobileWelcomeFlow() {
                     </Card>
                 </div>
             )}
-        </main>
 
-        {step === 'done' && (
-            <footer 
-                className="py-4 space-y-2 flex-shrink-0"
-            >
-                <Button asChild size="lg" className="w-full">
-                    <Link href="/auth/signup">{t('get_started')}</Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="w-full">
-                    <Link href="/auth/login">{t('login_button')}</Link>
-                </Button>
-            </footer>
-        )}
+            {step === 'done' && (
+                 <div
+                    key="done"
+                    className="w-full text-center"
+                >
+                    <Card className="bg-transparent border-0 shadow-none">
+                        <CardHeader>
+                            <div className="flex justify-center mb-6">
+                                <div className="p-4 bg-primary/10 rounded-full">
+                                    <Logo />
+                                </div>
+                            </div>
+                            <CardTitle className="font-headline text-2xl">{t('auth_promo_title')}</CardTitle>
+                            <CardDescription className="max-w-xs mx-auto">{t('auth_promo_description')}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-8">
+                            <div className="space-y-4">
+                                <Button asChild size="lg" className="w-full">
+                                    <Link href="/auth/signup">{t('get_started')}</Link>
+                                </Button>
+                                <Button asChild size="lg" variant="ghost" className="w-full">
+                                    <Link href="/auth/login">{t('login_button')}</Link>
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+        </main>
      </div>
   );
 }
