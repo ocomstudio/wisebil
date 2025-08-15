@@ -155,9 +155,15 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
       </Button>
        <p className="mt-6 text-center text-sm text-muted-foreground">
         {t('no_account_yet')}{" "}
-         <Button variant="link" className="p-0 h-auto" onClick={onSwitchToSignup}>
+        {onSwitchToSignup ? (
+          <Button variant="link" className="p-0 h-auto" onClick={onSwitchToSignup}>
             {t('signup_link')}
-         </Button>
+          </Button>
+        ) : (
+          <Button variant="link" asChild className="p-0 h-auto">
+            <Link href="/auth/signup">{t('signup_link')}</Link>
+          </Button>
+        )}
       </p>
     </>
   );

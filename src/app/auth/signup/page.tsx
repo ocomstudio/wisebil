@@ -28,6 +28,7 @@ import { useAuth } from "@/context/auth-context";
 import { useLocale } from "@/context/locale-context";
 import { Loader2 } from "lucide-react";
 import { FirebaseError } from "firebase/app";
+import Link from "next/link";
 
 interface SignupPageProps {
   onSwitchToLogin?: () => void;
@@ -95,14 +96,10 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
     try {
       const userCredential = await signupWithEmail(data.email, data.password);
       
-      // Update the user's profile with the full name
       await updateProfile(userCredential.user, {
         displayName: data.fullName,
       });
       
-      // We also need to save the phone number in our user profile (e.g. Firestore)
-      // This is handled in the auth context now
-
       toast({
         title: t('signup_success_title'),
         description: t('signup_success_desc'),
@@ -133,6 +130,10 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
 
   return (
     <>
+       <div className="mb-8 text-center">
+        <h1 className="text-3xl font-bold font-headline">{t('signup_title')}</h1>
+        <p className="text-muted-foreground">{t('signup_subtitle')}</p>
+      </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
            <FormField
@@ -140,7 +141,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
             name="fullName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('fullname_label')} <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>{t('fullname_label')}</FormLabel>
                 <FormControl>
                   <Input placeholder="John Doe" {...field} />
                 </FormControl>
@@ -153,7 +154,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('phone_number_label')} <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>{t('phone_number_label')}</FormLabel>
                 <FormControl>
                   <PhoneInput
                     international
@@ -172,7 +173,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('email_label')} <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>{t('email_label')}</FormLabel>
                 <FormControl>
                   <Input type="email" placeholder="votre@email.com" {...field} />
                 </FormControl>
@@ -185,7 +186,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('password_label')} <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>{t('password_label')}</FormLabel>
                 <FormControl>
                   <Input type="password" placeholder="********" {...field} />
                 </FormControl>
@@ -198,7 +199,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('confirm_password_label')} <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>{t('confirm_password_label')}</FormLabel>
                 <FormControl>
                   <Input type="password" placeholder="********" {...field} />
                 </FormControl>
@@ -242,9 +243,15 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
       </Button>
       <p className="mt-6 text-center text-sm text-muted-foreground">
         {t('already_have_account')}{" "}
-        <Button variant="link" className="p-0 h-auto" onClick={onSwitchToLogin}>
-          {t('login_link')}
-        </Button>
+         {onSwitchToLogin ? (
+          <Button variant="link" className="p-0 h-auto" onClick={onSwitchToLogin}>
+            {t('login_link')}
+          </Button>
+        ) : (
+          <Button variant="link" asChild className="p-0 h-auto">
+            <Link href="/auth/login">{t('login_link')}</Link>
+          </Button>
+        )}
       </p>
     </>
   );
