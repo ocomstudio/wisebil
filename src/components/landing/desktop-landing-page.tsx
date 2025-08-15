@@ -148,6 +148,10 @@ export default function DesktopLandingPage() {
                         <Button variant="outline">{t('login_button')}</Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>{t('login_title')}</DialogTitle>
+                            <DialogDescription>{t('login_subtitle')}</DialogDescription>
+                        </DialogHeader>
                         <LoginPage />
                     </DialogContent>
                 </Dialog>
@@ -156,6 +160,10 @@ export default function DesktopLandingPage() {
                         <Button>{t('signup_button')}</Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>{t('signup_title')}</DialogTitle>
+                            <DialogDescription>{t('signup_subtitle')}</DialogDescription>
+                        </DialogHeader>
                         <SignupPage />
                     </DialogContent>
                 </Dialog>
@@ -190,6 +198,10 @@ export default function DesktopLandingPage() {
                                         <Button size="lg" className="shadow-lg shadow-primary/20">{t('hero_cta_free')}</Button>
                                     </DialogTrigger>
                                     <DialogContent className="sm:max-w-md">
+                                        <DialogHeader>
+                                            <DialogTitle>{t('signup_title')}</DialogTitle>
+                                            <DialogDescription>{t('signup_subtitle')}</DialogDescription>
+                                        </DialogHeader>
                                         <SignupPage />
                                     </DialogContent>
                                 </Dialog>
@@ -292,6 +304,10 @@ export default function DesktopLandingPage() {
                                         <Button variant="outline" className="w-full">{t('choose_plan_button')}</Button>
                                     </DialogTrigger>
                                     <DialogContent className="sm:max-w-md">
+                                        <DialogHeader>
+                                            <DialogTitle>{t('signup_title')}</DialogTitle>
+                                            <DialogDescription>{t('signup_subtitle')}</DialogDescription>
+                                        </DialogHeader>
                                         <SignupPage />
                                     </DialogContent>
                                 </Dialog>
@@ -318,6 +334,10 @@ export default function DesktopLandingPage() {
                                         <Button className="w-full">{t('upgrade_premium_button')}</Button>
                                     </DialogTrigger>
                                     <DialogContent className="sm:max-w-md">
+                                        <DialogHeader>
+                                            <DialogTitle>{t('signup_title')}</DialogTitle>
+                                            <DialogDescription>{t('signup_subtitle')}</DialogDescription>
+                                        </DialogHeader>
                                         <SignupPage />
                                     </DialogContent>
                                 </Dialog>
@@ -343,6 +363,10 @@ export default function DesktopLandingPage() {
                                         <Button variant="outline" className="w-full">{t('choose_plan_button')}</Button>
                                     </DialogTrigger>
                                     <DialogContent className="sm:max-w-md">
+                                        <DialogHeader>
+                                            <DialogTitle>{t('signup_title')}</DialogTitle>
+                                            <DialogDescription>{t('signup_subtitle')}</DialogDescription>
+                                        </DialogHeader>
                                         <SignupPage />
                                     </DialogContent>
                                 </Dialog>
