@@ -100,7 +100,7 @@ export default function SignupPage() {
         title: t('signup_success_title'),
         description: t('signup_success_desc'),
       });
-      router.push("/auth/onboarding");
+      router.push("/dashboard");
     } catch (error) {
       handleAuthError(error);
     } finally {
@@ -126,7 +126,7 @@ export default function SignupPage() {
 
   return (
     <>
-      <div className="mb-8">
+      <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold font-headline">{t('signup_title')}</h1>
         <p className="text-muted-foreground">{t('signup_subtitle')}</p>
       </div>

@@ -106,7 +106,7 @@ export default function LoginPage() {
 
   return (
     <>
-      <div className="mb-8">
+      <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold font-headline">{t('login_title')}</h1>
         <p className="text-muted-foreground">{t('login_subtitle')}</p>
       </div>
