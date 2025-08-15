@@ -4,8 +4,9 @@
 import { useState } from 'react';
 import { AuthProvider } from "@/context/auth-context";
 import { LocaleProvider } from "@/context/locale-context";
-import { Logo } from '@/components/common/logo';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import LoginPage from './login/page';
 import SignupPage from './signup/page';
 import Image from 'next/image';
@@ -23,7 +24,13 @@ export default function AuthLayout({
   return (
     <AuthProvider>
       <LocaleProvider>
-        <div className="w-full h-screen lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
+        <div className="w-full h-screen lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px] relative">
+           <Button variant="ghost" size="icon" className="absolute top-4 left-4 lg:hidden" asChild>
+            <Link href="/">
+              <ArrowLeft className="h-5 w-5" />
+              <span className="sr-only">Retour</span>
+            </Link>
+          </Button>
           <div className="flex items-center justify-center py-12">
             <div className="mx-auto grid w-[350px] gap-6">
                {isLoginView ? <LoginPage onSwitchToSignup={switchToSignup} /> : <SignupPage onSwitchToLogin={switchToLogin}/>}
