@@ -27,7 +27,11 @@ import { FirebaseError } from "firebase/app";
 import { Loader2 } from "lucide-react";
 
 
-export default function LoginPage() {
+interface LoginPageProps {
+  onSwitchToSignup?: () => void;
+}
+
+export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
   const { t } = useLocale();
   const { toast } = useToast();
   const router = useRouter();
@@ -151,9 +155,9 @@ export default function LoginPage() {
       </Button>
        <p className="mt-6 text-center text-sm text-muted-foreground">
         {t('no_account_yet')}{" "}
-        <Link href="/auth/signup" className="text-primary hover:underline">
-          {t('signup_link')}
-        </Link>
+         <Button variant="link" className="p-0 h-auto" onClick={onSwitchToSignup}>
+            {t('signup_link')}
+         </Button>
       </p>
     </>
   );

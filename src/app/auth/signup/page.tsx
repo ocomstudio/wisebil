@@ -28,8 +28,11 @@ import { useLocale } from "@/context/locale-context";
 import { Loader2 } from "lucide-react";
 import { FirebaseError } from "firebase/app";
 
+interface SignupPageProps {
+  onSwitchToLogin?: () => void;
+}
 
-export default function SignupPage() {
+export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   const { t } = useLocale();
   const { toast } = useToast();
   const router = useRouter();
@@ -233,9 +236,9 @@ export default function SignupPage() {
       </Button>
       <p className="mt-6 text-center text-sm text-muted-foreground">
         {t('already_have_account')}{" "}
-        <Link href="/auth/login" className="text-primary hover:underline">
+        <Button variant="link" className="p-0 h-auto" onClick={onSwitchToLogin}>
           {t('login_link')}
-        </Link>
+        </Button>
       </p>
     </>
   );

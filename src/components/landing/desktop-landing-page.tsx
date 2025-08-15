@@ -17,9 +17,22 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import LoginPage from '@/app/auth/login/page';
 import SignupPage from '@/app/auth/signup/page';
 import { AuthProvider } from '@/context/auth-context';
+import { useState } from 'react';
 
 export default function DesktopLandingPage() {
     const { t, currency, formatCurrency } = useLocale();
+    const [loginOpen, setLoginOpen] = useState(false);
+    const [signupOpen, setSignupOpen] = useState(false);
+
+    const handleSwitchToSignup = () => {
+        setLoginOpen(false);
+        setSignupOpen(true);
+    };
+
+    const handleSwitchToLogin = () => {
+        setSignupOpen(false);
+        setLoginOpen(true);
+    };
 
     const features = [
         {
@@ -143,28 +156,28 @@ export default function DesktopLandingPage() {
                     {t('nav_faq')}
                 </Link>
                 <LanguageSelector />
-                <Dialog>
+                <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
                     <DialogTrigger asChild>
                         <Button variant="outline">{t('login_button')}</Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
+                         <DialogHeader>
                             <DialogTitle>{t('login_title')}</DialogTitle>
                             <DialogDescription>{t('login_subtitle')}</DialogDescription>
                         </DialogHeader>
-                        <LoginPage />
+                        <LoginPage onSwitchToSignup={handleSwitchToSignup} />
                     </DialogContent>
                 </Dialog>
-                <Dialog>
+                <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
                     <DialogTrigger asChild>
                         <Button>{t('signup_button')}</Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
+                         <DialogHeader>
                             <DialogTitle>{t('signup_title')}</DialogTitle>
                             <DialogDescription>{t('signup_subtitle')}</DialogDescription>
                         </DialogHeader>
-                        <SignupPage />
+                        <SignupPage onSwitchToLogin={handleSwitchToLogin} />
                     </DialogContent>
                 </Dialog>
                 </nav>
@@ -193,7 +206,7 @@ export default function DesktopLandingPage() {
                                 </p>
                             </div>
                             <div className="flex flex-col gap-4 min-[400px]:flex-row">
-                                <Dialog>
+                                <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
                                     <DialogTrigger asChild>
                                         <Button size="lg" className="shadow-lg shadow-primary/20">{t('hero_cta_free')}</Button>
                                     </DialogTrigger>
@@ -202,7 +215,7 @@ export default function DesktopLandingPage() {
                                             <DialogTitle>{t('signup_title')}</DialogTitle>
                                             <DialogDescription>{t('signup_subtitle')}</DialogDescription>
                                         </DialogHeader>
-                                        <SignupPage />
+                                        <SignupPage onSwitchToLogin={handleSwitchToLogin} />
                                     </DialogContent>
                                 </Dialog>
                                 <Button asChild size="lg" variant="outline">
@@ -299,7 +312,7 @@ export default function DesktopLandingPage() {
                                 </ul>
                             </CardContent>
                             <div className="p-6 pt-0 mt-auto">
-                                <Dialog>
+                                <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
                                     <DialogTrigger asChild>
                                         <Button variant="outline" className="w-full">{t('choose_plan_button')}</Button>
                                     </DialogTrigger>
@@ -308,7 +321,7 @@ export default function DesktopLandingPage() {
                                             <DialogTitle>{t('signup_title')}</DialogTitle>
                                             <DialogDescription>{t('signup_subtitle')}</DialogDescription>
                                         </DialogHeader>
-                                        <SignupPage />
+                                        <SignupPage onSwitchToLogin={handleSwitchToLogin} />
                                     </DialogContent>
                                 </Dialog>
                             </div>
@@ -329,7 +342,7 @@ export default function DesktopLandingPage() {
                                 </ul>
                             </CardContent>
                             <div className="p-6 pt-0 mt-auto">
-                                <Dialog>
+                                <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
                                     <DialogTrigger asChild>
                                         <Button className="w-full">{t('upgrade_premium_button')}</Button>
                                     </DialogTrigger>
@@ -338,7 +351,7 @@ export default function DesktopLandingPage() {
                                             <DialogTitle>{t('signup_title')}</DialogTitle>
                                             <DialogDescription>{t('signup_subtitle')}</DialogDescription>
                                         </DialogHeader>
-                                        <SignupPage />
+                                        <SignupPage onSwitchToLogin={handleSwitchToLogin} />
                                     </DialogContent>
                                 </Dialog>
                             </div>
@@ -358,7 +371,7 @@ export default function DesktopLandingPage() {
                                 </ul>
                             </CardContent>
                             <div className="p-6 pt-0 mt-auto">
-                                <Dialog>
+                                <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
                                     <DialogTrigger asChild>
                                         <Button variant="outline" className="w-full">{t('choose_plan_button')}</Button>
                                     </DialogTrigger>
@@ -367,7 +380,7 @@ export default function DesktopLandingPage() {
                                             <DialogTitle>{t('signup_title')}</DialogTitle>
                                             <DialogDescription>{t('signup_subtitle')}</DialogDescription>
                                         </DialogHeader>
-                                        <SignupPage />
+                                        <SignupPage onSwitchToLogin={handleSwitchToLogin} />
                                     </DialogContent>
                                 </Dialog>
                             </div>
