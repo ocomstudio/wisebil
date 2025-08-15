@@ -5,9 +5,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useState } from "react";
 import { updateProfile } from "firebase/auth";
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -41,7 +42,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
 
   const signupSchema = z.object({
     fullName: z.string().min(2, t('signup_fullname_error')),
-    phone: z.string().min(9, t('signup_phone_error')),
+    phone: z.string().refine(isValidPhoneNumber, { message: t('signup_phone_error') }),
     email: z.string().email(t('signup_email_error')),
     password: z.string().min(8, t('signup_password_error')),
     confirmPassword: z.string(),
@@ -96,8 +97,11 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
       
       // Update the user's profile with the full name
       await updateProfile(userCredential.user, {
-        displayName: data.fullName
+        displayName: data.fullName,
       });
+      
+      // We also need to save the phone number in our user profile (e.g. Firestore)
+      // This is handled in the auth context now
 
       toast({
         title: t('signup_success_title'),
@@ -129,10 +133,6 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
 
   return (
     <>
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold font-headline">{t('signup_title')}</h1>
-        <p className="text-muted-foreground">{t('signup_subtitle')}</p>
-      </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
            <FormField
@@ -155,7 +155,13 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
               <FormItem>
                 <FormLabel>{t('phone_number_label')} <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
-                  <Input type="tel" placeholder="+221 77 123 45 67" {...field} />
+                  <PhoneInput
+                    international
+                    defaultCountry="SN"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -214,9 +220,9 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
                 <div className="space-y-1 leading-none">
                   <FormLabel>
                      {t('i_agree_to_the')}{" "}
-                     <Link href="/terms" className="text-primary hover:underline">{t('terms')}</Link>{" "}
+                     <Button variant="link" asChild className="p-0 h-auto font-medium"><a href="/terms" target="_blank">{t('terms')}</a></Button>{" "}
                      {t('and')}{" "}
-                     <Link href="/privacy" className="text-primary hover:underline">{t('privacy_policy')}</Link>.
+                     <Button variant="link" asChild className="p-0 h-auto font-medium"><a href="/privacy" target="_blank">{t('privacy_policy')}</a></Button>.
                   </FormLabel>
                    <FormMessage />
                 </div>
