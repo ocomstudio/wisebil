@@ -346,7 +346,6 @@ export function ConseilPanel() {
         }
         setCurrentConversation(prev => [...prev, assistantMessage]);
     } catch (error) {
-        console.error('AI assistant failed:', error);
         assistantMessage = { role: 'model', content: t('assistant_error_desc'), agentMode, isError: true };
         setCurrentConversation(prev => [...prev, assistantMessage]);
     } finally {

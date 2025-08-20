@@ -69,7 +69,6 @@ Contexte financier de l'utilisateur (Devise: ${currency}):
     return { answer };
 
   } catch (error) {
-    console.error(`AI assistant failed to generate a response:`, error);
     throw new Error(
       `AI assistant failed to generate a response. Details: ${
         error instanceof Error ? error.message : String(error)

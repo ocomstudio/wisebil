@@ -1,3 +1,4 @@
+
 'use server';
 
 import { generateWithFallback } from '@/lib/ai-service';
@@ -41,14 +42,12 @@ User prompt: "${prompt}"`;
     const validatedResult = AgentWOutputSchema.safeParse(parsedResult);
     
     if (!validatedResult.success) {
-      console.error("AI response validation error:", validatedResult.error.flatten());
       throw new Error('AI response validation failed.');
     }
     
     return validatedResult.data;
 
   } catch (error) {
-    console.error(`Agent W failed to generate a response for prompt "${prompt}":`, error);
     throw new Error(
       `Agent W failed to generate a response. Details: ${
         error instanceof Error ? error.message : String(error)
