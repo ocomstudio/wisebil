@@ -4,7 +4,7 @@ import { getAuth } from "firebase/auth";
 import { initializeFirestore, CACHE_SIZE_UNLIMITED, enableIndexedDbPersistence } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDLNo6euN4_GkS-gvd2zS7IjbBVO4BKqfo",
+  apiKey: "AIzaSyAwsld5_98H5kslXgwtIOgOv3uDgVRJeYY",
   authDomain: "wisebil-a1757.firebaseapp.com",
   databaseURL: "https://wisebil-default-rtdb.firebaseio.com",
   projectId: "wisebil",
