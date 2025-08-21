@@ -2,11 +2,10 @@
 "use client";
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/common/logo';
-import { Wallet, Globe, DollarSign, Euro, CircleDollarSign } from 'lucide-react';
+import { Wallet, Globe, DollarSign, Euro, CircleDollarSign, ArrowLeft } from 'lucide-react';
 import { useLocale } from '@/context/locale-context';
 import type { Currency, Language } from '@/context/locale-context';
 import { Dialog, DialogTrigger, DialogContent } from '../ui/dialog';
@@ -49,6 +48,14 @@ export function MobileWelcomeFlow() {
   const handleSwitchToLogin = () => {
     setSignupOpen(false);
     setLoginOpen(true);
+  };
+  
+  const handleGoBack = () => {
+    if (step === 'currency') {
+      setStep('language');
+    } else if (step === 'done') {
+      setStep('currency');
+    }
   };
 
   return (
@@ -110,11 +117,6 @@ export function MobileWelcomeFlow() {
                 >
                     <Card className="bg-transparent border-0 shadow-none">
                         <CardHeader>
-                            <div className="flex justify-center mb-6">
-                                <div className="p-4 bg-primary/10 rounded-full">
-                                    <Logo />
-                                </div>
-                            </div>
                             <CardTitle className="font-headline text-2xl">{t('auth_promo_title')}</CardTitle>
                             <CardDescription className="max-w-xs mx-auto">{t('auth_promo_description')}</CardDescription>
                         </CardHeader>
@@ -142,6 +144,15 @@ export function MobileWelcomeFlow() {
                 </div>
             )}
         </main>
+        
+        {step !== 'language' && (
+          <footer className="flex-shrink-0">
+            <Button variant="ghost" onClick={handleGoBack} className="text-muted-foreground">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              {t('previous_button')}
+            </Button>
+          </footer>
+        )}
      </div>
   );
 }
