@@ -6,9 +6,8 @@ import DesktopLandingPage from "@/components/landing/desktop-landing-page";
 import MobileLandingPage from "@/components/landing/mobile-landing-page";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LocaleProvider } from "@/context/locale-context";
 
-function HomePageContent() {
+export default function Home() {
   const [isClient, setIsClient] = useState(false);
   
   useEffect(() => {
@@ -26,12 +25,4 @@ function HomePageContent() {
   }
 
   return isMobile ? <MobileLandingPage /> : <DesktopLandingPage />;
-}
-
-export default function Home() {
-  return (
-    <LocaleProvider>
-      <HomePageContent />
-    </LocaleProvider>
-  )
 }

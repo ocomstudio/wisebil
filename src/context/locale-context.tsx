@@ -4,6 +4,9 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import fr from '@/locales/fr.json';
 import en from '@/locales/en.json';
+import { useAuth } from './auth-context';
+import { db } from '@/lib/firebase';
+import { doc, setDoc, onSnapshot, getDoc } from 'firebase/firestore';
 
 export type Language = 'fr' | 'en';
 export type Currency = 'XOF' | 'EUR' | 'USD';
@@ -27,28 +30,78 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
   const [locale, setLocaleState] = useState<Language>('fr');
   const [currency, setCurrencyState] = useState<Currency>('XOF');
   const [isLoaded, setIsLoaded] = useState(false);
+  const { user } = useAuth();
 
+  const getUserDocRef = useCallback(() => {
+    if (!user) return null;
+    return doc(db, 'users', user.uid);
+  }, [user]);
+  
   useEffect(() => {
-    const storedLocale = localStorage.getItem('locale') as Language;
-    const storedCurrency = localStorage.getItem('currency') as Currency;
-    if (storedLocale && ['fr', 'en'].includes(storedLocale)) {
-      setLocaleState(storedLocale);
-    }
-    if (storedCurrency && ['XOF', 'EUR', 'USD'].includes(storedCurrency)) {
-      setCurrencyState(storedCurrency);
-    }
-    setIsLoaded(true);
-  }, []);
+    const loadPreferences = async () => {
+        if (user) {
+            // User is logged in, load from Firestore
+            const userDocRef = getUserDocRef();
+            if (!userDocRef) return;
 
-  const setLocale = (newLocale: Language) => {
+            const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+              if (docSnap.exists() && docSnap.data().preferences) {
+                const { language, currency } = docSnap.data().preferences;
+                if (language) setLocaleState(language);
+                if (currency) setCurrencyState(currency);
+              }
+              setIsLoaded(true);
+            });
+            return unsubscribe;
+
+        } else {
+            // User is not logged in, load from localStorage
+            const storedLocale = localStorage.getItem('locale') as Language;
+            const storedCurrency = localStorage.getItem('currency') as Currency;
+            if (storedLocale && ['fr', 'en'].includes(storedLocale)) {
+                setLocaleState(storedLocale);
+            }
+            if (storedCurrency && ['XOF', 'EUR', 'USD'].includes(storedCurrency)) {
+                setCurrencyState(storedCurrency);
+            }
+            setIsLoaded(true);
+        }
+    };
+    
+    const unsubscribe = loadPreferences();
+
+    return () => {
+        if (unsubscribe) {
+            Promise.resolve(unsubscribe).then(unsub => unsub && unsub());
+        }
+    }
+  }, [user, getUserDocRef]);
+
+
+  const setLocale = async (newLocale: Language) => {
     setLocaleState(newLocale);
-    localStorage.setItem('locale', newLocale);
     document.documentElement.lang = newLocale;
+
+    if (user) {
+        const userDocRef = getUserDocRef();
+        if (userDocRef) {
+            await setDoc(userDocRef, { preferences: { language: newLocale } }, { merge: true });
+        }
+    } else {
+        localStorage.setItem('locale', newLocale);
+    }
   };
 
-  const setCurrency = (newCurrency: Currency) => {
+  const setCurrency = async (newCurrency: Currency) => {
     setCurrencyState(newCurrency);
-    localStorage.setItem('currency', newCurrency);
+    if (user) {
+        const userDocRef = getUserDocRef();
+        if (userDocRef) {
+            await setDoc(userDocRef, { preferences: { currency: newCurrency } }, { merge: true });
+        }
+    } else {
+        localStorage.setItem('currency', newCurrency);
+    }
   };
   
   const t = useCallback((key: string, options?: { [key: string]: string | number }) => {
@@ -72,7 +125,6 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
       minimumFractionDigits: currency === 'XOF' ? 0 : 2,
       maximumFractionDigits: currency === 'XOF' ? 0 : 2,
     };
-    // For XOF, use a custom format to match "FCFA"
     if (currency === 'XOF') {
       return `${amount.toLocaleString('fr-FR')} FCFA`;
     }

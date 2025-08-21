@@ -131,7 +131,7 @@ export default function SettingsPage() {
         conversations: {}
       });
   
-      updateSettings({
+      await updateSettings({
         isBalanceHidden: false,
         isPinLockEnabled: false,
         pin: null,
