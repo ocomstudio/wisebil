@@ -9,7 +9,7 @@
  * - AgentWOutput - The return type for the runAgentW function.
  */
 
-import { ai, defineFlow, model } from '@/lib/ai-service';
+import { model, defineFlow } from '@/lib/ai-service';
 import { z } from 'zod';
 import { expenseCategories, incomeCategories } from '@/config/categories';
 import {

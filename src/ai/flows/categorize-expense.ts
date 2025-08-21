@@ -8,7 +8,7 @@
  * - CategorizeExpenseOutput - The return type for the categorizeExpense function.
  */
 
-import { ai, defineFlow, model } from '@/lib/ai-service';
+import { model, defineFlow } from '@/lib/ai-service';
 import { z } from 'zod';
 import { expenseCategories } from '@/config/categories';
 import { CategorizeExpenseOutputSchema, CategorizeExpenseInputSchema } from '@/types/ai-schemas';

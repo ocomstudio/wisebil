@@ -1,5 +1,5 @@
 // src/types/ai-schemas.ts
-import { z } from 'genkit';
+import { z } from 'zod';
 import type { Budget } from './budget';
 import type { SavingsGoal } from './savings-goal';
 import type { Transaction } from './transaction';
@@ -102,7 +102,7 @@ const FinancialDataSchema = z.object({
 export const ExpenseAssistantInputSchema = z.object({
   question: z.string().describe("The user's question about their finances."),
   history: z
-    .array(z.object({ role: z.enum(['user', 'model']), content: z.string() }))
+    .array(z.object({ role: z.enum(['user', 'assistant']), content: z.string() }))
     .describe('The previous conversation history between the user and the assistant.'),
   language: z.string().describe("The user's preferred language (e.g., 'fr', 'en')."),
   currency: z.string().describe("The user's preferred currency (e.g., 'XOF', 'EUR', 'USD')."),

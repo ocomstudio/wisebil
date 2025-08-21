@@ -8,7 +8,7 @@
  * - ExpenseAssistantInput - The input type for the askExpenseAssistant function.
  */
 
-import { ai, defineFlow, model } from '@/lib/ai-service';
+import { model, defineFlow } from '@/lib/ai-service';
 import { z } from 'zod';
 import { ExpenseAssistantInputSchema, type ExpenseAssistantInput as ExpenseAssistantInputType } from '@/types/ai-schemas';
 import type { Transaction } from '@/types/transaction';
@@ -67,13 +67,13 @@ Contexte financier de l'utilisateur (Devise: ${currency}):
 `;
         
         const historyForApi = history.map(h => ({
-            role: h.role === 'user' ? 'user' : 'model',
-            content: [{text: h.content}]
+            role: h.role === 'user' ? 'user' : 'assistant',
+            content: h.content
         })) as any[];
         
         const result = await model.generate({
             system: `${systemPrompt}\n${financialContext}`,
-            messages: [...historyForApi, {role: 'user', content: [{text: question}]}],
+            messages: [...historyForApi, {role: 'user', content: question}],
         });
 
         const answer = result.text();
