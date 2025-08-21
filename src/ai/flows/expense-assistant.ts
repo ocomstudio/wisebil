@@ -1,13 +1,20 @@
-
+// src/ai/flows/expense-assistant.ts
 'use server';
 
-import { generateWithFallback, type Message } from '@/lib/ai-service';
-import { ExpenseAssistantInput } from '@/types/ai-schemas';
+/**
+ * @fileOverview An AI-powered personal finance coach.
+ *
+ * - askExpenseAssistant - A function that handles user queries about their finances.
+ * - ExpenseAssistantInput - The input type for the askExpenseAssistant function.
+ */
+
+import { generate, type Message } from '@/lib/ai-service';
+import { ExpenseAssistantInput, type ExpenseAssistantInput as ExpenseAssistantInputType } from '@/types/ai-schemas';
 import type { Transaction } from '@/types/transaction';
 import type { Budget } from '@/types/budget';
 import type { SavingsGoal } from '@/types/savings-goal';
 
-export async function askExpenseAssistant(input: ExpenseAssistantInput): Promise<{ answer: string }> {
+export async function askExpenseAssistant(input: ExpenseAssistantInputType): Promise<{ answer: string }> {
   const { question, history, language, currency, financialData, userName } = input;
   
   const hasFinancialData = financialData.income || financialData.expenses || (financialData.transactions && financialData.transactions.length > 0);
@@ -60,7 +67,7 @@ Contexte financier de l'utilisateur (Devise: ${currency}):
   ];
 
   try {
-    const answer = await generateWithFallback({ messages });
+    const answer = await generate({ messages });
     
     if (!answer) {
       throw new Error('AI model returned an empty response.');

@@ -1,5 +1,5 @@
 // src/types/ai-schemas.ts
-import { z } from 'zod';
+import { z } from 'genkit';
 import type { Budget } from './budget';
 import type { SavingsGoal } from './savings-goal';
 import type { Transaction } from './transaction';

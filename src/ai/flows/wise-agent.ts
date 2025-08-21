@@ -1,15 +1,48 @@
-
+// src/ai/flows/wise-agent.ts
 'use server';
 
-import { generateWithFallback } from '@/lib/ai-service';
-import { expenseCategories, incomeCategories } from '@/config/categories';
-import { 
-  AgentWInput, 
-  AgentWOutput,
-  AgentWOutputSchema
-} from '@/types/ai-schemas';
+/**
+ * @fileOverview Agent W: A financial data entry specialist AI agent.
+ *
+ * - runAgentW - A function that handles financial data extraction from text.
+ * - AgentWInput - The input type for the runAgentW function.
+ * - AgentWOutput - The return type for the runAgentW function.
+ */
 
-export async function runAgentW(input: AgentWInput): Promise<AgentWOutput> {
+import {ai} from '@/lib/genkit';
+import {z} from 'genkit';
+import {expenseCategories, incomeCategories} from '@/config/categories';
+import {generateWithTool} from '@/lib/ai-service';
+import {
+  AgentWInputSchema,
+  AgentWOutputSchema,
+} from '@/types/ai-schemas';
+export type { AgentWInput, AgentWOutput } from '@/types/ai-schemas';
+
+
+const agentWTool = ai.defineTool(
+    {
+      name: 'agentW',
+      description: 'Extracts financial actions from unstructured text.',
+      inputSchema: AgentWInputSchema,
+      outputSchema: AgentWOutputSchema,
+    },
+    async (input) => {
+        // This is a mock implementation. The actual logic is handled by the LLM.
+      return {
+        incomes: [],
+        expenses: [],
+        newBudgets: [],
+        newSavingsGoals: [],
+        savingsContributions: [],
+      };
+    }
+  );
+
+
+export async function runAgentW(
+  input: z.infer<typeof AgentWInputSchema>
+): Promise<z.infer<typeof AgentWOutputSchema>> {
   const { prompt, currency, budgets, savingsGoals } = input;
 
   const systemPrompt = `You are "Agent W", an expert financial data entry specialist. Your sole purpose is to analyze a user's text, which may be complex, conversational, and unstructured, to identify every single financial action and structure them into a SINGLE JSON object.
@@ -31,27 +64,6 @@ export async function runAgentW(input: AgentWInput): Promise<AgentWOutput> {
 
 User prompt: "${prompt}"`;
 
-  try {
-    const result = await generateWithFallback({ prompt: systemPrompt, isJson: true });
-    
-    if (!result) {
-      throw new Error('AI model failed to generate a response.');
-    }
-
-    const parsedResult = JSON.parse(result);
-    const validatedResult = AgentWOutputSchema.safeParse(parsedResult);
-    
-    if (!validatedResult.success) {
-      throw new Error('AI response validation failed.');
-    }
-    
-    return validatedResult.data;
-
-  } catch (error) {
-    throw new Error(
-      `Agent W failed to generate a response. Details: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
-  }
+  const result = await generateWithTool(systemPrompt, input, agentWTool);
+  return result;
 }
