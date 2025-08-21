@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { auth as adminAuth } from '@/lib/firebase-admin';
+import { db } from '@/lib/firebase-admin';
 
 export async function POST(request: Request) {
     try {
@@ -13,31 +14,31 @@ export async function POST(request: Request) {
 
         const decodedToken = await adminAuth.verifyIdToken(authToken);
         const userId = decodedToken.uid;
+        
+        // Fetch user profile from Firestore to get additional details
+        const userDoc = await db.collection('users').doc(userId).get();
+        if (!userDoc.exists) {
+            return NextResponse.json({ error: 'User profile not found.' }, { status: 404 });
+        }
+        const userProfile = userDoc.data()?.profile;
+        if (!userProfile) {
+            return NextResponse.json({ error: 'User profile data is missing.' }, { status: 400 });
+        }
 
         const {
             amount,
             currency,
             description,
-            customer_name,
-            customer_surname,
-            customer_email,
-            customer_phone_number,
-            customer_address,
-            customer_city,
-            customer_country,
-            customer_state,
-            customer_zip_code
         } = await request.json();
-
-        const requiredFields = { amount, currency, description, customer_name, customer_surname, customer_email, customer_phone_number, customer_address, customer_city, customer_country, customer_state, customer_zip_code };
-
-        for (const [key, value] of Object.entries(requiredFields)) {
-            if (!value) {
-                return NextResponse.json({ error: `Missing required field: ${key}` }, { status: 400 });
-            }
+        
+        if (!amount || !currency || !description) {
+            return NextResponse.json({ error: 'Missing required fields: amount, currency, or description' }, { status: 400 });
         }
         
         const transaction_id = uuidv4();
+        
+        const [firstName, ...lastNameParts] = (userProfile.displayName || 'Utilisateur Wisebil').split(' ');
+        const lastName = lastNameParts.join(' ') || 'Utilisateur';
 
         const data = {
             apikey: process.env.CINETPAY_API_KEY,
@@ -47,15 +48,16 @@ export async function POST(request: Request) {
             currency: currency,
             description: description,
             customer_id: userId,
-            customer_name: customer_name,
-            customer_surname: customer_surname,
-            customer_email: customer_email,
-            customer_phone_number: customer_phone_number,
-            customer_address: customer_address,
-            customer_city: customer_city,
-            customer_country: customer_country,
-            customer_state: customer_state,
-            customer_zip_code: customer_zip_code,
+            customer_name: firstName,
+            customer_surname: lastName,
+            customer_email: userProfile.email || decodedToken.email,
+            customer_phone_number: userProfile.phone || '000000000',
+            // Using generic but valid data as fallback for required fields not in user profile
+            customer_address: "Adresse par défaut",
+            customer_city: "Dakar",
+            customer_country: "SN",
+            customer_state: "DK",
+            customer_zip_code: "10000",
             return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?status=success&transaction_id=${transaction_id}`,
             notify_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/cinetpay/notify`,
             channels: 'ALL'
