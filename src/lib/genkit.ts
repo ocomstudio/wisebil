@@ -124,7 +124,7 @@ export const ai = genkit({
     googleAI(),
     openrouter(),
   ],
-  durableStore: durableStore(),
-  traceStore: noopTraceStore(),
+  durableStore: durableStore,
+  traceStore: noopTraceStore,
   enableTracing: false,
 });
