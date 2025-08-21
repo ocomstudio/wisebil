@@ -1,8 +1,7 @@
 // src/lib/genkit.ts
 import {genkit, Plugin, durableStore, noopTraceStore} from 'genkit';
-import {googleAI} from '@genkit-ai/googleai';
 
-const openrouter: Plugin<void> = (options) => ({
+const openrouter: Plugin<void> = {
   name: 'openrouter',
   model: {
     'mistralai/mistral-7b-instruct:free': {
@@ -117,12 +116,11 @@ const openrouter: Plugin<void> = (options) => ({
       },
     };
   },
-});
+};
 
 export const ai = genkit({
   plugins: [
-    googleAI(),
-    openrouter(),
+    openrouter,
   ],
   durableStore: durableStore,
   traceStore: noopTraceStore,
