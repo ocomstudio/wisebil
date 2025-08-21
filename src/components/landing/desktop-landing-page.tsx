@@ -183,9 +183,14 @@ export default function DesktopLandingPage() {
                 </Dialog>
                 </nav>
                 <div className="ml-auto lg:hidden">
-                    <Button asChild>
-                        <Link href="/auth/login">{t('login_button')}</Link>
-                    </Button>
+                    <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+                        <DialogTrigger asChild>
+                            <Button>{t('login_button')}</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                           <LoginPage onSwitchToSignup={handleSwitchToSignup} />
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </div>
         </header>

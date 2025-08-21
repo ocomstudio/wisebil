@@ -9,6 +9,9 @@ import { Logo } from '@/components/common/logo';
 import { Wallet, Globe, DollarSign, Euro, CircleDollarSign } from 'lucide-react';
 import { useLocale } from '@/context/locale-context';
 import type { Currency, Language } from '@/context/locale-context';
+import { Dialog, DialogTrigger, DialogContent } from '../ui/dialog';
+import LoginPage from '@/app/auth/login/page';
+import SignupPage from '@/app/auth/signup/page';
 
 const languages = [
     { code: 'fr' as Language, name: 'Français', flag: '🇫🇷' },
@@ -23,6 +26,9 @@ const currencies = [
 
 export function MobileWelcomeFlow() {
   const [step, setStep] = useState('language'); // 'language', 'currency', 'done'
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [signupOpen, setSignupOpen] = useState(false);
+
   const { setLocale, setCurrency, t } = useLocale();
 
   const handleSelectLanguage = (lang: Language) => {
@@ -33,6 +39,16 @@ export function MobileWelcomeFlow() {
   const handleSelectCurrency = (curr: Currency) => {
     setCurrency(curr);
     setStep('done');
+  };
+  
+  const handleSwitchToSignup = () => {
+    setLoginOpen(false);
+    setSignupOpen(true);
+  };
+
+  const handleSwitchToLogin = () => {
+    setSignupOpen(false);
+    setLoginOpen(true);
   };
 
   return (
@@ -80,7 +96,7 @@ export function MobileWelcomeFlow() {
                                  <Button key={curr.code} variant="outline" size="lg" className="w-full justify-start text-lg h-16" onClick={() => handleSelectCurrency(curr.code)}>
                                     <div className="mr-4">{curr.icon}</div> 
                                     <span>{t(`currency_${curr.code.toLowerCase()}`)} <span className="text-muted-foreground">({curr.code})</span></span>
-                                </Button>
+                                 </Button>
                             ))}
                         </CardContent>
                     </Card>
@@ -103,13 +119,23 @@ export function MobileWelcomeFlow() {
                             <CardDescription className="max-w-xs mx-auto">{t('auth_promo_description')}</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-8">
-                            <div className="space-y-4">
-                                <Button asChild size="lg" className="w-full">
-                                    <Link href="/auth/signup">{t('get_started')}</Link>
-                                </Button>
-                                <Button asChild size="lg" variant="ghost" className="w-full">
-                                    <Link href="/auth/login">{t('login_button')}</Link>
-                                </Button>
+                             <div className="space-y-4">
+                                <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
+                                    <DialogTrigger asChild>
+                                         <Button size="lg" className="w-full">{t('get_started')}</Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <SignupPage onSwitchToLogin={handleSwitchToLogin} />
+                                    </DialogContent>
+                                </Dialog>
+                                <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button size="lg" variant="ghost" className="w-full">{t('login_button')}</Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <LoginPage onSwitchToSignup={handleSwitchToSignup} />
+                                    </DialogContent>
+                                </Dialog>
                             </div>
                         </CardContent>
                     </Card>
