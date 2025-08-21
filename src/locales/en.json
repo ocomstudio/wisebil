@@ -119,7 +119,7 @@
     "transaction_date_label": "Transaction Date",
     "pick_a_date": "Pick a date",
     "settings": "Settings",
-    "billing": "Billing",
+    "billing": "Subscription",
     "logout": "Log Out",
     "logout_success_title": "Logout Successful",
     "see_you_soon": "See you soon!",
@@ -389,5 +389,7 @@
     "budget": "Budget",
     "contribution": "Contribution",
     "agent_w_no_action": "I didn't find any financial actions to record in your message. You can try again by being more specific.",
-    "agent_w_success": "Your financial data has been updated!"
+    "agent_w_success": "Your financial data has been updated!",
+    "login_required_for_subscription": "You must be logged in to subscribe.",
+    "subscription_error": "An error occurred while subscribing. Please try again."
 }
