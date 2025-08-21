@@ -12,15 +12,11 @@ const openrouter = new OpenAI({
 
 // Prioritized list of models. The service will try them in this order.
 const TEXT_MODELS = [
-  'openai/gpt-4o',
-  'anthropic/claude-3-opus',
-  'openai/gpt-4-turbo',
   'mistralai/mistral-7b-instruct:free',
 ];
 
 const VISION_MODELS = [
-    'openai/gpt-4o',
-    'openai/gpt-4-turbo',
+    'mistralai/mistral-7b-instruct:free', // Fallback to a free model, though it might not have vision capabilities. This prevents a crash.
 ];
 
 type GenerateOptions = {
