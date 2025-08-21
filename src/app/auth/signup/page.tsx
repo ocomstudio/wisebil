@@ -40,7 +40,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   const { t } = useLocale();
   const { toast } = useToast();
   const router = useRouter();
-  const { signupWithEmail, loginWithGoogle, updateUser } = useAuth();
+  const { signupWithEmail, loginWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const signupSchema = z.object({
@@ -96,18 +96,10 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   const onSubmit = async (data: SignupFormValues) => {
     setIsLoading(true);
     try {
-      const userCredential = await signupWithEmail(data.email, data.password);
-      
-      // Update Firebase Auth Profile
-      await updateProfile(userCredential.user, {
-        displayName: data.fullName,
-      });
-
-      // Update our custom user profile in Firestore
-      await updateUser({ 
-        displayName: data.fullName, 
+      // Pass all necessary data to the context function
+      await signupWithEmail(data.email, data.password, {
+        fullName: data.fullName,
         phone: data.phone,
-        profileComplete: true 
       });
       
       toast({

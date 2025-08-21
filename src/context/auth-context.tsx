@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile } from 'firebase/auth';
+import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile, UserCredential } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
@@ -18,12 +18,18 @@ interface User {
   subscriptionStatus?: 'active' | 'inactive';
 }
 
+type SignupFunction = (
+  email: string,
+  password: string,
+  profileData: { fullName: string; phone: string }
+) => Promise<UserCredential>;
+
 interface AuthContextType {
   user: User | null;
   firebaseUser: FirebaseUser | null;
   isLoading: boolean;
   loginWithEmail: typeof signInWithEmailAndPassword;
-  signupWithEmail: typeof createUserWithEmailAndPassword;
+  signupWithEmail: SignupFunction;
   loginWithGoogle: () => Promise<{ isNewUser: boolean; user: FirebaseUser }>;
   logout: () => Promise<void>;
   updateUser: (newUserData: Partial<User>) => Promise<void>;
@@ -73,6 +79,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribeAuth(); // Unsubscribe from auth listener on cleanup
   }, []);
   
+  const signupWithEmail: SignupFunction = async (email, password, { fullName, phone }) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const { user: fbUser } = userCredential;
+
+    // Update Firebase Auth profile
+    await updateProfile(fbUser, { displayName: fullName });
+
+    // Create Firestore document with all the correct data
+    const userDocRef = doc(db, 'users', fbUser.uid);
+    const profileData: Omit<User, 'uid'> = {
+      email: fbUser.email,
+      displayName: fullName,
+      phone,
+      avatar: fbUser.photoURL,
+      profileComplete: true, // Profile is complete from the start
+      subscriptionStatus: 'inactive',
+    };
+    await setDoc(userDocRef, { profile: profileData }, { merge: true });
+
+    return userCredential;
+  };
+  
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
@@ -120,21 +148,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     firebaseUser,
     isLoading,
     loginWithEmail: signInWithEmailAndPassword.bind(null, auth),
-    signupWithEmail: (email, password) => {
-      // This ensures profileComplete is set to true for email sign-ups
-      return createUserWithEmailAndPassword(auth, email, password).then(async (userCredential) => {
-        const userDocRef = doc(db, 'users', userCredential.user.uid);
-        const profileData = {
-            email: userCredential.user.email,
-            displayName: userCredential.user.displayName,
-            avatar: userCredential.user.photoURL,
-            profileComplete: true,
-            subscriptionStatus: 'inactive'
-        };
-        await setDoc(userDocRef, { profile: profileData }, { merge: true });
-        return userCredential;
-      });
-    },
+    signupWithEmail,
     loginWithGoogle,
     logout,
     updateUser,
