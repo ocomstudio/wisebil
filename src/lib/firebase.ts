@@ -5,13 +5,13 @@ import { initializeFirestore, CACHE_SIZE_UNLIMITED, enableIndexedDbPersistence }
 
 const firebaseConfig = {
   apiKey: "AIzaSyAwsld5_98H5kslXgwtIOgOv3uDgVRJeYY",
-  authDomain: "wisebil-a1757.firebaseapp.com",
-  databaseURL: "https://wisebil-default-rtdb.firebaseio.com",
-  projectId: "wisebil",
-  storageBucket: "wisebil.firebasestorage.app",
-  messagingSenderId: "863943790691",
-  appId: "1:863943790691:web:0ee38b99a42651f099a856"
+  authDomain: "wisebil-596a8.firebaseapp.com",
+  projectId: "wisebil-596a8",
+  storageBucket: "wisebil-596a8.appspot.com",
+  messagingSenderId: "1044516540078",
+  appId: "1:1044516540078:web:b1d9c1f6a1b2c3d4e5f6a7" // This is a placeholder App ID, you might need to replace it with the actual one from your Firebase project settings.
 };
+
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
