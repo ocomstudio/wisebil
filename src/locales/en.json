@@ -391,5 +391,15 @@
     "agent_w_no_action": "I didn't find any financial actions to record in your message. You can try again by being more specific.",
     "agent_w_success": "Your financial data has been updated!",
     "login_required_for_subscription": "You must be logged in to subscribe.",
-    "subscription_error": "An error occurred while subscribing. Please try again."
+    "subscription_error": "An error occurred while subscribing. Please try again.",
+    "data_export_title": "Data Export",
+    "data_export_desc": "Download your personal financial data.",
+    "export_data_button": "Export Data",
+    "export_dialog_desc": "Select the data and date range you wish to export.",
+    "data_to_export_label": "Data to export",
+    "transactions": "Transactions",
+    "date_range_label": "Date Range",
+    "pick_a_date_range": "Pick a date range",
+    "date_range_helper": "Leave blank to export all transaction data.",
+    "export_button": "Export"
 }

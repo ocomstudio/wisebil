@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck, Languages, Wallet, Trash2 } from "lucide-react";
+import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck, Languages, Wallet, Trash2, Download } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useSettings } from "@/context/settings-context";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +34,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { db } from "@/lib/firebase";
 import { doc, updateDoc } from 'firebase/firestore';
+import { ExportDataDialog } from "@/components/dashboard/export-data-dialog";
 
 
 export default function SettingsPage() {
@@ -247,6 +248,16 @@ export default function SettingsPage() {
               </div>
             </form>
           </Form>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('data_export_title')}</CardTitle>
+          <CardDescription>{t('data_export_desc')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <ExportDataDialog />
         </CardContent>
       </Card>
 

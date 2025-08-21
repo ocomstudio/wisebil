@@ -391,5 +391,15 @@
     "agent_w_no_action": "Je n'ai trouvé aucune action financière à enregistrer dans votre message. Vous pouvez réessayer en étant plus précis.",
     "agent_w_success": "Vos données financières ont été mises à jour !",
     "login_required_for_subscription": "Vous devez être connecté pour vous abonner.",
-    "subscription_error": "Une erreur est survenue lors de l'abonnement. Veuillez réessayer."
+    "subscription_error": "Une erreur est survenue lors de l'abonnement. Veuillez réessayer.",
+    "data_export_title": "Exportation des données",
+    "data_export_desc": "Téléchargez vos données financières personnelles.",
+    "export_data_button": "Exporter les données",
+    "export_dialog_desc": "Sélectionnez les données et la période que vous souhaitez exporter.",
+    "data_to_export_label": "Données à exporter",
+    "transactions": "Transactions",
+    "date_range_label": "Période",
+    "pick_a_date_range": "Choisissez une période",
+    "date_range_helper": "Laissez vide pour exporter toutes les données de transaction.",
+    "export_button": "Exporter"
 }
