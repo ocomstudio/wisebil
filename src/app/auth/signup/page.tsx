@@ -29,6 +29,8 @@ import { useLocale } from "@/context/locale-context";
 import { Loader2 } from "lucide-react";
 import { FirebaseError } from "firebase/app";
 import Link from "next/link";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 interface SignupPageProps {
   onSwitchToLogin?: () => void;
@@ -38,7 +40,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   const { t } = useLocale();
   const { toast } = useToast();
   const router = useRouter();
-  const { signupWithEmail, loginWithGoogle } = useAuth();
+  const { signupWithEmail, loginWithGoogle, updateUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const signupSchema = z.object({
@@ -96,8 +98,16 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
     try {
       const userCredential = await signupWithEmail(data.email, data.password);
       
+      // Update Firebase Auth Profile
       await updateProfile(userCredential.user, {
         displayName: data.fullName,
+      });
+
+      // Update our custom user profile in Firestore
+      await updateUser({ 
+        displayName: data.fullName, 
+        phone: data.phone,
+        profileComplete: true 
       });
       
       toast({
@@ -115,12 +125,16 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   const onGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      await loginWithGoogle();
-      toast({
+      const { isNewUser } = await loginWithGoogle();
+      if (isNewUser) {
+        router.push("/auth/complete-profile");
+      } else {
+        router.push("/dashboard");
+      }
+       toast({
         title: t('login_success_title'),
         description: t('welcome_back'),
       });
-      router.push("/dashboard");
     } catch (error) {
       handleAuthError(error);
     } finally {

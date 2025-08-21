@@ -95,12 +95,16 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
   const onGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      await loginWithGoogle();
+      const { isNewUser } = await loginWithGoogle();
+      if (isNewUser) {
+        router.push("/auth/complete-profile");
+      } else {
+        router.push("/dashboard");
+      }
        toast({
         title: t('login_success_title'),
         description: t('welcome_back'),
       });
-      router.push("/dashboard");
     } catch (error) {
       handleAuthError(error);
     } finally {

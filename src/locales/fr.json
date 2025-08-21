@@ -401,5 +401,17 @@
     "date_range_label": "Période",
     "pick_a_date_range": "Choisissez une période",
     "date_range_helper": "Laissez vide pour exporter toutes les données de transaction.",
-    "export_button": "Exporter"
+    "export_button": "Exporter",
+    "An unknown error occurred.": "Une erreur inconnue est survenue.",
+    "Invalid email or password.": "Email ou mot de passe invalide.",
+    "Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.": "L'accès à ce compte a été temporairement désactivé en raison de nombreuses tentatives de connexion infructueuses. Vous pouvez le restaurer immédiatement en réinitialisant votre mot de passe ou réessayer plus tard.",
+    "Login failed": "Échec de la connexion",
+    "This email is already in use by another account.": "Cet email est déjà utilisé par un autre compte.",
+    "The password is too weak. Please choose a stronger password.": "Le mot de passe est trop faible. Veuillez choisir un mot de passe plus fort.",
+    "Signup failed": "Échec de l'inscription",
+    "complete_profile_title": "Finaliser votre profil",
+    "complete_profile_desc": "Quelques informations supplémentaires sont nécessaires pour finaliser votre inscription.",
+    "profile_update_failed_title": "Échec de la mise à jour",
+    "profile_completed_title": "Profil complété !",
+    "welcome_message": "Bienvenue sur Wisebil ! Vous pouvez maintenant accéder à votre tableau de bord."
 }

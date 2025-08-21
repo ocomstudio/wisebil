@@ -12,6 +12,8 @@ interface User {
   email: string | null;
   displayName: string | null;
   avatar: string | null;
+  phone?: string | null;
+  profileComplete?: boolean;
   stripeCustomerId?: string;
   subscriptionStatus?: 'active' | 'inactive';
 }
@@ -22,9 +24,9 @@ interface AuthContextType {
   isLoading: boolean;
   loginWithEmail: typeof signInWithEmailAndPassword;
   signupWithEmail: typeof createUserWithEmailAndPassword;
-  loginWithGoogle: () => Promise<any>;
+  loginWithGoogle: () => Promise<{ isNewUser: boolean; user: FirebaseUser }>;
   logout: () => Promise<void>;
-  updateUser: (newUserData: Partial<User>) => void;
+  updateUser: (newUserData: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,19 +46,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           if (docSnap.exists() && docSnap.data().profile) {
               setUser({ uid: fbUser.uid, ...docSnap.data().profile });
           } else {
+               // This case handles initial user creation before profile completion
                const profileData = {
                   email: fbUser.email,
                   displayName: fbUser.displayName || 'Wisebil User',
                   avatar: fbUser.photoURL,
+                  profileComplete: false,
                   subscriptionStatus: 'inactive'
                };
                setUser({ uid: fbUser.uid, ...profileData });
-               // Save this initial profile to Firestore
-               setDoc(userDocRef, { profile: profileData }, { merge: true }).catch(e => {
-                  console.error("Failed to save initial user profile", e);
-               });
           }
           setIsLoading(false);
+        }, (error) => {
+            console.error("Firestore snapshot error:", error);
+            setIsLoading(false);
         });
 
         return () => unsubscribeDoc(); // Unsubscribe from doc listener when auth state changes
@@ -72,7 +75,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    const userDocRef = doc(db, 'users', result.user.uid);
+    const docSnap = await getDoc(userDocRef);
+
+    if (docSnap.exists() && docSnap.data().profile?.profileComplete) {
+      return { isNewUser: false, user: result.user };
+    } else {
+      const profileData = {
+        email: result.user.email,
+        displayName: result.user.displayName,
+        avatar: result.user.photoURL,
+        profileComplete: false,
+        subscriptionStatus: 'inactive'
+      };
+      await setDoc(userDocRef, { profile: profileData }, { merge: true });
+      return { isNewUser: true, user: result.user };
+    }
   }
 
   const logout = () => signOut(auth);
@@ -96,12 +115,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
-  const value = {
+  const value: AuthContextType = {
     user,
     firebaseUser,
     isLoading,
     loginWithEmail: signInWithEmailAndPassword.bind(null, auth),
-    signupWithEmail: createUserWithEmailAndPassword.bind(null, auth),
+    signupWithEmail: (email, password) => {
+      // This ensures profileComplete is set to true for email sign-ups
+      return createUserWithEmailAndPassword(auth, email, password).then(async (userCredential) => {
+        const userDocRef = doc(db, 'users', userCredential.user.uid);
+        const profileData = {
+            email: userCredential.user.email,
+            displayName: userCredential.user.displayName,
+            avatar: userCredential.user.photoURL,
+            profileComplete: true,
+            subscriptionStatus: 'inactive'
+        };
+        await setDoc(userDocRef, { profile: profileData }, { merge: true });
+        return userCredential;
+      });
+    },
     loginWithGoogle,
     logout,
     updateUser,
