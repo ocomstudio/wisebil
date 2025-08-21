@@ -39,6 +39,7 @@ export type FinancialSummaryInput = z.infer<typeof FinancialSummaryInputSchema>;
 export const FinancialSummaryOutputSchema = z.object({
   summary: z.string().describe("A concise, encouraging summary of the user's financial situation. It should be one or two sentences long. Be direct and human."),
   advice: z.string().describe('A single, actionable piece of advice to help the user improve their financial habits. It should be one sentence long. Be direct, positive, and human.'),
+  prediction: z.string().describe("A single sentence predicting the user's spending for the next month based on current habits."),
 });
 export type FinancialSummaryOutput = z.infer<typeof FinancialSummaryOutputSchema>;
 

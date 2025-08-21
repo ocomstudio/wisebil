@@ -31,6 +31,7 @@ async function getFinancialSummaryFlow(input: FinancialSummaryInput): Promise<Fi
             'Bienvenue ! Ajoutez vos premières transactions pour voir votre résumé financier ici.',
             advice:
             'Commencez par enregistrer une dépense ou un revenu pour prendre le contrôle de vos finances.',
+            prediction: "Ajoutez des données pour voir les prédictions."
         };
         } else {
         return {
@@ -38,6 +39,7 @@ async function getFinancialSummaryFlow(input: FinancialSummaryInput): Promise<Fi
             'Welcome! Add your first transactions to see your financial summary here.',
             advice:
             'Start by recording an expense or income to take control of your finances.',
+            prediction: "Add data to see predictions."
         };
         }
     }
@@ -46,9 +48,12 @@ async function getFinancialSummaryFlow(input: FinancialSummaryInput): Promise<Fi
         .map((e) => `- ${e.name}: ${e.amount} ${currency}`)
         .join('\n');
 
-    const systemPrompt = `You are a friendly and encouraging financial advisor. Your goal is to analyze the user's financial data and provide a simple, positive summary and one actionable piece of advice.
+    const systemPrompt = `You are a friendly and encouraging financial advisor. Your goal is to analyze the user's financial data and provide a simple, positive summary, one actionable piece of advice, and a spending prediction for the next month.
                     
-    Your tone must be human, simple, and direct. The user should feel motivated and positive after reading your message. The summary should be one or two sentences MAX. The advice must be one sentence MAX.
+    Your tone must be human, simple, and direct. The user should feel motivated and positive after reading your message. 
+    - The summary should be one or two sentences MAX.
+    - The advice must be one sentence MAX.
+    - The prediction should be a single sentence estimating the total expenses for the next 30 days based on the current data. Start it with "Based on your habits, you might spend around...".
 
     You MUST speak in the user's specified language: ${language}.
     You MUST respond ONLY with a JSON object conforming to the output schema.
@@ -61,7 +66,7 @@ async function getFinancialSummaryFlow(input: FinancialSummaryInput): Promise<Fi
 
     const rawOutput = await generate({
         system: systemPrompt,
-        prompt: `Based on the provided data, generate a summary and advice.`,
+        prompt: `Based on the provided data, generate a summary, advice, and prediction.`,
         output: {
             format: 'json',
             schema: FinancialSummaryOutputSchema
