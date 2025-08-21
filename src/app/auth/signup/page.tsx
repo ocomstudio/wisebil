@@ -31,8 +31,6 @@ import { FirebaseError } from "firebase/app";
 import Link from "next/link";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { temporaryEmailDomains } from "@/config/blocklists";
-
 
 interface SignupPageProps {
   onSwitchToLogin?: () => void;
@@ -51,9 +49,15 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
     email: z.string().email(t('signup_email_error'))
       .refine(email => {
         const domain = email.split('@')[1];
-        return !temporaryEmailDomains.includes(domain);
+        return ['gmail.com', 'yahoo.com'].includes(domain);
       }, {
-        message: t('temp_email_error'),
+        message: "Seuls les e-mails Gmail et Yahoo sont autorisés."
+      })
+      .refine(email => !email.split('@')[0].includes('+'), {
+        message: "Les alias d'e-mail (contenant un '+') ne sont pas autorisés."
+      })
+      .refine(email => (email.split('@')[0].match(/\./g) || []).length <= 2, {
+        message: "L'adresse e-mail contient trop de points."
       }),
     password: z.string().min(8, t('signup_password_error')),
     confirmPassword: z.string(),
