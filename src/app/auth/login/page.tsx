@@ -80,12 +80,11 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
     setIsLoading(true);
     try {
       await loginWithEmail(data.email, data.password);
-      // The ProtectedRoute or AuthContext will handle redirection
       toast({
         title: t('login_success_title'),
         description: t('welcome_back'),
       });
-      // No need to manually redirect. The auth state change will trigger it.
+      router.push('/dashboard');
     } catch (error) {
       handleAuthError(error);
     } finally {
@@ -97,11 +96,11 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
     setIsLoading(true);
     try {
       await loginWithGoogle();
-      // The ProtectedRoute or AuthContext will handle redirection
       toast({
         title: t('login_success_title'),
         description: t('welcome_back'),
       });
+      router.push('/dashboard');
     } catch (error) {
       handleAuthError(error);
     } finally {
