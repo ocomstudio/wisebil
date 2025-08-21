@@ -5,15 +5,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocale } from "@/context/locale-context";
-import { Check, Loader2 } from "lucide-react";
-import Link from "next/link";
+import { Check, Info } from "lucide-react";
 import type { Currency } from "@/context/locale-context";
 import { useAuth } from "@/context/auth-context";
-import { toast } from 'react-hot-toast';
 
 const pricing = {
-    premium: { XOF: 3000, priceId: 'price_1PgQj5RxH3iN5fA2z3B1gH4e' },
-    business: { XOF: 9900, priceId: 'price_1PgQkLRxH3iN5fA2a9d8vE8f' },
+    premium: { XOF: 3000 },
+    business: { XOF: 9900 },
 };
 
 const conversionRates: Record<Currency, number> = {
@@ -26,7 +24,11 @@ const conversionRates: Record<Currency, number> = {
 export default function BillingPage() {
     const { t, currency, formatCurrency } = useLocale();
     const { user } = useAuth();
-    const [isLoading, setIsLoading] = useState<string | null>(null);
+    
+    const isCurrentPlan = (plan: 'premium' | 'business') => {
+        // This is a placeholder. In a real app, you'd check the user's subscription status.
+        return user?.subscriptionStatus === 'active' && plan === 'premium';
+    };
 
     const getConvertedPrice = (basePriceXOF: number, targetCurrency: Currency): number => {
         if (targetCurrency === 'XOF') {
@@ -35,45 +37,6 @@ export default function BillingPage() {
         const rate = conversionRates[targetCurrency];
         return Math.round(basePriceXOF / rate);
     };
-
-    const handleCheckout = async (priceId: string) => {
-        if (!user) {
-            toast.error(t('login_required_for_subscription'));
-            return;
-        }
-
-        setIsLoading(priceId);
-
-        try {
-            const response = await fetch('/api/stripe', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    priceId: priceId,
-                    userId: user.uid,
-                    userEmail: user.email,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to create checkout session');
-            }
-
-            const { url } = await response.json();
-            window.location.href = url;
-        } catch (error) {
-            console.error("Stripe checkout error:", error);
-            toast.error(t('subscription_error'));
-            setIsLoading(null);
-        }
-    }
-    
-    const isCurrentPlan = (plan: 'premium' | 'business') => {
-        return user?.subscriptionStatus === 'active'; // This is a simplified check
-    };
-
 
     const plans = [
         {
@@ -89,7 +52,6 @@ export default function BillingPage() {
             isCurrent: user?.subscriptionStatus === 'inactive' || !user?.subscriptionStatus,
             buttonText: t('current_plan_button'),
             buttonVariant: "outline",
-            action: () => {}
         },
         {
             title: t('plan_premium_title'),
@@ -105,8 +67,6 @@ export default function BillingPage() {
             buttonText: isCurrentPlan('premium') ? t('current_plan_button') : t('upgrade_premium_button'),
             buttonVariant: "default",
             isPopular: true,
-            priceId: pricing.premium.priceId,
-            action: () => handleCheckout(pricing.premium.priceId)
         },
         {
             title: t('plan_business_title'),
@@ -121,8 +81,6 @@ export default function BillingPage() {
             isCurrent: isCurrentPlan('business'),
             buttonText: isCurrentPlan('business') ? t('current_plan_button') : t('choose_plan_button'),
             buttonVariant: "outline",
-            priceId: pricing.business.priceId,
-            action: () => handleCheckout(pricing.business.priceId)
         }
     ]
 
@@ -132,6 +90,18 @@ export default function BillingPage() {
                 <h1 className="text-3xl font-bold font-headline">{t('billing_page_title')}</h1>
                 <p className="text-muted-foreground mt-2">{t('billing_page_subtitle')}</p>
             </div>
+
+            <Card className="bg-blue-900/20 border-blue-500/30">
+                <CardHeader className="flex flex-row items-center gap-4">
+                    <Info className="h-6 w-6 text-blue-400"/>
+                    <div>
+                        <CardTitle className="text-base text-blue-300">Intégration des paiements</CardTitle>
+                        <p className="text-sm text-blue-400/80">
+                            La sélection d'un plan est actuellement désactivée. Une solution de paiement adaptée au marché local sera bientôt intégrée.
+                        </p>
+                    </div>
+                </CardHeader>
+            </Card>
 
              <div className="mx-auto grid max-w-5xl items-stretch gap-8 grid-cols-1 lg:grid-cols-3 mt-12">
                 {plans.map(plan => (
@@ -150,8 +120,7 @@ export default function BillingPage() {
                             </ul>
                         </CardContent>
                         <div className="p-6 pt-0 mt-auto">
-                             <Button onClick={plan.action} variant={plan.buttonVariant as any} className="w-full" disabled={plan.isCurrent || (!!isLoading && isLoading !== plan.priceId)}>
-                                {isLoading === plan.priceId ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                             <Button variant={plan.buttonVariant as any} className="w-full" disabled>
                                 {plan.buttonText}
                             </Button>
                         </div>
