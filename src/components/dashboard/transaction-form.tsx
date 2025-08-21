@@ -41,7 +41,7 @@ interface TransactionFormProps {
   transactionType: 'income' | 'expense';
   onSubmit: (data: Omit<Transaction, 'id' | 'type'>) => Promise<void>;
   isSubmitting: boolean;
-  initialData?: Transaction | null;
+  initialData?: Partial<Transaction> | null;
   submitButtonText?: string;
 }
 
@@ -76,7 +76,7 @@ export function TransactionForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       description: initialData?.description || "",
-      amount: initialData?.amount || 0,
+      amount: initialData?.amount || undefined,
       category: isCustomCategory ? "Autre" : initialData?.category || "",
       date: initialData?.date ? new Date(initialData.date) : new Date(),
       customCategory: isCustomCategory ? initialData?.category : "",

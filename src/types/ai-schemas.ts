@@ -111,3 +111,21 @@ export const ExpenseAssistantInputSchema = z.object({
 });
 
 export type ExpenseAssistantInput = z.infer<typeof ExpenseAssistantInputSchema>;
+
+// Schema for process-receipt-flow.ts
+export const ProcessReceiptInputSchema = z.object({
+  photoDataUri: z
+    .string()
+    .describe(
+      "A photo of a receipt, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+    ),
+});
+export type ProcessReceiptInput = z.infer<typeof ProcessReceiptInputSchema>;
+
+export const ProcessReceiptOutputSchema = z.object({
+    merchantName: z.string().describe("The name of the merchant or store from the receipt."),
+    amount: z.number().describe("The total amount of the transaction from the receipt."),
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format.").describe("The date of the transaction from the receipt in YYYY-MM-DD format."),
+    category: z.string().describe("A suggested expense category based on the merchant name or items."),
+});
+export type ProcessReceiptOutput = z.infer<typeof ProcessReceiptOutputSchema>;

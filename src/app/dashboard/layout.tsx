@@ -1,6 +1,7 @@
 // src/app/dashboard/layout.tsx
 "use client";
 
+import { usePathname } from "next/navigation";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { Logo } from "@/components/common/logo";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
@@ -21,6 +22,12 @@ import { LocaleProvider, useLocale } from "@/context/locale-context";
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { t } = useLocale();
+  const pathname = usePathname();
+
+  // Hide main layout for the full-screen scan page on mobile
+  if (pathname === '/dashboard/scan-receipt') {
+    return <div className="h-screen w-screen">{children}</div>;
+  }
 
   return (
     <div className="grid h-screen w-full overflow-hidden md:grid-cols-[250px_1fr_350px]">

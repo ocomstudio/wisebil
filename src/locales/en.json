@@ -70,6 +70,7 @@
     "nav_accounts": "Accounts",
     "nav_notifications": "Notifications",
     "nav_settings": "Settings",
+    "nav_scan": "Scan",
     "total_balance": "Total Balance",
     "income": "Income",
     "expenses": "Expenses",
@@ -437,5 +438,10 @@
     "address_error": "Address must be at least 5 characters.",
     "city_error": "City must be at least 2 characters.",
     "zipcode_error": "Zip code must be at least 5 characters.",
-    "proceed_to_payment_button": "Pay {{amount}}"
+    "proceed_to_payment_button": "Pay {{amount}}",
+    "scan_receipt_title": "Scan a receipt",
+    "camera_permission_denied_title": "Camera access denied",
+    "camera_permission_denied_desc": "Please allow camera access in your browser settings to use this feature.",
+    "scan_button": "Scan",
+    "scanning_button": "Scanning..."
 }

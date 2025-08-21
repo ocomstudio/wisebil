@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BarChart, Plus, User, Shield, Target, Lightbulb } from 'lucide-react';
+import { Home, BarChart, Plus, User, Shield, Target, Lightbulb, ScanLine } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AddTransactionDialog } from './add-transaction-dialog';
 import { useLocale } from '@/context/locale-context';
@@ -15,8 +15,8 @@ export function BottomNav() {
   const navItems = [
     { href: '/dashboard', label: t('nav_home'), icon: Home },
     { href: '/dashboard/reports', label: t('nav_reports'), icon: BarChart },
+    { href: '/dashboard/scan-receipt', label: t('nav_scan'), icon: ScanLine },
     { href: '/dashboard/budget', label: t('nav_budgets'), icon: Target },
-    { href: '/dashboard/savings', label: t('nav_savings'), icon: Shield },
     { href: '/dashboard/conseil', label: t('nav_advice'), icon: Lightbulb },
   ];
 
@@ -25,6 +25,20 @@ export function BottomNav() {
       <nav className="flex items-center justify-around h-16">
         {navItems.map((item, index) => {
           const isActive = item.href && pathname === item.href;
+          if (item.label === t('nav_scan')) {
+              return (
+                <Link
+                    key={item.label}
+                    href={item.href || '#'}
+                    className="flex flex-col items-center justify-center -mt-6"
+                >
+                    <div className="bg-primary text-primary-foreground p-4 rounded-full flex items-center justify-center shadow-lg border-4 border-background">
+                         <item.icon className="h-8 w-8" />
+                    </div>
+                    <span className="text-xs mt-1 font-medium text-primary">{item.label}</span>
+                </Link>
+              )
+          }
           return (
             <Link
               key={item.label}

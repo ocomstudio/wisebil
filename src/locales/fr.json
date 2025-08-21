@@ -70,6 +70,7 @@
     "nav_accounts": "Comptes",
     "nav_notifications": "Notifications",
     "nav_settings": "Paramètres",
+    "nav_scan": "Scanner",
     "total_balance": "Solde Total",
     "income": "Revenus",
     "expenses": "Dépenses",
@@ -256,7 +257,7 @@
     "new_chat_button": "Nouvelle discussion",
     "history_button": "Historique",
     "empty_conversation": "Conversation vide",
-    "history_delete_confirmation": "Cette action est irréversible. La conversation sera supprimée définitivement.",
+    "history_delete_confirmation": "Cette action est irréversible. La conversation sera supprimée définitivelement.",
     "history_deleted_success": "Conversation supprimée de l'historique.",
     "toast_tip_desc": "Pensez à noter vos petites dépenses, elles s'additionnent vite !",
     "toast_close_button": "Fermer",
@@ -437,5 +438,10 @@
     "address_error": "L'adresse doit comporter au moins 5 caractères.",
     "city_error": "La ville doit comporter au moins 2 caractères.",
     "zipcode_error": "Le code postal doit comporter au moins 5 caractères.",
-    "proceed_to_payment_button": "Payer {{amount}}"
+    "proceed_to_payment_button": "Payer {{amount}}",
+    "scan_receipt_title": "Scanner un reçu",
+    "camera_permission_denied_title": "Accès à la caméra refusé",
+    "camera_permission_denied_desc": "Veuillez autoriser l'accès à la caméra dans les paramètres de votre navigateur pour utiliser cette fonctionnalité.",
+    "scan_button": "Scanner",
+    "scanning_button": "Scan en cours..."
 }

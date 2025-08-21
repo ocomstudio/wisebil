@@ -1,7 +1,7 @@
 // src/app/dashboard/add-expense/page.tsx
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -9,15 +9,23 @@ import { useToast } from "@/hooks/use-toast";
 import { useTransactions } from "@/context/transactions-context";
 import { TransactionForm } from "@/components/dashboard/transaction-form";
 import type { Transaction } from "@/types/transaction";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useLocale } from "@/context/locale-context";
 
-export default function AddExpensePage() {
+function AddExpenseContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { t } = useLocale();
   const { toast } = useToast();
   const router = useRouter();
   const { addTransaction } = useTransactions();
+  const searchParams = useSearchParams();
+
+  const initialDataFromScan = {
+    amount: searchParams.has('amount') ? Number(searchParams.get('amount')) : undefined,
+    description: searchParams.get('description') || undefined,
+    date: searchParams.get('date') || undefined,
+    category: searchParams.get('category') || undefined,
+  };
 
   const handleSubmit = (data: Omit<Transaction, 'id' | 'type'>) => {
     setIsSubmitting(true);
@@ -28,24 +36,19 @@ export default function AddExpensePage() {
       ...data
     };
     
-    // Optimistic UI update: navigate away and show toast immediately.
     toast({
       title: t('expense_added_title'),
       description: t('expense_added_desc', { expenseDesc: data.description }),
     });
     router.push("/dashboard");
 
-    // Send to server in the background.
     addTransaction(newTransaction).catch(error => {
       console.error("Failed to add expense:", error);
-      // Optionally, handle the error more gracefully, e.g., by showing a persistent error message
-      // or providing a "retry" option. For now, a toast is sufficient.
       toast({
         variant: "destructive",
         title: t('error_title'),
         description: t('expense_add_error_desc'),
       });
-      // We don't need to `setIsSubmitting(false)` because we've already navigated away.
     });
   };
 
@@ -63,8 +66,17 @@ export default function AddExpensePage() {
         transactionType="expense"
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
+        initialData={initialDataFromScan}
         submitButtonText={t('add_expense_button')}
       />
     </div>
   );
+}
+
+export default function AddExpensePage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <AddExpenseContent />
+        </Suspense>
+    )
 }
