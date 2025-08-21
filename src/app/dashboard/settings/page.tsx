@@ -32,6 +32,8 @@ import { useSavings } from "@/context/savings-context";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { db } from "@/lib/firebase";
+import { doc, updateDoc } from 'firebase/firestore';
 
 
 export default function SettingsPage() {
@@ -116,18 +118,19 @@ export default function SettingsPage() {
 
   const handleResetApp = async () => {
     try {
-      await Promise.all([
-        resetTransactions(),
-        resetBudgets(),
-        resetSavings()
-      ]);
+      if (!user) {
+        throw new Error("User not authenticated for reset.");
+      }
       
-      // In a real app, you would also delete data from Firestore.
-      // This is a placeholder for that functionality.
-      
-      localStorage.removeItem('wisebil-conversation-history');
+      await resetTransactions();
+      await resetBudgets();
+      await resetSavings();
+
+      const userDocRef = doc(db, 'users', user.uid);
+      await updateDoc(userDocRef, {
+        conversations: {}
+      });
   
-      // Reset settings to default
       updateSettings({
         isBalanceHidden: false,
         isPinLockEnabled: false,
@@ -139,7 +142,6 @@ export default function SettingsPage() {
           description: t('reset_success_desc')
       });
       
-      // Log out and redirect
       await logout();
       router.push('/auth/login');
     } catch (error) {
@@ -163,7 +165,6 @@ export default function SettingsPage() {
       reader.onloadend = () => {
         const base64String = reader.result as string;
         updateUser({ avatar: base64String });
-        // In a real app, you would upload this to Firebase Storage and update the user's photoURL.
       };
       reader.readAsDataURL(file);
     }
