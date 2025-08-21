@@ -8,7 +8,6 @@ import { Camera, Loader2, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLocale } from '@/context/locale-context';
 import { processReceipt } from '@/ai/flows/process-receipt-flow';
-import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import Link from 'next/link';
 
@@ -38,8 +37,8 @@ export default function ScanReceiptPage() {
         setHasCameraPermission(false);
         toast({
           variant: 'destructive',
-          title: 'Camera Access Denied',
-          description: 'Please enable camera permissions in your browser settings.',
+          title: t('camera_permission_denied_title'),
+          description: t('camera_permission_denied_desc'),
         });
       }
     };
@@ -52,7 +51,7 @@ export default function ScanReceiptPage() {
             stream.getTracks().forEach(track => track.stop());
         }
     }
-  }, [toast]);
+  }, [toast, t]);
 
   const handleScan = async () => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -119,7 +118,7 @@ export default function ScanReceiptPage() {
        </main>
 
        <footer className="p-6 bg-black/50 backdrop-blur-sm">
-         <Button onClick={handleScan} disabled={isScanning || !hasCameraPermission} className="w-full h-16 rounded-full text-lg">
+         <Button onClick={handleScan} disabled={isScanning || hasCameraPermission === false} className="w-full h-16 rounded-full text-lg">
            {isScanning ? (
              <Loader2 className="h-6 w-6 animate-spin" />
            ) : (
