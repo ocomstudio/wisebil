@@ -60,6 +60,7 @@
     "signup_password_mismatch": "Passwords do not match.",
     "signup_success_title": "Registration successful",
     "signup_success_desc": "Welcome! Please complete your profile.",
+    "signup_success_desc_verify": "Your account has been created! Please check your email to continue.",
     "notifications": "Notifications",
     "nav_home": "Home",
     "nav_reports": "Reports",
@@ -413,5 +414,16 @@
     "complete_profile_desc": "A little more information is needed to finalize your registration.",
     "profile_update_failed_title": "Update failed",
     "profile_completed_title": "Profile completed!",
-    "welcome_message": "Welcome to Wisebil! You can now access your dashboard."
+    "welcome_message": "Welcome to Wisebil! You can now access your dashboard.",
+    "temp_email_error": "Temporary email addresses are not allowed.",
+    "verify_email_title": "Please verify your email",
+    "verify_email_desc": "A verification link has been sent to your email address.",
+    "verify_your_email": "Verify your email address",
+    "verify_email_instructions": "We've sent a verification email to {{email}}. Please click the link in the email to continue.",
+    "did_not_receive_email": "Didn't receive the email?",
+    "resend_email_button": "Resend email",
+    "email_verified_title": "Email verified!",
+    "verification_sent_title": "Verification email sent",
+    "verification_sent_desc": "Please check your inbox.",
+    "verification_sent_error": "Could not send verification email. Please try again."
 }

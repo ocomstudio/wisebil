@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile, UserCredential } from 'firebase/auth';
+import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile, UserCredential, sendEmailVerification } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
@@ -33,6 +33,7 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<{ isNewUser: boolean; user: FirebaseUser }>;
   logout: () => Promise<void>;
   updateUser: (newUserData: Partial<User>) => Promise<void>;
+  resendVerificationEmail: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -85,6 +86,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Update Firebase Auth profile
     await updateProfile(fbUser, { displayName: fullName });
+    
+    // Send verification email
+    await sendEmailVerification(fbUser);
 
     // Create Firestore document with all the correct data
     const userDocRef = doc(db, 'users', fbUser.uid);
@@ -142,6 +146,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         await setDoc(userDocRef, { profile: updatedLocalUser }, { merge: true });
     }
   };
+
+  const resendVerificationEmail = async () => {
+    if (firebaseUser) {
+      await sendEmailVerification(firebaseUser);
+    } else {
+      throw new Error("No user is currently signed in.");
+    }
+  };
   
   const value: AuthContextType = {
     user,
@@ -152,6 +164,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loginWithGoogle,
     logout,
     updateUser,
+    resendVerificationEmail,
   };
 
   return (

@@ -31,6 +31,8 @@ import { FirebaseError } from "firebase/app";
 import Link from "next/link";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { temporaryEmailDomains } from "@/config/blocklists";
+
 
 interface SignupPageProps {
   onSwitchToLogin?: () => void;
@@ -46,7 +48,13 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   const signupSchema = z.object({
     fullName: z.string().min(2, t('signup_fullname_error')),
     phone: z.string().refine(isValidPhoneNumber, { message: t('signup_phone_error') }),
-    email: z.string().email(t('signup_email_error')),
+    email: z.string().email(t('signup_email_error'))
+      .refine(email => {
+        const domain = email.split('@')[1];
+        return !temporaryEmailDomains.includes(domain);
+      }, {
+        message: t('temp_email_error'),
+      }),
     password: z.string().min(8, t('signup_password_error')),
     confirmPassword: z.string(),
     terms: z.boolean().refine(val => val === true, {
@@ -104,9 +112,9 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
       
       toast({
         title: t('signup_success_title'),
-        description: t('signup_success_desc'),
+        description: t('signup_success_desc_verify'),
       });
-      router.push("/dashboard");
+      router.push("/auth/verify-email");
     } catch (error) {
       handleAuthError(error);
     } finally {
@@ -117,11 +125,17 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   const onGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      const { isNewUser } = await loginWithGoogle();
+      const { isNewUser, user } = await loginWithGoogle();
       if (isNewUser) {
+        // For Google sign-in, emails are usually verified. We can skip straight to profile completion
+        // or check `user.emailVerified`. Let's assume it's verified for simplicity here.
         router.push("/auth/complete-profile");
       } else {
-        router.push("/dashboard");
+        if (!user.emailVerified) {
+          router.push('/auth/verify-email');
+        } else {
+          router.push("/dashboard");
+        }
       }
        toast({
         title: t('login_success_title'),

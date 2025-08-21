@@ -79,12 +79,21 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     try {
-      await loginWithEmail(data.email, data.password);
-      toast({
-        title: t('login_success_title'),
-        description: t('welcome_back'),
-      });
-      router.push("/dashboard");
+      const userCredential = await loginWithEmail(data.email, data.password);
+      
+      if (!userCredential.user.emailVerified) {
+        toast({
+          title: t('verify_email_title'),
+          description: t('verify_email_desc'),
+        });
+        router.push("/auth/verify-email");
+      } else {
+        toast({
+          title: t('login_success_title'),
+          description: t('welcome_back'),
+        });
+        router.push("/dashboard");
+      }
     } catch (error) {
       handleAuthError(error);
     } finally {
@@ -95,12 +104,20 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
   const onGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      const { isNewUser } = await loginWithGoogle();
+      const { isNewUser, user } = await loginWithGoogle();
+      
+      // Google usually provides verified emails. If not, this flow handles it.
+      if (!user.emailVerified) {
+          router.push('/auth/verify-email');
+          return;
+      }
+      
       if (isNewUser) {
         router.push("/auth/complete-profile");
       } else {
         router.push("/dashboard");
       }
+      
        toast({
         title: t('login_success_title'),
         description: t('welcome_back'),

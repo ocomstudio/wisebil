@@ -60,6 +60,7 @@
     "signup_password_mismatch": "Les mots de passe ne correspondent pas.",
     "signup_success_title": "Inscription réussie",
     "signup_success_desc": "Bienvenue ! Veuillez compléter votre profil.",
+    "signup_success_desc_verify": "Votre compte a été créé ! Veuillez vérifier votre e-mail pour continuer.",
     "notifications": "Notifications",
     "nav_home": "Accueil",
     "nav_reports": "Rapports",
@@ -413,5 +414,16 @@
     "complete_profile_desc": "Quelques informations supplémentaires sont nécessaires pour finaliser votre inscription.",
     "profile_update_failed_title": "Échec de la mise à jour",
     "profile_completed_title": "Profil complété !",
-    "welcome_message": "Bienvenue sur Wisebil ! Vous pouvez maintenant accéder à votre tableau de bord."
+    "welcome_message": "Bienvenue sur Wisebil ! Vous pouvez maintenant accéder à votre tableau de bord.",
+    "temp_email_error": "Les adresses e-mail temporaires ne sont pas autorisées.",
+    "verify_email_title": "Veuillez vérifier votre e-mail",
+    "verify_email_desc": "Un lien de vérification a été envoyé à votre adresse e-mail.",
+    "verify_your_email": "Vérifiez votre adresse e-mail",
+    "verify_email_instructions": "Nous avons envoyé un e-mail de vérification à {{email}}. Veuillez cliquer sur le lien dans l'e-mail pour continuer.",
+    "did_not_receive_email": "Vous n'avez pas reçu l'e-mail ?",
+    "resend_email_button": "Renvoyer l'e-mail",
+    "email_verified_title": "E-mail vérifié !",
+    "verification_sent_title": "E-mail de vérification envoyé",
+    "verification_sent_desc": "Veuillez consulter votre boîte de réception.",
+    "verification_sent_error": "Impossible d'envoyer l'e-mail de vérification. Veuillez réessayer."
 }
