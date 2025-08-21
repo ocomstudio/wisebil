@@ -1,7 +1,6 @@
 // src/lib/genkit.ts
 import {genkit, Plugin, durableStore, noopTraceStore} from 'genkit';
 import {googleAI} from '@genkit-ai/googleai';
-import {dotprompt, prompt} from '@genkit-ai/dotprompt';
 
 const openrouter: Plugin<void> = (options) => ({
   name: 'openrouter',
@@ -122,7 +121,6 @@ const openrouter: Plugin<void> = (options) => ({
 
 export const ai = genkit({
   plugins: [
-    dotprompt(),
     googleAI(),
     openrouter(),
   ],
