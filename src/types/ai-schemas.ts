@@ -15,9 +15,6 @@ export type CategorizeExpenseInput = z.infer<typeof CategorizeExpenseInputSchema
 
 export const CategorizeExpenseOutputSchema = z.object({
   category: z.string().describe('The predicted category of the expense.'),
-  confidence: z
-    .number()
-    .describe('The confidence level of the categorization (0-1).'),
 });
 export type CategorizeExpenseOutput = z.infer<typeof CategorizeExpenseOutputSchema>;
 
@@ -102,7 +99,7 @@ const FinancialDataSchema = z.object({
 export const ExpenseAssistantInputSchema = z.object({
   question: z.string().describe("The user's question about their finances."),
   history: z
-    .array(z.object({ role: z.enum(['user', 'assistant']), content: z.string() }))
+    .array(z.object({ role: z.enum(['user', 'assistant', 'model']), content: z.string() }))
     .describe('The previous conversation history between the user and the assistant.'),
   language: z.string().describe("The user's preferred language (e.g., 'fr', 'en')."),
   currency: z.string().describe("The user's preferred currency (e.g., 'XOF', 'EUR', 'USD')."),
