@@ -53,7 +53,7 @@
     "already_have_account": "Vous avez déjà un compte ?",
     "login_link": "Se connecter",
     "signup_fullname_error": "Le nom doit comporter au moins 2 caractères.",
-    "signup_phone_error": "Le numéro de téléphone doit comporter au moins 9 chiffres.",
+    "signup_phone_error": "Numéro de téléphone invalide.",
     "signup_email_error": "Adresse e-mail invalide.",
     "signup_password_error": "Le mot de passe doit comporter au moins 8 caractères.",
     "signup_terms_error": "Vous devez accepter les termes et conditions.",
@@ -424,5 +424,18 @@
     "email_verified_title": "E-mail vérifié !",
     "verification_sent_title": "E-mail de vérification envoyé",
     "verification_sent_desc": "Veuillez consulter votre boîte de réception.",
-    "verification_sent_error": "Impossible d'envoyer l'e-mail de vérification. Veuillez réessayer."
+    "verification_sent_error": "Impossible d'envoyer l'e-mail de vérification. Veuillez réessayer.",
+    "payment_form_title": "Paiement pour {{planName}}",
+    "payment_form_desc": "Veuillez remplir vos informations de facturation pour continuer.",
+    "firstname_label": "Prénom",
+    "lastname_label": "Nom",
+    "address_label": "Adresse",
+    "city_label": "Ville",
+    "zipcode_label": "Code Postal",
+    "firstname_error": "Le prénom doit comporter au moins 2 caractères.",
+    "lastname_error": "Le nom doit comporter au moins 2 caractères.",
+    "address_error": "L'adresse doit comporter au moins 5 caractères.",
+    "city_error": "La ville doit comporter au moins 2 caractères.",
+    "zipcode_error": "Le code postal doit comporter au moins 5 caractères.",
+    "proceed_to_payment_button": "Payer {{amount}}"
 }

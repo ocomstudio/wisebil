@@ -9,62 +9,23 @@ import { Check, Info, Loader2 } from "lucide-react";
 import type { Currency } from "@/context/locale-context";
 import { useAuth } from "@/context/auth-context";
 import { useToast } from "@/hooks/use-toast";
-import axios from 'axios';
+import { PaymentFormDialog, type Plan } from "@/components/dashboard/payment-form-dialog";
 
-const pricing = {
+export const pricing = {
     premium: { XOF: 3000, EUR: 5, USD: 5 },
     business: { XOF: 9900, EUR: 15, USD: 16 },
 };
 
 export default function BillingPage() {
     const { t, currency, formatCurrency } = useLocale();
-    const { user, firebaseUser } = useAuth();
-    const { toast } = useToast();
-    const [isLoading, setIsLoading] = useState<string | null>(null);
+    const { user } = useAuth();
     
     const isCurrentPlan = (plan: 'premium' | 'business') => {
         // This is a placeholder logic. You should replace it with your actual subscription status check.
         return user?.subscriptionStatus === 'active' && plan === 'premium';
     };
-    
-    const handlePayment = async (plan: 'premium' | 'business') => {
-        setIsLoading(plan);
 
-        if (!firebaseUser) {
-            toast({ variant: 'destructive', title: t('login_required_for_subscription')});
-            setIsLoading(null);
-            return;
-        }
-
-        const planPrice = pricing[plan][currency];
-
-        try {
-            const token = await firebaseUser.getIdToken();
-            const response = await axios.post('/api/cinetpay/initiate-payment', {
-                amount: planPrice,
-                currency: currency,
-                description: `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} - Wisebil`
-            }, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            
-            if (response.data.payment_url) {
-                window.location.href = response.data.payment_url;
-            } else {
-                 toast({ variant: 'destructive', title: t('subscription_error'), description: response.data.error || 'Unknown error' });
-            }
-
-        } catch (error: any) {
-            console.error("Payment initiation failed:", error);
-            const errorMessage = error.response?.data?.error || error.response?.data?.details?.message || t('subscription_error');
-            toast({ variant: 'destructive', title: t('subscription_error'), description: errorMessage });
-        } finally {
-            setIsLoading(null);
-        }
-    }
-
-
-    const plans = [
+    const plans: Plan[] = [
         {
             name: 'free',
             title: t('plan_free_title'),
@@ -137,15 +98,17 @@ export default function BillingPage() {
                             </ul>
                         </CardContent>
                         <div className="p-6 pt-0 mt-auto">
-                            <Button
-                                variant={plan.buttonVariant as any}
-                                className="w-full"
-                                disabled={plan.isCurrent || isLoading !== null}
-                                onClick={() => plan.name !== 'free' && handlePayment(plan.name as 'premium' | 'business')}
-                            >
-                                {isLoading === plan.name && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                {plan.buttonText}
-                            </Button>
+                           {plan.name === 'free' ? (
+                                <Button
+                                    variant={plan.buttonVariant as any}
+                                    className="w-full"
+                                    disabled={plan.isCurrent}
+                                >
+                                    {plan.buttonText}
+                                </Button>
+                           ) : (
+                                <PaymentFormDialog plan={plan} />
+                           )}
                         </div>
                     </Card>
                 ))}

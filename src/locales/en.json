@@ -53,7 +53,7 @@
     "already_have_account": "Already have an account?",
     "login_link": "Log In",
     "signup_fullname_error": "Full name must be at least 2 characters.",
-    "signup_phone_error": "Phone number must be at least 9 digits.",
+    "signup_phone_error": "Invalid phone number.",
     "signup_email_error": "Invalid email address.",
     "signup_password_error": "Password must be at least 8 characters.",
     "signup_terms_error": "You must accept the terms and conditions.",
@@ -424,5 +424,18 @@
     "email_verified_title": "Email verified!",
     "verification_sent_title": "Verification email sent",
     "verification_sent_desc": "Please check your inbox.",
-    "verification_sent_error": "Could not send verification email. Please try again."
+    "verification_sent_error": "Could not send verification email. Please try again.",
+    "payment_form_title": "Payment for {{planName}}",
+    "payment_form_desc": "Please fill in your billing information to continue.",
+    "firstname_label": "First Name",
+    "lastname_label": "Last Name",
+    "address_label": "Address",
+    "city_label": "City",
+    "zipcode_label": "Zip Code",
+    "firstname_error": "First name must be at least 2 characters.",
+    "lastname_error": "Last name must be at least 2 characters.",
+    "address_error": "Address must be at least 5 characters.",
+    "city_error": "City must be at least 2 characters.",
+    "zipcode_error": "Zip code must be at least 5 characters.",
+    "proceed_to_payment_button": "Pay {{amount}}"
 }
