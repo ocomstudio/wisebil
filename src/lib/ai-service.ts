@@ -96,9 +96,7 @@ export const model = {
     }
 };
 
-// These exports are kept for compatibility with the flows that use them.
+// This export is kept for compatibility with the flows that use it.
 export const defineFlow = async <Input, Output>(config: any, fn: (input: Input) => Promise<Output>) => {
     return fn;
 };
-export { z as z };
-export type { z as Schema };
