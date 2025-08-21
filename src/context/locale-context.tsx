@@ -38,42 +38,31 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
   
   useEffect(() => {
-    const loadPreferences = async () => {
-        if (user) {
-            // User is logged in, load from Firestore
-            const userDocRef = getUserDocRef();
-            if (!userDocRef) return;
-
-            const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
-              if (docSnap.exists() && docSnap.data().preferences) {
-                const { language, currency } = docSnap.data().preferences;
-                if (language) setLocaleState(language);
-                if (currency) setCurrencyState(currency);
-              }
-              setIsLoaded(true);
-            });
-            return unsubscribe;
-
-        } else {
-            // User is not logged in, load from localStorage
-            const storedLocale = localStorage.getItem('locale') as Language;
-            const storedCurrency = localStorage.getItem('currency') as Currency;
-            if (storedLocale && ['fr', 'en'].includes(storedLocale)) {
-                setLocaleState(storedLocale);
-            }
-            if (storedCurrency && ['XOF', 'EUR', 'USD'].includes(storedCurrency)) {
-                setCurrencyState(storedCurrency);
-            }
+    if (user) {
+        // User is logged in, load from Firestore
+        const userDocRef = getUserDocRef();
+        if (!userDocRef) {
             setIsLoaded(true);
+            return;
         }
-    };
-    
-    const unsubscribe = loadPreferences();
 
-    return () => {
-        if (unsubscribe) {
-            Promise.resolve(unsubscribe).then(unsub => unsub && unsub());
-        }
+        const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+          if (docSnap.exists() && docSnap.data().preferences) {
+            const { language, currency } = docSnap.data().preferences;
+            if (language) setLocaleState(language);
+            if (currency) setCurrencyState(currency);
+          }
+          setIsLoaded(true);
+        }, () => {
+          setIsLoaded(true); // Ensure app loads even if Firestore fails
+        });
+        return unsubscribe;
+
+    } else {
+        // User is not logged in, use default values.
+        setLocaleState('fr');
+        setCurrencyState('XOF');
+        setIsLoaded(true);
     }
   }, [user, getUserDocRef]);
 
@@ -87,8 +76,6 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
         if (userDocRef) {
             await setDoc(userDocRef, { preferences: { language: newLocale } }, { merge: true });
         }
-    } else {
-        localStorage.setItem('locale', newLocale);
     }
   };
 
@@ -99,8 +86,6 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
         if (userDocRef) {
             await setDoc(userDocRef, { preferences: { currency: newCurrency } }, { merge: true });
         }
-    } else {
-        localStorage.setItem('currency', newCurrency);
     }
   };
   
@@ -115,7 +100,7 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
   }, [locale]);
   
   const getCategoryName = useCallback((key: string) => {
-    return t(`category_${key.toLowerCase().replace(' ', '_')}`);
+    return t(`category_${key.toLowerCase().replace(/ /g, '_')}`);
   }, [t]);
 
   const formatCurrency = useCallback((amount: number) => {
