@@ -18,7 +18,7 @@ export const pricing = {
 interface Plan {
   name: 'free' | 'premium' | 'business';
   title: string;
-  price: number;
+  prices: { XOF: number; EUR: number; USD: number };
   description: string;
   features: string[];
   isCurrent: boolean;
@@ -28,7 +28,7 @@ interface Plan {
 }
 
 export default function BillingPage() {
-    const { t, currency, formatCurrency } = useLocale();
+    const { t, currency, formatCurrency, getConvertedAmount } = useLocale();
     const { user, firebaseUser } = useAuth();
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState<string | null>(null);
@@ -50,7 +50,7 @@ export default function BillingPage() {
         try {
             const token = await firebaseUser.getIdToken();
             const response = await axios.post('/api/cinetpay/initiate-payment', {
-                amount: plan.price,
+                amount: plan.prices[currency], // Send the amount in the currently selected currency
                 currency: currency,
                 description: `Abonnement ${plan.title} - Wisebil`,
             }, {
@@ -77,7 +77,7 @@ export default function BillingPage() {
         {
             name: 'free',
             title: t('plan_free_title'),
-            price: 0,
+            prices: { XOF: 0, EUR: 0, USD: 0 },
             description: t('plan_free_desc'),
             features: [
                 t('plan_feature_transactions'),
@@ -92,7 +92,7 @@ export default function BillingPage() {
         {
             name: 'premium',
             title: t('plan_premium_title'),
-            price: pricing.premium[currency],
+            prices: pricing.premium,
             description: t('plan_premium_desc'),
             features: [
                 t('plan_feature_all_free'),
@@ -108,7 +108,7 @@ export default function BillingPage() {
         {
             name: 'business',
             title: t('plan_business_title'),
-            price: pricing.business[currency],
+            prices: pricing.business,
             description: t('plan_business_desc'),
             features: [
                 t('plan_feature_all_premium'),
@@ -135,7 +135,7 @@ export default function BillingPage() {
                         <CardHeader className="pb-4">
                             {plan.isPopular && <p className="text-sm font-semibold text-primary">{t('plan_premium_badge')}</p>}
                             <CardTitle className="font-headline text-2xl">{plan.title}</CardTitle>
-                            <p className="text-4xl font-bold">{formatCurrency(plan.price)} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
+                            <p className="text-4xl font-bold">{formatCurrency(plan.prices.XOF, 'XOF')} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
                             <CardDescription className="text-sm pt-2 min-h-[40px]">{plan.description}</CardDescription>
                         </CardHeader>
                         <CardContent className="flex-1 space-y-4">

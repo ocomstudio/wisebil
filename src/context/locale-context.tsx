@@ -11,13 +11,22 @@ import { doc, setDoc, onSnapshot, getDoc } from 'firebase/firestore';
 export type Language = 'fr' | 'en';
 export type Currency = 'XOF' | 'EUR' | 'USD';
 
+// Taux de conversion approximatifs par rapport à XOF
+const conversionRates: Record<Currency, number> = {
+    XOF: 1,
+    EUR: 655.957, 
+    USD: 610,
+};
+
+
 interface LocaleContextType {
   locale: Language;
   setLocale: (locale: Language) => void;
   currency: Currency;
   setCurrency: (currency: Currency) => void;
   t: (key: string, options?: { [key: string]: string | number }) => string;
-  formatCurrency: (amount: number) => string;
+  formatCurrency: (amount: number, fromCurrency?: Currency) => string;
+  getConvertedAmount: (amount: number, fromCurrency?: Currency) => number;
   formatDate: (dateString: string) => string;
   getCategoryName: (key: string) => string;
 }
@@ -103,18 +112,32 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
     return t(`category_${key.toLowerCase().replace(/ /g, '_')}`);
   }, [t]);
 
-  const formatCurrency = useCallback((amount: number) => {
+  const getConvertedAmount = useCallback((amount: number, fromCurrency: Currency = 'XOF') => {
+    if (fromCurrency === currency) {
+      return amount;
+    }
+    // Convert amount from 'fromCurrency' to XOF (base), then to target currency
+    const amountInXOF = amount * conversionRates[fromCurrency];
+    return amountInXOF / conversionRates[currency];
+  }, [currency]);
+  
+  const formatCurrency = useCallback((amount: number, fromCurrency: Currency = 'XOF') => {
+    const convertedAmount = getConvertedAmount(amount, fromCurrency);
+    
     const options: Intl.NumberFormatOptions = {
       style: 'currency',
-      currency,
+      currency: currency,
       minimumFractionDigits: currency === 'XOF' ? 0 : 2,
       maximumFractionDigits: currency === 'XOF' ? 0 : 2,
     };
+
+    // Special formatting for XOF to place the symbol after the number.
     if (currency === 'XOF') {
-      return `${amount.toLocaleString('fr-FR')} FCFA`;
+      return `${convertedAmount.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} FCFA`;
     }
-    return new Intl.NumberFormat(locale, options).format(amount);
-  }, [currency, locale]);
+
+    return new Intl.NumberFormat(locale, options).format(convertedAmount);
+  }, [currency, locale, getConvertedAmount]);
 
   const formatDate = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleDateString(locale, {
@@ -129,7 +152,7 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <LocaleContext.Provider value={{ locale, setLocale, currency, setCurrency, t, formatCurrency, formatDate, getCategoryName }}>
+    <LocaleContext.Provider value={{ locale, setLocale, currency, setCurrency, t, formatCurrency, formatDate, getCategoryName, getConvertedAmount }}>
       {children}
     </LocaleContext.Provider>
   );
