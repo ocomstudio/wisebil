@@ -143,7 +143,7 @@ export default function SettingsPage() {
       });
       
       await logout();
-      router.push('/auth/login');
+      router.push('/');
     } catch (error) {
       console.error("Failed to reset app:", error);
       toast({

@@ -32,7 +32,7 @@ export function UserProfile() {
         title: t('logout_success_title'),
         description: t('see_you_soon'),
       });
-      router.push('/auth/login');
+      router.push('/');
     } catch (error) {
        toast({
         variant: "destructive",
