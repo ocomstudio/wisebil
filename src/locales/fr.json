@@ -227,7 +227,6 @@
     "category_remboursement": "Remboursement",
     "coming_soon_title": "Bientôt disponible !",
     "coming_soon_desc": "La fonctionnalité de gestion des comptes est en cours de développement. Nous travaillons dur pour vous l'apporter au plus vite.",
-    "coming_soon_subdesc": "Vous pourrez bientôt lier vos comptes pour une synchronisation automatique et une vue d'ensemble complète.",
     "back_to_dashboard": "Retour à l'accueil",
     "expense_added_title": "Dépense ajoutée",
     "expense_added_desc": "La dépense \"{{expenseDesc}}\" a été ajoutée avec succès.",

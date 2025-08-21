@@ -227,7 +227,6 @@
     "category_remboursement": "Refund",
     "coming_soon_title": "Coming Soon!",
     "coming_soon_desc": "The account management feature is under development. We are working hard to bring it to you as soon as possible.",
-    "coming_soon_subdesc": "You will soon be able to link your accounts for automatic synchronization and a complete overview.",
     "back_to_dashboard": "Back to Dashboard",
     "expense_added_title": "Expense Added",
     "expense_added_desc": "The expense \"{{expenseDesc}}\" was added successfully.",
