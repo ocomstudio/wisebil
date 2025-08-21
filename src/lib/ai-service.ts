@@ -1,7 +1,7 @@
 // src/lib/ai-service.ts
 'use server';
 
-import {generate as genkitGenerate, GenerationCommonOptions, defineTool, Tool, Message as GenkitMessage} from 'genkit/ai';
+import {generate as genkitGenerate, GenerationCommonOptions, defineTool, Tool, Message as GenkitMessage} from 'genkit';
 import {ai} from './genkit';
 
 export type Message = GenkitMessage;
