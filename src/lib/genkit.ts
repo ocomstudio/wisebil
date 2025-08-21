@@ -1,128 +1,70 @@
-// src/lib/genkit.ts
-import {genkit, Plugin, durableStore, noopTraceStore} from 'genkit';
-
-const openrouter: Plugin<void> = {
-  name: 'openrouter',
-  model: {
-    'mistralai/mistral-7b-instruct:free': {
-      supports: {
-        generate: true,
-        tools: true,
-        systemRole: true,
-        media: false,
-      },
-      name: 'mistralai/mistral-7b-instruct:free',
-    },
-    'google/gemma-7b-it:free': {
-      supports: {
-        generate: true,
-        tools: true,
-        systemRole: true,
-        media: false,
-      },
-      name: 'google/gemma-7b-it:free',
-    },
-    'openai/gpt-3.5-turbo': {
-        supports: {
-            generate: true,
-            tools: true,
-            systemRole: true,
-            media: false,
-        },
-        name: 'openai/gpt-3.5-turbo',
-    },
+{
+  "name": "nextn",
+  "version": "0.1.0",
+  "private": "true",
+  "scripts": {
+    "dev": "next dev --turbopack -p 9002",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
   },
-  async generate(options, auth) {
-    const model = options.model;
-    const body = {
-      model: model,
-      messages: options.messages.map((m) => {
-        if (m.role === 'output') {
-          return {role: 'assistant', content: m.content[0].text};
-        }
-        return {
-          role: m.role,
-          content: m.content.map((c) => c.text).join(''),
-        };
-      }),
-      stream: false,
-      ...(options.tools && {
-        tools: options.tools.map((t) => ({type: 'function', function: t})),
-      }),
-      ...(options.config?.responseFormat === 'json' && {
-        response_format: {type: 'json_object'},
-      }),
-      ...(options.config?.temperature && {
-        temperature: options.config.temperature,
-      }),
-    };
-
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      body: JSON.stringify(body),
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY}`,
-        'HTTP-Referer': 'https://wisebil.com',
-        'X-Title': 'Wisebil',
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(await res.text());
-    }
-
-    const data = await res.json();
-    const choice = data.choices[0];
-    if (choice.message.tool_calls) {
-      return {
-        candidates: [
-          {
-            index: 0,
-            finishReason: 'toolRequest',
-            message: {
-              role: 'toolRequest',
-              content: choice.message.tool_calls.map((c: any) => ({
-                toolRequest: {
-                  name: c.function.name,
-                  input: JSON.parse(c.function.arguments),
-                },
-              })),
-            },
-          },
-        ],
-        usage: {
-          inputTokens: data.usage.prompt_tokens,
-          outputTokens: data.usage.completion_tokens,
-          totalTokens: data.usage.total_tokens,
-        },
-      };
-    }
-    return {
-      candidates: [
-        {
-          index: 0,
-          finishReason: 'stop',
-          message: {
-            role: 'output',
-            content: [{text: choice.message.content}],
-          },
-        },
-      ],
-      usage: {
-        inputTokens: data.usage.prompt_tokens,
-        outputTokens: data.usage.completion_tokens,
-        totalTokens: data.usage.total_tokens,
-      },
-    };
+  "dependencies": {
+    "@hookform/resolvers": "^4.1.3",
+    "@radix-ui/react-accordion": "^1.2.3",
+    "@radix-ui/react-alert-dialog": "^1.1.6",
+    "@radix-ui/react-avatar": "^1.1.3",
+    "@radix-ui/react-checkbox": "^1.1.4",
+    "@radix-ui/react-collapsible": "^1.1.11",
+    "@radix-ui/react-dialog": "^1.1.6",
+    "@radix-ui/react-dropdown-menu": "^2.1.6",
+    "@radix-ui/react-label": "^2.1.2",
+    "@radix-ui/react-menubar": "^1.1.6",
+    "@radix-ui/react-popover": "^1.1.6",
+    "@radix-ui/react-progress": "^1.1.2",
+    "@radix-ui/react-radio-group": "^1.2.3",
+    "@radix-ui/react-scroll-area": "^1.2.3",
+    "@radix-ui/react-select": "^2.1.6",
+    "@radix-ui/react-separator": "^1.1.2",
+    "@radix-ui/react-slider": "^1.2.3",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-switch": "^1.1.3",
+    "@radix-ui/react-tabs": "^1.1.3",
+    "@radix-ui/react-toast": "^1.2.6",
+    "@radix-ui/react-tooltip": "^1.1.8",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "embla-carousel-react": "^8.6.0",
+    "firebase": "^10.12.2",
+    "firebase-admin": "^12.1.1",
+    "genkit": "^1.0.0",
+    "genkitx-openai": "^0.3.0",
+    "lucide-react": "^0.475.0",
+    "next": "15.3.3",
+    "patch-package": "^8.0.0",
+    "react": "^18.3.1",
+    "react-day-picker": "^8.10.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.54.2",
+    "react-hot-toast": "^2.4.1",
+    "react-icons": "^5.2.1",
+    "react-phone-number-input": "^3.4.3",
+    "recharts": "^2.12.7",
+    "stripe": "^16.2.0",
+    "tailwind-merge": "^3.0.1",
+    "tailwindcss-animate": "^1.0.7",
+    "uuid": "^9.0.1",
+    "xlsx": "^0.18.5",
+    "zod": "^3.24.2"
   },
-};
-
-export const ai = genkit({
-  plugins: [
-    openrouter,
-  ],
-  durableStore: durableStore,
-  traceStore: noopTraceStore,
-  enableTracing: false,
-});
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/uuid": "^9.0.8",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}

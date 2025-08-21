@@ -8,34 +8,40 @@
  * - ExpenseAssistantInput - The input type for the askExpenseAssistant function.
  */
 
-import { generate, type Message } from '@/lib/ai-service';
-import { ExpenseAssistantInput, type ExpenseAssistantInput as ExpenseAssistantInputType } from '@/types/ai-schemas';
+import { ai, defineFlow, model } from '@/lib/ai-service';
+import { z } from 'zod';
+import { ExpenseAssistantInputSchema, type ExpenseAssistantInput as ExpenseAssistantInputType } from '@/types/ai-schemas';
 import type { Transaction } from '@/types/transaction';
 import type { Budget } from '@/types/budget';
 import type { SavingsGoal } from '@/types/savings-goal';
 
-export async function askExpenseAssistant(input: ExpenseAssistantInputType): Promise<{ answer: string }> {
-  const { question, history, language, currency, financialData, userName } = input;
-  
-  const hasFinancialData = financialData.income || financialData.expenses || (financialData.transactions && financialData.transactions.length > 0);
+const askExpenseAssistantFlow = defineFlow(
+    {
+        name: 'askExpenseAssistantFlow',
+        inputSchema: ExpenseAssistantInputSchema,
+        outputSchema: z.string(),
+    },
+    async (input) => {
+        const { question, history, language, currency, financialData, userName } = input;
+        
+        const hasFinancialData = financialData.income || financialData.expenses || (financialData.transactions && financialData.transactions.length > 0);
 
-  const formatTransactions = (transactions: Transaction[] | undefined) => {
-    if (!transactions || transactions.length === 0) return 'Aucune';
-    return transactions.slice(0, 5).map(t => `${t.description} (${t.amount})`).join(', ');
-  }
+        const formatTransactions = (transactions: Transaction[] | undefined) => {
+            if (!transactions || transactions.length === 0) return 'Aucune';
+            return transactions.slice(0, 5).map(t => `${t.description} (${t.amount})`).join(', ');
+        }
 
-  const formatBudgets = (budgets: Budget[] | undefined) => {
-    if (!budgets || budgets.length === 0) return 'Aucun';
-    return budgets.map(b => `${b.name} (${b.amount})`).join(', ');
-  }
+        const formatBudgets = (budgets: Budget[] | undefined) => {
+            if (!budgets || budgets.length === 0) return 'Aucun';
+            return budgets.map(b => `${b.name} (${b.amount})`).join(', ');
+        }
 
-  const formatSavingsGoals = (savingsGoals: SavingsGoal[] | undefined) => {
-      if (!savingsGoals || savingsGoals.length === 0) return 'Aucun';
-      return savingsGoals.map(s => `${s.name} (${s.currentAmount}/${s.targetAmount})`).join(', ');
-  }
+        const formatSavingsGoals = (savingsGoals: SavingsGoal[] | undefined) => {
+            if (!savingsGoals || savingsGoals.length === 0) return 'Aucun';
+            return savingsGoals.map(s => `${s.name} (${s.currentAmount}/${s.targetAmount})`).join(', ');
+        }
 
-
-  const financialContext = `
+        const financialContext = `
 Contexte financier de l'utilisateur (Devise: ${currency}):
 - Revenu Total: ${financialData.income ?? 'N/A'}
 - Dépenses Totales: ${financialData.expenses ?? 'N/A'}
@@ -44,7 +50,7 @@ Contexte financier de l'utilisateur (Devise: ${currency}):
 - Objectifs d'épargne (${financialData.savingsGoals?.length ?? 0}): ${formatSavingsGoals(financialData.savingsGoals)}
 `;
 
-  const systemPrompt = `Tu es "Wise", un coach financier personnel expert. Ton objectif est d'aider ${userName} à maîtriser ses finances avec simplicité, bienveillance et une touche de motivation pour le rendre "accro" à sa réussite financière.
+        const systemPrompt = `Tu es "Wise", un coach financier personnel expert. Ton objectif est d'aider ${userName} à maîtriser ses finances avec simplicité, bienveillance et une touche de motivation pour le rendre "accro" à sa réussite financière.
 
 **Ta Personnalité (Règles impératives) :**
 1.  **Coach Bienveillant et Convivial :** Tu n'es pas un robot, tu es un partenaire. Parle de manière chaleureuse, encourageante et humaine. Utilise le nom de l'utilisateur, ${userName}, pour personnaliser la conversation. Si ${userName} te dit "salut", réponds par exemple : "Salut ${userName} ! Prêt(e) à jeter un œil à tes finances et à célébrer tes progrès ? 🚀".
@@ -59,22 +65,31 @@ Contexte financier de l'utilisateur (Devise: ${currency}):
 **Exemple de réponse à "Comment vont mes finances ?" avec des données :**
 "Salut ${userName} ! Ce mois-ci, tes revenus s'élèvent à X et tes dépenses à Y. Je remarque que tes dépenses pour les 'Sorties' ont un peu augmenté par rapport à ton budget, c'est peut-être un point à surveiller. Par contre, un grand bravo pour les 5000 que tu as mis de côté pour ton objectif 'Voiture' ! Tu t'en rapproches à grands pas. 👍"
 `;
+        
+        const historyForApi = history.map(h => ({
+            role: h.role === 'user' ? 'user' : 'model',
+            content: [{text: h.content}]
+        })) as any[];
+        
+        const result = await model.generate({
+            system: `${systemPrompt}\n${financialContext}`,
+            messages: [...historyForApi, {role: 'user', content: [{text: question}]}],
+        });
 
-  const messages: Message[] = [
-    { role: 'system', content: `${systemPrompt}\n${financialContext}` },
-    ...history.map(h => ({ role: h.role as 'user' | 'model', content: h.content })),
-    { role: 'user', content: question },
-  ];
+        const answer = result.text();
+        if (!answer) {
+          throw new Error('AI model returned an empty response.');
+        }
 
-  try {
-    const answer = await generate({ messages });
-    
-    if (!answer) {
-      throw new Error('AI model returned an empty response.');
+        return answer;
     }
+);
 
+
+export async function askExpenseAssistant(input: ExpenseAssistantInputType): Promise<{ answer: string }> {
+  try {
+    const answer = await askExpenseAssistantFlow(input);
     return { answer };
-
   } catch (error) {
     throw new Error(
       `AI assistant failed to generate a response. Details: ${

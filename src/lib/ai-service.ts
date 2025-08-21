@@ -1,42 +1,56 @@
 // src/lib/ai-service.ts
 'use server';
 
-import {generate as genkitGenerate, GenerationCommonOptions, defineTool, Tool, Message as GenkitMessage} from 'genkit';
-import {ai} from './genkit';
+import { genkit, generate as genkitGenerate, GenerationCommonOptions, defineTool, Tool, Message as GenkitMessage, defineFlow } from 'genkit';
+import { openai } from 'genkitx-openai';
+import { z } from 'zod';
+
+export const ai = genkit({
+  plugins: [
+    openai({
+      apiKey: process.env.NEXT_PUBLIC_OPENROUTER_API_KEY || '',
+      baseURL: 'https://openrouter.ai/api/v1',
+    }),
+  ],
+  logLevel: 'debug',
+  enableTracing: true,
+});
 
 export type Message = GenkitMessage;
 
 interface GenerateOptions {
   prompt?: string;
+  system?: string;
   messages?: Message[];
   isJson?: boolean;
+  schema?: z.ZodTypeAny;
+  tools?: any[];
+  toolChoice?: 'auto' | 'any' | 'none' | 'required';
 }
 
 // Prioritized list of models. The service will try them in this order.
 const AI_MODELS = [
-  ai.model('mistralai/mistral-7b-instruct:free'),
-  ai.model('google/gemma-7b-it:free'),
-  ai.model('openai/gpt-3.5-turbo'),
+  'mistralai/mistral-7b-instruct:free',
+  'google/gemma-7b-it:free',
+  'openai/gpt-3.5-turbo',
 ];
 
-async function generateWithFallback<T>(
-  callback: (options: GenerationCommonOptions) => Promise<T>,
-  options: GenerationCommonOptions
-): Promise<T> {
+async function generateWithFallback(options: GenerationCommonOptions) {
   let lastError: any = null;
-  for (const model of AI_MODELS) {
+  for (const modelName of AI_MODELS) {
     try {
-      console.log(`Attempting to generate text with model: ${model.name}`);
-      const result = await callback({
+      console.log(`Attempting to generate text with model: ${modelName}`);
+      const model = ai.model(modelName);
+      const result = await genkitGenerate({
         ...options,
         model,
       });
-      console.log(`Successfully generated text with model: ${model.name}`);
+      console.log(`Successfully generated text with model: ${modelName}`);
       return result;
     } catch (error) {
       lastError = error;
       console.warn(
-        `Model ${model.name} failed with error:`,
+        `Model ${modelName} failed with error:`,
         error instanceof Error ? error.message : String(error)
       );
       continue;
@@ -45,59 +59,10 @@ async function generateWithFallback<T>(
   throw new Error(`All AI models failed to generate a response. Last error: ${lastError?.message || lastError}`);
 }
 
-export async function generate(options: GenerateOptions): Promise<string | null> {
-  const {prompt, messages, isJson = false} = options;
-
-  if (!prompt && !messages) {
-    throw new Error('Either prompt or messages must be provided.');
+export const model = {
+  generate: async (options: GenerationCommonOptions) => {
+    return generateWithFallback(options);
   }
+};
 
-  const apiMessages = messages || [{role: 'user', content: [{text: prompt!}]}];
-
-  const genkitOptions: GenerationCommonOptions = {
-    messages: apiMessages,
-    config: {
-      temperature: 0.2,
-      responseFormat: isJson ? 'json' : 'text',
-    },
-  };
-
-  const response = await generateWithFallback(genkitGenerate, genkitOptions);
-  return response.text();
-}
-
-export async function generateWithTool<I, O>(
-  systemPrompt: string,
-  input: I,
-  tool: Tool<I, O>
-): Promise<O> {
-  const options: GenerationCommonOptions = {
-    system: systemPrompt,
-    prompt: JSON.stringify(input),
-    tools: [tool],
-    output: {
-      format: 'json',
-      schema: tool.outputSchema,
-    },
-  };
-
-  const response = await generateWithFallback(genkitGenerate, options);
-  const toolResponse = response.toolResponse();
-  if (toolResponse) {
-    return toolResponse.output as O;
-  }
-  
-  // Fallback to text generation if tool use fails
-  const textResponse = response.text();
-  try {
-    return tool.outputSchema.parse(JSON.parse(textResponse));
-  } catch (e) {
-      console.error("Failed to parse tool response as JSON, retrying without tool calling.", e);
-      // If parsing fails, try one more time without forcing tool use
-      const finalAttempt = await generateWithFallback(genkitGenerate, {
-        ...options,
-        tools: [],
-      });
-      return tool.outputSchema.parse(JSON.parse(finalAttempt.text()));
-  }
-}
+export { defineFlow, defineTool };

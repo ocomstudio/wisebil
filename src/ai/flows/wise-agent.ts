@@ -9,10 +9,9 @@
  * - AgentWOutput - The return type for the runAgentW function.
  */
 
-import {ai} from '@/lib/genkit';
-import {z} from 'genkit';
-import {expenseCategories, incomeCategories} from '@/config/categories';
-import {generateWithTool} from '@/lib/ai-service';
+import { ai, defineFlow, model } from '@/lib/ai-service';
+import { z } from 'zod';
+import { expenseCategories, incomeCategories } from '@/config/categories';
 import {
   AgentWInputSchema,
   AgentWOutputSchema,
@@ -20,32 +19,16 @@ import {
 export type { AgentWInput, AgentWOutput } from '@/types/ai-schemas';
 
 
-const agentWTool = ai.defineTool(
+const runAgentWFlow = defineFlow(
     {
-      name: 'agentW',
-      description: 'Extracts financial actions from unstructured text.',
+      name: 'runAgentWFlow',
       inputSchema: AgentWInputSchema,
       outputSchema: AgentWOutputSchema,
     },
     async (input) => {
-        // This is a mock implementation. The actual logic is handled by the LLM.
-      return {
-        incomes: [],
-        expenses: [],
-        newBudgets: [],
-        newSavingsGoals: [],
-        savingsContributions: [],
-      };
-    }
-  );
+        const { prompt, currency, budgets, savingsGoals } = input;
 
-
-export async function runAgentW(
-  input: z.infer<typeof AgentWInputSchema>
-): Promise<z.infer<typeof AgentWOutputSchema>> {
-  const { prompt, currency, budgets, savingsGoals } = input;
-
-  const systemPrompt = `You are "Agent W", an expert financial data entry specialist. Your sole purpose is to analyze a user's text, which may be complex, conversational, and unstructured, to identify every single financial action and structure them into a SINGLE JSON object.
+        const systemPrompt = `You are "Agent W", an expert financial data entry specialist. Your sole purpose is to analyze a user's text, which may be complex, conversational, and unstructured, to identify every single financial action and structure them into a SINGLE JSON object.
 
 **Core Instructions:**
 1.  **Parse Complex Text:** The user's prompt is a raw stream of thought. Your primary task is to meticulously read the entire text and hunt for any financial actions: spending money (expenses), receiving money (incomes), creating a budget, creating a savings goal, or adding money to an existing goal. Ignore all non-financial chatter.
@@ -63,7 +46,27 @@ export async function runAgentW(
 7.  **STRICT JSON-ONLY OUTPUT:** You MUST respond ONLY with a JSON object conforming to the output schema. Do not include apologies, explanations, or ANY text outside of the JSON brackets. If no actions of a certain type are found, its corresponding array MUST be empty, for example: "incomes": []. NEVER return a list with an empty object like "incomes": [{}]. The 'date' field for transactions is REQUIRED, and it MUST be in YYYY-MM-DD format.
 
 User prompt: "${prompt}"`;
+        
+        const result = await model.generate({
+            system: systemPrompt,
+            prompt: input.prompt,
+            output: {
+                format: 'json',
+                schema: AgentWOutputSchema,
+            },
+        });
 
-  const result = await generateWithTool(systemPrompt, input, agentWTool);
-  return result;
+        const output = result.output();
+        if (!output) {
+            throw new Error("AI failed to generate a response.");
+        }
+        return output;
+    }
+);
+
+
+export async function runAgentW(
+  input: z.infer<typeof AgentWInputSchema>
+): Promise<z.infer<typeof AgentWOutputSchema>> {
+  return await runAgentWFlow(input);
 }
