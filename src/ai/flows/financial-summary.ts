@@ -28,9 +28,10 @@ const openrouter = new OpenAI({
 
 // Prioritized list of models. The service will try them in this order.
 const AI_MODELS = [
+  'openai/gpt-4o',
+  'anthropic/claude-3-opus',
+  'openai/gpt-4-turbo',
   'mistralai/mistral-7b-instruct:free',
-  'google/gemma-7b-it:free',
-  'openai/gpt-3.5-turbo',
 ];
 
 interface GenerateOptions {
