@@ -23,7 +23,8 @@ export default function BillingPage() {
     const [isLoading, setIsLoading] = useState<string | null>(null);
     
     const isCurrentPlan = (plan: 'premium' | 'business') => {
-        return user?.subscriptionStatus === 'active' && plan === 'premium'; // Placeholder
+        // This is a placeholder logic. You should replace it with your actual subscription status check.
+        return user?.subscriptionStatus === 'active' && plan === 'premium';
     };
     
     const handlePayment = async (plan: 'premium' | 'business') => {
@@ -42,7 +43,7 @@ export default function BillingPage() {
             const response = await axios.post('/api/cinetpay/initiate-payment', {
                 amount: planPrice,
                 currency: currency,
-                description: `Abonnement ${plan}`
+                description: `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} - Wisebil`
             }, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -50,12 +51,13 @@ export default function BillingPage() {
             if (response.data.payment_url) {
                 window.location.href = response.data.payment_url;
             } else {
-                 toast({ variant: 'destructive', title: t('subscription_error') });
+                 toast({ variant: 'destructive', title: t('subscription_error'), description: response.data.error || 'Unknown error' });
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Payment initiation failed:", error);
-            toast({ variant: 'destructive', title: t('subscription_error')});
+            const errorMessage = error.response?.data?.error || error.response?.data?.details?.message || t('subscription_error');
+            toast({ variant: 'destructive', title: t('subscription_error'), description: errorMessage });
         } finally {
             setIsLoading(null);
         }
@@ -120,7 +122,7 @@ export default function BillingPage() {
 
              <div className="mx-auto grid max-w-5xl items-stretch gap-8 grid-cols-1 lg:grid-cols-3 mt-12">
                 {plans.map(plan => (
-                     <Card key={plan.title} className={`flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/20 shadow-xl ${plan.isPopular ? 'border-primary shadow-2xl shadow-primary/20 scale-105' : ''}`}>
+                     <Card key={plan.name} className={`flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/20 shadow-xl ${plan.isPopular ? 'border-primary shadow-2xl shadow-primary/20 scale-105' : ''}`}>
                         <CardHeader className="pb-4">
                             {plan.isPopular && <p className="text-sm font-semibold text-primary">{t('plan_premium_badge')}</p>}
                             <CardTitle className="font-headline text-2xl">{plan.title}</CardTitle>
@@ -139,7 +141,7 @@ export default function BillingPage() {
                                 variant={plan.buttonVariant as any}
                                 className="w-full"
                                 disabled={plan.isCurrent || isLoading !== null}
-                                onClick={() => handlePayment(plan.name as 'premium' | 'business')}
+                                onClick={() => plan.name !== 'free' && handlePayment(plan.name as 'premium' | 'business')}
                             >
                                 {isLoading === plan.name && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 {plan.buttonText}
