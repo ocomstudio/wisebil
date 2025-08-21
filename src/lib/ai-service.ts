@@ -8,7 +8,7 @@ import { z } from 'zod';
 // This allows us to use the familiar OpenAI API structure with a variety of models.
 const openrouter = new OpenAI({
     baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.NEXT_PUBLIC_OPENROUTER_API_KEY || '',
+    apiKey: process.env.OPENROUTER_API_KEY || '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',
 });
 
 // Prioritized list of models. The service will try them in this order.
@@ -97,7 +97,7 @@ export const model = {
 };
 
 // These exports are kept for compatibility with the flows that use them.
-export const defineFlow = <Input, Output>(config: any, fn: (input: Input) => Promise<Output>) => {
+export const defineFlow = async <Input, Output>(config: any, fn: (input: Input) => Promise<Output>) => {
     return fn;
 };
 export { z as z };
