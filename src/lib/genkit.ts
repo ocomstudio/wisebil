@@ -1,16 +1,19 @@
 // src/lib/genkit.ts
 import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/googleai';
-import {firebase} from '@genkit-ai/firebase';
-import {dotprompt} from '@genkit-ai/dotprompt';
+
+if (!process.env.GEMINI_API_KEY) {
+    throw new Error(
+      'GEMINI_API_KEY environment variable not found. ' +
+        'Please provide it in your .env file.'
+    );
+}
 
 export const ai = genkit({
   plugins: [
-    firebase(),
     googleAI({
       apiVersion: ['v1beta'],
     }),
-    dotprompt(),
   ],
   logLevel: 'debug',
   enableTracingAndMetrics: true,
