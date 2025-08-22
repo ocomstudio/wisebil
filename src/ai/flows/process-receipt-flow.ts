@@ -8,7 +8,7 @@
  * - ProcessReceiptInput - The input type for the processReceipt function.
  * - ProcessReceiptOutput - The return type for the processReceipt function.
  */
-import {ai} from '@/ai/genkit';
+import {ai} from '@/lib/genkit';
 import { expenseCategories } from '@/config/categories';
 import {
   ProcessReceiptInputSchema,

@@ -8,7 +8,7 @@
  * - AgentWInput - The input type for the runAgentW function.
  * - AgentWOutput - The return type for the runAgentW function.
  */
-import {ai} from '@/ai/genkit';
+import {ai} from '@/lib/genkit';
 import { expenseCategories, incomeCategories } from '@/config/categories';
 import {
   AgentWInputSchema,

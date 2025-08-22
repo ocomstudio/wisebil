@@ -7,7 +7,7 @@
  * - CategorizeExpenseInput - The input type for the categorizeExpense function.
  * - CategorizeExpenseOutput - The return type for the categorizeExpense function.
  */
-import {ai} from '@/ai/genkit';
+import {ai} from '@/lib/genkit';
 import { expenseCategories } from '@/config/categories';
 import { CategorizeExpenseOutputSchema, CategorizeExpenseInputSchema, CategorizeExpenseInput, CategorizeExpenseOutput } from '@/types/ai-schemas';
 

@@ -12,7 +12,7 @@ import type { ExpenseAssistantInput as ExpenseAssistantInputType } from '@/types
 import type { Transaction } from '@/types/transaction';
 import type { Budget } from '@/types/budget';
 import type { SavingsGoal } from '@/types/savings-goal';
-import {ai} from '@/ai/genkit';
+import {ai} from '@/lib/genkit';
 import {MessageData} from 'genkit';
 
 

@@ -1,18 +1,16 @@
 // src/lib/genkit.ts
-import {genkit, configureGenkit} from 'genkit';
+import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/googleai';
 import {firebase} from '@genkit-ai/firebase';
-import {dotprompt, prompt} from '@genkit-ai/dotprompt';
+import {dotprompt} from '@genkit-ai/dotprompt';
 
-configureGenkit({
+export const ai = genkit({
   plugins: [
     firebase(),
     googleAI({
       apiVersion: ['v1beta'],
     }),
-    dotprompt({
-      // path: '...' // defaults to working directory
-    }),
+    dotprompt(),
   ],
   logLevel: 'debug',
   enableTracingAndMetrics: true,

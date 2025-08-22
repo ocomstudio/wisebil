@@ -7,7 +7,7 @@
  * - scanDocument - A function that handles the document scanning and parsing.
  * - ScanDocumentInput - The input type for the scanDocument function.
  */
-import {ai} from '@/ai/genkit';
+import {ai} from '@/lib/genkit';
 import { expenseCategories, incomeCategories } from '@/config/categories';
 import {
   AgentWOutputSchema,

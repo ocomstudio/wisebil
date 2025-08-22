@@ -8,7 +8,7 @@
  * - FinancialSummaryInput - The input type for the getFinancialSummary function.
  * - FinancialSummaryOutput - The return type for the getFinancialSummary function.
  */
-import {ai} from '@/ai/genkit';
+import {ai} from '@/lib/genkit';
 import {
     FinancialSummaryInputSchema,
     FinancialSummaryOutputSchema,

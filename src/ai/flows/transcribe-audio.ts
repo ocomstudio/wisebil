@@ -7,7 +7,7 @@
  * - TranscribeAudioInput - The input type for the transcribeAudio function.
  * - TranscribeAudioOutput - The return type for the transcribeAudio function.
  */
-import {ai} from '@/ai/genkit';
+import {ai} from '@/lib/genkit';
 import wav from 'wav';
 import { Buffer } from 'buffer';
 import type { TranscribeAudioInput, TranscribeAudioOutput } from '@/types/ai-schemas';
