@@ -317,7 +317,6 @@ export function ConseilPanel() {
                 const result = await runAgentW(agentWInput);
                 const summary = processAgentWResponse(result);
                 assistantMessage = { role: 'model', type: 'text', content: summary, agentMode };
-                toast.success(t('agent_w_success'));
             } catch (error) {
                 console.error("Error during transcription or agent processing:", error);
                 assistantMessage = { role: 'model', type: 'text', content: t('assistant_error_desc'), agentMode, isError: true };
@@ -413,8 +412,6 @@ export function ConseilPanel() {
     form.reset();
     setIsThinking(true);
 
-    let assistantMessage: Message;
-
     try {
         if (agentMode === 'wise') {
             const historyForApi = currentConversation
@@ -430,7 +427,8 @@ export function ConseilPanel() {
                 financialData: { income, expenses, transactions, budgets, savingsGoals }
             };
             const result = await askExpenseAssistant(input);
-            assistantMessage = { role: 'model', type: 'text', content: result.answer, agentMode };
+            const assistantMessage: Message = { role: 'model', type: 'text', content: result.answer, agentMode };
+            setCurrentConversation(prev => [...prev, assistantMessage]);
 
         } else { // AgentW mode
              const input: AgentWInput = {
@@ -442,12 +440,12 @@ export function ConseilPanel() {
             };
             const result = await runAgentW(input);
             const summary = processAgentWResponse(result);
-            assistantMessage = { role: 'model', type: 'text', content: summary, agentMode };
+            const assistantMessage: Message = { role: 'model', type: 'text', content: summary, agentMode };
+            setCurrentConversation(prev => [...prev, assistantMessage]);
             toast.success(t('agent_w_success'));
         }
-        setCurrentConversation(prev => [...prev, assistantMessage]);
     } catch (error) {
-        assistantMessage = { role: 'model', type: 'text', content: t('assistant_error_desc'), agentMode, isError: true };
+        const assistantMessage: Message = { role: 'model', type: 'text', content: t('assistant_error_desc'), agentMode, isError: true };
         setCurrentConversation(prev => [...prev, assistantMessage]);
     } finally {
         setIsThinking(false);
@@ -726,3 +724,5 @@ export function ConseilPanel() {
     </div>
   );
 }
+
+    
