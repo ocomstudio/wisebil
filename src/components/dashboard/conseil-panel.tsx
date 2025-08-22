@@ -403,33 +403,35 @@ export function ConseilPanel() {
 
   if (showDictationUI) {
     return (
-      <div className="fixed inset-0 bg-background/95 z-50 grid grid-rows-[auto_1fr_auto] p-4">
-        <header className="flex justify-end">
-            <Button variant="ghost" size="icon" onClick={stopListening}>
-                <X className="h-6 w-6" />
-            </Button>
-        </header>
+      <div className="fixed inset-0 bg-background/95 z-50 p-4" style={{ height: '100svh', paddingBottom: '80px' }}>
+        <div className="grid grid-rows-[auto_1fr_auto] h-full">
+            <header className="flex justify-end">
+                <Button variant="ghost" size="icon" onClick={stopListening}>
+                    <X className="h-6 w-6" />
+                </Button>
+            </header>
 
-        <main className="flex flex-col items-center justify-center gap-8">
-            <div className="text-center">
-                <p className="text-muted-foreground">{t('listening')}</p>
-            </div>
-            <div className="relative flex items-center justify-center">
-                <div className="absolute h-48 w-48 bg-primary/20 rounded-full animate-pulse"></div>
-                <div className="h-32 w-32 bg-primary rounded-full flex items-center justify-center">
-                    <Mic className="h-16 w-16 text-primary-foreground"/>
+            <main className="flex flex-col items-center justify-center gap-8 overflow-y-auto">
+                <div className="text-center">
+                    <p className="text-muted-foreground">{t('listening')}</p>
                 </div>
-            </div>
-            <div className="w-full max-w-lg text-center text-lg min-h-[6rem] px-4">
-                {liveTranscript || <span className="text-muted-foreground">{t('start_talking')}</span>}
-            </div>
-        </main>
-        
-        <footer className="flex justify-center pb-8">
-            <Button size="lg" className="rounded-full h-16 w-16 p-0" onClick={handleDictationSubmit}>
-                <Check className="h-8 w-8" />
-            </Button>
-        </footer>
+                <div className="relative flex items-center justify-center">
+                    <div className="absolute h-48 w-48 bg-primary/20 rounded-full animate-pulse"></div>
+                    <div className="h-32 w-32 bg-primary rounded-full flex items-center justify-center">
+                        <Mic className="h-16 w-16 text-primary-foreground"/>
+                    </div>
+                </div>
+                <div className="w-full max-w-lg text-center text-lg min-h-[6rem] px-4">
+                    {liveTranscript || <span className="text-muted-foreground">{t('start_talking')}</span>}
+                </div>
+            </main>
+            
+            <footer className="flex justify-center pt-4">
+                <Button size="lg" className="rounded-full h-16 w-16 p-0" onClick={handleDictationSubmit}>
+                    <Check className="h-8 w-8" />
+                </Button>
+            </footer>
+        </div>
       </div>
     )
   }
