@@ -81,6 +81,8 @@ export function ConseilPanel() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [showDictationUI, setShowDictationUI] = useState(false);
+  const [isAudioReady, setIsAudioReady] = useState(false);
+
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -181,6 +183,7 @@ export function ConseilPanel() {
   
   const startListening = useCallback(async () => {
     if (isListening) return;
+    setIsAudioReady(false);
 
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -276,7 +279,7 @@ export function ConseilPanel() {
   }
   
   const togglePlayAudio = () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current || !isAudioReady) return;
     if (isAudioPlaying) {
       audioRef.current.pause();
     } else {
@@ -469,8 +472,8 @@ export function ConseilPanel() {
                     ) : (
                       audioUrl && (
                         <div className="w-full flex flex-col items-center gap-4">
-                          <audio ref={audioRef} src={audioUrl} onPlay={() => setIsAudioPlaying(true)} onPause={() => setIsAudioPlaying(false)} onEnded={() => setIsAudioPlaying(false)} className="hidden" />
-                          <Button size="lg" variant="outline" className="rounded-full h-24 w-24 p-0" onClick={togglePlayAudio}>
+                          <audio ref={audioRef} src={audioUrl} onPlay={() => setIsAudioPlaying(true)} onPause={() => setIsAudioPlaying(false)} onEnded={() => setIsAudioPlaying(false)} onCanPlay={() => setIsAudioReady(true)} className="hidden" />
+                          <Button size="lg" variant="outline" className="rounded-full h-24 w-24 p-0" onClick={togglePlayAudio} disabled={!isAudioReady}>
                             {isAudioPlaying ? <Pause className="h-10 w-10"/> : <Play className="h-10 w-10"/>}
                           </Button>
                            <Button size="sm" variant="ghost" onClick={resetAudio}>
