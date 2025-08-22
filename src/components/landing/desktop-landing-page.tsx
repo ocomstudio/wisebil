@@ -188,6 +188,10 @@ export default function DesktopLandingPage() {
                             <Button>{t('login_button')}</Button>
                         </DialogTrigger>
                         <DialogContent>
+                           <DialogHeader>
+                               <DialogTitle className="sr-only">{t('login_title')}</DialogTitle>
+                               <DialogDescription className="sr-only">{t('login_subtitle')}</DialogDescription>
+                           </DialogHeader>
                            <LoginPage onSwitchToSignup={handleSwitchToSignup} />
                         </DialogContent>
                     </Dialog>

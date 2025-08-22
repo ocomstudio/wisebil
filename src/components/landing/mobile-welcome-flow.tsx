@@ -8,7 +8,7 @@ import { Logo } from '@/components/common/logo';
 import { Wallet, Globe, DollarSign, Euro, CircleDollarSign, ArrowLeft } from 'lucide-react';
 import { useLocale } from '@/context/locale-context';
 import type { Currency, Language } from '@/context/locale-context';
-import { Dialog, DialogTrigger, DialogContent } from '../ui/dialog';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogDescription } from '../ui/dialog';
 import LoginPage from '@/app/auth/login/page';
 import SignupPage from '@/app/auth/signup/page';
 
@@ -127,6 +127,10 @@ export function MobileWelcomeFlow() {
                                          <Button size="lg" className="w-full">{t('get_started')}</Button>
                                     </DialogTrigger>
                                     <DialogContent>
+                                        <DialogHeader>
+                                          <DialogTitle className="sr-only">Sign Up</DialogTitle>
+                                          <DialogDescription className="sr-only">Create a new account to get started.</DialogDescription>
+                                        </DialogHeader>
                                         <SignupPage onSwitchToLogin={handleSwitchToLogin} />
                                     </DialogContent>
                                 </Dialog>
@@ -135,6 +139,10 @@ export function MobileWelcomeFlow() {
                                         <Button size="lg" variant="ghost" className="w-full">{t('login_button')}</Button>
                                     </DialogTrigger>
                                     <DialogContent>
+                                        <DialogHeader>
+                                          <DialogTitle className="sr-only">Login</DialogTitle>
+                                          <DialogDescription className="sr-only">Log into your existing account.</DialogDescription>
+                                        </DialogHeader>
                                         <LoginPage onSwitchToSignup={handleSwitchToSignup} />
                                     </DialogContent>
                                 </Dialog>
