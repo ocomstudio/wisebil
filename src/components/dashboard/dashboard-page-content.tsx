@@ -5,14 +5,51 @@ import { BalanceCard } from "@/components/dashboard/balance-card";
 import { RecentExpenses } from "@/components/dashboard/recent-expenses";
 import { Button } from "@/components/ui/button";
 import { useTransactions } from "@/context/transactions-context";
+import { useBudgets } from "@/context/budget-context";
+import { useSavings } from "@/context/savings-context";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { TipsCard } from "@/components/dashboard/tips-card";
 import { useLocale } from "@/context/locale-context";
+import { FinancialSummaryCard } from "./financial-summary-card";
+import { useMemo } from "react";
+import { allCategories } from "@/config/categories";
 
 export function DashboardPageContent() {
   const { transactions, balance, income, expenses } = useTransactions();
-  const { t } = useLocale();
+  const { budgets } = useBudgets();
+  const { savingsGoals } = useSavings();
+  const { t, getCategoryName } = useLocale();
+
+  const getCategoryEmoji = (categoryName?: string) => {
+    if (!categoryName) return '💸';
+    const category = allCategories.find(c => c.name === categoryName);
+    return category ? category.emoji : '💸';
+  }
+
+  const chartData = useMemo(() => {
+    const expenseTransactions = transactions.filter(t => t.type === 'expense');
+
+    if (expenseTransactions.length === 0) {
+      return [];
+    }
+
+    const expensesByCategory = expenseTransactions.reduce((acc, transaction) => {
+      const category = transaction.category || "Autre";
+      if (!acc[category]) {
+        acc[category] = 0;
+      }
+      acc[category] += transaction.amount;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const sortedChartData = Object.entries(expensesByCategory).map(([name, amount]) => ({
+      name,
+      amount,
+    })).sort((a, b) => b.amount - a.amount);
+    
+    return sortedChartData.map(item => ({...item, name: getCategoryName(item.name)}));
+  }, [transactions, getCategoryName]);
 
   return (
     <div className="space-y-6 pb-20">
@@ -40,7 +77,14 @@ export function DashboardPageContent() {
       </div>
 
        <div>
-        <TipsCard />
+        <FinancialSummaryCard 
+          income={income} 
+          expenses={expenses} 
+          chartData={chartData} 
+          transactionsCount={transactions.length}
+          budgetsCount={budgets.length}
+          savingsGoalsCount={savingsGoals.length}
+        />
       </div>
       
        <div>

@@ -14,9 +14,19 @@ interface FinancialSummaryCardProps {
     income: number;
     expenses: number;
     chartData: { name: string; amount: number }[];
+    transactionsCount: number;
+    budgetsCount: number;
+    savingsGoalsCount: number;
 }
 
-export function FinancialSummaryCard({ income, expenses, chartData }: FinancialSummaryCardProps) {
+export function FinancialSummaryCard({ 
+    income, 
+    expenses, 
+    chartData, 
+    transactionsCount, 
+    budgetsCount, 
+    savingsGoalsCount 
+}: FinancialSummaryCardProps) {
     const { t, language, currency } = useLocale();
     const [summary, setSummary] = useState("");
     const [advice, setAdvice] = useState("");
@@ -49,7 +59,7 @@ export function FinancialSummaryCard({ income, expenses, chartData }: FinancialS
         };
 
         fetchSummary();
-    }, [income, expenses, chartData, t, language, currency]);
+    }, [transactionsCount, budgetsCount, savingsGoalsCount, t, language, currency]);
 
     if (isLoading) {
         return (
