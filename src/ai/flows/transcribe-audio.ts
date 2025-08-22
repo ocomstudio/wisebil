@@ -7,25 +7,12 @@
  * - TranscribeAudioInput - The input type for the transcribeAudio function.
  * - TranscribeAudioOutput - The return type for the transcribeAudio function.
  */
-import { z } from 'zod';
 import { generate } from '@/services/ai-service';
 import wav from 'wav';
 import { Buffer } from 'buffer';
+import type { TranscribeAudioInput, TranscribeAudioOutput } from '@/types/ai-schemas';
 
-const TranscribeAudioInputSchema = z.object({
-  audioDataUri: z
-    .string()
-    .describe(
-      "A base64 encoded audio file as a data URI."
-    ),
-});
-export type TranscribeAudioInput = z.infer<typeof TranscribeAudioInputSchema>;
-
-export const TranscribeAudioOutputSchema = z.object({
-    transcript: z.string().describe("The transcribed text from the audio."),
-});
-export type TranscribeAudioOutput = z.infer<typeof TranscribeAudioOutputSchema>;
-
+export type { TranscribeAudioInput, TranscribeAudioOutput };
 
 // Helper function to convert audio blob (likely webm) to WAV format
 async function convertToWav(audioDataUri: string): Promise<string> {
