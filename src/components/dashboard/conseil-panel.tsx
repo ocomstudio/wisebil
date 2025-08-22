@@ -520,19 +520,18 @@ export function ConseilPanel() {
                       )
                     )}
                 </div>
-            </div>
-            
-            <div className="w-full max-w-lg flex flex-col items-center justify-center gap-4 pb-8">
-              {isListening && <AudioWaveform />}
-              {isListening ? (
-                  <Button size="lg" variant="destructive" className="rounded-full h-16 w-16 p-0" onClick={stopListening}>
-                      <Pause className="h-8 w-8" />
-                  </Button>
-              ) : (
-                  <Button size="lg" className="rounded-full h-16 w-16 p-0" onClick={handleDictationSubmit} disabled={!audioUrl}>
-                      <Check className="h-8 w-8" />
-                  </Button>
-              )}
+                 <div className="w-full max-w-lg flex flex-col items-center justify-center gap-4">
+                    {isListening && <AudioWaveform />}
+                    {isListening ? (
+                        <Button size="lg" variant="destructive" className="rounded-full h-16 w-16 p-0" onClick={stopListening}>
+                            <Pause className="h-8 w-8" />
+                        </Button>
+                    ) : (
+                        <Button size="lg" className="rounded-full h-16 w-16 p-0" onClick={handleDictationSubmit} disabled={!audioUrl}>
+                            <Check className="h-8 w-8" />
+                        </Button>
+                    )}
+                </div>
             </div>
         </main>
       </div>
