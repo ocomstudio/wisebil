@@ -32,6 +32,7 @@ import { Skeleton } from '../ui/skeleton';
 import { askExpenseAssistant } from '@/ai/flows/expense-assistant';
 import { runAgentW } from '@/ai/flows/wise-agent';
 import { transcribeAudio } from '@/ai/flows/transcribe-audio';
+import type { TranscribeAudioInput } from '@/ai/flows/transcribe-audio';
 import { useTransactions } from '@/context/transactions-context';
 import { useBudgets } from '@/context/budget-context';
 import { useSavings } from '@/context/savings-context';
@@ -254,7 +255,8 @@ export function ConseilPanel() {
             const base64Audio = reader.result as string;
 
             try {
-                const { transcript } = await transcribeAudio({ audioDataUri: base64Audio });
+                const input: TranscribeAudioInput = { audioDataUri: base64Audio };
+                const { transcript } = await transcribeAudio(input);
 
                 if (!transcript) {
                   throw new Error("Empty transcript returned.");
@@ -418,6 +420,8 @@ export function ConseilPanel() {
   const placeholderText = agentMode === 'wise' 
     ? t('ask_a_question_placeholder')
     : t('agent_w_placeholder');
+    
+  const pageTitle = agentMode === 'wise' ? `${t('nav_advice')} IA` : 'Agent W';
 
   if (!isClient || !user) {
     return (
@@ -501,8 +505,8 @@ export function ConseilPanel() {
 
   if (showDictationUI) {
     return (
-      <div className="fixed inset-0 bg-background/95 z-50 p-4" style={{ height: '100svh', paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="grid grid-rows-[auto_1fr_auto] h-full">
+      <div className="fixed inset-0 bg-background/95 z-50" style={{ height: '100svh', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="grid grid-rows-[auto_1fr_auto] h-full p-4">
             <header className="flex justify-end">
                 <Button variant="ghost" size="icon" onClick={resetAudio}>
                     <X className="h-6 w-6" />
@@ -560,7 +564,7 @@ export function ConseilPanel() {
   return (
     <div className="flex flex-col h-full bg-background md:bg-transparent">
       <header className='p-4 md:p-6 border-b flex justify-between items-center flex-shrink-0'>
-        <h1 className="text-xl font-bold font-headline">{t('nav_advice')} IA</h1>
+        <h1 className="text-xl font-bold font-headline">{pageTitle}</h1>
         <Button variant="ghost" size="sm" onClick={handleNewConversation}>
           <PlusCircle className="mr-2 h-4 w-4" />
           {t('new_chat_button')}
