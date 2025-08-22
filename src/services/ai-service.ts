@@ -12,11 +12,11 @@ const openrouter = new OpenAI({
 
 // Prioritized list of models. The service will try them in this order.
 const TEXT_MODELS = [
-  'mistralai/mistral-7b-instruct:free',
+  'google/gemini-2.0-flash-exp:free',
 ];
 
 const VISION_MODELS = [
-    'openai/gpt-4o-2024-05-13',
+    'google/gemini-2.0-flash-exp:free',
 ];
 
 type GenerateOptions = {
