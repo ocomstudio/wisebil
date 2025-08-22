@@ -19,7 +19,7 @@ async function categorizeExpenseFlow(input: CategorizeExpenseInput): Promise<Cat
   const systemPrompt = `You are an expert financial advisor. Your job is to categorize expenses based on their description.
 Here are the available categories: ${expenseCategories.map((c) => c.name).join(', ')}. You MUST select one of these categories. If no category seems appropriate, choose 'Autre'.
 You MUST respond ONLY with a JSON object conforming to the output schema.
-The user's preferred language is French (fr).`;
+The user's preferred language is French (fr). You must respond in this language.`;
 
   const messages = [
     { role: 'system', content: systemPrompt },

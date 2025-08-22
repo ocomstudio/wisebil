@@ -55,7 +55,7 @@ async function getFinancialSummaryFlow(input: FinancialSummaryInput): Promise<Fi
     - The advice must be one sentence MAX.
     - The prediction should be a single sentence estimating the total expenses for the next 30 days based on the current data. Start it with "Based on your habits, you might spend around...".
 
-    You MUST speak in the user's specified language: ${language}.
+    **CRITICAL RULE:** You MUST speak EXCLUSIVELY in the user's specified language: **${language}**. Do not use any other language under any circumstances.
     You MUST respond ONLY with a JSON object conforming to the output schema.`;
     
     const userPrompt = `User's financial data:
@@ -64,7 +64,7 @@ async function getFinancialSummaryFlow(input: FinancialSummaryInput): Promise<Fi
     - Expenses by Category:
     ${expensesByCategoryString}
     
-    Based on the provided data, generate a summary, advice, and prediction.`;
+    Based on the provided data, generate a summary, advice, and prediction in language code '${language}'.`;
 
     const messages = [
         { role: 'system', content: systemPrompt },

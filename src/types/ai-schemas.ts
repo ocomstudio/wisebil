@@ -75,6 +75,7 @@ export const AgentWInputSchema = z.object({
   currency: z.string().describe("The user's currency to provide context for amounts."),
   budgets: z.array(z.any()).describe('List of existing user budgets.'),
   savingsGoals: z.array(z.any()).describe('List of existing user savings goals.'),
+  language: z.string().describe("The user's preferred language (e.g., 'fr', 'en')."),
 });
 export type AgentWInput = z.infer<typeof AgentWInputSchema>;
 
@@ -115,7 +116,7 @@ export const ProcessReceiptInputSchema = z.object({
   photoDataUri: z
     .string()
     .describe(
-      "A photo of a receipt, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "A photo of a receipt, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'"
     ),
 });
 export type ProcessReceiptInput = z.infer<typeof ProcessReceiptInputSchema>;
@@ -133,7 +134,7 @@ export const ScanDocumentInputSchema = z.object({
   photoDataUri: z
     .string()
     .describe(
-      "A photo of a document (receipt, note, etc.), as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "A photo of a document (receipt, note, etc.), as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'"
     ),
 });
 export type ScanDocumentInput = z.infer<typeof ScanDocumentInputSchema>;

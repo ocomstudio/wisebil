@@ -297,7 +297,8 @@ export function ConseilPanel() {
                     prompt: transcript,
                     currency,
                     budgets,
-                    savingsGoals
+                    savingsGoals,
+                    language: locale,
                 };
                 const result = await runAgentW(agentWInput);
                 const summary = processAgentWResponse(result);
@@ -422,7 +423,8 @@ export function ConseilPanel() {
                 prompt,
                 currency,
                 budgets,
-                savingsGoals
+                savingsGoals,
+                language: locale,
             };
             const result = await runAgentW(input);
             const summary = processAgentWResponse(result);
@@ -442,7 +444,7 @@ export function ConseilPanel() {
     ? t('ask_a_question_placeholder')
     : t('agent_w_placeholder');
     
-  const pageTitle = agentMode === 'wise' ? `${t('nav_advice')} IA` : 'Agent W';
+  const pageTitle = agentMode === 'wise' ? t('nav_advice') : 'Agent W';
 
   if (!isClient || !user) {
     return (
@@ -662,7 +664,7 @@ export function ConseilPanel() {
         <div className="grid grid-cols-2 gap-2 mb-2">
             <Button variant={agentMode === 'wise' ? 'secondary' : 'ghost'} onClick={() => setAgentMode('wise')}>
                 <MessageSquare className="mr-2 h-4 w-4" />
-                Conseil
+                {t('nav_advice')}
             </Button>
             <Button variant={agentMode === 'agent' ? 'secondary' : 'ghost'} onClick={() => setAgentMode('agent')}>
                 <ScanLine className="mr-2 h-4 w-4" />
