@@ -16,7 +16,7 @@ const TEXT_MODELS = [
 ];
 
 const VISION_MODELS = [
-    'openai/gpt-4o-2024-05-13', // Switched to a more reliable vision model
+    'openai/gpt-4o-2024-05-13',
 ];
 
 type GenerateOptions = {
@@ -40,17 +40,6 @@ export async function generate(options: GenerateOptions) {
     if (options.output?.format === 'json') {
         requestPayload.response_format = { type: 'json_object' };
     }
-    
-    // Correctly format the messages for vision models if needed
-    if (options.modelType === 'vision') {
-        const userMessage = options.messages.find(m => m.role === 'user');
-        if (userMessage && !Array.isArray(userMessage.content)) {
-            // The API for vision models expects the content to be an array of objects.
-            // If it's a simple string, we wrap it in the expected structure.
-            userMessage.content = [{ type: 'text', text: userMessage.content }];
-        }
-    }
-
 
     for (const modelName of modelsToTry) {
         try {
