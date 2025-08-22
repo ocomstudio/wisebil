@@ -5,14 +5,19 @@ import OpenAI from 'openai';
 import { z } from 'zod';
 
 // We are using the OpenAI SDK, but configuring it to point to aimlapi.com
+// We pass the API key via a custom authorization header as required by aimlapi.com
 const aimlapi = new OpenAI({
     baseURL: "https://api.aimlapi.com",
-    apiKey: process.env.AIMLAPI_API_KEY || '69a6a53b7c9e45fab5ca601510db954f',
+    apiKey: 'dummy-key', // The OpenAI SDK requires an apiKey, but we override it with defaultHeaders
+    defaultHeaders: {
+        "Authorization": `Bearer ${process.env.AIMLAPI_API_KEY || '69a6a53b7c9e45fab5ca601510db954f'}`
+    }
 });
 
 // Prioritized list of models. The service will try them in this order.
 const TEXT_MODELS = [
   'gpt-4o-mini',
+  'google/gemma-2-9b-it',
 ];
 
 const VISION_MODELS = [
