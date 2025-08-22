@@ -33,9 +33,21 @@ export async function generate(options: GenerateOptions) {
     const modelsToTry = options.modelType === 'vision' ? VISION_MODELS : TEXT_MODELS;
 
     const requestPayload: OpenAI.Chat.ChatCompletionCreateParams = {
-        messages: options.messages, // Directly use the messages array
+        messages: options.messages,
         stream: false,
     };
+    
+    // Correctly format the messages for vision models if needed
+    if (options.modelType === 'vision' && options.messages.length > 0) {
+        const userMessage = options.messages.find(m => m.role === 'user');
+        if (userMessage && Array.isArray(userMessage.content)) {
+            // The API expects the content to be an array of objects for vision
+            // No special reformatting needed if the content is already in the correct format
+        } else {
+            // This case might need adjustment if other formats are used
+        }
+    }
+
 
     if (options.output?.format === 'json') {
         requestPayload.response_format = { type: 'json_object' };
