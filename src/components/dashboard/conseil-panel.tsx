@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send, PlusCircle, Mic, MicOff, BrainCircuit, Bot, MessageSquare, ScanLine, Trash2, X, Check, Play, Pause, Trash } from 'lucide-react';
+import { Loader2, Send, PlusCircle, Mic, BrainCircuit, Bot, MessageSquare, ScanLine, Trash2, X, Check, Play, Pause, Trash } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   AlertDialog,
@@ -40,7 +40,6 @@ import { v4 as uuidv4 } from "uuid";
 import type { ExpenseAssistantInput, AgentWInput, AgentWOutput } from '@/types/ai-schemas';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import wav from 'wav';
 
 const assistantSchema = z.object({
   prompt: z.string().min(1, 'Veuillez entrer une question.'),
@@ -71,6 +70,43 @@ interface ConversationHistory {
     }
 }
 
+const AudioPlayer = ({ src }: { src: string }) => {
+    const audioPlayerRef = useRef<HTMLAudioElement>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [isReady, setIsReady] = useState(false);
+
+    const togglePlay = () => {
+      if (audioPlayerRef.current) {
+        if (isPlaying) {
+          audioPlayerRef.current.pause();
+        } else {
+          audioPlayerRef.current.play();
+        }
+      }
+    };
+    
+    return (
+      <div className="flex items-center gap-2">
+        <audio
+          ref={audioPlayerRef}
+          src={src}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onEnded={() => setIsPlaying(false)}
+          onCanPlay={() => setIsReady(true)}
+          className="hidden"
+          preload="auto"
+        />
+        <Button variant="ghost" size="icon" onClick={togglePlay} disabled={!isReady} className="h-8 w-8">
+          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        </Button>
+        <div className="w-full h-1 bg-muted-foreground/30 rounded-full">
+            <div className="h-1 bg-primary rounded-full" style={{width: '20%'}}></div>
+        </div>
+      </div>
+    );
+};
+
 
 export function ConseilPanel() {
   const { t, locale, currency, formatCurrency } = useLocale();
@@ -91,12 +127,8 @@ export function ConseilPanel() {
   const [agentMode, setAgentMode] = useState<AgentMode>('wise');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [showDictationUI, setShowDictationUI] = useState(false);
-  const [isAudioReady, setIsAudioReady] = useState(false);
-
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -200,7 +232,6 @@ export function ConseilPanel() {
   
   const startListening = useCallback(async () => {
     if (isListening) return;
-    setIsAudioReady(false);
 
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -240,7 +271,6 @@ export function ConseilPanel() {
 
     setShowDictationUI(false);
     
-    // Add user's audio message to chat immediately
     const userMessage: Message = { role: 'user', type: 'audio', content: '', audioUrl: audioUrl, agentMode };
     setCurrentConversation(prev => [...prev, userMessage]);
     setAudioUrl(null);
@@ -294,16 +324,6 @@ export function ConseilPanel() {
     setShowDictationUI(false);
     stopListening();
   }
-  
-  const togglePlayAudio = (targetAudioRef: React.RefObject<HTMLAudioElement>) => {
-    if (!targetAudioRef.current) return;
-    if (targetAudioRef.current.paused) {
-      targetAudioRef.current.play();
-    } else {
-      targetAudioRef.current.pause();
-    }
-  };
-
 
   const handleNewConversation = () => {
     if (currentConversation.length > 0 && !(currentConversation.length === 1 && currentConversation[0].role === 'model')) {
@@ -466,43 +486,6 @@ export function ConseilPanel() {
       `}</style>
     </div>
   );
-  
-  const AudioPlayer = ({ src }: { src: string }) => {
-    const audioPlayerRef = useRef<HTMLAudioElement>(null);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [isReady, setIsReady] = useState(false);
-
-    const togglePlay = () => {
-      if (audioPlayerRef.current) {
-        if (isPlaying) {
-          audioPlayerRef.current.pause();
-        } else {
-          audioPlayerRef.current.play();
-        }
-      }
-    };
-    
-    return (
-      <div className="flex items-center gap-2">
-        <audio
-          ref={audioPlayerRef}
-          src={src}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onEnded={() => setIsPlaying(false)}
-          onCanPlay={() => setIsReady(true)}
-          className="hidden"
-        />
-        <Button variant="ghost" size="icon" onClick={togglePlay} disabled={!isReady} className="h-8 w-8">
-          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-        </Button>
-        <div className="w-full h-1 bg-muted-foreground/30 rounded-full">
-            <div className="h-1 bg-muted-foreground rounded-full" style={{width: '20%'}}></div>
-        </div>
-      </div>
-    );
-  };
-
 
   if (showDictationUI) {
     return (
@@ -513,41 +496,40 @@ export function ConseilPanel() {
             </Button>
         </header>
 
-        <main className="flex-1 flex flex-col items-center justify-center gap-8 text-center p-4">
-            <p className="text-muted-foreground">{isListening ? t('listening') : t('audio_recorded')}</p>
-            
-            <div className="relative flex items-center justify-center h-48 w-48">
-                {isListening ? (
-                   <>
-                     <div className="absolute h-full w-full bg-primary/20 rounded-full animate-pulse"></div>
-                     <div className="h-32 w-32 bg-primary rounded-full flex items-center justify-center">
-                         <Mic className="h-16 w-16 text-primary-foreground"/>
-                     </div>
-                   </>
-                ) : (
-                  audioUrl && (
-                    <div className="flex flex-col items-center gap-4">
-                      <audio ref={audioRef} src={audioUrl} onPlay={() => setIsAudioPlaying(true)} onPause={() => setIsAudioPlaying(false)} onEnded={() => setIsAudioPlaying(false)} onCanPlay={() => setIsAudioReady(true)} className="hidden" />
-                      <Button size="lg" variant="outline" className="rounded-full h-24 w-24 p-0" onClick={() => togglePlayAudio(audioRef)} disabled={!isAudioReady}>
-                        {isAudioPlaying ? <Pause className="h-10 w-10"/> : <Play className="h-10 w-10"/>}
-                      </Button>
-                       <Button size="sm" variant="ghost" onClick={resetAudio}>
-                          <Trash className="mr-2 h-4 w-4"/>
-                          {t('record_again')}
-                      </Button>
-                    </div>
-                  )
-                )}
+        <main className="flex-1 flex flex-col items-center justify-center text-center p-4">
+            <div className="flex-1 flex flex-col items-center justify-center gap-8">
+                <p className="text-muted-foreground">{isListening ? t('listening') : t('audio_recorded')}</p>
+                
+                <div className="relative flex items-center justify-center h-48 w-48">
+                    {isListening ? (
+                       <>
+                         <div className="absolute h-full w-full bg-primary/20 rounded-full animate-pulse"></div>
+                         <div className="h-32 w-32 bg-primary rounded-full flex items-center justify-center">
+                             <Mic className="h-16 w-16 text-primary-foreground"/>
+                         </div>
+                       </>
+                    ) : (
+                      audioUrl && (
+                        <div className="flex flex-col items-center gap-4">
+                          <AudioPlayer src={audioUrl} />
+                           <Button size="sm" variant="ghost" onClick={resetAudio}>
+                              <Trash className="mr-2 h-4 w-4"/>
+                              {t('record_again')}
+                          </Button>
+                        </div>
+                      )
+                    )}
+                </div>
             </div>
             
-            <div className="w-full max-w-lg min-h-[6rem] px-4 flex flex-col items-center justify-center gap-4">
+            <div className="w-full max-w-lg min-h-[6rem] px-4 flex flex-col items-center justify-center gap-4 pb-8">
               {isListening && <AudioWaveform />}
               {isListening ? (
                   <Button size="lg" variant="destructive" className="rounded-full h-16 w-16 p-0" onClick={stopListening}>
                       <Pause className="h-8 w-8" />
                   </Button>
               ) : (
-                  <Button size="lg" className="rounded-full h-16 w-16 p-0" onClick={handleDictationSubmit} disabled={!audioReady}>
+                  <Button size="lg" className="rounded-full h-16 w-16 p-0" onClick={handleDictationSubmit} disabled={!audioUrl}>
                       <Check className="h-8 w-8" />
                   </Button>
               )}
