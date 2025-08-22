@@ -28,13 +28,9 @@ async function processReceiptFlow(input: ProcessReceiptInput): Promise<ProcessRe
 
   const messages = [
     {
-      role: 'system',
-      content: systemPrompt
-    },
-    {
       role: 'user',
       content: [
-          { type: 'text', text: 'Extract the details from this receipt.' },
+          { type: 'text', text: systemPrompt },
           {
               type: 'image_url',
               image_url: {

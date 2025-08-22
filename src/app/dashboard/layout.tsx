@@ -25,7 +25,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   // Hide main layout for the full-screen scan page on mobile
-  if (pathname === '/dashboard/scan-receipt') {
+  if (pathname.startsWith('/dashboard/scan-receipt')) {
     return <div className="h-screen w-screen">{children}</div>;
   }
 

@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Camera, Loader2, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLocale } from '@/context/locale-context';
-import { processReceipt } from '@/ai/flows/process-receipt-flow';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import Link from 'next/link';
 
@@ -17,7 +16,7 @@ export default function ScanReceiptPage() {
   const { toast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isScanning, setIsScanning] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -53,9 +52,9 @@ export default function ScanReceiptPage() {
     }
   }, [toast, t]);
 
-  const handleScan = async () => {
+  const handleCapture = async () => {
     if (!videoRef.current || !canvasRef.current) return;
-    setIsScanning(true);
+    setIsProcessing(true);
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -64,29 +63,20 @@ export default function ScanReceiptPage() {
     const context = canvas.getContext('2d');
     context?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
 
-    const dataUri = canvas.toDataURL('image/jpeg');
+    const dataUri = canvas.toDataURL('image/jpeg', 0.9); // Use JPEG with quality for smaller size
 
     try {
-      const result = await processReceipt({ photoDataUri: dataUri });
-      
-      const queryParams = new URLSearchParams({
-        amount: result.amount.toString(),
-        description: result.merchantName,
-        date: result.date,
-        category: result.category,
-      });
-
-      router.push(`/dashboard/add-expense?${queryParams.toString()}`);
-
+      // Store the Data URI in session storage to pass it to the results page
+      sessionStorage.setItem('scannedImageDataUri', dataUri);
+      router.push('/dashboard/scan-receipt/results');
     } catch (error) {
-      console.error('Error processing receipt:', error);
+      console.error('Error during capture:', error);
       toast({
         variant: 'destructive',
-        title: 'Scan Failed',
-        description: 'Could not extract information from the receipt. Please try again.',
+        title: 'Capture Failed',
+        description: 'Could not capture the image. Please try again.',
       });
-    } finally {
-      setIsScanning(false);
+      setIsProcessing(false);
     }
   };
 
@@ -115,16 +105,22 @@ export default function ScanReceiptPage() {
                 </Alert>
              </div>
          )}
+          {isProcessing && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 space-y-4">
+              <Loader2 className="h-12 w-12 text-white animate-spin" />
+              <p className="text-white text-lg">{t('scanning_button')}...</p>
+            </div>
+          )}
        </main>
 
-       <footer className="p-6 bg-black/50 backdrop-blur-sm">
-         <Button onClick={handleScan} disabled={isScanning || hasCameraPermission === false} className="w-full h-16 rounded-full text-lg">
-           {isScanning ? (
-             <Loader2 className="h-6 w-6 animate-spin" />
-           ) : (
-             <Camera className="h-6 w-6 mr-2" />
-           )}
-           {isScanning ? t('scanning_button') : t('scan_button')}
+       <footer className="p-6 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+         <Button 
+            onClick={handleCapture} 
+            disabled={isProcessing || hasCameraPermission === false} 
+            className="w-20 h-20 rounded-full border-4 border-white/50 bg-white/30 hover:bg-white/50 flex items-center justify-center"
+            aria-label="Capture photo"
+          >
+           <Camera className="h-8 w-8 text-white" />
          </Button>
        </footer>
     </div>

@@ -1,0 +1,92 @@
+// src/ai/flows/scan-document-flow.ts
+'use server';
+
+/**
+ * @fileOverview An AI flow to process a document image, extract text, and parse it for financial actions using AgentW logic.
+ *
+ * - scanDocument - A function that handles the document scanning and parsing.
+ * - ScanDocumentInput - The input type for the scanDocument function.
+ */
+
+import { expenseCategories, incomeCategories } from '@/config/categories';
+import {
+  AgentWOutputSchema,
+  AgentWOutput,
+} from '@/types/ai-schemas';
+import { generate } from '@/services/ai-service';
+import { z } from 'zod';
+
+// Define input and output schemas specifically for this flow
+export const ScanDocumentInputSchema = z.object({
+  photoDataUri: z
+    .string()
+    .describe(
+      "A photo of a document (receipt, note, etc.), as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+    ),
+});
+export type ScanDocumentInput = z.infer<typeof ScanDocumentInputSchema>;
+export type ScanDocumentOutput = AgentWOutput;
+
+
+async function scanDocumentFlow(input: ScanDocumentInput): Promise<ScanDocumentOutput> {
+  
+  // Step 1: Extract text from the image using a vision model.
+  const ocrSystemPrompt = `You are an Optical Character Recognition (OCR) expert. Analyze the provided image and extract ALL text content, preserving the original line breaks and structure as much as possible. Respond ONLY with the extracted text.`;
+  
+  const ocrMessages = [{
+    role: 'user',
+    content: [
+      { type: 'text', text: ocrSystemPrompt },
+      { type: 'image_url', image_url: { url: input.photoDataUri } },
+    ],
+  }];
+
+  const extractedText = await generate({
+      messages: ocrMessages,
+      modelType: 'vision'
+  });
+  
+  if (typeof extractedText !== 'string' || !extractedText.trim()) {
+    console.log("No text extracted from image, returning empty results.");
+    return {
+        incomes: [],
+        expenses: [],
+        newBudgets: [],
+        newSavingsGoals: [],
+        savingsContributions: [],
+    };
+  }
+
+  // Step 2: Use the extracted text as input for the AgentW logic to parse financial data.
+  const agentWSystemPrompt = `You are "Agent W", an expert financial data entry specialist. Your sole purpose is to analyze the provided text, which is from a scanned document, to identify every single financial action and structure them into a SINGLE JSON object.
+
+**Core Instructions:**
+1.  **Parse Text:** The user's prompt is raw text from a document. Your primary task is to meticulously read the entire text and hunt for any financial actions: spending money (expenses), receiving money (incomes), creating a budget, creating a savings goal, or adding money to an existing goal.
+2.  **Identify ALL Financial Actions:** Do not miss a single action. You must capture everything from buying coffee to setting up a new savings plan. Each action MUST have all required fields (description, amount, category).
+3.  **Extract the Date for Transactions:** Today's date is ${new Date().toISOString().split('T')[0]}. You MUST analyze the text to find the date of each transaction. Look for terms like "hier", "avant-hier", or specific dates like "le 29". If no date is found for a transaction, you MUST use today's date. The date format MUST be YYYY-MM-DD. This applies only to incomes and expenses. This is a required field.
+4.  **Categorize Accurately:** For each transaction, assign a category.
+    - **Expenses (money spent):** Use one of these: ${expenseCategories.map((c) => c.name).join(', ')}.
+    - **Incomes (money received):** Use one of these: ${incomeCategories.map((c) => c.name).join(', ')}.
+5.  **STRICT JSON-ONLY OUTPUT:** You MUST respond ONLY with a JSON object conforming to the output schema. Do not include apologies, explanations, or ANY text outside of the JSON brackets. If no actions of a certain type are found, its corresponding array MUST be empty, for example: "incomes": []. NEVER return a list with an empty object like "incomes": [{}]. The 'date' field for transactions is REQUIRED, and it MUST be in YYYY-MM-DD format.`;
+
+  const agentWMessages = [
+    { role: 'system', content: agentWSystemPrompt },
+    { role: 'user', content: extractedText }
+  ];
+
+  const rawOutput = await generate({
+    messages: agentWMessages,
+    output: {
+      format: 'json',
+      schema: AgentWOutputSchema,
+    },
+  });
+
+  const output = AgentWOutputSchema.parse(rawOutput);
+  return output;
+}
+
+
+export async function scanDocument(input: ScanDocumentInput): Promise<ScanDocumentOutput> {
+  return await scanDocumentFlow(input);
+}
