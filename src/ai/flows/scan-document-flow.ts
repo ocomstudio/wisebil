@@ -12,23 +12,15 @@ import { expenseCategories, incomeCategories } from '@/config/categories';
 import {
   AgentWOutputSchema,
   AgentWOutput,
+  ScanDocumentInputSchema,
+  ScanDocumentInput
 } from '@/types/ai-schemas';
 import { generate } from '@/services/ai-service';
-import { z } from 'zod';
 
-// Define input and output schemas specifically for this flow
-export const ScanDocumentInputSchema = z.object({
-  photoDataUri: z
-    .string()
-    .describe(
-      "A photo of a document (receipt, note, etc.), as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
-    ),
-});
-export type ScanDocumentInput = z.infer<typeof ScanDocumentInputSchema>;
-export type ScanDocumentOutput = AgentWOutput;
+export type { ScanDocumentInput, AgentWOutput as ScanDocumentOutput };
 
 
-async function scanDocumentFlow(input: ScanDocumentInput): Promise<ScanDocumentOutput> {
+async function scanDocumentFlow(input: ScanDocumentInput): Promise<AgentWOutput> {
   
   // Step 1: Extract text from the image using a vision model.
   const ocrSystemPrompt = `You are an Optical Character Recognition (OCR) expert. Analyze the provided image and extract ALL text content, preserving the original line breaks and structure as much as possible. Respond ONLY with the extracted text.`;
@@ -87,6 +79,6 @@ async function scanDocumentFlow(input: ScanDocumentInput): Promise<ScanDocumentO
 }
 
 
-export async function scanDocument(input: ScanDocumentInput): Promise<ScanDocumentOutput> {
+export async function scanDocument(input: ScanDocumentInput): Promise<AgentWOutput> {
   return await scanDocumentFlow(input);
 }
