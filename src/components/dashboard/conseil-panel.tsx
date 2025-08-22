@@ -59,8 +59,14 @@ type Conversation = Message[];
 type AgentMode = 'wise' | 'agent';
 
 interface ConversationHistory {
-    current: Conversation;
-    history: Conversation[];
+    wise: {
+      current: Conversation;
+      history: Conversation[];
+    },
+    agentW: {
+      current: Conversation;
+      history: Conversation[];
+    }
 }
 
 
@@ -72,8 +78,12 @@ export function ConseilPanel() {
   const { savingsGoals, addSavingsGoal, addFunds } = useSavings();
 
   const [isClient, setIsClient] = useState(false);
-  const [currentConversation, setCurrentConversation] = useState<Conversation>([]);
-  const [conversationHistory, setConversationHistory] = useState<Conversation[]>([]);
+  
+  const [wiseConversation, setWiseConversation] = useState<Conversation>([]);
+  const [wiseHistory, setWiseHistory] = useState<Conversation[]>([]);
+  const [agentWConversation, setAgentWConversation] = useState<Conversation>([]);
+  const [agentWHistory, setAgentWHistory] = useState<Conversation[]>([]);
+
   const [isThinking, setIsThinking] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [agentMode, setAgentMode] = useState<AgentMode>('wise');
@@ -90,6 +100,12 @@ export function ConseilPanel() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast: uiToast } = useToast();
   
+  const currentConversation = agentMode === 'wise' ? wiseConversation : agentWConversation;
+  const conversationHistory = agentMode === 'wise' ? wiseHistory : agentWHistory;
+  const setCurrentConversation = agentMode === 'wise' ? setWiseConversation : setAgentWConversation;
+  const setConversationHistory = agentMode === 'wise' ? setWiseHistory : setAgentWHistory;
+
+
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -111,10 +127,12 @@ export function ConseilPanel() {
         const loadedHistory = docSnap.data();
         if (loadedHistory && loadedHistory.conversations) {
           const conversationData = loadedHistory.conversations as ConversationHistory;
-          setCurrentConversation(conversationData.current || []);
-          setConversationHistory(conversationData.history || []);
+          setWiseConversation(conversationData.wise?.current || []);
+          setWiseHistory(conversationData.wise?.history || []);
+          setAgentWConversation(conversationData.agentW?.current || []);
+          setAgentWHistory(conversationData.agentW?.history || []);
         } else {
-           setCurrentConversation([{
+           setWiseConversation([{
                 role: 'model',
                 type: 'text',
                 content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || 'Utilisateur'),
@@ -130,22 +148,16 @@ export function ConseilPanel() {
 
   // Save conversation to Firestore whenever it changes
   useEffect(() => {
-    if (!isClient || !user || !currentConversation) return;
+    if (!isClient || !user || (!wiseConversation && !agentWConversation)) return;
     
     const saveHistory = async () => {
         const userDocRef = getUserDocRef();
         if (!userDocRef) return;
         
         try {
-            // Prevent saving an empty initial conversation
-            const isInitialWelcome = currentConversation.length === 1 && currentConversation[0].role === 'model';
-            if (isInitialWelcome && conversationHistory.length === 0) {
-                return;
-            }
-
             const historyToSave: ConversationHistory = {
-                current: currentConversation,
-                history: conversationHistory
+                wise: { current: wiseConversation, history: wiseHistory },
+                agentW: { current: agentWConversation, history: agentWHistory }
             };
             
             await setDoc(userDocRef, { conversations: historyToSave }, { merge: true });
@@ -156,7 +168,7 @@ export function ConseilPanel() {
     // Debounce saving to avoid too many writes
     const timer = setTimeout(saveHistory, 1000);
     return () => clearTimeout(timer);
-  }, [currentConversation, conversationHistory, isClient, user, getUserDocRef]);
+  }, [wiseConversation, wiseHistory, agentWConversation, agentWHistory, isClient, user, getUserDocRef]);
 
   const form = useForm<AssistantFormValues>({
     resolver: zodResolver(assistantSchema),
@@ -207,14 +219,12 @@ export function ConseilPanel() {
 
         mediaRecorderRef.current.start();
         setIsListening(true);
-        if(agentMode === 'agent') {
-            setShowDictationUI(true);
-        }
+        setShowDictationUI(true);
     } catch (err) {
         console.error("Error accessing microphone:", err);
         uiToast({ variant: 'destructive', title: t('listening_error') });
     }
-  }, [isListening, agentMode, uiToast, t]);
+  }, [isListening, uiToast, t]);
 
   const stopListening = useCallback(() => {
     if (mediaRecorderRef.current && isListening) {
@@ -300,7 +310,7 @@ export function ConseilPanel() {
         role: 'model',
         type: 'text',
         content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || 'Utilisateur'),
-        agentMode: 'wise'
+        agentMode: agentMode,
     }]);
   };
 
@@ -491,7 +501,7 @@ export function ConseilPanel() {
 
   if (showDictationUI) {
     return (
-      <div className="fixed inset-0 bg-background/95 z-50 p-4" style={{ height: '100svh', paddingBottom: '80px' }}>
+      <div className="fixed inset-0 bg-background/95 z-50 p-4" style={{ height: '100svh', paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="grid grid-rows-[auto_1fr_auto] h-full">
             <header className="flex justify-end">
                 <Button variant="ghost" size="icon" onClick={resetAudio}>
@@ -531,7 +541,7 @@ export function ConseilPanel() {
                 </div>
             </main>
             
-            <footer className="flex justify-center pt-4">
+            <footer className="flex justify-center py-4">
                  {isListening ? (
                     <Button size="lg" variant="destructive" className="rounded-full h-16 w-16 p-0" onClick={stopListening}>
                         <Pause className="h-8 w-8" />
