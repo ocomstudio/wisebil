@@ -16,11 +16,11 @@ const TEXT_MODELS = [
 ];
 
 const VISION_MODELS = [
-    'qwen/qwen-vl-max', // This model is good for vision tasks
+    'openai/gpt-4o-2024-05-13', // Switched to a more reliable vision model
 ];
 
 type GenerateOptions = {
-    messages: any[]; // Now we only accept a messages array
+    messages: any[]; // Accept a messages array
     output?: {
         format: 'json';
         schema: z.ZodTypeAny;
@@ -36,33 +36,32 @@ export async function generate(options: GenerateOptions) {
         messages: options.messages,
         stream: false,
     };
-    
-    // Correctly format the messages for vision models if needed
-    if (options.modelType === 'vision' && options.messages.length > 0) {
-        const userMessage = options.messages.find(m => m.role === 'user');
-        if (userMessage && Array.isArray(userMessage.content)) {
-            // The API expects the content to be an array of objects for vision
-            // No special reformatting needed if the content is already in the correct format
-        } else {
-            // This case might need adjustment if other formats are used
-        }
-    }
-
 
     if (options.output?.format === 'json') {
         requestPayload.response_format = { type: 'json_object' };
     }
+    
+    // Correctly format the messages for vision models if needed
+    if (options.modelType === 'vision') {
+        const userMessage = options.messages.find(m => m.role === 'user');
+        if (userMessage && !Array.isArray(userMessage.content)) {
+            // The API for vision models expects the content to be an array of objects.
+            // If it's a simple string, we wrap it in the expected structure.
+            userMessage.content = [{ type: 'text', text: userMessage.content }];
+        }
+    }
+
 
     for (const modelName of modelsToTry) {
         try {
-            console.log(`Attempting to generate text with model: ${modelName}`);
+            console.log(`Attempting to generate with model: ${modelName}`);
             
             const completion = await openrouter.chat.completions.create({
                 ...requestPayload,
                 model: modelName,
             });
             
-            console.log(`Successfully generated text with model: ${modelName}`);
+            console.log(`Successfully generated with model: ${modelName}`);
             
             const responseContent = completion.choices[0]?.message?.content;
             if (!responseContent) {
