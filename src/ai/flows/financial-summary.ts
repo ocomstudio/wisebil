@@ -8,15 +8,13 @@
  * - FinancialSummaryInput - The input type for the getFinancialSummary function.
  * - FinancialSummaryOutput - The return type for the getFinancialSummary function.
  */
-
+import {ai} from '@/ai/genkit';
 import {
     FinancialSummaryInputSchema,
     FinancialSummaryOutputSchema,
     FinancialSummaryInput,
     FinancialSummaryOutput
 } from '@/types/ai-schemas';
-import { generateText } from 'genkit/ai';
-import { geminiPro } from '@/lib/genkit';
 
 export type { FinancialSummaryInput, FinancialSummaryOutput };
 
@@ -66,8 +64,8 @@ async function getFinancialSummaryFlow(input: FinancialSummaryInput): Promise<Fi
     
     Based on the provided data, generate a summary, advice, and prediction in language code '${language}'.`;
 
-    const response = await generateText({
-        model: geminiPro,
+    const { output } = await ai.generate({
+        model: 'gemini-1.5-flash',
         prompt: `${systemPrompt}\n\n${userPrompt}`,
         output: {
             schema: FinancialSummaryOutputSchema,
@@ -75,7 +73,6 @@ async function getFinancialSummaryFlow(input: FinancialSummaryInput): Promise<Fi
         },
     });
     
-    const output = response.output();
     if (!output) {
       throw new Error("AI failed to generate a financial summary.");
     }

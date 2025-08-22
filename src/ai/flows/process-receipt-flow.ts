@@ -8,7 +8,7 @@
  * - ProcessReceiptInput - The input type for the processReceipt function.
  * - ProcessReceiptOutput - The return type for the processReceipt function.
  */
-
+import {ai} from '@/ai/genkit';
 import { expenseCategories } from '@/config/categories';
 import {
   ProcessReceiptInputSchema,
@@ -16,8 +16,7 @@ import {
   type ProcessReceiptInput,
   type ProcessReceiptOutput,
 } from '@/types/ai-schemas';
-import { generateText, Part } from 'genkit/ai';
-import { geminiPro } from '@/lib/genkit';
+import { Part } from 'genkit';
 
 
 export type { ProcessReceiptInput, ProcessReceiptOutput };
@@ -32,8 +31,8 @@ async function processReceiptFlow(input: ProcessReceiptInput): Promise<ProcessRe
       { media: { url: input.photoDataUri } }
   ];
 
-  const response = await generateText({
-    model: geminiPro,
+  const { output } = await ai.generate({
+    model: 'gemini-1.5-flash',
     prompt,
     output: {
       schema: ProcessReceiptOutputSchema,
@@ -41,7 +40,6 @@ async function processReceiptFlow(input: ProcessReceiptInput): Promise<ProcessRe
     },
   });
   
-  const output = response.output();
   if (!output) {
     throw new Error("AI failed to generate a response from the receipt image.");
   }

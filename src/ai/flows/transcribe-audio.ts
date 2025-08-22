@@ -7,8 +7,7 @@
  * - TranscribeAudioInput - The input type for the transcribeAudio function.
  * - TranscribeAudioOutput - The return type for the transcribeAudio function.
  */
-import { generateText } from 'genkit/ai';
-import { geminiPro } from '@/lib/genkit';
+import {ai} from '@/ai/genkit';
 import wav from 'wav';
 import { Buffer } from 'buffer';
 import type { TranscribeAudioInput, TranscribeAudioOutput } from '@/types/ai-schemas';
@@ -24,12 +23,11 @@ async function transcribeAudioFlow(input: TranscribeAudioInput): Promise<Transcr
         { media: { url: input.audioDataUri } }
     ];
 
-    const response = await generateText({
-        model: geminiPro,
+    const {text: transcript} = await ai.generate({
+        model: 'gemini-1.5-flash',
         prompt,
     });
 
-    const transcript = response.text();
     if (typeof transcript !== 'string') {
         throw new Error("AI failed to return a valid transcript.");
     }

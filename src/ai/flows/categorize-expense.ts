@@ -7,8 +7,7 @@
  * - CategorizeExpenseInput - The input type for the categorizeExpense function.
  * - CategorizeExpenseOutput - The return type for the categorizeExpense function.
  */
-import {generateText} from 'genkit/ai';
-import {geminiPro} from '@/lib/genkit';
+import {ai} from '@/ai/genkit';
 import { expenseCategories } from '@/config/categories';
 import { CategorizeExpenseOutputSchema, CategorizeExpenseInputSchema, CategorizeExpenseInput, CategorizeExpenseOutput } from '@/types/ai-schemas';
 
@@ -20,8 +19,8 @@ async function categorizeExpenseFlow(input: CategorizeExpenseInput): Promise<Cat
 Here are the available categories: ${expenseCategories.map((c) => c.name).join(', ')}. You MUST select one of these categories. If no category seems appropriate, choose 'Autre'.
 The user's preferred language is French (fr). You must respond in this language.`;
 
-  const response = await generateText({
-    model: geminiPro,
+  const { output } = await ai.generate({
+    model: 'gemini-1.5-flash',
     prompt: `${systemPrompt}\n\nExpense description: ${input.description}`,
     output: {
         schema: CategorizeExpenseOutputSchema,
@@ -29,7 +28,6 @@ The user's preferred language is French (fr). You must respond in this language.
     },
   });
   
-  const output = response.output();
   if (!output) {
       throw new Error("AI failed to categorize the expense.");
   }

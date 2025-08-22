@@ -7,7 +7,7 @@
  * - scanDocument - A function that handles the document scanning and parsing.
  * - ScanDocumentInput - The input type for the scanDocument function.
  */
-
+import {ai} from '@/ai/genkit';
 import { expenseCategories, incomeCategories } from '@/config/categories';
 import {
   AgentWOutputSchema,
@@ -15,8 +15,7 @@ import {
   ScanDocumentInputSchema,
   ScanDocumentInput
 } from '@/types/ai-schemas';
-import { generateText } from 'genkit/ai';
-import { geminiPro } from '@/lib/genkit';
+
 
 export type { ScanDocumentInput, AgentWOutput as ScanDocumentOutput };
 
@@ -31,12 +30,10 @@ async function scanDocumentFlow(input: ScanDocumentInput): Promise<AgentWOutput>
       { media: { url: input.photoDataUri } }
   ];
 
-  const ocrResponse = await generateText({
-      model: geminiPro,
+  const {text: extractedText} = await ai.generate({
+      model: 'gemini-1.5-flash',
       prompt: ocrPrompt
   });
-  
-  const extractedText = ocrResponse.text();
   
   if (!extractedText.trim()) {
     console.log("No text extracted from image, returning empty results.");
@@ -62,8 +59,8 @@ async function scanDocumentFlow(input: ScanDocumentInput): Promise<AgentWOutput>
     - **Incomes (money received/credits):** Use one of these: ${incomeCategories.map((c) => c.name).join(', ')}.
 6.  **STRICT JSON-ONLY OUTPUT:** You MUST respond ONLY with a JSON object conforming to the output schema. Do not include apologies, explanations, or ANY text outside of the JSON brackets. If no actions of a certain type are found, its corresponding array MUST be empty, for example: "incomes": []. NEVER return a list with an empty object like "incomes": [{}]. The 'date' field for transactions is REQUIRED, and it MUST be in YYYY-MM-DD format.`;
 
-  const agentWResponse = await generateText({
-    model: geminiPro,
+  const { output } = await ai.generate({
+    model: 'gemini-1.5-flash',
     prompt: `${agentWSystemPrompt}\n\nDocument Text:\n${extractedText}`,
     output: {
       schema: AgentWOutputSchema,
@@ -71,7 +68,6 @@ async function scanDocumentFlow(input: ScanDocumentInput): Promise<AgentWOutput>
     },
   });
 
-  const output = agentWResponse.output();
   if (!output) {
       throw new Error("AI failed to parse the document text.");
   }
