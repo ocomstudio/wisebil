@@ -16,7 +16,8 @@ import {
   AgentWInput,
   AgentWOutput,
 } from '@/types/ai-schemas';
-import { generate } from '@/services/ai-service';
+import { generateText } from 'genkit/ai';
+import { geminiPro } from '@/lib/genkit';
 
 export type { AgentWInput, AgentWOutput };
 
@@ -41,20 +42,19 @@ async function runAgentWFlow(input: AgentWInput): Promise<AgentWOutput> {
 7.  **Handle Currency:** The user's currency is ${currency}. All amounts are in this currency.
 8.  **STRICT JSON-ONLY OUTPUT:** You MUST respond ONLY with a JSON object conforming to the output schema. Do not include apologies, explanations, or ANY text outside of the JSON brackets. If no actions of a certain type are found, its corresponding array MUST be empty, for example: "incomes": []. NEVER return a list with an empty object like "incomes": [{}]. The 'date' field for transactions is REQUIRED, and it MUST be in YYYY-MM-DD format.`;
 
-    const messages = [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: input.prompt }
-    ];
-    
-    const rawOutput = await generate({
-        messages,
+    const response = await generateText({
+        model: geminiPro,
+        prompt: `${systemPrompt}\n\nUser prompt: ${input.prompt}`,
         output: {
-            format: 'json',
             schema: AgentWOutputSchema,
+            format: 'json'
         },
     });
 
-    const output = AgentWOutputSchema.parse(rawOutput);
+    const output = response.output();
+    if (!output) {
+      throw new Error("AI failed to parse the user's prompt.");
+    }
     return output;
 }
 

@@ -15,7 +15,8 @@ import {
     FinancialSummaryInput,
     FinancialSummaryOutput
 } from '@/types/ai-schemas';
-import { generate } from '@/services/ai-service';
+import { generateText } from 'genkit/ai';
+import { geminiPro } from '@/lib/genkit';
 
 export type { FinancialSummaryInput, FinancialSummaryOutput };
 
@@ -55,8 +56,7 @@ async function getFinancialSummaryFlow(input: FinancialSummaryInput): Promise<Fi
     - The advice must be one sentence MAX.
     - The prediction should be a single sentence estimating the total expenses for the next 30 days based on the current data. Start it with "Based on your habits, you might spend around...".
 
-    **CRITICAL RULE:** You MUST speak EXCLUSIVELY in the user's specified language: **${language}**. Do not use any other language under any circumstances.
-    You MUST respond ONLY with a JSON object conforming to the output schema.`;
+    **CRITICAL RULE:** You MUST speak EXCLUSIVELY in the user's specified language: **${language}**. Do not use any other language under any circumstances.`;
     
     const userPrompt = `User's financial data:
     - Total Income: ${income} ${currency}
@@ -66,20 +66,19 @@ async function getFinancialSummaryFlow(input: FinancialSummaryInput): Promise<Fi
     
     Based on the provided data, generate a summary, advice, and prediction in language code '${language}'.`;
 
-    const messages = [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
-    ];
-
-    const rawOutput = await generate({
-        messages,
+    const response = await generateText({
+        model: geminiPro,
+        prompt: `${systemPrompt}\n\n${userPrompt}`,
         output: {
-            format: 'json',
-            schema: FinancialSummaryOutputSchema
-        }
+            schema: FinancialSummaryOutputSchema,
+            format: 'json'
+        },
     });
     
-    const output = FinancialSummaryOutputSchema.parse(rawOutput);
+    const output = response.output();
+    if (!output) {
+      throw new Error("AI failed to generate a financial summary.");
+    }
     return output;
 }
 

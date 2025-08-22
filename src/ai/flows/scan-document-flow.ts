@@ -15,7 +15,8 @@ import {
   ScanDocumentInputSchema,
   ScanDocumentInput
 } from '@/types/ai-schemas';
-import { generate } from '@/services/ai-service';
+import { generateText } from 'genkit/ai';
+import { geminiPro } from '@/lib/genkit';
 
 export type { ScanDocumentInput, AgentWOutput as ScanDocumentOutput };
 
@@ -25,20 +26,19 @@ async function scanDocumentFlow(input: ScanDocumentInput): Promise<AgentWOutput>
   // Step 1: Extract text from the image using a vision model.
   const ocrSystemPrompt = `You are an Optical Character Recognition (OCR) expert. Analyze the provided image and extract ALL text content, preserving the original line breaks and structure as much as possible. Respond ONLY with the extracted text.`;
   
-  const ocrMessages = [{
-    role: 'user',
-    content: [
-      { type: 'text', text: ocrSystemPrompt },
-      { type: 'image_url', image_url: { url: input.photoDataUri } },
-    ],
-  }];
+  const ocrPrompt = [
+      { text: ocrSystemPrompt },
+      { media: { url: input.photoDataUri } }
+  ];
 
-  const extractedText = await generate({
-      messages: ocrMessages,
-      modelType: 'vision'
+  const ocrResponse = await generateText({
+      model: geminiPro,
+      prompt: ocrPrompt
   });
   
-  if (typeof extractedText !== 'string' || !extractedText.trim()) {
+  const extractedText = ocrResponse.text();
+  
+  if (!extractedText.trim()) {
     console.log("No text extracted from image, returning empty results.");
     return {
         incomes: [],
@@ -62,20 +62,19 @@ async function scanDocumentFlow(input: ScanDocumentInput): Promise<AgentWOutput>
     - **Incomes (money received/credits):** Use one of these: ${incomeCategories.map((c) => c.name).join(', ')}.
 6.  **STRICT JSON-ONLY OUTPUT:** You MUST respond ONLY with a JSON object conforming to the output schema. Do not include apologies, explanations, or ANY text outside of the JSON brackets. If no actions of a certain type are found, its corresponding array MUST be empty, for example: "incomes": []. NEVER return a list with an empty object like "incomes": [{}]. The 'date' field for transactions is REQUIRED, and it MUST be in YYYY-MM-DD format.`;
 
-  const agentWMessages = [
-    { role: 'system', content: agentWSystemPrompt },
-    { role: 'user', content: extractedText }
-  ];
-
-  const rawOutput = await generate({
-    messages: agentWMessages,
+  const agentWResponse = await generateText({
+    model: geminiPro,
+    prompt: `${agentWSystemPrompt}\n\nDocument Text:\n${extractedText}`,
     output: {
-      format: 'json',
       schema: AgentWOutputSchema,
+      format: 'json'
     },
   });
 
-  const output = AgentWOutputSchema.parse(rawOutput);
+  const output = agentWResponse.output();
+  if (!output) {
+      throw new Error("AI failed to parse the document text.");
+  }
   return output;
 }
 

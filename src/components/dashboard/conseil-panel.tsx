@@ -71,39 +71,53 @@ interface ConversationHistory {
 }
 
 const AudioPlayer = ({ src }: { src: string }) => {
-    const audioPlayerRef = useRef<HTMLAudioElement>(null);
+    const audioRef = useRef<HTMLAudioElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isReady, setIsReady] = useState(false);
+    const [progress, setProgress] = useState(0);
 
     const togglePlay = () => {
-      if (audioPlayerRef.current) {
+        if (!audioRef.current || !isReady) return;
         if (isPlaying) {
-          audioPlayerRef.current.pause();
+            audioRef.current.pause();
         } else {
-          audioPlayerRef.current.play();
+            audioRef.current.play();
         }
-      }
     };
     
+    const handleTimeUpdate = () => {
+        if (audioRef.current) {
+            setProgress((audioRef.current.currentTime / audioRef.current.duration) * 100);
+        }
+    }
+
     return (
-      <div className="flex items-center gap-2">
-        <audio
-          ref={audioPlayerRef}
-          src={src}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onEnded={() => setIsPlaying(false)}
-          onCanPlay={() => setIsReady(true)}
-          className="hidden"
-          preload="auto"
-        />
-        <Button variant="ghost" size="icon" onClick={togglePlay} disabled={!isReady} className="h-8 w-8">
-          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-        </Button>
-        <div className="w-full h-1 bg-muted-foreground/30 rounded-full">
-            <div className="h-1 bg-primary rounded-full" style={{width: '20%'}}></div>
+        <div className="flex items-center gap-2 w-48">
+            <audio
+                ref={audioRef}
+                src={src}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                onEnded={() => { setIsPlaying(false); setProgress(0); }}
+                onCanPlay={() => setIsReady(true)}
+                onTimeUpdate={handleTimeUpdate}
+                className="hidden"
+                preload="auto"
+            />
+            <Button variant="ghost" size="icon" onClick={togglePlay} disabled={!isReady} className="h-8 w-8 shrink-0">
+                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            </Button>
+            <div className="w-full h-1 bg-muted-foreground/30 rounded-full cursor-pointer" onClick={(e) => {
+                if (audioRef.current) {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const clickPosition = e.clientX - rect.left;
+                    const clickRatio = clickPosition / rect.width;
+                    audioRef.current.currentTime = audioRef.current.duration * clickRatio;
+                }
+            }}>
+                <div className="h-1 bg-primary rounded-full" style={{ width: `${progress}%` }}></div>
+            </div>
         </div>
-      </div>
     );
 };
 
@@ -491,49 +505,48 @@ export function ConseilPanel() {
 
   if (showDictationUI) {
     return (
-      <div className="fixed inset-0 bg-background/95 z-50 flex flex-col" style={{ height: '100svh' }}>
-        <header className="flex justify-end p-4 flex-shrink-0">
+      <div className="fixed inset-0 bg-background/95 z-50 flex flex-col p-4" style={{ height: '100svh' }}>
+        <header className="flex justify-end flex-shrink-0">
             <Button variant="ghost" size="icon" onClick={resetAudio}>
                 <X className="h-6 w-6" />
             </Button>
         </header>
 
-        <main className="flex-1 flex flex-col items-center justify-center text-center p-4">
-            <div className="flex-1 flex flex-col items-center justify-center gap-8">
-                <p className="text-muted-foreground">{isListening ? t('listening') : t('audio_recorded')}</p>
-                
-                <div className="relative flex items-center justify-center h-48 w-48">
-                    {isListening ? (
-                       <>
-                         <div className="absolute h-full w-full bg-primary/20 rounded-full animate-pulse"></div>
-                         <div className="h-32 w-32 bg-primary rounded-full flex items-center justify-center">
-                             <Mic className="h-16 w-16 text-primary-foreground"/>
-                         </div>
-                       </>
-                    ) : (
-                      audioUrl && (
-                        <div className="flex flex-col items-center gap-4">
-                          <AudioPlayer src={audioUrl} />
-                           <Button size="sm" variant="ghost" onClick={resetAudio}>
-                              <Trash className="mr-2 h-4 w-4"/>
-                              {t('record_again')}
-                          </Button>
-                        </div>
-                      )
-                    )}
-                </div>
-                 <div className="w-full max-w-lg flex flex-col items-center justify-center gap-4">
-                    {isListening && <AudioWaveform />}
-                    {isListening ? (
-                        <Button size="lg" variant="destructive" className="rounded-full h-16 w-16 p-0" onClick={stopListening}>
-                            <Pause className="h-8 w-8" />
-                        </Button>
-                    ) : (
-                        <Button size="lg" className="rounded-full h-16 w-16 p-0" onClick={handleDictationSubmit} disabled={!audioUrl}>
-                            <Check className="h-8 w-8" />
-                        </Button>
-                    )}
-                </div>
+        <main className="flex-1 flex flex-col items-center justify-center text-center">
+            <p className="text-muted-foreground mb-8">{isListening ? t('listening') : t('audio_recorded')}</p>
+            
+            <div className="relative flex items-center justify-center h-48 w-48 mb-8">
+                {isListening ? (
+                   <>
+                     <div className="absolute h-full w-full bg-primary/20 rounded-full animate-pulse"></div>
+                     <div className="h-32 w-32 bg-primary rounded-full flex items-center justify-center">
+                         <Mic className="h-16 w-16 text-primary-foreground"/>
+                     </div>
+                   </>
+                ) : (
+                  audioUrl && (
+                    <AudioPlayer src={audioUrl} />
+                  )
+                )}
+            </div>
+            {isListening && <div className="h-10 mb-8 w-full max-w-xs"><AudioWaveform /></div>}
+
+            <div className="flex flex-col items-center gap-4">
+              {isListening ? (
+                  <Button size="lg" variant="destructive" className="rounded-full h-16 w-16 p-0" onClick={stopListening}>
+                      <Pause className="h-8 w-8" />
+                  </Button>
+              ) : (
+                  <>
+                    <Button size="lg" className="rounded-full h-16 w-16 p-0" onClick={handleDictationSubmit} disabled={!audioUrl}>
+                        <Check className="h-8 w-8" />
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={resetAudio}>
+                        <Trash className="mr-2 h-4 w-4"/>
+                        {t('record_again')}
+                    </Button>
+                  </>
+              )}
             </div>
         </main>
       </div>

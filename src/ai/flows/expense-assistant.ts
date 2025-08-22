@@ -12,7 +12,8 @@ import type { ExpenseAssistantInput as ExpenseAssistantInputType } from '@/types
 import type { Transaction } from '@/types/transaction';
 import type { Budget } from '@/types/budget';
 import type { SavingsGoal } from '@/types/savings-goal';
-import { generate } from '@/services/ai-service';
+import { generateText, MessageData } from 'genkit/ai';
+import { geminiPro } from '@/lib/genkit';
 
 
 async function askExpenseAssistantFlow(input: ExpenseAssistantInputType): Promise<string> {
@@ -70,26 +71,23 @@ Contexte financier de l'utilisateur (Devise: ${currency}):
 
 9.  **Gestion de l'Absence de Données :** Si le contexte financier est vide, guide l'utilisateur de manière concise. "Je vois que ton tableau de bord est encore vierge, ${userName}. Ajoute ta première dépense pour commencer l'aventure ensemble."`;
   
-  const historyForApi = history.map(h => ({
-      role: h.role === 'user' ? 'user' : 'model',
-      content: h.content
-  })) as any[];
+  const historyForApi: MessageData[] = history.map(h => ({
+      role: h.role,
+      content: [{ text: h.content }]
+  }));
   
-  const messages = [
-    { role: 'system', content: `${systemPrompt}\n${financialContext}` },
+  const messages: MessageData[] = [
+    { role: 'system', content: [{ text: `${systemPrompt}\n${financialContext}` }] },
     ...historyForApi,
-    { role: 'user', content: question }
+    { role: 'user', content: [{ text: question }] }
   ];
 
-  const answer = await generate({
+  const response = await generateText({
+      model: geminiPro,
       messages,
   });
 
-  if (typeof answer !== 'string') {
-    throw new Error('AI model returned an unexpected response format.');
-  }
-
-  return answer;
+  return response.text();
 }
 
 

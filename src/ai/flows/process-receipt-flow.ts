@@ -16,40 +16,32 @@ import {
   type ProcessReceiptInput,
   type ProcessReceiptOutput,
 } from '@/types/ai-schemas';
-import { generate } from '@/services/ai-service';
+import { generateText, Part } from 'genkit/ai';
+import { geminiPro } from '@/lib/genkit';
+
 
 export type { ProcessReceiptInput, ProcessReceiptOutput };
 
 
 async function processReceiptFlow(input: ProcessReceiptInput): Promise<ProcessReceiptOutput> {
   const systemPrompt = `You are an expert at processing receipts. Analyze the image and extract the following information: merchant name, total amount, and transaction date. Also, suggest an appropriate expense category from this list: ${expenseCategories.map(c => c.name).join(', ')}. If no date is found, use today's date: ${new Date().toISOString().split('T')[0]}.
-  You MUST respond ONLY with a JSON object conforming to the output schema.
   The date format MUST be YYYY-MM-DD.`;
 
-  const messages = [
-    {
-      role: 'user',
-      content: [
-          { type: 'text', text: systemPrompt },
-          {
-              type: 'image_url',
-              image_url: {
-                  url: input.photoDataUri,
-              },
-          },
-      ],
-  }];
+  const prompt = [
+      { text: systemPrompt },
+      { media: { url: input.photoDataUri } }
+  ];
 
-  const rawOutput = await generate({
-    messages,
+  const response = await generateText({
+    model: geminiPro,
+    prompt,
     output: {
-      format: 'json',
       schema: ProcessReceiptOutputSchema,
+      format: 'json',
     },
-    modelType: 'vision',
   });
   
-  const output = ProcessReceiptOutputSchema.parse(rawOutput);
+  const output = response.output();
   if (!output) {
     throw new Error("AI failed to generate a response from the receipt image.");
   }

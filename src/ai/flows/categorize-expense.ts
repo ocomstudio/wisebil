@@ -7,10 +7,10 @@
  * - CategorizeExpenseInput - The input type for the categorizeExpense function.
  * - CategorizeExpenseOutput - The return type for the categorizeExpense function.
  */
-
+import {generateText} from 'genkit/ai';
+import {geminiPro} from '@/lib/genkit';
 import { expenseCategories } from '@/config/categories';
 import { CategorizeExpenseOutputSchema, CategorizeExpenseInputSchema, CategorizeExpenseInput, CategorizeExpenseOutput } from '@/types/ai-schemas';
-import { generate } from '@/services/ai-service';
 
 export type { CategorizeExpenseInput, CategorizeExpenseOutput };
 
@@ -18,23 +18,21 @@ export type { CategorizeExpenseInput, CategorizeExpenseOutput };
 async function categorizeExpenseFlow(input: CategorizeExpenseInput): Promise<CategorizeExpenseOutput> {
   const systemPrompt = `You are an expert financial advisor. Your job is to categorize expenses based on their description.
 Here are the available categories: ${expenseCategories.map((c) => c.name).join(', ')}. You MUST select one of these categories. If no category seems appropriate, choose 'Autre'.
-You MUST respond ONLY with a JSON object conforming to the output schema.
 The user's preferred language is French (fr). You must respond in this language.`;
 
-  const messages = [
-    { role: 'system', content: systemPrompt },
-    { role: 'user', content: input.description }
-  ];
-
-  const rawOutput = await generate({
-    messages,
+  const response = await generateText({
+    model: geminiPro,
+    prompt: `${systemPrompt}\n\nExpense description: ${input.description}`,
     output: {
-      format: 'json',
-      schema: CategorizeExpenseOutputSchema,
+        schema: CategorizeExpenseOutputSchema,
+        format: 'json'
     },
   });
   
-  const output = CategorizeExpenseOutputSchema.parse(rawOutput);
+  const output = response.output();
+  if (!output) {
+      throw new Error("AI failed to categorize the expense.");
+  }
   return output;
 }
 
