@@ -71,13 +71,18 @@ Contexte financier de l'utilisateur (Devise: ${currency}):
 9.  **Langue :** Tu dois répondre **OBLIGATOIREMENT** dans la langue de l'utilisateur : ${language}. N'utilise aucune autre langue sous aucun prétexte.`;
   
   const historyForApi = history.map(h => ({
-      role: h.role === 'user' ? 'user' : 'assistant',
+      role: h.role === 'user' ? 'user' : 'model',
       content: h.content
   })) as any[];
   
+  const messages = [
+    { role: 'system', content: `${systemPrompt}\n${financialContext}` },
+    ...historyForApi,
+    { role: 'user', content: question }
+  ];
+
   const answer = await generate({
-      system: `${systemPrompt}\n${financialContext}`,
-      messages: [...historyForApi, {role: 'user', content: question}],
+      messages,
   });
 
   if (typeof answer !== 'string') {

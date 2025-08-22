@@ -12,17 +12,15 @@ const openrouter = new OpenAI({
 
 // Prioritized list of models. The service will try them in this order.
 const TEXT_MODELS = [
-  'qwen/qwen3-coder:free',
+  'mistralai/mistral-7b-instruct:free',
 ];
 
 const VISION_MODELS = [
-    'qwen/qwen3-coder:free',
+    'qwen/qwen-vl-max', // This model is good for vision tasks
 ];
 
 type GenerateOptions = {
-    system?: string;
-    prompt?: string;
-    messages?: any[];
+    messages: any[]; // Now we only accept a messages array
     output?: {
         format: 'json';
         schema: z.ZodTypeAny;
@@ -34,21 +32,8 @@ export async function generate(options: GenerateOptions) {
     let lastError: any = null;
     const modelsToTry = options.modelType === 'vision' ? VISION_MODELS : TEXT_MODELS;
 
-    const messages = options.messages || [];
-    if (options.system) {
-        // Ensure system prompt is at the beginning
-        if (messages.length > 0 && messages[0].role === 'system') {
-            messages[0].content = options.system;
-        } else {
-            messages.unshift({ role: 'system', content: options.system });
-        }
-    }
-     if (options.prompt) {
-         messages.push({ role: 'user', content: options.prompt });
-    }
-
     const requestPayload: OpenAI.Chat.ChatCompletionCreateParams = {
-        messages: messages as any, // Cast to any to satisfy type checker for mixed content
+        messages: options.messages, // Directly use the messages array
         stream: false,
     };
 
@@ -73,11 +58,13 @@ export async function generate(options: GenerateOptions) {
             }
 
             if (options.output?.format === 'json') {
-                const parsedJson = JSON.parse(responseContent);
-                // Return the raw parsed JSON, let the caller handle schema validation
-                return parsedJson;
+                try {
+                    const parsedJson = JSON.parse(responseContent);
+                    return parsedJson;
+                } catch (jsonError) {
+                     throw new Error(`Failed to parse JSON response from model ${modelName}: ${responseContent}`);
+                }
             } else {
-                // Return the text content directly
                 return responseContent;
             }
 

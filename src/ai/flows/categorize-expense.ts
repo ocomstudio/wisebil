@@ -21,9 +21,13 @@ Here are the available categories: ${expenseCategories.map((c) => c.name).join('
 You MUST respond ONLY with a JSON object conforming to the output schema.
 The user's preferred language is French (fr).`;
 
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: input.description }
+  ];
+
   const rawOutput = await generate({
-    system: systemPrompt,
-    prompt: input.description,
+    messages,
     output: {
       format: 'json',
       schema: CategorizeExpenseOutputSchema,

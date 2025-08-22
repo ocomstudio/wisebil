@@ -26,20 +26,26 @@ async function processReceiptFlow(input: ProcessReceiptInput): Promise<ProcessRe
   You MUST respond ONLY with a JSON object conforming to the output schema.
   The date format MUST be YYYY-MM-DD.`;
 
+  const messages = [
+    {
+      role: 'system',
+      content: systemPrompt
+    },
+    {
+      role: 'user',
+      content: [
+          { type: 'text', text: 'Extract the details from this receipt.' },
+          {
+              type: 'image_url',
+              image_url: {
+                  url: input.photoDataUri,
+              },
+          },
+      ],
+  }];
+
   const rawOutput = await generate({
-    system: systemPrompt,
-    messages: [{
-        role: 'user',
-        content: [
-            { type: 'text', text: 'Extract the details from this receipt.' },
-            {
-                type: 'image_url',
-                image_url: {
-                    url: input.photoDataUri,
-                },
-            },
-        ],
-    }],
+    messages,
     output: {
       format: 'json',
       schema: ProcessReceiptOutputSchema,

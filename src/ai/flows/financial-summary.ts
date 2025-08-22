@@ -56,17 +56,23 @@ async function getFinancialSummaryFlow(input: FinancialSummaryInput): Promise<Fi
     - The prediction should be a single sentence estimating the total expenses for the next 30 days based on the current data. Start it with "Based on your habits, you might spend around...".
 
     You MUST speak in the user's specified language: ${language}.
-    You MUST respond ONLY with a JSON object conforming to the output schema.
-
-    User's financial data:
+    You MUST respond ONLY with a JSON object conforming to the output schema.`;
+    
+    const userPrompt = `User's financial data:
     - Total Income: ${income} ${currency}
     - Total Expenses: ${expenses} ${currency}
     - Expenses by Category:
-    ${expensesByCategoryString}`;
+    ${expensesByCategoryString}
+    
+    Based on the provided data, generate a summary, advice, and prediction.`;
+
+    const messages = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+    ];
 
     const rawOutput = await generate({
-        system: systemPrompt,
-        prompt: `Based on the provided data, generate a summary, advice, and prediction.`,
+        messages,
         output: {
             format: 'json',
             schema: FinancialSummaryOutputSchema
