@@ -4,19 +4,19 @@
 import OpenAI from 'openai';
 import { z } from 'zod';
 
-// We are using the OpenAI SDK, but configuring it to point to OpenRouter.
-const openrouter = new OpenAI({
-    baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.OPENROUTER_API_KEY || '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',
+// We are using the OpenAI SDK, but configuring it to point to aimlapi.com
+const aimlapi = new OpenAI({
+    baseURL: "https://api.aimlapi.com",
+    apiKey: process.env.AIMLAPI_API_KEY || '69a6a53b7c9e45fab5ca601510db954f',
 });
 
 // Prioritized list of models. The service will try them in this order.
 const TEXT_MODELS = [
-  'mistralai/mistral-small-3.2-24b-instruct:free',
+  'gpt-4o-mini',
 ];
 
 const VISION_MODELS = [
-    'mistralai/mistral-small-3.2-24b-instruct:free',
+    'gpt-4o-mini',
 ];
 
 type GenerateOptions = {
@@ -68,7 +68,7 @@ export async function generate(options: GenerateOptions) {
         try {
             console.log(`Attempting to generate with model: ${modelName}`);
             
-            const completion = await openrouter.chat.completions.create({
+            const completion = await aimlapi.chat.completions.create({
                 ...requestPayload,
                 model: modelName,
             });
