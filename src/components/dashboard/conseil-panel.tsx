@@ -32,7 +32,7 @@ import { Skeleton } from '../ui/skeleton';
 import { askExpenseAssistant } from '@/ai/flows/expense-assistant';
 import { runAgentW } from '@/ai/flows/wise-agent';
 import { transcribeAudio } from '@/ai/flows/transcribe-audio';
-import type { TranscribeAudioInput } from '@/types/ai-schemas';
+import type { TranscribeAudioInput, TranscribeAudioOutput } from '@/types/ai-schemas';
 import { useTransactions } from '@/context/transactions-context';
 import { useBudgets } from '@/context/budget-context';
 import { useSavings } from '@/context/savings-context';
@@ -40,6 +40,7 @@ import { v4 as uuidv4 } from "uuid";
 import type { ExpenseAssistantInput, AgentWInput, AgentWOutput } from '@/types/ai-schemas';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import wav from 'wav';
 
 const assistantSchema = z.object({
   prompt: z.string().min(1, 'Veuillez entrer une question.'),
@@ -512,10 +513,9 @@ export function ConseilPanel() {
             </Button>
         </header>
 
-        <main className="flex-1 flex flex-col items-center justify-center gap-8 overflow-y-auto p-4">
-            <div className="text-center">
-                <p className="text-muted-foreground">{isListening ? t('listening') : t('audio_recorded')}</p>
-            </div>
+        <main className="flex-1 flex flex-col items-center justify-center gap-8 text-center p-4">
+            <p className="text-muted-foreground">{isListening ? t('listening') : t('audio_recorded')}</p>
+            
             <div className="relative flex items-center justify-center h-48 w-48">
                 {isListening ? (
                    <>
@@ -526,7 +526,7 @@ export function ConseilPanel() {
                    </>
                 ) : (
                   audioUrl && (
-                    <div className="w-full flex flex-col items-center gap-4">
+                    <div className="flex flex-col items-center gap-4">
                       <audio ref={audioRef} src={audioUrl} onPlay={() => setIsAudioPlaying(true)} onPause={() => setIsAudioPlaying(false)} onEnded={() => setIsAudioPlaying(false)} onCanPlay={() => setIsAudioReady(true)} className="hidden" />
                       <Button size="lg" variant="outline" className="rounded-full h-24 w-24 p-0" onClick={() => togglePlayAudio(audioRef)} disabled={!isAudioReady}>
                         {isAudioPlaying ? <Pause className="h-10 w-10"/> : <Play className="h-10 w-10"/>}
@@ -539,22 +539,20 @@ export function ConseilPanel() {
                   )
                 )}
             </div>
-            <div className="w-full max-w-lg text-center text-lg min-h-[6rem] px-4">
+            
+            <div className="w-full max-w-lg min-h-[6rem] px-4 flex flex-col items-center justify-center gap-4">
               {isListening && <AudioWaveform />}
+              {isListening ? (
+                  <Button size="lg" variant="destructive" className="rounded-full h-16 w-16 p-0" onClick={stopListening}>
+                      <Pause className="h-8 w-8" />
+                  </Button>
+              ) : (
+                  <Button size="lg" className="rounded-full h-16 w-16 p-0" onClick={handleDictationSubmit} disabled={!audioReady}>
+                      <Check className="h-8 w-8" />
+                  </Button>
+              )}
             </div>
         </main>
-        
-        <footer className="flex justify-center p-4 pb-8 flex-shrink-0">
-             {isListening ? (
-                <Button size="lg" variant="destructive" className="rounded-full h-16 w-16 p-0" onClick={stopListening}>
-                    <Pause className="h-8 w-8" />
-                </Button>
-            ) : (
-                <Button size="lg" className="rounded-full h-16 w-16 p-0" onClick={handleDictationSubmit}>
-                    <Check className="h-8 w-8" />
-                </Button>
-            )}
-        </footer>
       </div>
     )
   }
