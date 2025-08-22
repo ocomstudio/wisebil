@@ -7,16 +7,16 @@ import { z } from 'zod';
 // We are using the OpenAI SDK, but configuring it to point to OpenRouter.
 const openrouter = new OpenAI({
     baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.OPENROUTER_API_KEY || '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',
+    apiKey: process.env.OPENROUTER_API_KEY || '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',
 });
 
 // Prioritized list of models. The service will try them in this order.
 const TEXT_MODELS = [
-  'mistralai/mistral-7b-instruct:free',
+  'qwen/qwen3-coder:free',
 ];
 
 const VISION_MODELS = [
-    'mistralai/mistral-7b-instruct:free', // Fallback to a free model, though it might not have vision capabilities. This prevents a crash.
+    'qwen/qwen3-coder:free',
 ];
 
 type GenerateOptions = {
