@@ -48,7 +48,9 @@ type AssistantFormValues = z.infer<typeof assistantSchema>;
 
 interface Message {
   role: 'user' | 'model';
+  type: 'text' | 'audio';
   content: string;
+  audioUrl?: string;
   agentMode?: AgentMode;
   isError?: boolean;
 }
@@ -114,6 +116,7 @@ export function ConseilPanel() {
         } else {
            setCurrentConversation([{
                 role: 'model',
+                type: 'text',
                 content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || 'Utilisateur'),
                 agentMode: 'wise'
             }]);
@@ -225,8 +228,12 @@ export function ConseilPanel() {
 
     setShowDictationUI(false);
     setAudioUrl(null);
-    setIsThinking(true);
     
+    // Add user's audio message to chat immediately
+    const userMessage: Message = { role: 'user', type: 'audio', content: '', audioUrl: audioUrl, agentMode };
+    setCurrentConversation(prev => [...prev, userMessage]);
+    
+    setIsThinking(true);
     let assistantMessage: Message;
 
     try {
@@ -243,9 +250,6 @@ export function ConseilPanel() {
                   throw new Error("Empty transcript returned.");
                 }
 
-                const userMessage: Message = { role: 'user', content: transcript, agentMode };
-                setCurrentConversation(prev => [...prev, userMessage]);
-
                 const agentWInput: AgentWInput = {
                     prompt: transcript,
                     currency,
@@ -254,11 +258,11 @@ export function ConseilPanel() {
                 };
                 const result = await runAgentW(agentWInput);
                 const summary = processAgentWResponse(result);
-                assistantMessage = { role: 'model', content: summary, agentMode };
+                assistantMessage = { role: 'model', type: 'text', content: summary, agentMode };
                 toast.success(t('agent_w_success'));
             } catch (error) {
                 console.error("Error during transcription or agent processing:", error);
-                assistantMessage = { role: 'model', content: t('assistant_error_desc'), agentMode, isError: true };
+                assistantMessage = { role: 'model', type: 'text', content: t('assistant_error_desc'), agentMode, isError: true };
             } finally {
                 setCurrentConversation(prev => [...prev, assistantMessage]);
                 setIsThinking(false);
@@ -266,7 +270,7 @@ export function ConseilPanel() {
         };
     } catch(error) {
         console.error("Error fetching audio blob:", error);
-        assistantMessage = { role: 'model', content: t('assistant_error_desc'), agentMode, isError: true };
+        assistantMessage = { role: 'model', type: 'text', content: t('assistant_error_desc'), agentMode, isError: true };
         setCurrentConversation(prev => [...prev, assistantMessage]);
         setIsThinking(false);
     }
@@ -278,12 +282,12 @@ export function ConseilPanel() {
     stopListening();
   }
   
-  const togglePlayAudio = () => {
-    if (!audioRef.current || !isAudioReady) return;
-    if (isAudioPlaying) {
-      audioRef.current.pause();
+  const togglePlayAudio = (targetAudioRef: React.RefObject<HTMLAudioElement>) => {
+    if (!targetAudioRef.current) return;
+    if (targetAudioRef.current.paused) {
+      targetAudioRef.current.play();
     } else {
-      audioRef.current.play();
+      targetAudioRef.current.pause();
     }
   };
 
@@ -294,6 +298,7 @@ export function ConseilPanel() {
     }
     setCurrentConversation([{
         role: 'model',
+        type: 'text',
         content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || 'Utilisateur'),
         agentMode: 'wise'
     }]);
@@ -355,7 +360,7 @@ export function ConseilPanel() {
     const prompt = data.prompt.trim();
     if (!prompt) return;
 
-    const userMessage: Message = { role: 'user', content: prompt, agentMode };
+    const userMessage: Message = { role: 'user', type: 'text', content: prompt, agentMode };
     setCurrentConversation(prev => [...prev, userMessage]);
     form.reset();
     setIsThinking(true);
@@ -377,7 +382,7 @@ export function ConseilPanel() {
                 financialData: { income, expenses, transactions, budgets, savingsGoals }
             };
             const result = await askExpenseAssistant(input);
-            assistantMessage = { role: 'model', content: result.answer, agentMode };
+            assistantMessage = { role: 'model', type: 'text', content: result.answer, agentMode };
 
         } else { // AgentW mode
              const input: AgentWInput = {
@@ -388,12 +393,12 @@ export function ConseilPanel() {
             };
             const result = await runAgentW(input);
             const summary = processAgentWResponse(result);
-            assistantMessage = { role: 'model', content: summary, agentMode };
+            assistantMessage = { role: 'model', type: 'text', content: summary, agentMode };
             toast.success(t('agent_w_success'));
         }
         setCurrentConversation(prev => [...prev, assistantMessage]);
     } catch (error) {
-        assistantMessage = { role: 'model', content: t('assistant_error_desc'), agentMode, isError: true };
+        assistantMessage = { role: 'model', type: 'text', content: t('assistant_error_desc'), agentMode, isError: true };
         setCurrentConversation(prev => [...prev, assistantMessage]);
     } finally {
         setIsThinking(false);
@@ -446,6 +451,43 @@ export function ConseilPanel() {
       `}</style>
     </div>
   );
+  
+  const AudioPlayer = ({ src }: { src: string }) => {
+    const audioPlayerRef = useRef<HTMLAudioElement>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [isReady, setIsReady] = useState(false);
+
+    const togglePlay = () => {
+      if (audioPlayerRef.current) {
+        if (isPlaying) {
+          audioPlayerRef.current.pause();
+        } else {
+          audioPlayerRef.current.play();
+        }
+      }
+    };
+    
+    return (
+      <div className="flex items-center gap-2">
+        <audio
+          ref={audioPlayerRef}
+          src={src}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onEnded={() => setIsPlaying(false)}
+          onCanPlay={() => setIsReady(true)}
+          className="hidden"
+        />
+        <Button variant="ghost" size="icon" onClick={togglePlay} disabled={!isReady} className="h-8 w-8">
+          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        </Button>
+        <div className="w-full h-1 bg-muted-foreground/30 rounded-full">
+            <div className="h-1 bg-muted-foreground rounded-full" style={{width: '20%'}}></div>
+        </div>
+      </div>
+    );
+  };
+
 
   if (showDictationUI) {
     return (
@@ -473,7 +515,7 @@ export function ConseilPanel() {
                       audioUrl && (
                         <div className="w-full flex flex-col items-center gap-4">
                           <audio ref={audioRef} src={audioUrl} onPlay={() => setIsAudioPlaying(true)} onPause={() => setIsAudioPlaying(false)} onEnded={() => setIsAudioPlaying(false)} onCanPlay={() => setIsAudioReady(true)} className="hidden" />
-                          <Button size="lg" variant="outline" className="rounded-full h-24 w-24 p-0" onClick={togglePlayAudio} disabled={!isAudioReady}>
+                          <Button size="lg" variant="outline" className="rounded-full h-24 w-24 p-0" onClick={() => togglePlayAudio(audioRef)} disabled={!isAudioReady}>
                             {isAudioPlaying ? <Pause className="h-10 w-10"/> : <Play className="h-10 w-10"/>}
                           </Button>
                            <Button size="sm" variant="ghost" onClick={resetAudio}>
@@ -538,7 +580,11 @@ export function ConseilPanel() {
                         : message.agentMode === 'agent' ? 'bg-accent text-accent-foreground' : 'bg-muted'
                       )}
                     >
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      {message.type === 'audio' && message.audioUrl ? (
+                         <AudioPlayer src={message.audioUrl} />
+                      ) : (
+                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      )}
                     </div>
                     {message.role === 'user' && (
                       <Avatar className="h-8 w-8">
