@@ -59,7 +59,7 @@ export function FinancialSummaryCard({
         };
 
         fetchSummary();
-    }, [transactionsCount, budgetsCount, savingsGoalsCount, t, language, currency]);
+    }, [transactionsCount, budgetsCount, savingsGoalsCount, language, currency]);
 
     if (isLoading) {
         return (
