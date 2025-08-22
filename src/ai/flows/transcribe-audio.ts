@@ -24,7 +24,7 @@ async function transcribeAudioFlow(input: TranscribeAudioInput): Promise<Transcr
     ];
 
     const {text: transcript} = await ai.generate({
-        model: 'gemini-1.5-flash',
+        model: 'googleai/gemini-1.5-flash',
         prompt,
     });
 

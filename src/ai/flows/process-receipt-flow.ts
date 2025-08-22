@@ -32,7 +32,7 @@ async function processReceiptFlow(input: ProcessReceiptInput): Promise<ProcessRe
   ];
 
   const { output } = await ai.generate({
-    model: 'gemini-1.5-flash',
+    model: 'googleai/gemini-1.5-flash',
     prompt,
     output: {
       schema: ProcessReceiptOutputSchema,

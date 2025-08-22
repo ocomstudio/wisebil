@@ -42,7 +42,7 @@ async function runAgentWFlow(input: AgentWInput): Promise<AgentWOutput> {
 8.  **STRICT JSON-ONLY OUTPUT:** You MUST respond ONLY with a JSON object conforming to the output schema. Do not include apologies, explanations, or ANY text outside of the JSON brackets. If no actions of a certain type are found, its corresponding array MUST be empty, for example: "incomes": []. NEVER return a list with an empty object like "incomes": [{}]. The 'date' field for transactions is REQUIRED, and it MUST be in YYYY-MM-DD format.`;
 
     const {output} = await ai.generate({
-        model: 'gemini-1.5-flash',
+        model: 'googleai/gemini-1.5-flash',
         prompt: `${systemPrompt}\n\nUser prompt: ${input.prompt}`,
         output: {
             schema: AgentWOutputSchema,
