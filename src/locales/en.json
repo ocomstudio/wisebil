@@ -445,5 +445,8 @@
     "camera_permission_denied_title": "Camera access denied",
     "camera_permission_denied_desc": "Please allow camera access in your browser settings to use this feature.",
     "scan_button": "Scan",
-    "scanning_button": "Scanning..."
+    "scanning_button": "Scanning...",
+    "listening": "Listening...",
+    "start_talking": "Start talking...",
+    "listening_error": "Listening error"
 }

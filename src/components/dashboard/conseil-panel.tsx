@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send, PlusCircle, Mic, MicOff, BrainCircuit, Bot, MessageSquare, ScanLine, Trash2 } from 'lucide-react';
+import { Loader2, Send, PlusCircle, Mic, MicOff, BrainCircuit, Bot, MessageSquare, ScanLine, Trash2, X, Check } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   AlertDialog,
@@ -79,6 +79,8 @@ export function ConseilPanel() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast: uiToast } = useToast();
   const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState(false);
+  const [showDictationUI, setShowDictationUI] = useState(false);
+  const [liveTranscript, setLiveTranscript] = useState("");
 
   useEffect(() => {
     setIsClient(true);
@@ -98,8 +100,9 @@ export function ConseilPanel() {
       if (!userDocRef) return;
       try {
         const docSnap = await getDoc(userDocRef);
-        if (docSnap.exists() && docSnap.data().conversations) {
-          const conversationData = docSnap.data().conversations as ConversationHistory;
+        const loadedHistory = docSnap.data();
+        if (loadedHistory && loadedHistory.conversations) {
+          const conversationData = loadedHistory.conversations as ConversationHistory;
           setCurrentConversation(conversationData.current || []);
           setConversationHistory(conversationData.history || []);
         } else {
@@ -171,21 +174,34 @@ export function ConseilPanel() {
       }
     }
   }, [currentConversation, isThinking]);
-
-  const handleToggleListening = useCallback(() => {
-    if (!recognitionRef.current) return;
-
-    if (isListening) {
-      recognitionRef.current.stop();
-    } else {
-       const currentPrompt = form.getValues('prompt');
-       if (currentPrompt) {
-           form.setValue('prompt', currentPrompt + ' ');
-       }
-       recognitionRef.current.start();
+  
+  const startListening = useCallback(() => {
+    if (!recognitionRef.current || isListening) return;
+    setLiveTranscript("");
+    recognitionRef.current.start();
+    setIsListening(true);
+    if(agentMode === 'agent') {
+      setShowDictationUI(true);
     }
-    setIsListening(!isListening);
-  }, [isListening, form]);
+  }, [isListening, agentMode]);
+
+  const stopListening = useCallback(() => {
+    if (!recognitionRef.current || !isListening) return;
+    recognitionRef.current.stop();
+    setIsListening(false);
+    if(agentMode === 'agent') {
+      setShowDictationUI(false);
+    }
+  }, [isListening, agentMode]);
+  
+  const handleDictationSubmit = () => {
+    if(liveTranscript) {
+      form.setValue('prompt', liveTranscript);
+      form.handleSubmit(onSubmit)();
+    }
+    stopListening();
+  }
+
 
   useEffect(() => {
     if (!isClient) return;
@@ -207,12 +223,16 @@ export function ConseilPanel() {
             let finalTranscript = '';
             for (let i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) {
-                finalTranscript += event.results[i][0].transcript;
+                    finalTranscript += event.results[i][0].transcript;
                 } else {
-                interimTranscript += event.results[i][0].transcript;
+                    interimTranscript += event.results[i][0].transcript;
                 }
             }
-            form.setValue('prompt', form.getValues('prompt') + finalTranscript + interimTranscript, { shouldValidate: true });
+             if (agentMode === 'agent') {
+                setLiveTranscript(prev => prev + finalTranscript + interimTranscript);
+             } else {
+                form.setValue('prompt', form.getValues('prompt') + finalTranscript + interimTranscript.trim(), { shouldValidate: true });
+             }
         };
 
         recognition.onerror = (event: any) => {
@@ -223,6 +243,9 @@ export function ConseilPanel() {
         
         recognition.onend = () => {
             setIsListening(false);
+            if (agentMode !== 'agent') {
+                form.handleSubmit(onSubmit)();
+            }
         }
     } else {
       recognitionRef.current.lang = locale;
@@ -233,7 +256,7 @@ export function ConseilPanel() {
         recognitionRef.current.stop();
       }
     };
-  }, [isClient, form, uiToast, locale, t]);
+  }, [isClient, form, uiToast, locale, t, agentMode]);
 
 
   const handleNewConversation = () => {
@@ -301,8 +324,7 @@ export function ConseilPanel() {
 
   const onSubmit = async (data: AssistantFormValues) => {
     if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
+      stopListening();
     }
     
     const prompt = data.prompt.trim();
@@ -319,7 +341,7 @@ export function ConseilPanel() {
         if (agentMode === 'wise') {
             const historyForApi = currentConversation
                 .filter(m => m.agentMode === 'wise' && !m.isError)
-                .map(m => ({role: m.role, content: m.content}));
+                .map(m => ({role: m.role as 'user' | 'model', content: m.content}));
 
             const input: ExpenseAssistantInput = {
                 question: prompt,
@@ -377,6 +399,31 @@ export function ConseilPanel() {
         return (nameParts[0].charAt(0) + nameParts[1].charAt(0)).toUpperCase();
     }
     return name.charAt(0).toUpperCase();
+  }
+
+  if (showDictationUI) {
+    return (
+      <div className="fixed inset-0 bg-background/95 z-50 flex flex-col items-center justify-between p-8">
+        <Button variant="ghost" size="icon" className="absolute top-4 right-4" onClick={stopListening}>
+          <X className="h-6 w-6" />
+        </Button>
+        <div className="text-center mt-20">
+          <p className="text-muted-foreground">{t('listening')}</p>
+        </div>
+        <div className="relative flex items-center justify-center">
+            <div className="absolute h-48 w-48 bg-primary/20 rounded-full animate-pulse"></div>
+            <div className="h-32 w-32 bg-primary rounded-full flex items-center justify-center">
+                <Mic className="h-16 w-16 text-primary-foreground"/>
+            </div>
+        </div>
+        <div className="w-full max-w-lg text-center text-lg min-h-[6rem]">
+          {liveTranscript || <span className="text-muted-foreground">{t('start_talking')}</span>}
+        </div>
+        <Button size="lg" className="rounded-full h-16 w-16 p-0" onClick={handleDictationSubmit}>
+          <Check className="h-8 w-8" />
+        </Button>
+      </div>
+    )
   }
 
   return (
@@ -513,8 +560,8 @@ export function ConseilPanel() {
             className="flex items-start gap-2"
           >
              {isSpeechRecognitionSupported && (
-              <Button type="button" size="icon" variant={isListening ? "destructive" : "outline"} onClick={handleToggleListening} disabled={isThinking}>
-                 {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+              <Button type="button" size="icon" variant={isListening ? "destructive" : "outline"} onClick={isListening ? stopListening : startListening} disabled={isThinking}>
+                 {isListening && agentMode !== 'agent' ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
               </Button>
             )}
             <FormField
