@@ -32,7 +32,7 @@ import { Skeleton } from '../ui/skeleton';
 import { askExpenseAssistant } from '@/ai/flows/expense-assistant';
 import { runAgentW } from '@/ai/flows/wise-agent';
 import { transcribeAudio } from '@/ai/flows/transcribe-audio';
-import type { TranscribeAudioInput } from '@/ai/flows/transcribe-audio';
+import type { TranscribeAudioInput } from '@/types/ai-schemas';
 import { useTransactions } from '@/context/transactions-context';
 import { useBudgets } from '@/context/budget-context';
 import { useSavings } from '@/context/savings-context';
@@ -238,11 +238,11 @@ export function ConseilPanel() {
     if (!audioUrl) return;
 
     setShowDictationUI(false);
-    setAudioUrl(null);
     
     // Add user's audio message to chat immediately
     const userMessage: Message = { role: 'user', type: 'audio', content: '', audioUrl: audioUrl, agentMode };
     setCurrentConversation(prev => [...prev, userMessage]);
+    setAudioUrl(null);
     
     setIsThinking(true);
     let assistantMessage: Message;
@@ -505,58 +505,56 @@ export function ConseilPanel() {
 
   if (showDictationUI) {
     return (
-      <div className="fixed inset-0 bg-background/95 z-50" style={{ height: '100svh', paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="grid grid-rows-[auto_1fr_auto] h-full p-4">
-            <header className="flex justify-end">
-                <Button variant="ghost" size="icon" onClick={resetAudio}>
-                    <X className="h-6 w-6" />
-                </Button>
-            </header>
+      <div className="fixed inset-0 bg-background/95 z-50 flex flex-col" style={{ height: '100svh' }}>
+        <header className="flex justify-end p-4 flex-shrink-0">
+            <Button variant="ghost" size="icon" onClick={resetAudio}>
+                <X className="h-6 w-6" />
+            </Button>
+        </header>
 
-            <main className="flex flex-col items-center justify-center gap-8 overflow-y-auto">
-                <div className="text-center">
-                    <p className="text-muted-foreground">{isListening ? t('listening') : t('audio_recorded')}</p>
-                </div>
-                <div className="relative flex items-center justify-center h-48 w-48">
-                    {isListening ? (
-                       <>
-                         <div className="absolute h-full w-full bg-primary/20 rounded-full animate-pulse"></div>
-                         <div className="h-32 w-32 bg-primary rounded-full flex items-center justify-center">
-                             <Mic className="h-16 w-16 text-primary-foreground"/>
-                         </div>
-                       </>
-                    ) : (
-                      audioUrl && (
-                        <div className="w-full flex flex-col items-center gap-4">
-                          <audio ref={audioRef} src={audioUrl} onPlay={() => setIsAudioPlaying(true)} onPause={() => setIsAudioPlaying(false)} onEnded={() => setIsAudioPlaying(false)} onCanPlay={() => setIsAudioReady(true)} className="hidden" />
-                          <Button size="lg" variant="outline" className="rounded-full h-24 w-24 p-0" onClick={() => togglePlayAudio(audioRef)} disabled={!isAudioReady}>
-                            {isAudioPlaying ? <Pause className="h-10 w-10"/> : <Play className="h-10 w-10"/>}
-                          </Button>
-                           <Button size="sm" variant="ghost" onClick={resetAudio}>
-                              <Trash className="mr-2 h-4 w-4"/>
-                              {t('record_again')}
-                          </Button>
-                        </div>
-                      )
-                    )}
-                </div>
-                <div className="w-full max-w-lg text-center text-lg min-h-[6rem] px-4">
-                  {isListening && <AudioWaveform />}
-                </div>
-            </main>
-            
-            <footer className="flex justify-center py-4">
-                 {isListening ? (
-                    <Button size="lg" variant="destructive" className="rounded-full h-16 w-16 p-0" onClick={stopListening}>
-                        <Pause className="h-8 w-8" />
-                    </Button>
+        <main className="flex-1 flex flex-col items-center justify-center gap-8 overflow-y-auto p-4">
+            <div className="text-center">
+                <p className="text-muted-foreground">{isListening ? t('listening') : t('audio_recorded')}</p>
+            </div>
+            <div className="relative flex items-center justify-center h-48 w-48">
+                {isListening ? (
+                   <>
+                     <div className="absolute h-full w-full bg-primary/20 rounded-full animate-pulse"></div>
+                     <div className="h-32 w-32 bg-primary rounded-full flex items-center justify-center">
+                         <Mic className="h-16 w-16 text-primary-foreground"/>
+                     </div>
+                   </>
                 ) : (
-                    <Button size="lg" className="rounded-full h-16 w-16 p-0" onClick={handleDictationSubmit}>
-                        <Check className="h-8 w-8" />
-                    </Button>
+                  audioUrl && (
+                    <div className="w-full flex flex-col items-center gap-4">
+                      <audio ref={audioRef} src={audioUrl} onPlay={() => setIsAudioPlaying(true)} onPause={() => setIsAudioPlaying(false)} onEnded={() => setIsAudioPlaying(false)} onCanPlay={() => setIsAudioReady(true)} className="hidden" />
+                      <Button size="lg" variant="outline" className="rounded-full h-24 w-24 p-0" onClick={() => togglePlayAudio(audioRef)} disabled={!isAudioReady}>
+                        {isAudioPlaying ? <Pause className="h-10 w-10"/> : <Play className="h-10 w-10"/>}
+                      </Button>
+                       <Button size="sm" variant="ghost" onClick={resetAudio}>
+                          <Trash className="mr-2 h-4 w-4"/>
+                          {t('record_again')}
+                      </Button>
+                    </div>
+                  )
                 )}
-            </footer>
-        </div>
+            </div>
+            <div className="w-full max-w-lg text-center text-lg min-h-[6rem] px-4">
+              {isListening && <AudioWaveform />}
+            </div>
+        </main>
+        
+        <footer className="flex justify-center p-4 pb-8 flex-shrink-0">
+             {isListening ? (
+                <Button size="lg" variant="destructive" className="rounded-full h-16 w-16 p-0" onClick={stopListening}>
+                    <Pause className="h-8 w-8" />
+                </Button>
+            ) : (
+                <Button size="lg" className="rounded-full h-16 w-16 p-0" onClick={handleDictationSubmit}>
+                    <Check className="h-8 w-8" />
+                </Button>
+            )}
+        </footer>
       </div>
     )
   }
