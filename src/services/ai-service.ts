@@ -12,11 +12,11 @@ const openrouter = new OpenAI({
 
 // Prioritized list of models. The service will try them in this order.
 const TEXT_MODELS = [
-  'tngtech/deepseek-r1t2-chimera:free',
+  'mistralai/mistral-small-3.2-24b-instruct:free',
 ];
 
 const VISION_MODELS = [
-    'tngtech/deepseek-r1t2-chimera:free',
+    'mistralai/mistral-small-3.2-24b-instruct:free',
 ];
 
 type GenerateOptions = {
