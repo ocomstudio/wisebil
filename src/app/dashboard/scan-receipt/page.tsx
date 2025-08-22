@@ -4,7 +4,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Camera, Loader2, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Camera, Loader2, ArrowLeft, AlertTriangle, Paperclip } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLocale } from '@/context/locale-context';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -16,6 +16,7 @@ export default function ScanReceiptPage() {
   const { toast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
 
@@ -34,11 +35,7 @@ export default function ScanReceiptPage() {
       } catch (error) {
         console.error('Error accessing camera:', error);
         setHasCameraPermission(false);
-        toast({
-          variant: 'destructive',
-          title: t('camera_permission_denied_title'),
-          description: t('camera_permission_denied_desc'),
-        });
+        // We don't toast here anymore to avoid bothering users who prefer file upload.
       }
     };
 
@@ -50,10 +47,36 @@ export default function ScanReceiptPage() {
             stream.getTracks().forEach(track => track.stop());
         }
     }
-  }, [toast, t]);
+  }, []);
+  
+  const processImageAndNavigate = (dataUri: string) => {
+    try {
+      sessionStorage.setItem('scannedImageDataUri', dataUri);
+      router.push('/dashboard/scan-receipt/results');
+    } catch (error) {
+       console.error('Error during processing:', error);
+       let message = 'Could not process the image. Please try again.';
+       if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+           message = "The image is too large to be processed. Please try a smaller image."
+       }
+       toast({
+        variant: 'destructive',
+        title: 'Processing Failed',
+        description: message,
+      });
+      setIsProcessing(false);
+    }
+  }
 
   const handleCapture = async () => {
-    if (!videoRef.current || !canvasRef.current) return;
+    if (!videoRef.current || !canvasRef.current || !hasCameraPermission) {
+       toast({
+        variant: 'destructive',
+        title: t('camera_permission_denied_title'),
+        description: t('camera_permission_denied_desc'),
+      });
+      return;
+    };
     setIsProcessing(true);
 
     const video = videoRef.current;
@@ -63,22 +86,34 @@ export default function ScanReceiptPage() {
     const context = canvas.getContext('2d');
     context?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
 
-    const dataUri = canvas.toDataURL('image/jpeg', 0.9); // Use JPEG with quality for smaller size
-
-    try {
-      // Store the Data URI in session storage to pass it to the results page
-      sessionStorage.setItem('scannedImageDataUri', dataUri);
-      router.push('/dashboard/scan-receipt/results');
-    } catch (error) {
-      console.error('Error during capture:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Capture Failed',
-        description: 'Could not capture the image. Please try again.',
-      });
-      setIsProcessing(false);
-    }
+    const dataUri = canvas.toDataURL('image/jpeg', 0.9);
+    processImageAndNavigate(dataUri);
   };
+  
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setIsProcessing(true);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUri = e.target?.result as string;
+        processImageAndNavigate(dataUri);
+      };
+      reader.onerror = () => {
+        toast({
+          variant: "destructive",
+          title: "File Read Error",
+          description: "Could not read the selected file.",
+        });
+        setIsProcessing(false);
+      }
+      reader.readAsDataURL(file);
+    }
+  }
+  
+  const handleUploadClick = () => {
+      fileInputRef.current?.click();
+  }
 
   return (
     <div className="flex flex-col h-full bg-black">
@@ -92,8 +127,8 @@ export default function ScanReceiptPage() {
          <div className="w-10"></div>
        </header>
 
-       <main className="flex-1 flex flex-col items-center justify-center relative">
-         <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted />
+       <main className="flex-1 flex flex-col items-center justify-center relative bg-gray-900">
+         <video ref={videoRef} className={`w-full h-full object-cover ${hasCameraPermission ? '' : 'hidden'}`} autoPlay playsInline muted />
          <canvas ref={canvasRef} className="hidden" />
 
          {hasCameraPermission === false && (
@@ -113,15 +148,28 @@ export default function ScanReceiptPage() {
           )}
        </main>
 
-       <footer className="p-6 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+       <footer className="p-6 bg-black/50 backdrop-blur-sm flex items-center justify-around">
+         <Button 
+            onClick={handleUploadClick} 
+            disabled={isProcessing} 
+            variant="ghost"
+            className="w-20 h-20 rounded-full flex items-center justify-center text-white hover:bg-white/20"
+            aria-label="Upload file"
+          >
+           <Paperclip className="h-8 w-8" />
+         </Button>
+         <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept="image/*" />
+         
          <Button 
             onClick={handleCapture} 
-            disabled={isProcessing || hasCameraPermission === false} 
+            disabled={isProcessing || hasCameraPermission !== true} 
             className="w-20 h-20 rounded-full border-4 border-white/50 bg-white/30 hover:bg-white/50 flex items-center justify-center"
             aria-label="Capture photo"
           >
            <Camera className="h-8 w-8 text-white" />
          </Button>
+
+         <div className="w-20 h-20"></div>
        </footer>
     </div>
   );

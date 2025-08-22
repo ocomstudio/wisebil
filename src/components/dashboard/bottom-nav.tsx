@@ -20,6 +20,9 @@ export function BottomNav() {
     { href: '/dashboard/conseil', label: t('nav_advice'), icon: Lightbulb },
   ];
 
+  const isScanPage = pathname === '/dashboard/scan-receipt';
+
+
   return (
     <footer className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50">
       <nav className="flex items-center justify-around h-16">
