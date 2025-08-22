@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send, PlusCircle, Mic, MicOff, BrainCircuit, Bot, MessageSquare, ScanLine, Trash2, X, Check } from 'lucide-react';
+import { Loader2, Send, PlusCircle, Mic, MicOff, BrainCircuit, Bot, MessageSquare, ScanLine, Trash2, X, Check, Play, Pause, Trash } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   AlertDialog,
@@ -31,6 +31,7 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from '../ui/skeleton';
 import { askExpenseAssistant } from '@/ai/flows/expense-assistant';
 import { runAgentW } from '@/ai/flows/wise-agent';
+import { transcribeAudio } from '@/ai/flows/transcribe-audio';
 import { useTransactions } from '@/context/transactions-context';
 import { useBudgets } from '@/context/budget-context';
 import { useSavings } from '@/context/savings-context';
@@ -74,14 +75,17 @@ export function ConseilPanel() {
   const [isThinking, setIsThinking] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [agentMode, setAgentMode] = useState<AgentMode>('wise');
-  const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [showDictationUI, setShowDictationUI] = useState(false);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast: uiToast } = useToast();
-  const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState(false);
-  const [showDictationUI, setShowDictationUI] = useState(false);
-  const [liveTranscript, setLiveTranscript] = useState("");
-
+  
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -175,88 +179,110 @@ export function ConseilPanel() {
     }
   }, [currentConversation, isThinking]);
   
-  const startListening = useCallback(() => {
-    if (!recognitionRef.current || isListening) return;
-    setLiveTranscript("");
-    recognitionRef.current.start();
-    setIsListening(true);
-    if(agentMode === 'agent') {
-      setShowDictationUI(true);
+  const startListening = useCallback(async () => {
+    if (isListening) return;
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorderRef.current = new MediaRecorder(stream);
+        audioChunksRef.current = [];
+        
+        mediaRecorderRef.current.ondataavailable = (event) => {
+            audioChunksRef.current.push(event.data);
+        };
+
+        mediaRecorderRef.current.onstop = () => {
+            const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            const url = URL.createObjectURL(audioBlob);
+            setAudioUrl(url);
+             // Stop all media tracks to turn off the mic indicator
+            stream.getTracks().forEach(track => track.stop());
+        };
+
+        mediaRecorderRef.current.start();
+        setIsListening(true);
+        if(agentMode === 'agent') {
+            setShowDictationUI(true);
+        }
+    } catch (err) {
+        console.error("Error accessing microphone:", err);
+        uiToast({ variant: 'destructive', title: t('listening_error') });
     }
-  }, [isListening, agentMode]);
+  }, [isListening, agentMode, uiToast, t]);
 
   const stopListening = useCallback(() => {
-    if (!recognitionRef.current || !isListening) return;
-    recognitionRef.current.stop();
-    setIsListening(false);
-    if(agentMode === 'agent') {
-      setShowDictationUI(false);
+    if (mediaRecorderRef.current && isListening) {
+        mediaRecorderRef.current.stop();
+        setIsListening(false);
     }
-  }, [isListening, agentMode]);
+  }, [isListening]);
   
-  const handleDictationSubmit = () => {
-    if(liveTranscript) {
-      form.setValue('prompt', liveTranscript);
-      form.handleSubmit(onSubmit)();
+  const handleDictationSubmit = async () => {
+    if (!audioUrl) return;
+
+    setShowDictationUI(false);
+    setAudioUrl(null);
+    setIsThinking(true);
+    
+    let assistantMessage: Message;
+
+    try {
+        const audioBlob = await fetch(audioUrl).then(r => r.blob());
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = async () => {
+            const base64Audio = reader.result as string;
+
+            try {
+                const { transcript } = await transcribeAudio({ audioDataUri: base64Audio });
+
+                if (!transcript) {
+                  throw new Error("Empty transcript returned.");
+                }
+
+                const userMessage: Message = { role: 'user', content: transcript, agentMode };
+                setCurrentConversation(prev => [...prev, userMessage]);
+
+                const agentWInput: AgentWInput = {
+                    prompt: transcript,
+                    currency,
+                    budgets,
+                    savingsGoals
+                };
+                const result = await runAgentW(agentWInput);
+                const summary = processAgentWResponse(result);
+                assistantMessage = { role: 'model', content: summary, agentMode };
+                toast.success(t('agent_w_success'));
+            } catch (error) {
+                console.error("Error during transcription or agent processing:", error);
+                assistantMessage = { role: 'model', content: t('assistant_error_desc'), agentMode, isError: true };
+            } finally {
+                setCurrentConversation(prev => [...prev, assistantMessage]);
+                setIsThinking(false);
+            }
+        };
+    } catch(error) {
+        console.error("Error fetching audio blob:", error);
+        assistantMessage = { role: 'model', content: t('assistant_error_desc'), agentMode, isError: true };
+        setCurrentConversation(prev => [...prev, assistantMessage]);
+        setIsThinking(false);
     }
+  };
+
+  const resetAudio = () => {
+    setAudioUrl(null);
+    setShowDictationUI(false);
     stopListening();
   }
-
-
-  useEffect(() => {
-    if (!isClient) return;
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    const supported = !!SpeechRecognition;
-    setIsSpeechRecognitionSupported(supported);
-
-    if (!supported) return;
-
-    if (!recognitionRef.current) {
-        recognitionRef.current = new SpeechRecognition();
-        const recognition = recognitionRef.current;
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = locale;
-
-        recognition.onresult = (event: any) => {
-            let interimTranscript = '';
-            let finalTranscript = '';
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) {
-                    finalTranscript += event.results[i][0].transcript;
-                } else {
-                    interimTranscript += event.results[i][0].transcript;
-                }
-            }
-             if (agentMode === 'agent') {
-                setLiveTranscript(prev => prev + finalTranscript + interimTranscript);
-             } else {
-                form.setValue('prompt', form.getValues('prompt') + finalTranscript + interimTranscript.trim(), { shouldValidate: true });
-             }
-        };
-
-        recognition.onerror = (event: any) => {
-            console.error('Speech recognition error', event.error);
-            uiToast({ variant: 'destructive', title: t('speech_recognition_error') });
-            setIsListening(false);
-        };
-        
-        recognition.onend = () => {
-            setIsListening(false);
-            if (agentMode !== 'agent') {
-                form.handleSubmit(onSubmit)();
-            }
-        }
+  
+  const togglePlayAudio = () => {
+    if (!audioRef.current) return;
+    if (isAudioPlaying) {
+      audioRef.current.pause();
     } else {
-      recognitionRef.current.lang = locale;
+      audioRef.current.play();
     }
-
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-    };
-  }, [isClient, form, uiToast, locale, t, agentMode]);
+  };
 
 
   const handleNewConversation = () => {
@@ -323,10 +349,6 @@ export function ConseilPanel() {
   };
 
   const onSubmit = async (data: AssistantFormValues) => {
-    if (isListening) {
-      stopListening();
-    }
-    
     const prompt = data.prompt.trim();
     if (!prompt) return;
 
@@ -400,36 +422,80 @@ export function ConseilPanel() {
     }
     return name.charAt(0).toUpperCase();
   }
+  
+  const AudioWaveform = () => (
+    <div className="flex items-center justify-center gap-1 h-10">
+      {[...Array(20)].map((_, i) => (
+        <div 
+          key={i} 
+          className="w-1 bg-primary/80 rounded-full"
+          style={{ 
+            height: `${Math.random() * 80 + 20}%`,
+            animation: `wave 1.2s ease-in-out ${i * 0.1}s infinite alternate`
+          }}
+        ></div>
+      ))}
+      <style jsx>{`
+        @keyframes wave {
+          from { transform: scaleY(0.3); }
+          to { transform: scaleY(1); }
+        }
+      `}</style>
+    </div>
+  );
 
   if (showDictationUI) {
     return (
       <div className="fixed inset-0 bg-background/95 z-50 p-4" style={{ height: '100svh', paddingBottom: '80px' }}>
         <div className="grid grid-rows-[auto_1fr_auto] h-full">
             <header className="flex justify-end">
-                <Button variant="ghost" size="icon" onClick={stopListening}>
+                <Button variant="ghost" size="icon" onClick={resetAudio}>
                     <X className="h-6 w-6" />
                 </Button>
             </header>
 
             <main className="flex flex-col items-center justify-center gap-8 overflow-y-auto">
                 <div className="text-center">
-                    <p className="text-muted-foreground">{t('listening')}</p>
+                    <p className="text-muted-foreground">{isListening ? t('listening') : t('audio_recorded')}</p>
                 </div>
-                <div className="relative flex items-center justify-center">
-                    <div className="absolute h-48 w-48 bg-primary/20 rounded-full animate-pulse"></div>
-                    <div className="h-32 w-32 bg-primary rounded-full flex items-center justify-center">
-                        <Mic className="h-16 w-16 text-primary-foreground"/>
-                    </div>
+                <div className="relative flex items-center justify-center h-48 w-48">
+                    {isListening ? (
+                       <>
+                         <div className="absolute h-full w-full bg-primary/20 rounded-full animate-pulse"></div>
+                         <div className="h-32 w-32 bg-primary rounded-full flex items-center justify-center">
+                             <Mic className="h-16 w-16 text-primary-foreground"/>
+                         </div>
+                       </>
+                    ) : (
+                      audioUrl && (
+                        <div className="w-full flex flex-col items-center gap-4">
+                          <audio ref={audioRef} src={audioUrl} onPlay={() => setIsAudioPlaying(true)} onPause={() => setIsAudioPlaying(false)} onEnded={() => setIsAudioPlaying(false)} className="hidden" />
+                          <Button size="lg" variant="outline" className="rounded-full h-24 w-24 p-0" onClick={togglePlayAudio}>
+                            {isAudioPlaying ? <Pause className="h-10 w-10"/> : <Play className="h-10 w-10"/>}
+                          </Button>
+                           <Button size="sm" variant="ghost" onClick={resetAudio}>
+                              <Trash className="mr-2 h-4 w-4"/>
+                              {t('record_again')}
+                          </Button>
+                        </div>
+                      )
+                    )}
                 </div>
                 <div className="w-full max-w-lg text-center text-lg min-h-[6rem] px-4">
-                    {liveTranscript || <span className="text-muted-foreground">{t('start_talking')}</span>}
+                  {isListening && <AudioWaveform />}
                 </div>
             </main>
             
             <footer className="flex justify-center pt-4">
-                <Button size="lg" className="rounded-full h-16 w-16 p-0" onClick={handleDictationSubmit}>
-                    <Check className="h-8 w-8" />
-                </Button>
+                 {isListening ? (
+                    <Button size="lg" variant="destructive" className="rounded-full h-16 w-16 p-0" onClick={stopListening}>
+                        <Pause className="h-8 w-8" />
+                    </Button>
+                ) : (
+                    <Button size="lg" className="rounded-full h-16 w-16 p-0" onClick={handleDictationSubmit}>
+                        <Check className="h-8 w-8" />
+                    </Button>
+                )}
             </footer>
         </div>
       </div>
@@ -569,9 +635,9 @@ export function ConseilPanel() {
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex items-start gap-2"
           >
-             {isSpeechRecognitionSupported && (
-              <Button type="button" size="icon" variant={isListening ? "destructive" : "outline"} onClick={isListening ? stopListening : startListening} disabled={isThinking}>
-                 {isListening && agentMode !== 'agent' ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+             {agentMode === 'agent' && (
+              <Button type="button" size="icon" variant={"outline"} onClick={startListening} disabled={isThinking || isListening}>
+                 <Mic className="h-5 w-5" />
               </Button>
             )}
             <FormField

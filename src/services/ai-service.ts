@@ -31,11 +31,34 @@ type GenerateOptions = {
 export async function generate(options: GenerateOptions) {
     let lastError: any = null;
     const modelsToTry = options.modelType === 'vision' ? VISION_MODELS : TEXT_MODELS;
+    
+    // Create a deep copy of messages to avoid mutation issues.
+    const messages = JSON.parse(JSON.stringify(options.messages));
 
     const requestPayload: OpenAI.Chat.ChatCompletionCreateParams = {
-        messages: options.messages,
+        messages: messages,
         stream: false,
     };
+
+    // If a message contains an audio_url, it's a multimodal request for the vision/audio model
+    const isMultimodalRequest = messages.some((m: any) => 
+        Array.isArray(m.content) && m.content.some((c: any) => c.type === 'image_url' || c.type === 'audio_url')
+    );
+
+    if (isMultimodalRequest && options.modelType !== 'vision') {
+        console.warn("Multimodal content detected, forcing modelType to 'vision'");
+        options.modelType = 'vision';
+    }
+
+
+    if (options.modelType === 'vision') {
+        const userMessage = messages.find((m: any) => m.role === 'user');
+        if (userMessage && !Array.isArray(userMessage.content)) {
+             // Ensure the user message content is in the correct multimodal format
+            userMessage.content = [{ type: 'text', text: userMessage.content }];
+        }
+    }
+
 
     if (options.output?.format === 'json') {
         requestPayload.response_format = { type: 'json_object' };

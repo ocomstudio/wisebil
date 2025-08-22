@@ -137,3 +137,19 @@ export const ScanDocumentInputSchema = z.object({
     ),
 });
 export type ScanDocumentInput = z.infer<typeof ScanDocumentInputSchema>;
+
+
+// Schema for transcribe-audio.ts
+export const TranscribeAudioInputSchema = z.object({
+  audioDataUri: z
+    .string()
+    .describe(
+      "A base64 encoded audio file as a data URI."
+    ),
+});
+export type TranscribeAudioInput = z.infer<typeof TranscribeAudioInputSchema>;
+
+export const TranscribeAudioOutputSchema = z.object({
+    transcript: z.string().describe("The transcribed text from the audio."),
+});
+export type TranscribeAudioOutput = z.infer<typeof TranscribeAudioOutputSchema>;

@@ -448,5 +448,7 @@
     "scanning_button": "Scanning...",
     "listening": "Listening...",
     "start_talking": "Start talking...",
-    "listening_error": "Listening error"
+    "listening_error": "Listening error",
+    "audio_recorded": "Audio recorded",
+    "record_again": "Record again"
 }
