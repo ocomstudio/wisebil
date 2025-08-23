@@ -58,8 +58,11 @@ export function FinancialSummaryCard({
             }
         };
 
+        // We only fetch when the core data changes, not on every render.
+        // The language and currency are passed to the flow but don't trigger a refetch on their own.
         fetchSummary();
-    }, [transactionsCount, budgetsCount, savingsGoalsCount]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [transactionsCount, budgetsCount, savingsGoalsCount, income, expenses]);
 
     if (isLoading) {
         return (
