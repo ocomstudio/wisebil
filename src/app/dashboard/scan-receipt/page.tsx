@@ -4,13 +4,17 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Camera, Loader2, ArrowLeft, AlertTriangle, Paperclip } from 'lucide-react';
+import { Camera, Loader2, ArrowLeft, AlertTriangle, Paperclip, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLocale } from '@/context/locale-context';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import Link from 'next/link';
 
-export default function ScanReceiptPage() {
+interface ScanReceiptPageProps {
+  onComplete: () => void;
+}
+
+export default function ScanReceiptPage({ onComplete }: ScanReceiptPageProps) {
   const router = useRouter();
   const { t } = useLocale();
   const { toast } = useToast();
@@ -35,7 +39,6 @@ export default function ScanReceiptPage() {
       } catch (error) {
         console.error('Error accessing camera:', error);
         setHasCameraPermission(false);
-        // We don't toast here anymore to avoid bothering users who prefer file upload.
       }
     };
 
@@ -52,6 +55,7 @@ export default function ScanReceiptPage() {
   const processImageAndNavigate = (dataUri: string) => {
     try {
       sessionStorage.setItem('scannedImageDataUri', dataUri);
+      onComplete(); // Close the modal
       router.push('/dashboard/scan-receipt/results');
     } catch (error) {
        console.error('Error during processing:', error);
@@ -118,10 +122,8 @@ export default function ScanReceiptPage() {
   return (
     <div className="flex flex-col h-full bg-black">
        <header className="flex items-center justify-between p-4 bg-black/50 backdrop-blur-sm z-10">
-         <Button variant="ghost" size="icon" asChild>
-            <Link href="/dashboard">
-                <ArrowLeft className="h-5 w-5 text-white" />
-            </Link>
+         <Button variant="ghost" size="icon" onClick={onComplete}>
+            <X className="h-5 w-5 text-white" />
          </Button>
          <h1 className="text-lg font-bold text-white">{t('scan_receipt_title')}</h1>
          <div className="w-10"></div>
