@@ -450,5 +450,12 @@
     "start_talking": "Commencez à parler...",
     "listening_error": "Erreur d'écoute",
     "audio_recorded": "Audio enregistré",
-    "record_again": "Ré-enregistrer"
+    "record_again": "Ré-enregistrer",
+    "verify_transcript_title": "Vérifier la transcription",
+    "verify_transcript_desc": "Modifiez le texte si nécessaire, puis validez pour que l'Agent W l'exécute.",
+    "transcription_placeholder": "En attente de la transcription...",
+    "validate_button": "Valider",
+    "empty_transcript_error": "La transcription ne peut pas être vide.",
+    "transcription_error_title": "Erreur de transcription",
+    "transcription_error_desc": "Impossible de transcrire l'audio. Veuillez réessayer."
 }

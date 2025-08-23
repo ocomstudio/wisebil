@@ -450,5 +450,12 @@
     "start_talking": "Start talking...",
     "listening_error": "Listening error",
     "audio_recorded": "Audio recorded",
-    "record_again": "Record again"
+    "record_again": "Record again",
+    "verify_transcript_title": "Verify Transcript",
+    "verify_transcript_desc": "Edit the text if needed, then validate for Agent W to execute.",
+    "transcription_placeholder": "Waiting for transcription...",
+    "validate_button": "Validate",
+    "empty_transcript_error": "Transcript cannot be empty.",
+    "transcription_error_title": "Transcription Error",
+    "transcription_error_desc": "Could not transcribe audio. Please try again."
 }

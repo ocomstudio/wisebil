@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send, PlusCircle, Mic, BrainCircuit, Bot, MessageSquare, ScanLine, Trash2, X, Check, Play, Pause, Trash } from 'lucide-react';
+import { Loader2, Send, PlusCircle, Mic, BrainCircuit, Bot, MessageSquare, ScanLine, Trash2, X, Check, Play, Pause, Trash, Pencil } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   AlertDialog,
@@ -143,6 +143,10 @@ export function ConseilPanel() {
   const audioChunksRef = useRef<Blob[]>([]);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [showDictationUI, setShowDictationUI] = useState(false);
+  
+  const [showVerificationUI, setShowVerificationUI] = useState(false);
+  const [transcriptForVerification, setTranscriptForVerification] = useState('');
+  const [isTranscribing, setIsTranscribing] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -256,11 +260,31 @@ export function ConseilPanel() {
             audioChunksRef.current.push(event.data);
         };
 
-        mediaRecorderRef.current.onstop = () => {
+        mediaRecorderRef.current.onstop = async () => {
             const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
             const url = URL.createObjectURL(audioBlob);
-            setAudioUrl(url);
-             // Stop all media tracks to turn off the mic indicator
+            setAudioUrl(url); // Keep audio for potential user playback
+            setIsTranscribing(true); // Show transcription loading state
+            setShowDictationUI(false); // Hide recording UI
+            setShowVerificationUI(true); // Show verification UI
+
+            try {
+                 const reader = new FileReader();
+                 reader.onloadend = async () => {
+                     const base64Audio = reader.result as string;
+                     const input: TranscribeAudioInput = { audioDataUri: base64Audio };
+                     const { transcript } = await transcribeAudio(input);
+                     setTranscriptForVerification(transcript || "");
+                     setIsTranscribing(false);
+                 };
+                 reader.onerror = () => { throw new Error("Failed to read audio file."); }
+                 reader.readAsDataURL(audioBlob);
+            } catch (error) {
+                console.error("Error during transcription:", error);
+                uiToast({ variant: 'destructive', title: t('transcription_error_title'), description: t('transcription_error_desc') });
+                resetAudioFlow();
+            }
+
             stream.getTracks().forEach(track => track.stop());
         };
 
@@ -280,72 +304,47 @@ export function ConseilPanel() {
     }
   }, [isListening]);
   
-  const handleDictationSubmit = async () => {
-    if (!audioUrl) return;
+  const handleVerificationSubmit = async () => {
+    if (!transcriptForVerification.trim()) {
+        uiToast({ variant: 'destructive', title: t('error_title'), description: t('empty_transcript_error') });
+        return;
+    };
   
-    setShowDictationUI(false);
-    
-    // Add audio message to conversation
-    const userMessage: Message = { role: 'user', type: 'audio', content: '', audioUrl: audioUrl, agentMode };
+    // Add user message to conversation
+    const userMessage: Message = { role: 'user', type: 'text', content: transcriptForVerification, agentMode };
     setCurrentConversation(prev => [...prev, userMessage]);
-    setAudioUrl(null);
-    
+    resetAudioFlow();
     setIsThinking(true);
   
     try {
-      const audioBlob = await fetch(audioUrl).then(r => r.blob());
-      const reader = new FileReader();
-      
-      reader.onloadend = async () => {
-        const base64Audio = reader.result as string;
-        let assistantMessage: Message;
+        const agentWInput: AgentWInput = {
+            prompt: transcriptForVerification,
+            currency,
+            budgets,
+            savingsGoals,
+            language: locale,
+        };
+        const result = await runAgentW(agentWInput);
+        const summary = processAgentWResponse(result);
+        const assistantMessage: Message = { role: 'model', type: 'text', content: summary, agentMode };
+        setCurrentConversation(prev => [...prev, assistantMessage]);
+        toast.success(t('agent_w_success'));
   
-        try {
-          const input: TranscribeAudioInput = { audioDataUri: base64Audio };
-          const { transcript } = await transcribeAudio(input);
-  
-          if (!transcript) {
-            throw new Error("Empty transcript returned.");
-          }
-  
-          const agentWInput: AgentWInput = {
-              prompt: transcript,
-              currency,
-              budgets,
-              savingsGoals,
-              language: locale,
-          };
-          const result = await runAgentW(agentWInput);
-          const summary = processAgentWResponse(result);
-          assistantMessage = { role: 'model', type: 'text', content: summary, agentMode };
-          toast.success(t('agent_w_success'));
-  
-        } catch (error) {
-            console.error("Error during transcription or agent processing:", error);
-            assistantMessage = { role: 'model', type: 'text', content: t('assistant_error_desc'), agentMode, isError: true };
-        } finally {
-            setCurrentConversation(prev => [...prev, assistantMessage]);
-            setIsThinking(false);
-        }
-      };
-      
-      reader.onerror = () => {
-        throw new Error("Failed to read audio file.");
-      }
-      
-      reader.readAsDataURL(audioBlob);
-  
-    } catch(error) {
-        console.error("Error processing audio:", error);
+    } catch (error) {
+        console.error("Error during agent processing:", error);
         const assistantMessage: Message = { role: 'model', type: 'text', content: t('assistant_error_desc'), agentMode, isError: true };
         setCurrentConversation(prev => [...prev, assistantMessage]);
+    } finally {
         setIsThinking(false);
     }
   };
 
-  const resetAudio = () => {
+  const resetAudioFlow = () => {
     setAudioUrl(null);
     setShowDictationUI(false);
+    setShowVerificationUI(false);
+    setTranscriptForVerification('');
+    setIsTranscribing(false);
     stopListening();
   }
 
@@ -511,58 +510,83 @@ export function ConseilPanel() {
     </div>
   );
 
-  if (showDictationUI) {
-    return (
-      <div className="fixed inset-0 bg-background/95 z-50 flex flex-col p-4" style={{ height: '100svh' }}>
-        <header className="flex justify-end flex-shrink-0">
-            <Button variant="ghost" size="icon" onClick={resetAudio}>
-                <X className="h-6 w-6" />
-            </Button>
-        </header>
-
-        <main className="flex-1 flex flex-col items-center justify-center text-center">
-            <p className="text-muted-foreground mb-8">{isListening ? t('listening') : t('audio_recorded')}</p>
-            
-            <div className="relative flex items-center justify-center h-48 w-48 mb-8">
-                {isListening ? (
-                   <>
-                     <div className="absolute h-full w-full bg-primary/20 rounded-full animate-pulse"></div>
-                     <div className="h-32 w-32 bg-primary rounded-full flex items-center justify-center">
-                         <Mic className="h-16 w-16 text-primary-foreground"/>
-                     </div>
-                   </>
-                ) : (
-                  audioUrl && (
-                    <AudioPlayer src={audioUrl} />
-                  )
-                )}
-            </div>
-            {isListening && <div className="h-10 mb-8 w-full max-w-xs"><AudioWaveform /></div>}
-
-            <div className="flex flex-col items-center gap-4">
+  const DictationUI = () => (
+    <div className="fixed inset-0 bg-background/95 z-50 flex flex-col p-4" style={{ height: '100svh' }}>
+      <header className="flex justify-end flex-shrink-0">
+          <Button variant="ghost" size="icon" onClick={resetAudioFlow}>
+              <X className="h-6 w-6" />
+          </Button>
+      </header>
+      <main className="flex-1 flex flex-col items-center justify-center text-center">
+          <p className="text-muted-foreground mb-8">{isListening ? t('listening') : t('audio_recorded')}</p>
+          <div className="relative flex items-center justify-center h-48 w-48 mb-8">
               {isListening ? (
-                  <Button size="lg" variant="destructive" className="rounded-full h-16 w-16 p-0" onClick={stopListening}>
-                      <Pause className="h-8 w-8" />
-                  </Button>
-              ) : (
-                  <>
-                    <Button size="lg" className="rounded-full h-16 w-16 p-0" onClick={handleDictationSubmit} disabled={!audioUrl}>
-                        <Check className="h-8 w-8" />
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={resetAudio}>
-                        <Trash className="mr-2 h-4 w-4"/>
-                        {t('record_again')}
-                    </Button>
-                  </>
-              )}
-            </div>
-        </main>
-      </div>
-    )
-  }
+                 <>
+                   <div className="absolute h-full w-full bg-primary/20 rounded-full animate-pulse"></div>
+                   <div className="h-32 w-32 bg-primary rounded-full flex items-center justify-center">
+                       <Mic className="h-16 w-16 text-primary-foreground"/>
+                   </div>
+                 </>
+              ) : ( audioUrl && <AudioPlayer src={audioUrl} /> )}
+          </div>
+          {isListening && <div className="h-10 mb-8 w-full max-w-xs"><AudioWaveform /></div>}
+          <div className="flex flex-col items-center gap-4">
+            {isListening && (
+                <Button size="lg" variant="destructive" className="rounded-full h-16 w-16 p-0" onClick={stopListening}>
+                    <Pause className="h-8 w-8" />
+                </Button>
+            )}
+          </div>
+      </main>
+    </div>
+  )
+
+  const VerificationUI = () => (
+    <div className="fixed inset-0 bg-background/95 z-50 flex flex-col p-4" style={{ height: '100svh' }}>
+      <header className="flex justify-between items-center flex-shrink-0">
+          <h2 className="text-lg font-bold font-headline">{t('verify_transcript_title')}</h2>
+          <Button variant="ghost" size="icon" onClick={resetAudioFlow}>
+              <X className="h-6 w-6" />
+          </Button>
+      </header>
+      <main className="flex-1 flex flex-col py-4 gap-4">
+        <p className="text-muted-foreground text-sm">{t('verify_transcript_desc')}</p>
+        <div className="flex-1 relative">
+            <ScrollArea className="h-full">
+                <Textarea 
+                    value={transcriptForVerification}
+                    onChange={(e) => setTranscriptForVerification(e.target.value)}
+                    className="h-full resize-none text-base"
+                    placeholder={t('transcription_placeholder')}
+                    disabled={isTranscribing}
+                />
+            </ScrollArea>
+             {isTranscribing && (
+                <div className="absolute inset-0 flex items-center justify-center bg-background/80">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+            )}
+        </div>
+      </main>
+      <footer className="grid grid-cols-2 gap-4 flex-shrink-0">
+         <Button variant="outline" size="lg" onClick={resetAudioFlow}>
+            <Trash className="mr-2 h-4 w-4" />
+            {t('cancel')}
+         </Button>
+         <Button size="lg" onClick={handleVerificationSubmit} disabled={isTranscribing || isThinking}>
+            <Check className="mr-2 h-4 w-4" />
+            {t('validate_button')}
+         </Button>
+      </footer>
+    </div>
+  )
+
 
   return (
     <div className="flex flex-col h-full bg-background md:bg-transparent">
+      {showDictationUI && <DictationUI />}
+      {showVerificationUI && <VerificationUI />}
+
       <header className='p-4 md:p-6 border-b flex justify-between items-center flex-shrink-0'>
         <h1 className="text-xl font-bold font-headline">{pageTitle}</h1>
         <Button variant="ghost" size="sm" onClick={handleNewConversation}>
