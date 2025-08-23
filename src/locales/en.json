@@ -447,6 +447,7 @@
     "scan_button": "Scan",
     "scanning_button": "Scanning...",
     "listening": "Listening...",
+    "stop_recording_button": "Stop recording",
     "start_talking": "Start talking...",
     "listening_error": "Listening error",
     "audio_recorded": "Audio recorded",
@@ -457,5 +458,7 @@
     "validate_button": "Validate",
     "empty_transcript_error": "Transcript cannot be empty.",
     "transcription_error_title": "Transcription Error",
-    "transcription_error_desc": "Could not transcribe audio. Please try again."
+    "transcription_error_desc": "Could not transcribe audio. Please try again.",
+    "agent_w_welcome_title": "Welcome to Agent W",
+    "agent_w_welcome_desc": "Dictate your expenses, income, or new budgets. I'll take care of recording everything for you."
 }

@@ -447,6 +447,7 @@
     "scan_button": "Scanner",
     "scanning_button": "Scan en cours...",
     "listening": "Je vous écoute...",
+    "stop_recording_button": "Arrêter l'enregistrement",
     "start_talking": "Commencez à parler...",
     "listening_error": "Erreur d'écoute",
     "audio_recorded": "Audio enregistré",
@@ -457,5 +458,7 @@
     "validate_button": "Valider",
     "empty_transcript_error": "La transcription ne peut pas être vide.",
     "transcription_error_title": "Erreur de transcription",
-    "transcription_error_desc": "Impossible de transcrire l'audio. Veuillez réessayer."
+    "transcription_error_desc": "Impossible de transcrire l'audio. Veuillez réessayer.",
+    "agent_w_welcome_title": "Bienvenue dans l'Agent W",
+    "agent_w_welcome_desc": "Dictez vos dépenses, revenus ou nouveaux budgets. Je m'occupe de tout enregistrer pour vous."
 }

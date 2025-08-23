@@ -24,14 +24,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import { useLocale } from '@/context/locale-context';
 import { useAuth } from '@/context/auth-context';
 import toast from 'react-hot-toast';
@@ -77,6 +69,25 @@ interface ConversationHistory {
       history: Conversation[];
     }
 }
+
+const cleanObjectForFirestore = (obj: any): any => {
+    if (obj === null || typeof obj !== 'object') {
+        return obj;
+    }
+
+    if (Array.isArray(obj)) {
+        return obj.map(cleanObjectForFirestore);
+    }
+
+    const cleanedObj: { [key: string]: any } = {};
+    for (const key in obj) {
+        if (obj[key] !== undefined) {
+            cleanedObj[key] = cleanObjectForFirestore(obj[key]);
+        }
+    }
+    return cleanedObj;
+};
+
 
 const AudioPlayer = ({ src }: { src: string }) => {
     const audioRef = useRef<HTMLAudioElement>(null);
@@ -149,14 +160,13 @@ export function ConseilPanel() {
   const [agentMode, setAgentMode] = useState<AgentMode>('wise');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [showDictationUI, setShowDictationUI] = useState(false);
   
-  const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
   const [transcriptForVerification, setTranscriptForVerification] = useState('');
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [transcriptionMode, setTranscriptionMode] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const transcriptTextareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast: uiToast } = useToast();
   
@@ -175,36 +185,54 @@ export function ConseilPanel() {
     return doc(db, 'users', user.uid);
   }, [user]);
 
-  // Load conversation from Firestore on initial render
   useEffect(() => {
-    if (!isClient || !user) return;
+    if (!user || !isClient) return;
+
+    const userDocRef = getUserDocRef();
+    if (!userDocRef) return;
     
-    const fetchHistory = async () => {
-      const userDocRef = getUserDocRef();
-      if (!userDocRef) return;
-      try {
-        const docSnap = await getDoc(userDocRef);
-        const loadedHistory = docSnap.data();
-        if (loadedHistory && loadedHistory.conversations) {
-          const conversationData = loadedHistory.conversations as ConversationHistory;
-          setWiseConversation(conversationData.wise?.current || []);
-          setWiseHistory(conversationData.wise?.history || []);
-          setAgentWConversation(conversationData.agentW?.current || []);
-          setAgentWHistory(conversationData.agentW?.history || []);
+    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            const loadedHistory = data?.conversations as ConversationHistory | undefined;
+            
+            const wiseCurrent = loadedHistory?.wise?.current;
+            if (wiseCurrent && wiseCurrent.length > 0) {
+                setWiseConversation(wiseCurrent);
+            } else {
+                setWiseConversation([{
+                    role: 'model',
+                    type: 'text',
+                    content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || 'Utilisateur'),
+                    agentMode: 'wise'
+                }]);
+            }
+            setWiseHistory(loadedHistory?.wise?.history || []);
+
+            const agentWCurrent = loadedHistory?.agentW?.current;
+            if (agentWCurrent && agentWCurrent.length > 0) {
+                setAgentWConversation(agentWCurrent);
+            } else {
+                 setAgentWConversation([]);
+            }
+            setAgentWHistory(loadedHistory?.agentW?.history || []);
+
         } else {
-           setWiseConversation([{
+            // Document doesn't exist, set initial welcome message for Wise
+            setWiseConversation([{
                 role: 'model',
                 type: 'text',
                 content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || 'Utilisateur'),
                 agentMode: 'wise'
             }]);
         }
-      } catch (error) {
-        console.error("Failed to load conversation history from Firestore", error);
-      }
-    };
-    fetchHistory();
-  }, [isClient, user, t, getUserDocRef]);
+    }, (error) => {
+        console.error("Firestore snapshot error:", error);
+    });
+
+    return () => unsubscribe();
+}, [isClient, user, t, getUserDocRef]);
+
 
   // Save conversation to Firestore whenever it changes
   useEffect(() => {
@@ -220,12 +248,11 @@ export function ConseilPanel() {
                 agentW: { current: agentWConversation, history: agentWHistory }
             };
             
-            await setDoc(userDocRef, { conversations: historyToSave }, { merge: true });
+            await setDoc(userDocRef, { conversations: cleanObjectForFirestore(historyToSave) }, { merge: true });
         } catch (error) {
             console.error("Failed to save conversation history to Firestore", error);
         }
     }
-    // Debounce saving to avoid too many writes
     const timer = setTimeout(saveHistory, 1000);
     return () => clearTimeout(timer);
   }, [wiseConversation, wiseHistory, agentWConversation, agentWHistory, isClient, user, getUserDocRef]);
@@ -245,6 +272,13 @@ export function ConseilPanel() {
         textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [promptValue]);
+  
+  useEffect(() => {
+    if (transcriptTextareaRef.current) {
+        transcriptTextareaRef.current.style.height = 'auto';
+        transcriptTextareaRef.current.style.height = `${transcriptTextareaRef.current.scrollHeight}px`;
+    }
+  }, [transcriptForVerification]);
 
 
   useEffect(() => {
@@ -257,7 +291,7 @@ export function ConseilPanel() {
   }, [currentConversation, isThinking]);
   
   const startListening = useCallback(async () => {
-    if (isListening) return;
+    if (isListening || transcriptionMode) return;
 
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -270,11 +304,8 @@ export function ConseilPanel() {
 
         mediaRecorderRef.current.onstop = async () => {
             const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-            const url = URL.createObjectURL(audioBlob);
-            setAudioUrl(url); // Keep audio for potential user playback
-            setIsTranscribing(true); // Show transcription loading state
-            setShowDictationUI(false); // Hide recording UI
-            setIsVerificationDialogOpen(true); // Show verification dialog
+            setTranscriptionMode(true);
+            setIsTranscribing(true);
 
             try {
                  const reader = new FileReader();
@@ -292,18 +323,16 @@ export function ConseilPanel() {
                 uiToast({ variant: 'destructive', title: t('transcription_error_title'), description: t('transcription_error_desc') });
                 resetAudioFlow();
             }
-
             stream.getTracks().forEach(track => track.stop());
         };
 
         mediaRecorderRef.current.start();
         setIsListening(true);
-        setShowDictationUI(true);
     } catch (err) {
         console.error("Error accessing microphone:", err);
         uiToast({ variant: 'destructive', title: t('listening_error') });
     }
-  }, [isListening, uiToast, t]);
+  }, [isListening, transcriptionMode, uiToast, t]);
 
   const stopListening = useCallback(() => {
     if (mediaRecorderRef.current && isListening) {
@@ -313,20 +342,20 @@ export function ConseilPanel() {
   }, [isListening]);
   
   const handleVerificationSubmit = async () => {
-    if (!transcriptForVerification.trim()) {
+    const finalTranscript = transcriptForVerification.trim();
+    if (!finalTranscript) {
         uiToast({ variant: 'destructive', title: t('error_title'), description: t('empty_transcript_error') });
         return;
     };
   
-    // Add user message to conversation
-    const userMessage: Message = { role: 'user', type: 'text', content: transcriptForVerification, agentMode };
+    const userMessage: Message = { role: 'user', type: 'text', content: finalTranscript, agentMode };
     setCurrentConversation(prev => [...prev, userMessage]);
     resetAudioFlow();
     setIsThinking(true);
   
     try {
         const agentWInput: AgentWInput = {
-            prompt: transcriptForVerification,
+            prompt: finalTranscript,
             currency,
             budgets,
             savingsGoals,
@@ -348,24 +377,32 @@ export function ConseilPanel() {
   };
 
   const resetAudioFlow = () => {
-    setAudioUrl(null);
-    setShowDictationUI(false);
-    setIsVerificationDialogOpen(false);
+    setTranscriptionMode(false);
     setTranscriptForVerification('');
     setIsTranscribing(false);
-    stopListening();
+    if(isListening) stopListening();
   }
 
   const handleNewConversation = () => {
-    if (currentConversation.length > 0 && !(currentConversation.length === 1 && currentConversation[0].role === 'model')) {
-      setConversationHistory(prev => [currentConversation, ...prev].filter(c => c.length > 0));
+    if (currentConversation.length > 0) {
+        // Don't add default welcome message to history
+        if(currentConversation.length === 1 && currentConversation[0].role === 'model') {
+            // do nothing
+        } else {
+            setConversationHistory(prev => [currentConversation, ...prev].filter(c => c.length > 0));
+        }
     }
-    setCurrentConversation([{
-        role: 'model',
-        type: 'text',
-        content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || 'Utilisateur'),
-        agentMode: agentMode,
-    }]);
+    
+    if (agentMode === 'wise') {
+        setCurrentConversation([{
+            role: 'model',
+            type: 'text',
+            content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || 'Utilisateur'),
+            agentMode: agentMode,
+        }]);
+    } else {
+        setCurrentConversation([]);
+    }
   };
 
   const deleteConversationFromHistory = (indexToDelete: number) => {
@@ -462,6 +499,7 @@ export function ConseilPanel() {
             toast.success(t('agent_w_success'));
         }
     } catch (error) {
+        console.error("Error during agent processing:", error);
         const assistantMessage: Message = { role: 'model', type: 'text', content: t('assistant_error_desc'), agentMode, isError: true };
         setCurrentConversation(prev => [...prev, assistantMessage]);
     } finally {
@@ -518,80 +556,38 @@ export function ConseilPanel() {
     </div>
   );
 
-  const DictationUI = () => (
-    <div className="fixed inset-0 bg-background/95 z-50 flex flex-col p-4" style={{ height: '100svh' }}>
-      <header className="flex justify-end flex-shrink-0">
-          <Button variant="ghost" size="icon" onClick={resetAudioFlow}>
-              <X className="h-6 w-6" />
-          </Button>
-      </header>
-      <main className="flex-1 flex flex-col items-center justify-center text-center">
-          <p className="text-muted-foreground mb-8">{isListening ? t('listening') : t('audio_recorded')}</p>
-          <div className="relative flex items-center justify-center h-48 w-48 mb-8">
-              {isListening ? (
-                 <>
-                   <div className="absolute h-full w-full bg-primary/20 rounded-full animate-pulse"></div>
-                   <div className="h-32 w-32 bg-primary rounded-full flex items-center justify-center">
-                       <Mic className="h-16 w-16 text-primary-foreground"/>
-                   </div>
-                 </>
-              ) : ( audioUrl && <AudioPlayer src={audioUrl} /> )}
-          </div>
-          {isListening && <div className="h-10 mb-8 w-full max-w-xs"><AudioWaveform /></div>}
-          <div className="flex flex-col items-center gap-4">
-            {isListening && (
-                <Button size="lg" variant="destructive" className="rounded-full h-16 w-16 p-0" onClick={stopListening}>
-                    <Pause className="h-8 w-8" />
-                </Button>
+ const TranscriptionEditor = () => (
+    <div className='p-4 md:p-6 border-t space-y-2 flex-shrink-0 bg-background'>
+        <div className="relative">
+            <Textarea
+                ref={transcriptTextareaRef}
+                value={transcriptForVerification}
+                onChange={(e) => setTranscriptForVerification(e.target.value)}
+                placeholder={t('transcription_placeholder')}
+                disabled={isTranscribing}
+                className="w-full resize-none pr-10 text-base"
+                rows={1}
+            />
+            {isTranscribing && (
+                <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-md">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
             )}
-          </div>
-      </main>
+        </div>
+        <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={resetAudioFlow}>{t('cancel')}</Button>
+            <Button onClick={handleVerificationSubmit} disabled={isTranscribing || isThinking}>
+                <Send className="mr-2 h-4 w-4" />
+                {t('validate_button')}
+            </Button>
+        </div>
     </div>
-  )
-
-  const VerificationDialog = () => (
-    <Dialog open={isVerificationDialogOpen} onOpenChange={ (isOpen) => { if (!isOpen) resetAudioFlow() }}>
-        <DialogContent className="max-w-lg">
-            <DialogHeader>
-                <DialogTitle>{t('verify_transcript_title')}</DialogTitle>
-                <DialogDescription>{t('verify_transcript_desc')}</DialogDescription>
-            </DialogHeader>
-            <div className="py-4 relative">
-                <ScrollArea className="h-48 rounded-md border p-2">
-                    <Textarea 
-                        value={transcriptForVerification}
-                        onChange={(e) => setTranscriptForVerification(e.target.value)}
-                        className="h-full w-full resize-none border-0 p-2 focus-visible:ring-0"
-                        placeholder={t('transcription_placeholder')}
-                        disabled={isTranscribing}
-                    />
-                </ScrollArea>
-                {isTranscribing && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-md">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    </div>
-                )}
-            </div>
-            <DialogFooter className="gap-2 sm:justify-end">
-                <Button variant="outline" onClick={resetAudioFlow}>
-                    <Trash className="mr-2 h-4 w-4" />
-                    {t('cancel')}
-                </Button>
-                <Button onClick={handleVerificationSubmit} disabled={isTranscribing || isThinking}>
-                    <Check className="mr-2 h-4 w-4" />
-                    {t('validate_button')}
-                </Button>
-            </DialogFooter>
-        </DialogContent>
-    </Dialog>
-  )
+);
 
 
   return (
     <div className="flex flex-col h-full bg-background md:bg-transparent">
-      {showDictationUI && <DictationUI />}
-      <VerificationDialog />
-
+      
       <header className='p-4 md:p-6 border-b flex justify-between items-center flex-shrink-0'>
         <h1 className="text-xl font-bold font-headline">{pageTitle}</h1>
         <Button variant="ghost" size="sm" onClick={handleNewConversation}>
@@ -604,6 +600,13 @@ export function ConseilPanel() {
         <div className="h-full">
             <ScrollArea className="h-full" ref={scrollAreaRef}>
               <div className="p-4 md:p-6 space-y-6 pb-8">
+                {currentConversation.length === 0 && agentMode === 'agent' && (
+                    <div className="text-center text-muted-foreground p-8">
+                        <ScanLine className="h-12 w-12 mx-auto mb-4"/>
+                        <h3 className="font-semibold text-lg">{t('agent_w_welcome_title')}</h3>
+                        <p className="text-sm">{t('agent_w_welcome_desc')}</p>
+                    </div>
+                )}
                 {currentConversation.map((message, index) => (
                   <div
                     key={index}
@@ -652,114 +655,122 @@ export function ConseilPanel() {
         </div>
       </div>
 
-      <footer className='p-4 md:p-6 border-t space-y-4 flex-shrink-0 bg-background'>
-        {conversationHistory.length > 0 && (
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1">
-              <AccordionTrigger>{t('history_button')}</AccordionTrigger>
-              <AccordionContent>
-                <ScrollArea className="h-32">
-                  <div className='space-y-2 pr-2'>
-                    {conversationHistory.map((convo, index) => (
-                      <div key={index} className="grid grid-cols-[1fr_auto] items-center gap-2 p-2 bg-muted/50 rounded-md text-sm">
-                        <span
-                          className="truncate cursor-pointer hover:text-primary"
-                          onClick={() => {
-                            setConversationHistory(prev => {
-                                const newHistory = [...prev];
-                                newHistory.splice(index, 1);
-                                if (currentConversation && currentConversation.length > 1) {
-                                    newHistory.unshift(currentConversation);
-                                }
-                                return newHistory;
-                            });
-                            setCurrentConversation(convo);
-                          }}
+       {transcriptionMode ? <TranscriptionEditor /> : (
+            <footer className='p-4 md:p-6 border-t space-y-4 flex-shrink-0 bg-background'>
+                {conversationHistory.length > 0 && (
+                <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-1">
+                    <AccordionTrigger>{t('history_button')}</AccordionTrigger>
+                    <AccordionContent>
+                        <ScrollArea className="h-32">
+                        <div className='space-y-2 pr-2'>
+                            {conversationHistory.map((convo, index) => (
+                            <div key={index} className="grid grid-cols-[1fr_auto] items-center gap-2 p-2 bg-muted/50 rounded-md text-sm">
+                                <span
+                                className="truncate cursor-pointer hover:text-primary"
+                                onClick={() => {
+                                    setConversationHistory(prev => {
+                                        const newHistory = [...prev];
+                                        newHistory.splice(index, 1);
+                                        if (currentConversation && currentConversation.length > 0 && !(currentConversation.length === 1 && currentConversation[0].role === 'model')) {
+                                            newHistory.unshift(currentConversation);
+                                        }
+                                        return newHistory;
+                                    });
+                                    setCurrentConversation(convo);
+                                }}
+                                >
+                                {convo.find(m => m.role === 'user')?.content || convo[0]?.content || t('empty_conversation')}
+                                </span>
+                                <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive">
+                                    <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+                                            <Trash2 className="h-6 w-6 text-red-600" />
+                                        </div>
+                                    <AlertDialogTitle>{t('are_you_sure')}</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        {t('history_delete_confirmation')}
+                                    </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => deleteConversationFromHistory(index)} className="bg-destructive hover:bg-destructive/90">
+                                        {t('delete')}
+                                    </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                                </AlertDialog>
+                            </div>
+                            ))}
+                        </div>
+                        </ScrollArea>
+                    </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+                )}
+
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                    <Button variant={agentMode === 'wise' ? 'secondary' : 'ghost'} onClick={() => setAgentMode('wise')}>
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        {t('nav_advice')}
+                    </Button>
+                    <Button variant={agentMode === 'agent' ? 'secondary' : 'ghost'} onClick={() => setAgentMode('agent')}>
+                        <ScanLine className="mr-2 h-4 w-4" />
+                        Agent W
+                    </Button>
+                </div>
+                {isListening ? (
+                    <div className="flex flex-col items-center gap-2">
+                       <AudioWaveform />
+                        <Button variant="destructive" onClick={stopListening}>{t('stop_recording_button')}</Button>
+                    </div>
+                ) : (
+                    <Form {...form}>
+                        <form
+                            onSubmit={form.handleSubmit(onSubmit)}
+                            className="flex items-start gap-2"
                         >
-                          {convo.find(m => m.role === 'user')?.content || convo[0]?.content || t('empty_conversation')}
-                        </span>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive">
-                              <Trash2 className="h-4 w-4" />
+                            {agentMode === 'agent' && (
+                            <Button type="button" size="icon" variant={"outline"} onClick={startListening} disabled={isThinking || isListening}>
+                                <Mic className="h-5 w-5" />
                             </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
-                                    <Trash2 className="h-6 w-6 text-red-600" />
-                                </div>
-                              <AlertDialogTitle>{t('are_you_sure')}</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                {t('history_delete_confirmation')}
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => deleteConversationFromHistory(index)} className="bg-destructive hover:bg-destructive/90">
-                                {t('delete')}
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        )}
-
-        <div className="grid grid-cols-2 gap-2 mb-2">
-            <Button variant={agentMode === 'wise' ? 'secondary' : 'ghost'} onClick={() => setAgentMode('wise')}>
-                <MessageSquare className="mr-2 h-4 w-4" />
-                {t('nav_advice')}
-            </Button>
-            <Button variant={agentMode === 'agent' ? 'secondary' : 'ghost'} onClick={() => setAgentMode('agent')}>
-                <ScanLine className="mr-2 h-4 w-4" />
-                Agent W
-            </Button>
-        </div>
-
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="flex items-start gap-2"
-          >
-             {agentMode === 'agent' && (
-              <Button type="button" size="icon" variant={"outline"} onClick={startListening} disabled={isThinking || isListening}>
-                 <Mic className="h-5 w-5" />
-              </Button>
-            )}
-            <FormField
-              control={form.control}
-              name="prompt"
-              render={({ field }) => (
-                <FormItem className="flex-1">
-                  <FormControl>
-                    <Textarea
-                      ref={textareaRef}
-                      rows={1}
-                      placeholder={placeholderText}
-                      {...field}
-                      disabled={isThinking}
-                      className={cn(
-                        "resize-none overflow-hidden pr-10 transition-colors max-h-36",
-                        agentMode === 'agent' && 'bg-primary/10 border-primary/50 focus-visible:ring-primary/50'
-                      )}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" size="icon" disabled={isThinking || !form.formState.isValid}>
-              {isThinking ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-            </Button>
-          </form>
-        </Form>
-      </footer>
+                            )}
+                            <FormField
+                            control={form.control}
+                            name="prompt"
+                            render={({ field }) => (
+                                <FormItem className="flex-1">
+                                <FormControl>
+                                    <Textarea
+                                    ref={textareaRef}
+                                    rows={1}
+                                    placeholder={placeholderText}
+                                    {...field}
+                                    disabled={isThinking}
+                                    className={cn(
+                                        "resize-none overflow-hidden pr-10 transition-colors max-h-36",
+                                        agentMode === 'agent' && 'bg-primary/10 border-primary/50 focus-visible:ring-primary/50'
+                                    )}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                            <Button type="submit" size="icon" disabled={isThinking || !form.formState.isValid}>
+                            {isThinking ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+                            </Button>
+                        </form>
+                    </Form>
+                )}
+            </footer>
+       )}
     </div>
   );
 }
