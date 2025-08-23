@@ -22,10 +22,10 @@ interface FinancialSummaryCardProps {
 export function FinancialSummaryCard({ 
     income, 
     expenses, 
-    chartData, 
-    transactionsCount, 
-    budgetsCount, 
-    savingsGoalsCount 
+    chartData,
+    transactionsCount,
+    budgetsCount,
+    savingsGoalsCount
 }: FinancialSummaryCardProps) {
     const { t, language, currency } = useLocale();
     const [summary, setSummary] = useState("");
