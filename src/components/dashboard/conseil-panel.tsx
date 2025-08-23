@@ -32,14 +32,14 @@ import { Skeleton } from '../ui/skeleton';
 import { askExpenseAssistant } from '@/ai/flows/expense-assistant';
 import { runAgentW } from '@/ai/flows/wise-agent';
 import { transcribeAudio } from '@/ai/flows/transcribe-audio';
-import type { TranscribeAudioInput, TranscribeAudioOutput } from '@/types/ai-schemas';
+import type { TranscribeAudioInput } from '@/types/ai-schemas';
 import { useTransactions } from '@/context/transactions-context';
 import { useBudgets } from '@/context/budget-context';
 import { useSavings } from '@/context/savings-context';
 import { v4 as uuidv4 } from "uuid";
 import type { ExpenseAssistantInput, AgentWInput, AgentWOutput } from '@/types/ai-schemas';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const assistantSchema = z.object({
   prompt: z.string().min(1, 'Veuillez entrer une question.'),
@@ -282,52 +282,62 @@ export function ConseilPanel() {
   
   const handleDictationSubmit = async () => {
     if (!audioUrl) return;
-
+  
     setShowDictationUI(false);
     
+    // Add audio message to conversation
     const userMessage: Message = { role: 'user', type: 'audio', content: '', audioUrl: audioUrl, agentMode };
     setCurrentConversation(prev => [...prev, userMessage]);
     setAudioUrl(null);
     
     setIsThinking(true);
-    let assistantMessage: Message;
-
+  
     try {
-        const audioBlob = await fetch(audioUrl).then(r => r.blob());
-        const reader = new FileReader();
-        reader.readAsDataURL(audioBlob);
-        reader.onloadend = async () => {
-            const base64Audio = reader.result as string;
-
-            try {
-                const input: TranscribeAudioInput = { audioDataUri: base64Audio };
-                const { transcript } = await transcribeAudio(input);
-
-                if (!transcript) {
-                  throw new Error("Empty transcript returned.");
-                }
-
-                const agentWInput: AgentWInput = {
-                    prompt: transcript,
-                    currency,
-                    budgets,
-                    savingsGoals,
-                    language: locale,
-                };
-                const result = await runAgentW(agentWInput);
-                const summary = processAgentWResponse(result);
-                assistantMessage = { role: 'model', type: 'text', content: summary, agentMode };
-            } catch (error) {
-                console.error("Error during transcription or agent processing:", error);
-                assistantMessage = { role: 'model', type: 'text', content: t('assistant_error_desc'), agentMode, isError: true };
-            } finally {
-                setCurrentConversation(prev => [...prev, assistantMessage]);
-                setIsThinking(false);
-            }
-        };
+      const audioBlob = await fetch(audioUrl).then(r => r.blob());
+      const reader = new FileReader();
+      
+      reader.onloadend = async () => {
+        const base64Audio = reader.result as string;
+        let assistantMessage: Message;
+  
+        try {
+          const input: TranscribeAudioInput = { audioDataUri: base64Audio };
+          const { transcript } = await transcribeAudio(input);
+  
+          if (!transcript) {
+            throw new Error("Empty transcript returned.");
+          }
+  
+          const agentWInput: AgentWInput = {
+              prompt: transcript,
+              currency,
+              budgets,
+              savingsGoals,
+              language: locale,
+          };
+          const result = await runAgentW(agentWInput);
+          const summary = processAgentWResponse(result);
+          assistantMessage = { role: 'model', type: 'text', content: summary, agentMode };
+          toast.success(t('agent_w_success'));
+  
+        } catch (error) {
+            console.error("Error during transcription or agent processing:", error);
+            assistantMessage = { role: 'model', type: 'text', content: t('assistant_error_desc'), agentMode, isError: true };
+        } finally {
+            setCurrentConversation(prev => [...prev, assistantMessage]);
+            setIsThinking(false);
+        }
+      };
+      
+      reader.onerror = () => {
+        throw new Error("Failed to read audio file.");
+      }
+      
+      reader.readAsDataURL(audioBlob);
+  
     } catch(error) {
-        console.error("Error fetching audio blob:", error);
-        assistantMessage = { role: 'model', type: 'text', content: t('assistant_error_desc'), agentMode, isError: true };
+        console.error("Error processing audio:", error);
+        const assistantMessage: Message = { role: 'model', type: 'text', content: t('assistant_error_desc'), agentMode, isError: true };
         setCurrentConversation(prev => [...prev, assistantMessage]);
         setIsThinking(false);
     }
