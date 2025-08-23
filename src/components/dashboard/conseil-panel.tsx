@@ -468,8 +468,9 @@ export function ConseilPanel() {
 
     try {
         if (agentMode === 'wise') {
+            // Filter out the initial welcome message from the history sent to the API
             const historyForApi = currentConversation
-                .filter(m => m.agentMode === 'wise' && !m.isError)
+                .filter(m => !(m.role === 'model' && currentConversation.indexOf(m) === 0))
                 .map(m => ({role: m.role as 'user' | 'model', content: m.content}));
 
             const input: ExpenseAssistantInput = {
