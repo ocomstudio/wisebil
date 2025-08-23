@@ -47,7 +47,7 @@ import { useSavings } from '@/context/savings-context';
 import { v4 as uuidv4 } from "uuid";
 import type { ExpenseAssistantInput, AgentWInput, AgentWOutput } from '@/types/ai-schemas';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 
 const assistantSchema = z.object({
   prompt: z.string().min(1, 'Veuillez entrer une question.'),
