@@ -24,6 +24,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { useLocale } from '@/context/locale-context';
 import { useAuth } from '@/context/auth-context';
 import toast from 'react-hot-toast';
@@ -144,7 +152,7 @@ export function ConseilPanel() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [showDictationUI, setShowDictationUI] = useState(false);
   
-  const [showVerificationUI, setShowVerificationUI] = useState(false);
+  const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
   const [transcriptForVerification, setTranscriptForVerification] = useState('');
   const [isTranscribing, setIsTranscribing] = useState(false);
 
@@ -266,7 +274,7 @@ export function ConseilPanel() {
             setAudioUrl(url); // Keep audio for potential user playback
             setIsTranscribing(true); // Show transcription loading state
             setShowDictationUI(false); // Hide recording UI
-            setShowVerificationUI(true); // Show verification UI
+            setIsVerificationDialogOpen(true); // Show verification dialog
 
             try {
                  const reader = new FileReader();
@@ -342,7 +350,7 @@ export function ConseilPanel() {
   const resetAudioFlow = () => {
     setAudioUrl(null);
     setShowDictationUI(false);
-    setShowVerificationUI(false);
+    setIsVerificationDialogOpen(false);
     setTranscriptForVerification('');
     setIsTranscribing(false);
     stopListening();
@@ -541,51 +549,48 @@ export function ConseilPanel() {
     </div>
   )
 
-  const VerificationUI = () => (
-    <div className="fixed inset-0 bg-background/95 z-50 flex flex-col p-4" style={{ height: '100svh' }}>
-      <header className="flex justify-between items-center flex-shrink-0">
-          <h2 className="text-lg font-bold font-headline">{t('verify_transcript_title')}</h2>
-          <Button variant="ghost" size="icon" onClick={resetAudioFlow}>
-              <X className="h-6 w-6" />
-          </Button>
-      </header>
-      <main className="flex-1 flex flex-col py-4 gap-4">
-        <p className="text-muted-foreground text-sm">{t('verify_transcript_desc')}</p>
-        <div className="flex-1 relative">
-            <ScrollArea className="h-full">
-                <Textarea 
-                    value={transcriptForVerification}
-                    onChange={(e) => setTranscriptForVerification(e.target.value)}
-                    className="h-full resize-none text-base"
-                    placeholder={t('transcription_placeholder')}
-                    disabled={isTranscribing}
-                />
-            </ScrollArea>
-             {isTranscribing && (
-                <div className="absolute inset-0 flex items-center justify-center bg-background/80">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                </div>
-            )}
-        </div>
-      </main>
-      <footer className="grid grid-cols-2 gap-4 flex-shrink-0">
-         <Button variant="outline" size="lg" onClick={resetAudioFlow}>
-            <Trash className="mr-2 h-4 w-4" />
-            {t('cancel')}
-         </Button>
-         <Button size="lg" onClick={handleVerificationSubmit} disabled={isTranscribing || isThinking}>
-            <Check className="mr-2 h-4 w-4" />
-            {t('validate_button')}
-         </Button>
-      </footer>
-    </div>
+  const VerificationDialog = () => (
+    <Dialog open={isVerificationDialogOpen} onOpenChange={ (isOpen) => { if (!isOpen) resetAudioFlow() }}>
+        <DialogContent className="max-w-lg">
+            <DialogHeader>
+                <DialogTitle>{t('verify_transcript_title')}</DialogTitle>
+                <DialogDescription>{t('verify_transcript_desc')}</DialogDescription>
+            </DialogHeader>
+            <div className="py-4 relative">
+                <ScrollArea className="h-48 rounded-md border p-2">
+                    <Textarea 
+                        value={transcriptForVerification}
+                        onChange={(e) => setTranscriptForVerification(e.target.value)}
+                        className="h-full w-full resize-none border-0 p-2 focus-visible:ring-0"
+                        placeholder={t('transcription_placeholder')}
+                        disabled={isTranscribing}
+                    />
+                </ScrollArea>
+                {isTranscribing && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-md">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                )}
+            </div>
+            <DialogFooter className="gap-2 sm:justify-end">
+                <Button variant="outline" onClick={resetAudioFlow}>
+                    <Trash className="mr-2 h-4 w-4" />
+                    {t('cancel')}
+                </Button>
+                <Button onClick={handleVerificationSubmit} disabled={isTranscribing || isThinking}>
+                    <Check className="mr-2 h-4 w-4" />
+                    {t('validate_button')}
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
   )
 
 
   return (
     <div className="flex flex-col h-full bg-background md:bg-transparent">
       {showDictationUI && <DictationUI />}
-      {showVerificationUI && <VerificationUI />}
+      <VerificationDialog />
 
       <header className='p-4 md:p-6 border-b flex justify-between items-center flex-shrink-0'>
         <h1 className="text-xl font-bold font-headline">{pageTitle}</h1>
