@@ -8,7 +8,7 @@ import { Logo } from '@/components/common/logo';
 import { Wallet, Globe, DollarSign, Euro, CircleDollarSign, ArrowLeft } from 'lucide-react';
 import { useLocale } from '@/context/locale-context';
 import type { Currency, Language } from '@/context/locale-context';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogDescription } from '../ui/dialog';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import LoginPage from '@/app/auth/login/page';
 import SignupPage from '@/app/auth/signup/page';
 
