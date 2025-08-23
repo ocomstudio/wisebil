@@ -724,5 +724,3 @@ export function ConseilPanel() {
     </div>
   );
 }
-
-    
