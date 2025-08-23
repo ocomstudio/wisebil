@@ -2,11 +2,21 @@
 "use client";
 import toast from 'react-hot-toast';
 import { Button } from "@/components/ui/button";
-import { Bell, Lightbulb } from "lucide-react";
+import { Bell, Lightbulb, Wallet, Shield, Landmark } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "../common/logo";
 import { UserProfile } from "./user-profile";
 import { useLocale } from '@/context/locale-context';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuGroup,
+} from "@/components/ui/dropdown-menu"
+import { Badge } from '../ui/badge';
 
 export function DashboardHeader() {
   const { t } = useLocale();
@@ -60,7 +70,32 @@ export function DashboardHeader() {
   return (
     <header className="flex items-center justify-between p-4 border-b bg-background md:hidden">
       <Logo />
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                    <Wallet className="h-5 w-5" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-48" align="end" forceMount>
+                <DropdownMenuGroup>
+                    <DropdownMenuItem asChild>
+                        <Link href="/dashboard/savings">
+                            <Shield className="mr-2 h-4 w-4" />
+                            <span>{t('nav_savings')}</span>
+                        </Link>
+                    </DropdownMenuItem>
+                     <DropdownMenuItem asChild>
+                        <Link href="/dashboard/accounts">
+                            <Landmark className="mr-2 h-4 w-4" />
+                            <span>{t('nav_accounts')}</span>
+                            <Badge variant="secondary" className="ml-auto">Bientôt</Badge>
+                        </Link>
+                    </DropdownMenuItem>
+                </DropdownMenuGroup>
+            </DropdownMenuContent>
+        </DropdownMenu>
+
          <Button variant="ghost" size="icon" asChild className="rounded-full" onClick={handleNotificationClick}>
           <Link href="/dashboard/notifications">
             <Bell className="h-5 w-5" />
