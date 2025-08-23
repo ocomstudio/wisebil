@@ -5,7 +5,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { auth as adminAuth } from '@/lib/firebase-admin';
 import { db } from '@/lib/firebase-admin';
 
+// Set this to true to enable payments, false to disable them temporarily.
+const paymentsEnabled = false;
+
 export async function POST(request: Request) {
+    if (!paymentsEnabled) {
+        return NextResponse.json({ error: 'Le service de paiement est temporairement indisponible.' }, { status: 503 });
+    }
+  
     try {
         const authToken = request.headers.get('Authorization')?.split('Bearer ')[1];
         if (!authToken) {

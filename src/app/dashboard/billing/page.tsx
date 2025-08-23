@@ -9,6 +9,7 @@ import { useLocale } from "@/context/locale-context";
 import { Check, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const pricing = {
     premium: { XOF: 3000, EUR: 5, USD: 5 },
@@ -27,6 +28,9 @@ interface Plan {
   isPopular?: boolean;
 }
 
+// Set this to true to enable payments, false to disable them temporarily.
+const paymentsEnabled = false;
+
 export default function BillingPage() {
     const { t, currency, formatCurrency, getConvertedAmount } = useLocale();
     const { user, firebaseUser } = useAuth();
@@ -39,6 +43,11 @@ export default function BillingPage() {
     };
     
     const handleUpgrade = async (plan: Plan) => {
+        if (!paymentsEnabled) {
+             toast({ variant: 'default', title: 'Bientôt disponible', description: "Le système de paiement sera bientôt activé."});
+             return;
+        }
+
         setIsLoading(plan.name);
 
         if (!firebaseUser || !user) {
@@ -123,6 +132,7 @@ export default function BillingPage() {
     ]
 
     return (
+      <TooltipProvider>
         <div className="space-y-8 pb-20 md:pb-8">
             <div className="text-center">
                 <h1 className="text-3xl font-bold font-headline">{t('billing_page_title')}</h1>
@@ -146,19 +156,31 @@ export default function BillingPage() {
                             </ul>
                         </CardContent>
                         <div className="p-6 pt-0 mt-auto">
-                           <Button
-                                variant={plan.buttonVariant as any}
-                                className="w-full"
-                                disabled={plan.isCurrent || !!isLoading}
-                                onClick={() => plan.name !== 'free' && handleUpgrade(plan)}
-                            >
-                                {isLoading === plan.name ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                {plan.buttonText}
-                            </Button>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="w-full">
+                                        <Button
+                                            variant={plan.buttonVariant as any}
+                                            className="w-full"
+                                            disabled={plan.isCurrent || !!isLoading || !paymentsEnabled}
+                                            onClick={() => plan.name !== 'free' && handleUpgrade(plan)}
+                                        >
+                                            {isLoading === plan.name ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                            {plan.buttonText}
+                                        </Button>
+                                    </div>
+                                </TooltipTrigger>
+                                {!paymentsEnabled && plan.name !== 'free' && (
+                                    <TooltipContent>
+                                        <p>Le système de paiement sera bientôt disponible.</p>
+                                    </TooltipContent>
+                                )}
+                            </Tooltip>
                         </div>
                     </Card>
                 ))}
              </div>
         </div>
+      </TooltipProvider>
     )
 }
