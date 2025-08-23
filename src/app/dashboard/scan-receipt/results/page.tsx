@@ -43,7 +43,7 @@ export default function ScanResultsPage() {
         const dataUri = sessionStorage.getItem('scannedImageDataUri');
         if (!dataUri) {
             toast({ variant: 'destructive', title: t('error_title'), description: 'No image data found.' });
-            router.push('/dashboard/scan-receipt');
+            router.push('/dashboard');
             return;
         }
 
@@ -64,9 +64,11 @@ export default function ScanResultsPage() {
             } catch (error) {
                 console.error("Error processing scan:", error);
                 toast({ variant: 'destructive', title: 'Scan Failed', description: 'Could not extract information from the document.' });
-                router.push('/dashboard/scan-receipt');
+                router.push('/dashboard');
             } finally {
                 setIsLoading(false);
+                // Clean up session storage
+                // sessionStorage.removeItem('scannedImageDataUri');
             }
         };
 
@@ -198,7 +200,7 @@ export default function ScanResultsPage() {
                         <CardTitle>No financial data found</CardTitle>
                         <CardContent>
                             <p className="text-muted-foreground mt-2">We couldn't detect any financial actions on your document.</p>
-                            <Button className="mt-4" onClick={() => router.push('/dashboard/scan-receipt')}>Try Again</Button>
+                            <Button className="mt-4" onClick={() => router.push('/dashboard')}>Back to Dashboard</Button>
                         </CardContent>
                     </Card>
                 )}
@@ -220,8 +222,8 @@ export default function ScanResultsPage() {
 
             {hasResults && (
                 <footer className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t grid grid-cols-2 gap-4">
-                    <Button variant="outline" size="lg" onClick={() => router.push('/dashboard/scan-receipt')}>
-                        <X className="mr-2 h-4 w-4"/> Cancel & Retake
+                    <Button variant="outline" size="lg" onClick={() => router.back()}>
+                        <X className="mr-2 h-4 w-4"/> Cancel
                     </Button>
                     <Button size="lg" disabled={isSaving} onClick={handleSave}>
                         {isSaving ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Check className="mr-2 h-4 w-4" />}

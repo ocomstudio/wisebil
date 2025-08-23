@@ -1,7 +1,7 @@
 // src/app/dashboard/scan-receipt/page.tsx
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Camera, Loader2, ArrowLeft, AlertTriangle, Paperclip, X } from 'lucide-react';
@@ -14,7 +14,7 @@ interface ScanReceiptPageProps {
   onComplete: () => void;
 }
 
-export default function ScanReceiptPage({ onComplete }: ScanReceiptPageProps) {
+function ScanReceiptContent({ onComplete }: ScanReceiptPageProps) {
   const router = useRouter();
   const { t } = useLocale();
   const { toast } = useToast();
@@ -175,4 +175,12 @@ export default function ScanReceiptPage({ onComplete }: ScanReceiptPageProps) {
        </footer>
     </div>
   );
+}
+
+export default function ScanReceiptPage({ onComplete }: { onComplete: () => void; }) {
+    return (
+        <Suspense fallback={<div className="bg-black h-screen w-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-white" /></div>}>
+            <ScanReceiptContent onComplete={onComplete} />
+        </Suspense>
+    )
 }
