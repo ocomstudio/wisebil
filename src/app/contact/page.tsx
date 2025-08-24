@@ -116,7 +116,7 @@ export default function ContactPage() {
                         </div>
                         <div className="flex items-center gap-4">
                             <Phone className="h-6 w-6 text-primary" />
-                            <a href="tel:+221781277004" className="text-lg hover:underline">+221 78 127 70 04</a>
+                            <a href="tel:+237678127004" className="text-lg hover:underline">+237 678 127 004</a>
                         </div>
                     </div>
                 </div>
