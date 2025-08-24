@@ -9,7 +9,7 @@ const firebaseConfig = {
   projectId: "wisebil-596a8",
   storageBucket: "wisebil-596a8.appspot.com",
   messagingSenderId: "1044516540078",
-  appId: "1:1044516540078:web:b1d9c1f6a1b2c3d4e5f6a7" // This is a placeholder App ID, you might need to replace it with the actual one from your Firebase project settings.
+  appId: "1:1044516540078:web:b1d9c1f6a1b2c3d4e5f6a7"
 };
 
 
