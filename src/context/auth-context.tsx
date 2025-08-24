@@ -32,7 +32,7 @@ interface AuthContextType {
   signupWithEmail: SignupFunction;
   loginWithGoogle: () => Promise<{ isNewUser: boolean; user: FirebaseUser }>;
   logout: () => Promise<void>;
-  updateUser: (newUserData: Partial<User>) => Promise<void>;
+  updateUser: (newUserData: Partial<Omit<User, 'uid'>>) => Promise<void>;
   resendVerificationEmail: () => Promise<void>;
   sendPasswordResetEmail: typeof sendPasswordResetEmail;
   confirmPasswordReset: typeof confirmPasswordReset;
@@ -142,22 +142,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => signOut(auth);
 
-  const updateUser = async (newUserData: Partial<User>) => {
+  const updateUser = async (newUserData: Partial<Omit<User, 'uid'>>) => {
     if(user && firebaseUser) {
         const updatedLocalUser = { ...user, ...newUserData };
         setUser(updatedLocalUser);
         
-        // Update Firebase Auth profile if display name or avatar changes
-        if(newUserData.displayName || newUserData.avatar) {
+        // Update Firebase Auth profile ONLY for displayName
+        if(newUserData.displayName && newUserData.displayName !== user.displayName) {
             await updateProfile(firebaseUser, {
-                displayName: updatedLocalUser.displayName,
-                photoURL: updatedLocalUser.avatar
+                displayName: newUserData.displayName,
             });
         }
         
-        // Update Firestore profile
+        // Update Firestore profile with all data (including avatar)
         const userDocRef = doc(db, 'users', user.uid);
-        await setDoc(userDocRef, { profile: updatedLocalUser }, { merge: true });
+        // We only pass the fields that are being updated to avoid overwriting anything unexpectedly.
+        await setDoc(userDocRef, { profile: newUserData }, { merge: true });
     }
   };
 
