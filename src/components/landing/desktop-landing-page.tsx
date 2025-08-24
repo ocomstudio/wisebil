@@ -1,4 +1,5 @@
 
+
 // src/components/landing/desktop-landing-page.tsx
 "use client";
 
@@ -8,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/common/logo';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Check, Eye, BarChart, Bot, Shield, Star, Twitter, Facebook, Instagram, HeartHandshake, Zap } from 'lucide-react';
+import { Check, Eye, BarChart, Bot, Shield, Star, Twitter, Facebook, Instagram, HeartHandshake, Zap, Rocket } from 'lucide-react';
 import { GooglePlayLogo } from './logos/google-play-logo';
 import { AppStoreLogo } from './logos/app-store-logo';
 import { LanguageSelector } from '../common/language-selector';
@@ -17,8 +18,75 @@ import type { Currency } from '@/context/locale-context';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import LoginPage from '@/app/auth/login/page';
 import SignupPage from '@/app/auth/signup/page';
-import { AuthProvider } from '@/context/auth-context';
+import { AuthProvider, useAuth } from '@/context/auth-context';
 import { useState } from 'react';
+import { Skeleton } from '../ui/skeleton';
+
+function AuthButtons() {
+    const { t } = useLocale();
+    const { firebaseUser, isLoading } = useAuth();
+    const [loginOpen, setLoginOpen] = useState(false);
+    const [signupOpen, setSignupOpen] = useState(false);
+
+    const handleSwitchToSignup = () => {
+        setLoginOpen(false);
+        setSignupOpen(true);
+    };
+
+    const handleSwitchToLogin = () => {
+        setSignupOpen(false);
+        setLoginOpen(true);
+    };
+
+    if (isLoading) {
+        return (
+            <div className="flex gap-2">
+                <Skeleton className="h-10 w-24" />
+                <Skeleton className="h-10 w-24" />
+            </div>
+        )
+    }
+
+    if (firebaseUser) {
+        return (
+            <Button asChild>
+                <Link href="/dashboard">
+                    <Rocket className="mr-2 h-4 w-4" />
+                    Ouvrir le tableau de bord
+                </Link>
+            </Button>
+        )
+    }
+
+    return (
+        <>
+            <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+                <DialogTrigger asChild>
+                    <Button variant="outline">{t('login_button')}</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="sr-only">{t('login_title')}</DialogTitle>
+                        <DialogDescription className="sr-only">{t('login_subtitle')}</DialogDescription>
+                    </DialogHeader>
+                    <LoginPage onSwitchToSignup={handleSwitchToSignup} />
+                </DialogContent>
+            </Dialog>
+            <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
+                <DialogTrigger asChild>
+                    <Button>{t('signup_button')}</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="sr_only">{t('signup_title')}</DialogTitle>
+                        <DialogDescription className="sr-only">{t('signup_subtitle')}</DialogDescription>
+                    </DialogHeader>
+                    <SignupPage onSwitchToLogin={handleSwitchToLogin} />
+                </DialogContent>
+            </Dialog>
+        </>
+    )
+}
 
 export default function DesktopLandingPage() {
     const { t, currency, formatCurrency } = useLocale();
@@ -144,46 +212,23 @@ export default function DesktopLandingPage() {
             <div className="w-full max-w-7xl flex items-center">
                 <Logo />
                 <nav className="ml-auto hidden lg:flex gap-6 items-center">
-                <Link className="text-sm font-medium hover:text-primary transition-colors" href="#features">
-                    {t('nav_features')}
-                </Link>
-                <Link className="text-sm font-medium hover:text-primary transition-colors" href="#pricing">
-                    {t('nav_pricing')}
-                </Link>
-                <Link className="text-sm font-medium hover:text-primary transition-colors" href="#testimonials">
-                    {t('nav_testimonials')}
-                </Link>
-                <Link className="text-sm font-medium hover:text-primary transition-colors" href="#faq">
-                    {t('nav_faq')}
-                </Link>
-                <LanguageSelector />
-                <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
-                    <DialogTrigger asChild>
-                        <Button variant="outline">{t('login_button')}</Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
-                          <DialogTitle className="sr-only">{t('login_title')}</DialogTitle>
-                          <DialogDescription className="sr-only">{t('login_subtitle')}</DialogDescription>
-                        </DialogHeader>
-                        <LoginPage onSwitchToSignup={handleSwitchToSignup} />
-                    </DialogContent>
-                </Dialog>
-                <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
-                    <DialogTrigger asChild>
-                        <Button>{t('signup_button')}</Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
-                           <DialogTitle className="sr-only">{t('signup_title')}</DialogTitle>
-                           <DialogDescription className="sr-only">{t('signup_subtitle')}</DialogDescription>
-                        </DialogHeader>
-                        <SignupPage onSwitchToLogin={handleSwitchToLogin} />
-                    </DialogContent>
-                </Dialog>
+                    <Link className="text-sm font-medium hover:text-primary transition-colors" href="#features">
+                        {t('nav_features')}
+                    </Link>
+                    <Link className="text-sm font-medium hover:text-primary transition-colors" href="#pricing">
+                        {t('nav_pricing')}
+                    </Link>
+                    <Link className="text-sm font-medium hover:text-primary transition-colors" href="#testimonials">
+                        {t('nav_testimonials')}
+                    </Link>
+                    <Link className="text-sm font-medium hover:text-primary transition-colors" href="#faq">
+                        {t('nav_faq')}
+                    </Link>
+                    <LanguageSelector />
+                    <AuthButtons />
                 </nav>
                 <div className="ml-auto lg:hidden">
-                    <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+                     <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
                         <DialogTrigger asChild>
                             <Button>{t('login_button')}</Button>
                         </DialogTrigger>
