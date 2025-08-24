@@ -46,19 +46,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   const signupSchema = z.object({
     fullName: z.string().min(2, t('signup_fullname_error')),
     phone: z.string().refine(isValidPhoneNumber, { message: t('signup_phone_error') }),
-    email: z.string().email(t('signup_email_error'))
-      .refine(email => {
-        const domain = email.split('@')[1];
-        return ['gmail.com', 'yahoo.com'].includes(domain);
-      }, {
-        message: "Seuls les e-mails Gmail et Yahoo sont autorisés."
-      })
-      .refine(email => !email.split('@')[0].includes('+'), {
-        message: "Les alias d'e-mail (contenant un '+') ne sont pas autorisés."
-      })
-      .refine(email => (email.split('@')[0].match(/\./g) || []).length <= 2, {
-        message: "L'adresse e-mail contient trop de points."
-      }),
+    email: z.string().email(t('signup_email_error')),
     password: z.string().min(8, t('signup_password_error')),
     confirmPassword: z.string(),
     terms: z.boolean().refine(val => val === true, {
@@ -93,6 +81,9 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
                 break;
             case 'auth/weak-password':
                 description = t('The password is too weak. Please choose a stronger password.');
+                break;
+            case 'auth/too-many-requests':
+                description = t('Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.');
                 break;
             default:
                 description = error.message;

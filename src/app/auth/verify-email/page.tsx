@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, MailCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocale } from "@/context/locale-context";
+import { FirebaseError } from "firebase/app";
 
 export default function VerifyEmailPage() {
   const { firebaseUser, logout, resendVerificationEmail } = useAuth();
@@ -45,10 +46,14 @@ export default function VerifyEmailPage() {
       });
     } catch (error) {
       console.error(error);
+      let description = t('verification_sent_error');
+      if (error instanceof FirebaseError && error.code === 'auth/too-many-requests') {
+        description = t('Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.');
+      }
       toast({
         variant: 'destructive',
         title: t('error_title'),
-        description: t('verification_sent_error'),
+        description: description,
       });
     } finally {
       setIsSending(false);
