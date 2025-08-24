@@ -16,8 +16,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
     // If there is no authenticated user at all, send to landing page.
     if (!firebaseUser) {
-      // Allow access to landing page related routes
-      if (pathname === '/' || pathname.startsWith('/#') || pathname === '/auth/login' || pathname === '/auth/signup') {
+      // Allow access to public, non-dashboard routes
+      if (!pathname.startsWith('/dashboard')) {
         return;
       }
       router.push('/');
@@ -27,15 +27,18 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     // If firebaseUser exists, proceed with checks
     if (firebaseUser) {
       // For email/password users, if email is not verified, redirect to verification page.
-      if (firebaseUser.providerData.some(p => p.providerId === 'password') && !firebaseUser.emailVerified && pathname !== '/auth/verify-email') {
+      const isEmailUser = firebaseUser.providerData.some(p => p.providerId === 'password');
+      if (isEmailUser && !firebaseUser.emailVerified && pathname !== '/auth/verify-email') {
         router.push('/auth/verify-email');
         return;
       }
       
-      // If user is verified and they land on an auth page or the root, redirect to dashboard.
-      if ( (firebaseUser.emailVerified) && (pathname.startsWith('/auth/') || pathname === '/')) {
-        router.push('/dashboard');
-        return;
+      // If user is verified and they land on a public or auth page, redirect to dashboard.
+      if ( (isEmailUser && firebaseUser.emailVerified) || !isEmailUser) {
+        if (pathname === '/' || pathname.startsWith('/auth')) {
+          router.push('/dashboard');
+          return;
+        }
       }
     }
 
@@ -52,7 +55,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   // If user is not authenticated and is trying to access a protected route,
   // we show nothing while redirecting.
-  if (!firebaseUser && !pathname.startsWith('/auth') && pathname !== '/') {
+  if (!firebaseUser && pathname.startsWith('/dashboard')) {
       return null;
   }
   
