@@ -1,5 +1,4 @@
 
-
 // src/components/landing/desktop-landing-page.tsx
 "use client";
 
@@ -78,7 +77,7 @@ function AuthButtons() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle className="sr_only">{t('signup_title')}</DialogTitle>
+                        <DialogTitle className="sr-only">{t('signup_title')}</DialogTitle>
                         <DialogDescription className="sr-only">{t('signup_subtitle')}</DialogDescription>
                     </DialogHeader>
                     <SignupPage onSwitchToLogin={handleSwitchToLogin} />
@@ -555,8 +554,8 @@ export default function DesktopLandingPage() {
                 <div>
                 <h4 className="font-semibold mb-2">{t('footer_support')}</h4>
                 <nav className="flex flex-col gap-2 text-sm">
-                    <Link href="#" className="text-muted-foreground hover:text-primary">{t('footer_help')}</Link>
-                    <Link href="#" className="text-muted-foreground hover:text-primary">{t('footer_contact')}</Link>
+                    <Link href="/contact" className="text-muted-foreground hover:text-primary">{t('footer_help')}</Link>
+                    <Link href="/contact" className="text-muted-foreground hover:text-primary">{t('footer_contact')}</Link>
                     <Link href="#faq" className="text-muted-foreground hover:text-primary">{t('nav_faq')}</Link>
                 </nav>
                 </div>
