@@ -1,4 +1,4 @@
-
+"use client";
 // src/app/terms-of-service/page.tsx
 import { Logo } from "@/components/common/logo";
 import { Button } from "@/components/ui/button";
