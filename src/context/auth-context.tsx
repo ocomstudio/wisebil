@@ -114,13 +114,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (docSnap.exists() && docSnap.data().profile?.profileComplete) {
       return { isNewUser: false, user: result.user };
     } else {
-      // For new Google users, profile is still incomplete (phone, etc.)
-      const profileData = {
+      // For new Google users, create a complete profile immediately.
+      const profileData: User = {
+        uid: result.user.uid,
         email: result.user.email,
         displayName: result.user.displayName,
         avatar: result.user.photoURL,
-        profileComplete: false, 
-        subscriptionStatus: 'inactive'
+        profileComplete: true, // Mark as complete
+        subscriptionStatus: 'inactive',
+        phone: result.user.phoneNumber,
       };
       await setDoc(userDocRef, { profile: profileData }, { merge: true });
       return { isNewUser: true, user: result.user };

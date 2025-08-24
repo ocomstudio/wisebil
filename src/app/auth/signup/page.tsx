@@ -120,12 +120,12 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   const onGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      const { isNewUser, user } = await loginWithGoogle();
-       toast({
+      await loginWithGoogle();
+      toast({
         title: t('login_success_title'),
         description: t('welcome_back'),
       });
-      // The protected route will handle redirection to complete-profile or dashboard
+      router.push('/dashboard');
     } catch (error) {
       handleAuthError(error);
     } finally {

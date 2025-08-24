@@ -26,14 +26,14 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
     // If firebaseUser exists, proceed with checks
     if (firebaseUser) {
-      // If email is not verified, redirect to verification page, unless they are already there.
-      if (!firebaseUser.emailVerified && pathname !== '/auth/verify-email') {
+      // For email/password users, if email is not verified, redirect to verification page.
+      if (firebaseUser.providerData.some(p => p.providerId === 'password') && !firebaseUser.emailVerified && pathname !== '/auth/verify-email') {
         router.push('/auth/verify-email');
         return;
       }
       
-      // If email is verified, and they land on an auth page, redirect to dashboard.
-      if (firebaseUser.emailVerified && (pathname.startsWith('/auth/') || pathname === '/')) {
+      // If user is verified and they land on an auth page or the root, redirect to dashboard.
+      if ( (firebaseUser.emailVerified) && (pathname.startsWith('/auth/') || pathname === '/')) {
         router.push('/dashboard');
         return;
       }
@@ -56,9 +56,9 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       return null;
   }
   
-  // If user is authenticated but not fully set up, we also show nothing
+  // If user is authenticated but not fully set up (e.g., email not verified), we also show nothing
   // during the redirect to the appropriate auth page.
-  if(firebaseUser && !firebaseUser.emailVerified && pathname !== '/auth/verify-email') {
+  if(firebaseUser && firebaseUser.providerData.some(p => p.providerId === 'password') && !firebaseUser.emailVerified && pathname !== '/auth/verify-email') {
     return null;
   }
 
