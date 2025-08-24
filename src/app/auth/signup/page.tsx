@@ -5,9 +5,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { updateProfile } from "firebase/auth";
-import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
+import PhoneInput, { isValidPhoneNumber, type Country } from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,7 @@ import { FirebaseError } from "firebase/app";
 import Link from "next/link";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import axios from "axios";
 
 interface SignupPageProps {
   onSwitchToLogin?: () => void;
@@ -42,6 +43,22 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   const router = useRouter();
   const { signupWithEmail, loginWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [detectedCountry, setDetectedCountry] = useState<Country>('SN');
+
+  useEffect(() => {
+    const fetchCountry = async () => {
+        try {
+            const response = await axios.get('https://ipapi.co/json/');
+            if (response.data && response.data.country_code) {
+                setDetectedCountry(response.data.country_code as Country);
+            }
+        } catch (error) {
+            console.warn("Could not detect user country, defaulting to SN.", error);
+        }
+    };
+
+    fetchCountry();
+  }, []);
 
   const signupSchema = z.object({
     fullName: z.string().min(2, t('signup_fullname_error')),
@@ -163,7 +180,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
                 <FormControl>
                   <PhoneInput
                     international
-                    defaultCountry="SN"
+                    defaultCountry={detectedCountry}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                     value={field.value}
                     onChange={field.onChange}
