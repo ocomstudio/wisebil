@@ -305,10 +305,10 @@ export default function DesktopLandingPage() {
                     <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary font-medium">
                     {t('features_badge')}
                     </div>
-                    <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">
-                    {t('features_title')}
+                    <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-center mx-auto">
+                        {t('features_title')}
                     </h2>
-                    <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
+                    <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed text-center mx-auto">
                         {t('features_subtitle')}
                     </p>
                 </div>
