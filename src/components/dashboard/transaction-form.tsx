@@ -76,7 +76,7 @@ export function TransactionForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       description: initialData?.description || "",
-      amount: initialData?.amount || undefined,
+      amount: initialData?.amount || 0,
       category: isCustomCategory ? "Autre" : initialData?.category || "",
       date: initialData?.date ? new Date(initialData.date) : new Date(),
       customCategory: isCustomCategory ? initialData?.category : "",
