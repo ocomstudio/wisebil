@@ -1,3 +1,4 @@
+
 // src/components/dashboard/balance-card.tsx
 "use client";
 
@@ -90,3 +91,5 @@ export function BalanceCard({ balance, income, expenses }: BalanceCardProps) {
     </Card>
   );
 }
+
+    

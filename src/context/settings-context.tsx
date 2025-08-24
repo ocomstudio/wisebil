@@ -1,3 +1,4 @@
+
 // src/context/settings-context.tsx
 "use client";
 
@@ -93,3 +94,5 @@ export const useSettings = () => {
   }
   return context;
 };
+
+    

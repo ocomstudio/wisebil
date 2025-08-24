@@ -36,6 +36,8 @@ import { useEffect, useRef } from "react";
 import { db } from "@/lib/firebase";
 import { doc, updateDoc } from 'firebase/firestore';
 import { ExportDataDialog } from "@/components/dashboard/export-data-dialog";
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 
 export default function SettingsPage() {
@@ -54,6 +56,7 @@ export default function SettingsPage() {
   const profileSchema = z.object({
     displayName: z.string().min(2, t('fullname_error')),
     email: z.string().email(t('email_error')),
+    phone: z.string().refine(isValidPhoneNumber, { message: t('signup_phone_error') }),
   });
 
   type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -63,6 +66,7 @@ export default function SettingsPage() {
     defaultValues: {
       displayName: "",
       email: "",
+      phone: ""
     },
   });
 
@@ -71,6 +75,7 @@ export default function SettingsPage() {
         form.reset({
             displayName: user.displayName || '',
             email: user.email || '',
+            phone: user.phone || ''
         });
     }
   }, [user, form]);
@@ -229,7 +234,6 @@ export default function SettingsPage() {
                   />
                 </div>
               </div>
-
               <FormField
                 control={form.control}
                 name="email"
@@ -238,6 +242,24 @@ export default function SettingsPage() {
                     <FormLabel>{t('email_label')}</FormLabel>
                     <FormControl>
                       <Input type="email" placeholder="votre@email.com" {...field} readOnly />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('phone_number_label')}</FormLabel>
+                    <FormControl>
+                      <PhoneInput
+                        international
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -392,3 +414,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+    
