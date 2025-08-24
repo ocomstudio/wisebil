@@ -115,8 +115,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { isNewUser: false, user: result.user };
     } else {
       // For new Google users, create a complete profile immediately.
-      const profileData: User = {
-        uid: result.user.uid,
+      const profileData: Omit<User, 'uid'> = {
         email: result.user.email,
         displayName: result.user.displayName,
         avatar: result.user.photoURL,
