@@ -1,8 +1,8 @@
 // src/context/auth-context.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile, UserCredential, sendEmailVerification } from 'firebase/auth';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile, UserCredential, sendEmailVerification, sendPasswordResetEmail, confirmPasswordReset } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
@@ -34,6 +34,8 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updateUser: (newUserData: Partial<User>) => Promise<void>;
   resendVerificationEmail: () => Promise<void>;
+  sendPasswordResetEmail: typeof sendPasswordResetEmail;
+  confirmPasswordReset: typeof confirmPasswordReset;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,6 +44,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const safeFunction = useCallback(<T extends (...args: any[]) => any>(fn: T): T => {
+    return ((...args: Parameters<T>) => {
+      if (isLoading) {
+        console.warn("Auth context not ready, function call prevented.");
+        return Promise.reject(new Error("Authentication service is not ready."));
+      }
+      return fn(...args);
+    }) as T;
+  }, [isLoading]);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (fbUser) => {
@@ -161,12 +173,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     firebaseUser,
     isLoading,
-    loginWithEmail: (...args) => signInWithEmailAndPassword(auth, ...args),
-    signupWithEmail,
-    loginWithGoogle,
-    logout,
-    updateUser,
-    resendVerificationEmail,
+    loginWithEmail: safeFunction((...args) => signInWithEmailAndPassword(auth, ...args)),
+    signupWithEmail: safeFunction(signupWithEmail),
+    loginWithGoogle: safeFunction(loginWithGoogle),
+    logout: safeFunction(logout),
+    updateUser: safeFunction(updateUser),
+    resendVerificationEmail: safeFunction(resendVerificationEmail),
+    sendPasswordResetEmail: safeFunction((...args) => sendPasswordResetEmail(auth, ...args)),
+    confirmPasswordReset: safeFunction((...args) => confirmPasswordReset(auth, ...args)),
   };
 
   return (

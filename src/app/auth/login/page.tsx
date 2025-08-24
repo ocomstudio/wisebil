@@ -115,7 +115,7 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
         <p className="text-muted-foreground">{t('login_subtitle')}</p>
       </div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="email"
@@ -134,7 +134,12 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('password_label')}</FormLabel>
+                <div className="flex items-center justify-between">
+                    <FormLabel>{t('password_label')}</FormLabel>
+                    <Button variant="link" asChild className="p-0 h-auto text-sm">
+                        <Link href="/auth/forgot-password">{t('forgot_password_link')}</Link>
+                    </Button>
+                </div>
                 <FormControl>
                   <Input type="password" placeholder="********" {...field} />
                 </FormControl>
