@@ -130,21 +130,11 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
     setIsLoading(true);
     try {
       const { isNewUser, user } = await loginWithGoogle();
-      if (isNewUser) {
-        // For Google sign-in, emails are usually verified. We can skip straight to profile completion
-        // or check `user.emailVerified`. Let's assume it's verified for simplicity here.
-        router.push("/auth/complete-profile");
-      } else {
-        if (!user.emailVerified) {
-          router.push('/auth/verify-email');
-        } else {
-          router.push("/dashboard");
-        }
-      }
        toast({
         title: t('login_success_title'),
         description: t('welcome_back'),
       });
+      // The protected route will handle redirection to complete-profile or dashboard
     } catch (error) {
       handleAuthError(error);
     } finally {

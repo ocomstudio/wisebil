@@ -92,16 +92,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Create Firestore document with all the correct data
     const userDocRef = doc(db, 'users', fbUser.uid);
-    const profileData: Omit<User, 'uid' | 'avatar' | 'profileComplete'> = {
+    const profileData: Omit<User, 'uid' | 'avatar'> = {
       email: fbUser.email,
       displayName: fullName,
       phone,
       subscriptionStatus: 'inactive',
+      profileComplete: true,
     };
     
-    // This will create the profile but leave it incomplete until phone/password is set after Google signup.
-    // For email signup, profileComplete will be set later.
-    await setDoc(userDocRef, { profile: { ...profileData, profileComplete: false, avatar: null } }, { merge: true });
+    await setDoc(userDocRef, { profile: { ...profileData, avatar: null } }, { merge: true });
 
     return userCredential;
   };
@@ -115,11 +114,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (docSnap.exists() && docSnap.data().profile?.profileComplete) {
       return { isNewUser: false, user: result.user };
     } else {
+      // For new Google users, profile is still incomplete (phone, etc.)
       const profileData = {
         email: result.user.email,
         displayName: result.user.displayName,
         avatar: result.user.photoURL,
-        profileComplete: false, // User needs to complete profile (phone, password)
+        profileComplete: false, 
         subscriptionStatus: 'inactive'
       };
       await setDoc(userDocRef, { profile: profileData }, { merge: true });
