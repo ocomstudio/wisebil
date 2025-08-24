@@ -16,17 +16,17 @@ import { useLocale } from "@/context/locale-context";
 export default function EditTransactionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialData, setInitialData] = useState<Transaction | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const router = useRouter();
   const params = useParams();
-  const { transactions, updateTransaction } = useTransactions();
+  const { getTransactionById, updateTransaction, isLoading } = useTransactions();
   const { t } = useLocale();
   const id = params.id as string;
 
   useEffect(() => {
-    if (id && transactions) {
-      const transaction = transactions.find(t => t.id === id);
+    // We wait until the transactions are loaded from the context.
+    if (!isLoading && id) {
+      const transaction = getTransactionById(id);
       if (transaction) {
         setInitialData(transaction);
       } else {
@@ -36,9 +36,8 @@ export default function EditTransactionPage() {
         });
         router.push("/dashboard");
       }
-      setIsLoading(false);
     }
-  }, [id, transactions, router, toast, t]);
+  }, [id, isLoading, getTransactionById, router, toast, t]);
 
   const handleSubmit = async (data: Omit<Transaction, 'id' | 'type'>) => {
     if (!initialData) return;
