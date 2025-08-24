@@ -20,13 +20,13 @@ export default function EditTransactionPage() {
   const { toast } = useToast();
   const router = useRouter();
   const params = useParams();
-  const { getTransactionById, updateTransaction } = useTransactions();
+  const { transactions, updateTransaction } = useTransactions();
   const { t } = useLocale();
   const id = params.id as string;
 
   useEffect(() => {
-    if (id) {
-      const transaction = getTransactionById(id);
+    if (id && transactions) {
+      const transaction = transactions.find(t => t.id === id);
       if (transaction) {
         setInitialData(transaction);
       } else {
@@ -38,13 +38,12 @@ export default function EditTransactionPage() {
       }
       setIsLoading(false);
     }
-  }, [id, getTransactionById, router, toast, t]);
+  }, [id, transactions, router, toast, t]);
 
   const handleSubmit = async (data: Omit<Transaction, 'id' | 'type'>) => {
     if (!initialData) return;
     setIsSubmitting(true);
     
-    // Use the callback-based version of updateTransaction
     await updateTransaction(id, {
       description: data.description,
       amount: data.amount,
@@ -57,12 +56,9 @@ export default function EditTransactionPage() {
       description: t('transaction_updated_desc'),
     });
     router.push("/dashboard");
-
-    // No need for a catch block here as the context handles it
-    // No need to setIsSubmitting(false) as we navigate away
   };
 
-  if (isLoading) {
+  if (isLoading || !initialData) {
     return (
         <div>
             <div className="flex items-center gap-4 mb-6">
@@ -77,10 +73,6 @@ export default function EditTransactionPage() {
             </div>
         </div>
     );
-  }
-
-  if (!initialData) {
-    return null; // or a not found component
   }
 
   return (
