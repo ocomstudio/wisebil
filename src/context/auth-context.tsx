@@ -161,7 +161,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     firebaseUser,
     isLoading,
-    loginWithEmail: signInWithEmailAndPassword.bind(null, auth),
+    loginWithEmail: (...args) => signInWithEmailAndPassword(auth, ...args),
     signupWithEmail,
     loginWithGoogle,
     logout,
@@ -171,7 +171,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {isLoading ? <Skeleton className="h-screen w-screen" /> : children}
+      {children}
     </AuthContext.Provider>
   );
 };
