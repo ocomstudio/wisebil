@@ -19,6 +19,7 @@ import { ProtectedRoute } from "@/components/common/protected-route";
 import { Toaster as HotToaster } from 'react-hot-toast';
 import Link from "next/link";
 import { LocaleProvider, useLocale } from "@/context/locale-context";
+import { TutorialProvider } from "@/context/tutorial-context";
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { t } = useLocale();
@@ -66,7 +67,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       <BottomNav />
       
       {/* Desktop AI Assistant */}
-      <aside className="hidden md:flex flex-col border-l bg-muted/40 h-screen">
+      <aside id="conseil-panel-tutorial" className="hidden md:flex flex-col border-l bg-muted/40 h-screen">
         <ConseilPanel />
       </aside>
     </div>
@@ -86,7 +87,9 @@ export default function DashboardLayout({
             <TransactionsProvider>
               <BudgetProvider>
                 <SavingsProvider>
-                  <DashboardLayoutContent>{children}</DashboardLayoutContent>
+                  <TutorialProvider>
+                    <DashboardLayoutContent>{children}</DashboardLayoutContent>
+                  </TutorialProvider>
                    <HotToaster
                     position="top-center"
                     toastOptions={{

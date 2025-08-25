@@ -12,19 +12,20 @@ import { useLocale } from "@/context/locale-context";
 import { TipCard } from "./tip-card";
 import { Tutorial, TutorialSteps } from "@/components/common/tutorial-step";
 import { useAuth } from "@/context/auth-context";
+import { useTutorial } from "@/context/tutorial-context";
 
 export function DashboardPageContent() {
   const { transactions, balance, income, expenses } = useTransactions();
   const { t } = useLocale();
   const { user, updateUser } = useAuth();
-  const [showTutorial, setShowTutorial] = useState(false);
+  const { showTutorial, setShowTutorial } = useTutorial();
 
   useEffect(() => {
     // Only show tutorial if the flag is explicitly false
     if (user && user.hasCompletedTutorial === false) {
       setShowTutorial(true);
     }
-  }, [user]);
+  }, [user, setShowTutorial]);
 
   const handleTutorialFinish = () => {
     setShowTutorial(false);

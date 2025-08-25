@@ -37,7 +37,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { ExportDataDialog } from "@/components/dashboard/export-data-dialog";
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
-import { Tutorial, TutorialSteps } from "@/components/common/tutorial-step";
+import { useTutorial } from "@/context/tutorial-context";
 
 
 export default function SettingsPage() {
@@ -46,7 +46,7 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const { t, locale, setLocale, currency, setCurrency } = useLocale();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [showTutorial, setShowTutorial] = useState(false);
+  const { setShowTutorial } = useTutorial();
 
   const { resetTransactions } = useTransactions();
   const { resetBudgets } = useBudgets();
@@ -189,11 +189,6 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-8 pb-24 md:pb-8">
-      <Tutorial
-        steps={TutorialSteps}
-        isOpen={showTutorial}
-        onFinish={() => setShowTutorial(false)}
-      />
       <div>
         <h1 className="text-3xl font-bold font-headline">{t('nav_settings')}</h1>
         <p className="text-muted-foreground">{t('settings_subtitle')}</p>
