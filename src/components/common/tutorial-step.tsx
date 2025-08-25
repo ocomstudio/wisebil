@@ -88,7 +88,7 @@ export function Tutorial({ steps, isOpen, onFinish }: TutorialProps) {
     const element = document.getElementById(step.targetId);
     if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        element.style.setProperty('z-index', '51', 'important');
+        element.style.setProperty('z-index', '99', 'important');
         element.style.setProperty('box-shadow', '0 0 0 9999px rgba(0, 0, 0, 0.5)', 'important');
         element.style.setProperty('border-radius', '8px');
         element.style.setProperty('position', 'relative');
@@ -127,7 +127,7 @@ export function Tutorial({ steps, isOpen, onFinish }: TutorialProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onFinish()}>
         <DialogContent 
-            className="z-50 max-w-sm" 
+            className="z-[100] max-w-sm" 
             onInteractOutside={(e) => e.preventDefault()}
         >
           <DialogHeader>
