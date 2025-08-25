@@ -117,8 +117,12 @@ export function Tutorial({ steps, isOpen, onFinish }: TutorialProps) {
         ></div>
       </PopoverTrigger>
        <PopoverContent
-        align="center"
-        className="z-50 max-w-sm fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+        className="z-50 max-w-sm fixed"
+        style={{
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+        }}
       >
         <div className="space-y-4">
           <h3 className="font-bold font-headline">{step.title}</h3>
