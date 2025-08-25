@@ -6,8 +6,10 @@ import DesktopLandingPage from "@/components/landing/desktop-landing-page";
 import MobileLandingPage from "@/components/landing/mobile-landing-page";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProtectedRoute } from "@/components/common/protected-route";
+import { AuthProvider } from "@/context/auth-context";
 
-export default function Home() {
+function LandingPage() {
   const [isClient, setIsClient] = useState(false);
   
   useEffect(() => {
@@ -25,4 +27,15 @@ export default function Home() {
   }
 
   return isMobile ? <MobileLandingPage /> : <DesktopLandingPage />;
+}
+
+
+export default function Home() {
+    return (
+        <AuthProvider>
+            <ProtectedRoute>
+                <LandingPage />
+            </ProtectedRoute>
+        </AuthProvider>
+    )
 }
