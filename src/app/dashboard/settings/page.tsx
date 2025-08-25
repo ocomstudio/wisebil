@@ -292,13 +292,13 @@ export default function SettingsPage() {
       
       <Card>
         <CardHeader>
-          <CardTitle>Aide & Support</CardTitle>
-          <CardDescription>Besoin d'un coup de main ?</CardDescription>
+          <CardTitle>{t('help_and_support_title')}</CardTitle>
+          <CardDescription>{t('help_and_support_desc')}</CardDescription>
         </CardHeader>
         <CardContent>
              <Button onClick={handleReviewTutorial}>
                 <HelpCircle className="mr-2 h-4 w-4" />
-                Revoir le tutoriel
+                {t('review_tutorial_button')}
              </Button>
         </CardContent>
       </Card>

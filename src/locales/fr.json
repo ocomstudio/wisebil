@@ -492,5 +492,8 @@
     "tutorial_step5_title": "Votre Assistant IA",
     "tutorial_step5_content": "Sur ordinateur, votre assistant personnel se trouve ici. Posez-lui des questions sur vos finances ou dictez-lui vos transactions avec l'Agent W.",
     "tutorial_step6_title": "Navigation Principale",
-    "tutorial_step6_content": "Sur mobile, utilisez cette barre pour naviguer entre les différentes sections : rapports, budgets, épargne et plus encore."
+    "tutorial_step6_content": "Sur mobile, utilisez cette barre pour naviguer entre les différentes sections : rapports, budgets, épargne et plus encore.",
+    "help_and_support_title": "Aide & Support",
+    "help_and_support_desc": "Besoin d'un coup de main ?",
+    "review_tutorial_button": "Revoir le tutoriel"
 }

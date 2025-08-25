@@ -492,5 +492,8 @@
     "tutorial_step5_title": "Your AI Assistant",
     "tutorial_step5_content": "On desktop, your personal assistant is here. Ask it questions about your finances or dictate your transactions with Agent W.",
     "tutorial_step6_title": "Main Navigation",
-    "tutorial_step6_content": "On mobile, use this bar to navigate between different sections: reports, budgets, savings, and more."
+    "tutorial_step6_content": "On mobile, use this bar to navigate between different sections: reports, budgets, savings, and more.",
+    "help_and_support_title": "Help & Support",
+    "help_and_support_desc": "Need a hand?",
+    "review_tutorial_button": "Review Tutorial"
 }
