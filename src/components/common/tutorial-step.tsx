@@ -5,6 +5,9 @@ import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -117,7 +120,7 @@ export function Tutorial({ steps, isOpen, onFinish }: TutorialProps) {
        }
   }
 
-  if (!isOpen || !step || !targetElement) {
+  if (!isOpen || !step) {
     return null;
   }
   
@@ -127,19 +130,19 @@ export function Tutorial({ steps, isOpen, onFinish }: TutorialProps) {
             className="z-50 max-w-sm" 
             onInteractOutside={(e) => e.preventDefault()}
         >
-            <div className="space-y-4">
-              <h3 className="font-bold font-headline">{step.title}</h3>
-              <p className="text-sm text-muted-foreground">{step.content}</p>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">{currentStep + 1} / {steps.filter(s => (isMobile ? s.targetId !== 'conseil-panel-tutorial' : s.targetId !== 'bottom-nav-tutorial')).length}</span>
-                <div className="flex gap-2">
-                    {currentStep > 0 && <Button variant="ghost" onClick={handlePrevious}>Précédent</Button>}
-                    <Button onClick={handleNext}>
-                    {currentStep === steps.length - 1 ? "Terminer" : "Suivant"}
-                    </Button>
-                </div>
-              </div>
+          <DialogHeader>
+            <DialogTitle className="font-headline">{step.title}</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground pt-2">{step.content}</DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-between items-center pt-4">
+            <span className="text-sm text-muted-foreground">{currentStep + 1} / {steps.filter(s => (isMobile ? s.targetId !== 'conseil-panel-tutorial' : s.targetId !== 'bottom-nav-tutorial')).length}</span>
+            <div className="flex gap-2">
+                {currentStep > 0 && <Button variant="ghost" onClick={handlePrevious}>Précédent</Button>}
+                <Button onClick={handleNext}>
+                {currentStep === steps.length - 1 ? "Terminer" : "Suivant"}
+                </Button>
             </div>
+          </div>
         </DialogContent>
     </Dialog>
   );
