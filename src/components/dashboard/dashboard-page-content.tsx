@@ -1,7 +1,7 @@
 // src/components/dashboard/dashboard-page-content.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { BalanceCard } from "@/components/dashboard/balance-card";
 import { RecentExpenses } from "@/components/dashboard/recent-expenses";
 import { Button } from "@/components/ui/button";
@@ -12,28 +12,36 @@ import { useLocale } from "@/context/locale-context";
 import { TipCard } from "./tip-card";
 import { useAuth } from "@/context/auth-context";
 import { useTutorial } from "@/context/tutorial-context";
+import { Tutorial, TutorialSteps } from "@/components/common/tutorial-step";
 
 export function DashboardPageContent() {
   const { transactions, balance, income, expenses } = useTransactions();
   const { t } = useLocale();
   const { user, updateUser } = useAuth();
-  const { setShowTutorial } = useTutorial();
+  const { showTutorial, setShowTutorial } = useTutorial();
 
   useEffect(() => {
     // Only show tutorial if the flag is explicitly false
     if (user && user.hasCompletedTutorial === false) {
-      // Use a small timeout to ensure the DOM is ready before the tutorial tries to find its elements.
-      // This prevents a race condition where the tutorial overlay shows but the popover doesn't.
-      const timer = setTimeout(() => {
-        setShowTutorial(true);
-      }, 100); // 100ms delay is imperceptible but allows the page to render.
-      return () => clearTimeout(timer);
+      setShowTutorial(true);
     }
   }, [user, setShowTutorial]);
+  
+  const handleTutorialFinish = () => {
+    setShowTutorial(false);
+    if (user && !user.hasCompletedTutorial) {
+      updateUser({ hasCompletedTutorial: true });
+    }
+  };
 
 
   return (
     <div className="space-y-6 pb-20">
+      <Tutorial
+        steps={TutorialSteps}
+        isOpen={showTutorial}
+        onFinish={handleTutorialFinish}
+      />
       <div id="balance-card-tutorial">
         <BalanceCard balance={balance} income={income} expenses={expenses} />
       </div>
