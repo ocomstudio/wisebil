@@ -69,7 +69,7 @@ interface TutorialProps {
   onFinish: () => void;
 }
 
-export function TutorialSteps({ steps, isOpen, onFinish }: TutorialProps) {
+export function Tutorial({ steps, isOpen, onFinish }: TutorialProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const isMobile = useIsMobile();
 

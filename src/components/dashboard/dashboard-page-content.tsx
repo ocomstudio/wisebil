@@ -10,7 +10,7 @@ import { TrendingDown, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "@/context/locale-context";
 import { TipCard } from "./tip-card";
-import { TutorialStep, TutorialSteps } from "@/components/common/tutorial-step";
+import { Tutorial, TutorialSteps } from "@/components/common/tutorial-step";
 import { useAuth } from "@/context/auth-context";
 
 export function DashboardPageContent() {
@@ -34,7 +34,7 @@ export function DashboardPageContent() {
 
   return (
     <div className="space-y-6 pb-20">
-      <TutorialSteps
+      <Tutorial
         steps={TutorialSteps}
         isOpen={showTutorial}
         onFinish={handleTutorialFinish}
