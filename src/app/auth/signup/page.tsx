@@ -26,7 +26,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from "@/context/auth-context";
 import { useLocale } from "@/context/locale-context";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { FirebaseError } from "firebase/app";
 import Link from "next/link";
 import { doc, setDoc } from "firebase/firestore";
@@ -43,6 +43,8 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   const router = useRouter();
   const { signupWithEmail, loginWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [detectedCountry, setDetectedCountry] = useState<Country>('SN');
 
   useEffect(() => {
@@ -210,7 +212,18 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
               <FormItem>
                 <FormLabel>{t('password_label')}</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="********" {...field} />
+                  <div className="relative">
+                    <Input type={showPassword ? "text" : "password"} placeholder="********" {...field} />
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+                        onClick={() => setShowPassword(!showPassword)}
+                    >
+                        {showPassword ? <EyeOff /> : <Eye />}
+                    </Button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -223,7 +236,18 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
               <FormItem>
                 <FormLabel>{t('confirm_password_label')}</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="********" {...field} />
+                  <div className="relative">
+                    <Input type={showConfirmPassword ? "text" : "password"} placeholder="********" {...field} />
+                     <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                        {showConfirmPassword ? <EyeOff /> : <Eye />}
+                    </Button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

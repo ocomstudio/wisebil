@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, CheckCircle, AlertTriangle } from "lucide-react";
+import { Loader2, CheckCircle, AlertTriangle, Eye, EyeOff } from "lucide-react";
 import { FirebaseError } from "firebase/app";
 import { Logo } from "@/components/common/logo";
 
@@ -36,6 +36,8 @@ function ResetPasswordContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const oobCode = searchParams.get('oobCode');
 
@@ -161,7 +163,18 @@ function ResetPasswordContent() {
                                 <FormItem>
                                     <FormLabel>{t('new_password_label')}</FormLabel>
                                     <FormControl>
-                                    <Input type="password" placeholder="********" {...field} />
+                                      <div className="relative">
+                                        <Input type={showPassword ? "text" : "password"} placeholder="********" {...field} />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                        >
+                                            {showPassword ? <EyeOff /> : <Eye />}
+                                        </Button>
+                                      </div>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -174,7 +187,18 @@ function ResetPasswordContent() {
                                 <FormItem>
                                     <FormLabel>{t('confirm_new_password_label')}</FormLabel>
                                     <FormControl>
-                                    <Input type="password" placeholder="********" {...field} />
+                                      <div className="relative">
+                                        <Input type={showConfirmPassword ? "text" : "password"} placeholder="********" {...field} />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        >
+                                            {showConfirmPassword ? <EyeOff /> : <Eye />}
+                                        </Button>
+                                      </div>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

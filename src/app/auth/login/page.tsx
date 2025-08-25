@@ -24,7 +24,7 @@ import { FcGoogle } from "react-icons/fc";
 import { useAuth } from "@/context/auth-context";
 import { useLocale } from "@/context/locale-context";
 import { FirebaseError } from "firebase/app";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 
 
 interface LoginPageProps {
@@ -37,6 +37,7 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
   const router = useRouter();
   const { loginWithEmail, loginWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const loginSchema = z.object({
     email: z.string().email(t('signup_email_error')),
@@ -141,7 +142,18 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
                     </Button>
                 </div>
                 <FormControl>
-                  <Input type="password" placeholder="********" {...field} />
+                  <div className="relative">
+                    <Input type={showPassword ? "text" : "password"} placeholder="********" {...field} />
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+                        onClick={() => setShowPassword(!showPassword)}
+                    >
+                        {showPassword ? <EyeOff /> : <Eye />}
+                    </Button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
