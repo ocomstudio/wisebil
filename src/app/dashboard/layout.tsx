@@ -19,19 +19,36 @@ import { ProtectedRoute } from "@/components/common/protected-route";
 import { Toaster as HotToaster } from 'react-hot-toast';
 import Link from "next/link";
 import { LocaleProvider, useLocale } from "@/context/locale-context";
-import { TutorialProvider } from "@/context/tutorial-context";
+import { TutorialProvider, useTutorial } from "@/context/tutorial-context";
+import { Tutorial, TutorialSteps } from "@/components/common/tutorial-step";
+import { useAuth } from "@/context/auth-context";
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { t } = useLocale();
   const pathname = usePathname();
+  const { showTutorial, setShowTutorial } = useTutorial();
+  const { user, updateUser } = useAuth();
 
   // Hide main layout for the full-screen scan page on mobile
   if (pathname.startsWith('/dashboard/scan-receipt')) {
     return <div className="h-screen w-screen">{children}</div>;
   }
+  
+  const handleTutorialFinish = () => {
+    setShowTutorial(false);
+    if (user && !user.hasCompletedTutorial) {
+      updateUser({ hasCompletedTutorial: true });
+    }
+  };
+
 
   return (
     <div className="grid h-screen w-full overflow-hidden md:grid-cols-[250px_1fr_350px]">
+      <Tutorial
+        steps={TutorialSteps}
+        isOpen={showTutorial}
+        onFinish={handleTutorialFinish}
+      />
       {/* Desktop Sidebar */}
       <aside className="hidden border-r bg-muted/40 md:flex flex-col gap-6 p-4">
         <div className="px-2">

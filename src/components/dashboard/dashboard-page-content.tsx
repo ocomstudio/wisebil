@@ -10,7 +10,6 @@ import { TrendingDown, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "@/context/locale-context";
 import { TipCard } from "./tip-card";
-import { Tutorial, TutorialSteps } from "@/components/common/tutorial-step";
 import { useAuth } from "@/context/auth-context";
 import { useTutorial } from "@/context/tutorial-context";
 
@@ -18,29 +17,23 @@ export function DashboardPageContent() {
   const { transactions, balance, income, expenses } = useTransactions();
   const { t } = useLocale();
   const { user, updateUser } = useAuth();
-  const { showTutorial, setShowTutorial } = useTutorial();
+  const { setShowTutorial } = useTutorial();
 
   useEffect(() => {
     // Only show tutorial if the flag is explicitly false
     if (user && user.hasCompletedTutorial === false) {
-      setShowTutorial(true);
+      // Use a small timeout to ensure the DOM is ready before the tutorial tries to find its elements.
+      // This prevents a race condition where the tutorial overlay shows but the popover doesn't.
+      const timer = setTimeout(() => {
+        setShowTutorial(true);
+      }, 100); // 100ms delay is imperceptible but allows the page to render.
+      return () => clearTimeout(timer);
     }
   }, [user, setShowTutorial]);
 
-  const handleTutorialFinish = () => {
-    setShowTutorial(false);
-    if (user && user.hasCompletedTutorial === false) {
-      updateUser({ hasCompletedTutorial: true });
-    }
-  };
 
   return (
     <div className="space-y-6 pb-20">
-      <Tutorial
-        steps={TutorialSteps}
-        isOpen={showTutorial}
-        onFinish={handleTutorialFinish}
-      />
       <div id="balance-card-tutorial">
         <BalanceCard balance={balance} income={income} expenses={expenses} />
       </div>
