@@ -64,7 +64,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         const unsubscribeDoc = onSnapshot(userDocRef, (docSnap) => {
           if (docSnap.exists() && docSnap.data().profile) {
-              setUser({ uid: fbUser.uid, ...docSnap.data().profile });
+              const profile = docSnap.data().profile;
+              // Ensure hasCompletedTutorial is not undefined for existing users
+              if (profile.hasCompletedTutorial === undefined) {
+                  profile.hasCompletedTutorial = true; // Assume existing users have completed it
+              }
+              setUser({ uid: fbUser.uid, ...profile });
           } else {
                // This case handles initial user creation before profile completion
                const profileData = {

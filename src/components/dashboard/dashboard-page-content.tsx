@@ -20,14 +20,15 @@ export function DashboardPageContent() {
   const [showTutorial, setShowTutorial] = useState(false);
 
   useEffect(() => {
-    if (user && !user.hasCompletedTutorial) {
+    // Only show tutorial if the flag is explicitly false
+    if (user && user.hasCompletedTutorial === false) {
       setShowTutorial(true);
     }
   }, [user]);
 
   const handleTutorialFinish = () => {
     setShowTutorial(false);
-    if (user && !user.hasCompletedTutorial) {
+    if (user && user.hasCompletedTutorial === false) {
       updateUser({ hasCompletedTutorial: true });
     }
   };
