@@ -228,6 +228,7 @@
     "category_remboursement": "Refund",
     "coming_soon_title": "Coming Soon!",
     "coming_soon_desc": "The account management feature is under development. We are working hard to bring it to you as soon as possible.",
+    "coming_soon_subdesc" : "You will soon be able to connect your bank accounts and get a full overview of all your finances in one place.",
     "back_to_dashboard": "Back to Dashboard",
     "expense_added_title": "Expense Added",
     "expense_added_desc": "The expense \"{{expenseDesc}}\" was added successfully.",
@@ -479,5 +480,17 @@
     "proceed_to_login_button": "Proceed to Login",
     "invalid_reset_link_error": "This password reset link is invalid or has expired.",
     "expired_reset_link_error": "This password reset link has expired. Please request a new one.",
-    "user_disabled_error": "This user account has been disabled."
+    "user_disabled_error": "This user account has been disabled.",
+    "tutorial_step1_title": "Welcome to Wisebil!",
+    "tutorial_step1_content": "Follow this quick guide to discover the key features of your dashboard.",
+    "tutorial_step2_title": "Your Balance at a Glance",
+    "tutorial_step2_content": "Here, you can see your total balance, as well as your total income and expenses for the current period.",
+    "tutorial_step3_title": "Add Your Transactions",
+    "tutorial_step3_content": "Use these buttons to quickly record a new expense or income.",
+    "tutorial_step4_title": "Recent Transactions",
+    "tutorial_step4_content": "Your latest operations appear here. You can edit or delete them at any time.",
+    "tutorial_step5_title": "Your AI Assistant",
+    "tutorial_step5_content": "On desktop, your personal assistant is here. Ask it questions about your finances or dictate your transactions with Agent W.",
+    "tutorial_step6_title": "Main Navigation",
+    "tutorial_step6_content": "On mobile, use this bar to navigate between different sections: reports, budgets, savings, and more."
 }

@@ -12,7 +12,7 @@ import { useLocale } from "@/context/locale-context";
 import { TipCard } from "./tip-card";
 import { useAuth } from "@/context/auth-context";
 import { useTutorial } from "@/context/tutorial-context";
-import { Tutorial, TutorialSteps } from "@/components/common/tutorial-step";
+import { Tutorial } from "@/components/common/tutorial-step";
 
 export function DashboardPageContent() {
   const { transactions, balance, income, expenses } = useTransactions();
@@ -39,7 +39,6 @@ export function DashboardPageContent() {
   return (
     <div className="space-y-6 pb-20">
       <Tutorial
-        steps={TutorialSteps}
         isOpen={showTutorial}
         onFinish={handleTutorialFinish}
       />

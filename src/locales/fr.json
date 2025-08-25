@@ -228,6 +228,7 @@
     "category_remboursement": "Remboursement",
     "coming_soon_title": "Bientôt disponible !",
     "coming_soon_desc": "La fonctionnalité de gestion des comptes est en cours de développement. Nous travaillons dur pour vous l'apporter au plus vite.",
+    "coming_soon_subdesc" : "Vous pourrez bientôt connecter vos comptes bancaires et avoir une vue d'ensemble de toutes vos finances en un seul endroit.",
     "back_to_dashboard": "Retour à l'accueil",
     "expense_added_title": "Dépense ajoutée",
     "expense_added_desc": "La dépense \"{{expenseDesc}}\" a été ajoutée avec succès.",
@@ -479,5 +480,17 @@
     "proceed_to_login_button": "Continuer vers la connexion",
     "invalid_reset_link_error": "Ce lien de réinitialisation de mot de passe est invalide ou a expiré.",
     "expired_reset_link_error": "Ce lien de réinitialisation de mot de passe a expiré. Veuillez en demander un nouveau.",
-    "user_disabled_error": "Ce compte utilisateur a été désactivé."
+    "user_disabled_error": "Ce compte utilisateur a été désactivé.",
+    "tutorial_step1_title": "Bienvenue sur Wisebil !",
+    "tutorial_step1_content": "Suivez ce guide rapide pour découvrir les fonctionnalités clés de votre tableau de bord.",
+    "tutorial_step2_title": "Votre Solde en un clin d'œil",
+    "tutorial_step2_content": "Ici, vous voyez votre solde total, ainsi que le total de vos revenus et de vos dépenses pour la période en cours.",
+    "tutorial_step3_title": "Ajoutez vos Transactions",
+    "tutorial_step3_content": "Utilisez ces boutons pour enregistrer rapidement une nouvelle dépense ou un nouveau revenu.",
+    "tutorial_step4_title": "Transactions Récentes",
+    "tutorial_step4_content": "Vos dernières opérations apparaissent ici. Vous pouvez les modifier ou les supprimer à tout moment.",
+    "tutorial_step5_title": "Votre Assistant IA",
+    "tutorial_step5_content": "Sur ordinateur, votre assistant personnel se trouve ici. Posez-lui des questions sur vos finances ou dictez-lui vos transactions avec l'Agent W.",
+    "tutorial_step6_title": "Navigation Principale",
+    "tutorial_step6_content": "Sur mobile, utilisez cette barre pour naviguer entre les différentes sections : rapports, budgets, épargne et plus encore."
 }

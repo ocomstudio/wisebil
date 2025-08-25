@@ -1,74 +1,77 @@
 // src/components/common/tutorial-step.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useLocale } from "@/context/locale-context";
 
 interface Step {
   id: string;
-  title: string;
-  content: string;
+  titleKey: string;
+  contentKey: string;
   targetId: string;
 }
 
-export const TutorialSteps: Step[] = [
+const tutorialStepKeys: Step[] = [
   {
     id: "step1",
-    title: "Bienvenue sur Wisebil !",
-    content: "Suivez ce guide rapide pour découvrir les fonctionnalités clés de votre tableau de bord.",
+    titleKey: "tutorial_step1_title",
+    contentKey: "tutorial_step1_content",
     targetId: "balance-card-tutorial",
   },
   {
     id: "step2",
-    title: "Votre Solde en un clin d'œil",
-    content: "Ici, vous voyez votre solde total, ainsi que le total de vos revenus et de vos dépenses pour la période en cours.",
+    titleKey: "tutorial_step2_title",
+    contentKey: "tutorial_step2_content",
     targetId: "balance-card-tutorial",
   },
   {
     id: "step3",
-    title: "Ajoutez vos Transactions",
-    content: "Utilisez ces boutons pour enregistrer rapidement une nouvelle dépense ou un nouveau revenu.",
+    titleKey: "tutorial_step3_title",
+    contentKey: "tutorial_step3_content",
     targetId: "add-transaction-tutorial",
   },
   {
     id: "step4",
-    title: "Transactions Récentes",
-    content: "Vos dernières opérations apparaissent ici. Vous pouvez les modifier ou les supprimer à tout moment.",
+    titleKey: "tutorial_step4_title",
+    contentKey: "tutorial_step4_content",
     targetId: "recent-transactions-tutorial",
   },
   {
     id: "step5",
-    title: "Votre Assistant IA",
-    content: "Sur ordinateur, votre assistant personnel se trouve ici. Posez-lui des questions sur vos finances ou dictez-lui vos transactions avec l'Agent W.",
+    titleKey: "tutorial_step5_title",
+    contentKey: "tutorial_step5_content",
     targetId: "conseil-panel-tutorial",
   },
     {
     id: "step6",
-    title: "Navigation Principale",
-    content: "Sur mobile, utilisez cette barre pour naviguer entre les différentes sections : rapports, budgets, épargne et plus encore.",
+    titleKey: "tutorial_step6_title",
+    contentKey: "tutorial_step6_content",
     targetId: "bottom-nav-tutorial",
   }
 ];
 
 interface TutorialProps {
-  steps: Step[];
   isOpen: boolean;
   onFinish: () => void;
 }
 
-export function Tutorial({ steps, isOpen, onFinish }: TutorialProps) {
+export function Tutorial({ isOpen, onFinish }: TutorialProps) {
+  const { t } = useLocale();
   const [currentStep, setCurrentStep] = useState(0);
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
   const isMobile = useIsMobile();
-
+  const overlayRef = useRef<HTMLDivElement>(null);
+  
+  const steps = tutorialStepKeys.filter(s => (isMobile ? s.targetId !== 'conseil-panel-tutorial' : s.targetId !== 'bottom-nav-tutorial'));
   const step = steps[currentStep];
 
   useEffect(() => {
@@ -86,23 +89,19 @@ export function Tutorial({ steps, isOpen, onFinish }: TutorialProps) {
     }
     
     const element = document.getElementById(step.targetId);
-    if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        element.style.setProperty('z-index', '99', 'important');
-        element.style.setProperty('box-shadow', '0 0 0 9999px rgba(0, 0, 0, 0.5)', 'important');
-        element.style.setProperty('border-radius', '8px');
-        element.style.setProperty('position', 'relative');
-    }
     setTargetElement(element);
 
-    return () => {
-        if (element) {
-            element.style.removeProperty('z-index');
-            element.style.removeProperty('box-shadow');
-            element.style.removeProperty('border-radius');
-            element.style.removeProperty('position');
-        }
-    };
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    if (overlayRef.current && element) {
+        const rect = element.getBoundingClientRect();
+        overlayRef.current.style.setProperty('--highlight-top', `${rect.top}px`);
+        overlayRef.current.style.setProperty('--highlight-left', `${rect.left}px`);
+        overlayRef.current.style.setProperty('--highlight-width', `${rect.width}px`);
+        overlayRef.current.style.setProperty('--highlight-height', `${rect.height}px`);
+    }
 
   }, [currentStep, isOpen, isMobile, step]);
 
@@ -125,25 +124,47 @@ export function Tutorial({ steps, isOpen, onFinish }: TutorialProps) {
   }
   
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onFinish()}>
+    <>
+      <div 
+        ref={overlayRef}
+        className="fixed inset-0 z-[99] pointer-events-none"
+        style={{
+            background: `radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0,0,0,0.7) 100%)`,
+            clipPath: `evenodd`,
+            WebkitMask: `
+                radial-gradient(
+                    circle at calc(var(--highlight-left, 0px) + var(--highlight-width, 0px) / 2) calc(var(--highlight-top, 0px) + var(--highlight-height, 0px) / 2),
+                    transparent 0,
+                    transparent calc(max(var(--highlight-width, 0px), var(--highlight-height, 0px)) / 1.5),
+                    black calc(max(var(--highlight-width, 0px), var(--highlight-height, 0px)) / 1.5 + 50px),
+                    black 100%
+                ),
+                linear-gradient(white, white)
+            `,
+            WebkitMaskComposite: 'destination-out',
+            maskComposite: 'exclude',
+        }}
+      ></div>
+      <Dialog open={isOpen} onOpenChange={(open) => !open && onFinish()}>
         <DialogContent 
-            className="z-[100] max-w-sm" 
+            className="z-[100] max-w-sm bg-background/80 backdrop-blur-sm border-0"
             onInteractOutside={(e) => e.preventDefault()}
         >
           <DialogHeader>
-            <DialogTitle className="font-headline">{step.title}</DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground pt-2">{step.content}</DialogDescription>
+            <DialogTitle className="font-headline">{t(step.titleKey)}</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground pt-2">{t(step.contentKey)}</DialogDescription>
           </DialogHeader>
           <div className="flex justify-between items-center pt-4">
-            <span className="text-sm text-muted-foreground">{currentStep + 1} / {steps.filter(s => (isMobile ? s.targetId !== 'conseil-panel-tutorial' : s.targetId !== 'bottom-nav-tutorial')).length}</span>
+            <span className="text-sm text-muted-foreground">{currentStep + 1} / {steps.length}</span>
             <div className="flex gap-2">
-                {currentStep > 0 && <Button variant="ghost" onClick={handlePrevious}>Précédent</Button>}
+                {currentStep > 0 && <Button variant="ghost" onClick={handlePrevious}>{t('previous_button')}</Button>}
                 <Button onClick={handleNext}>
-                {currentStep === steps.length - 1 ? "Terminer" : "Suivant"}
+                {currentStep === steps.length - 1 ? t('finish_button') : t('next_button')}
                 </Button>
             </div>
           </div>
         </DialogContent>
     </Dialog>
+    </>
   );
 }
