@@ -495,5 +495,11 @@
     "tutorial_step6_content": "On mobile, use this bar to navigate between different sections: reports, budgets, savings, and more.",
     "help_and_support_title": "Help & Support",
     "help_and_support_desc": "Need a hand?",
-    "review_tutorial_button": "Review Tutorial"
+    "review_tutorial_button": "Review Tutorial",
+    "reset_data_button": "Reset Financial Data",
+    "reset_data_warning_title": "Reset your financial data?",
+    "reset_data_warning_desc": "This will permanently delete all your transactions, budgets, and savings goals. You will remain logged into your account.",
+    "reset_data_confirm_button": "Yes, reset data",
+    "reset_data_success_title": "Data Reset",
+    "reset_data_success_desc": "Your financial data has been erased."
 }

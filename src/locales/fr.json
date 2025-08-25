@@ -348,7 +348,7 @@
     "hide_balance_desc": "Masquez votre solde sur l'écran d'accueil pour plus de confidentialité.",
     "about_title": "À propos",
     "about_desc": "Informations sur l'application.",
-    "app_info": "Wisebil - Version 1.0 - par Ocomstudio",
+    "app_info": "Wisebil - Version 1.0 - by Ocomstudio",
     "terms_of_service": "Conditions d'utilisation",
     "transaction_deleted_title": "Transaction supprimée",
     "budget_name_error": "Le nom du budget doit contenir au moins 3 caractères.",
@@ -495,5 +495,11 @@
     "tutorial_step6_content": "Sur mobile, utilisez cette barre pour naviguer entre les différentes sections : rapports, budgets, épargne et plus encore.",
     "help_and_support_title": "Aide & Support",
     "help_and_support_desc": "Besoin d'un coup de main ?",
-    "review_tutorial_button": "Revoir le tutoriel"
+    "review_tutorial_button": "Revoir le tutoriel",
+    "reset_data_button": "Réinitialiser les données",
+    "reset_data_warning_title": "Réinitialiser vos données financières ?",
+    "reset_data_warning_desc": "Cette action supprimera définitivement toutes vos transactions, budgets et objectifs d'épargne. Vous resterez connecté à votre compte.",
+    "reset_data_confirm_button": "Oui, réinitialiser les données",
+    "reset_data_success_title": "Données réinitialisées",
+    "reset_data_success_desc": "Vos données financières ont été effacées."
 }

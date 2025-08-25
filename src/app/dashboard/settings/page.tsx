@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck, Languages, Wallet, Trash2, Download, HelpCircle } from "lucide-react";
+import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck, Languages, Wallet, Trash2, Download, HelpCircle, RefreshCw } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useSettings } from "@/context/settings-context";
 import { useToast } from "@/hooks/use-toast";
@@ -121,6 +121,36 @@ export default function SettingsPage() {
         toast({ title: t(isChecked ? 'balance_hidden_title' : 'balance_shown_title') });
     } else if (pin !== null) {
         toast({ variant: "destructive", title: t('incorrect_pin') });
+    }
+  };
+
+  const handleResetData = async () => {
+    try {
+      if (!user) {
+        throw new Error("User not authenticated for reset.");
+      }
+      
+      await resetTransactions();
+      await resetBudgets();
+      await resetSavings();
+
+      const userDocRef = doc(db, 'users', user.uid);
+      await updateDoc(userDocRef, {
+        conversations: {}
+      });
+      
+      toast({
+          title: t('reset_data_success_title'),
+          description: t('reset_data_success_desc')
+      });
+      
+    } catch (error) {
+      console.error("Failed to reset app data:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to reset financial data.",
+      });
     }
   };
 
@@ -379,10 +409,38 @@ export default function SettingsPage() {
           <CardTitle className="text-destructive">{t('danger_zone_title')}</CardTitle>
           <CardDescription>{t('danger_zone_desc')}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col sm:flex-row gap-4">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive">{t('reset_app_button')}</Button>
+                <Button variant="outline" className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive">
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  {t('reset_data_button')}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+                    <RefreshCw className="h-6 w-6 text-red-600" />
+                  </div>
+                  <AlertDialogTitle>{t('reset_data_warning_title')}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t('reset_data_warning_desc')}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleResetData} className="bg-destructive hover:bg-destructive/90">
+                    {t('reset_data_confirm_button')}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  {t('reset_app_button')}
+                </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
