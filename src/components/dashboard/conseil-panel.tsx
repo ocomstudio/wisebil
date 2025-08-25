@@ -295,7 +295,7 @@ export function ConseilPanel() {
 
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorderRef.current = new MediaRecorder(stream);
+        mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'audio/webm' });
         audioChunksRef.current = [];
         
         mediaRecorderRef.current.ondataavailable = (event) => {
