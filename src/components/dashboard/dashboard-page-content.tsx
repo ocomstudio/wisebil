@@ -21,9 +21,10 @@ export function DashboardPageContent() {
   const { showTutorial, setShowTutorial } = useTutorial();
 
   useEffect(() => {
-    // Only show tutorial if the flag is explicitly false
+    // Only show tutorial if the flag is explicitly false.
+    // Using a timeout gives the DOM a moment to paint, preventing race conditions.
     if (user && user.hasCompletedTutorial === false) {
-      setShowTutorial(true);
+       setTimeout(() => setShowTutorial(true), 100);
     }
   }, [user, setShowTutorial]);
   

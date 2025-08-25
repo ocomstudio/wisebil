@@ -1,7 +1,7 @@
 // src/components/common/tutorial-step.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Popover,
   PopoverContent,
@@ -71,6 +71,7 @@ interface TutorialProps {
 
 export function Tutorial({ steps, isOpen, onFinish }: TutorialProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
   const isMobile = useIsMobile();
 
   const handleNext = () => {
@@ -89,15 +90,26 @@ export function Tutorial({ steps, isOpen, onFinish }: TutorialProps) {
 
   const step = steps[currentStep];
 
-  // Skip desktop-only or mobile-only steps
-  if ((isMobile && step.targetId === 'conseil-panel-tutorial') || (!isMobile && step.targetId === 'bottom-nav-tutorial')) {
+  useEffect(() => {
+    if (!isOpen) {
+      setCurrentStep(0);
+      return;
+    };
+    
+    // Skip irrelevant steps based on device
+    if ((isMobile && step.targetId === 'conseil-panel-tutorial') || (!isMobile && step.targetId === 'bottom-nav-tutorial')) {
       handleNext();
-      return null;
-  }
-  
-  const targetElement = document.getElementById(step.targetId);
+      return;
+    }
+    
+    // This effect ensures we only try to render the popover when the target is in the DOM
+    const element = document.getElementById(step.targetId);
+    setTargetElement(element);
 
-  if (!isOpen || !targetElement) {
+  }, [currentStep, isOpen, isMobile, step.targetId]);
+
+
+  if (!isOpen || !step || !targetElement) {
     return null;
   }
   
