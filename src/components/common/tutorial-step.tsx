@@ -3,10 +3,9 @@
 
 import { useState, useEffect } from "react";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -67,6 +66,43 @@ export function Tutorial({ steps, isOpen, onFinish }: TutorialProps) {
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
   const isMobile = useIsMobile();
 
+  const step = steps[currentStep];
+
+  useEffect(() => {
+    if (!isOpen) {
+      setCurrentStep(0);
+      return;
+    }
+
+    if (!step) return;
+    
+    // Skip irrelevant steps based on device
+    if ((isMobile && step.targetId === 'conseil-panel-tutorial') || (!isMobile && step.targetId === 'bottom-nav-tutorial')) {
+      handleNext();
+      return;
+    }
+    
+    const element = document.getElementById(step.targetId);
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.style.setProperty('z-index', '51', 'important');
+        element.style.setProperty('box-shadow', '0 0 0 9999px rgba(0, 0, 0, 0.5)', 'important');
+        element.style.setProperty('border-radius', '8px');
+        element.style.setProperty('position', 'relative');
+    }
+    setTargetElement(element);
+
+    return () => {
+        if (element) {
+            element.style.removeProperty('z-index');
+            element.style.removeProperty('box-shadow');
+            element.style.removeProperty('border-radius');
+            element.style.removeProperty('position');
+        }
+    };
+
+  }, [currentStep, isOpen, isMobile, step]);
+
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -81,73 +117,31 @@ export function Tutorial({ steps, isOpen, onFinish }: TutorialProps) {
        }
   }
 
-  const step = steps[currentStep];
-
-  useEffect(() => {
-    if (!isOpen) {
-      setCurrentStep(0);
-      return;
-    };
-    
-    // Skip irrelevant steps based on device
-    if ((isMobile && step.targetId === 'conseil-panel-tutorial') || (!isMobile && step.targetId === 'bottom-nav-tutorial')) {
-      handleNext();
-      return;
-    }
-    
-    // This effect ensures we only try to render the popover when the target is in the DOM
-    const element = document.getElementById(step.targetId);
-    setTargetElement(element);
-
-  }, [currentStep, isOpen, isMobile, step.targetId]);
-
-
   if (!isOpen || !step || !targetElement) {
     return null;
   }
   
   return (
-    <Popover open={true}>
-      <PopoverTrigger asChild>
-        <div 
-          className="fixed inset-0 bg-black/50 z-40"
-          style={{
-            clipPath: `path('${getHighlightPath(targetElement)}')`
-          }}
-        ></div>
-      </PopoverTrigger>
-       <PopoverContent
-        className="z-50 max-w-sm fixed"
-        style={{
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-        }}
-      >
-        <div className="space-y-4">
-          <h3 className="font-bold font-headline">{step.title}</h3>
-          <p className="text-sm text-muted-foreground">{step.content}</p>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">{currentStep + 1} / {steps.filter(s => (isMobile ? s.targetId !== 'conseil-panel-tutorial' : s.targetId !== 'bottom-nav-tutorial')).length}</span>
-            <div className="flex gap-2">
-                {currentStep > 0 && <Button variant="ghost" onClick={handlePrevious}>Précédent</Button>}
-                <Button onClick={handleNext}>
-                {currentStep === steps.length - 1 ? "Terminer" : "Suivant"}
-                </Button>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onFinish()}>
+        <DialogContent 
+            className="z-50 max-w-sm" 
+            onInteractOutside={(e) => e.preventDefault()}
+            hideCloseButton={true}
+        >
+            <div className="space-y-4">
+              <h3 className="font-bold font-headline">{step.title}</h3>
+              <p className="text-sm text-muted-foreground">{step.content}</p>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">{currentStep + 1} / {steps.filter(s => (isMobile ? s.targetId !== 'conseil-panel-tutorial' : s.targetId !== 'bottom-nav-tutorial')).length}</span>
+                <div className="flex gap-2">
+                    {currentStep > 0 && <Button variant="ghost" onClick={handlePrevious}>Précédent</Button>}
+                    <Button onClick={handleNext}>
+                    {currentStep === steps.length - 1 ? "Terminer" : "Suivant"}
+                    </Button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
+        </DialogContent>
+    </Dialog>
   );
-}
-
-
-function getHighlightPath(element: HTMLElement) {
-  const { top, left, width, height } = element.getBoundingClientRect();
-  const padding = 10;
-  return `
-    M-1,-1 L-1,${window.innerHeight + 1} L${window.innerWidth + 1},${window.innerHeight + 1} L${window.innerWidth + 1},-1 L-1,-1 Z
-    M${left - padding},${top - padding} h${width + 2 * padding} v${height + 2 * padding} h-${width + 2 * padding} Z
-  `;
 }
