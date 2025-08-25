@@ -126,7 +126,6 @@ export function Tutorial({ steps, isOpen, onFinish }: TutorialProps) {
         <DialogContent 
             className="z-50 max-w-sm" 
             onInteractOutside={(e) => e.preventDefault()}
-            hideCloseButton={true}
         >
             <div className="space-y-4">
               <h3 className="font-bold font-headline">{step.title}</h3>
