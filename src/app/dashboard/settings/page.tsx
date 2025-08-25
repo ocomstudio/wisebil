@@ -186,6 +186,11 @@ export default function SettingsPage() {
     }
     return name.charAt(0).toUpperCase();
   }
+  
+  const handleReviewTutorial = () => {
+    setShowTutorial(true);
+    router.push('/dashboard');
+  }
 
   return (
     <div className="space-y-8 pb-24 md:pb-8">
@@ -291,7 +296,7 @@ export default function SettingsPage() {
           <CardDescription>Besoin d'un coup de main ?</CardDescription>
         </CardHeader>
         <CardContent>
-             <Button onClick={() => setShowTutorial(true)}>
+             <Button onClick={handleReviewTutorial}>
                 <HelpCircle className="mr-2 h-4 w-4" />
                 Revoir le tutoriel
              </Button>
