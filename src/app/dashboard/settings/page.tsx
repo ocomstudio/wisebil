@@ -1,4 +1,3 @@
-
 // src/app/dashboard/settings/page.tsx
 "use client";
 
@@ -17,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck, Languages, Wallet, Trash2, Download } from "lucide-react";
+import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck, Languages, Wallet, Trash2, Download, HelpCircle } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useSettings } from "@/context/settings-context";
 import { useToast } from "@/hooks/use-toast";
@@ -32,7 +31,7 @@ import { useBudgets } from "@/context/budget-context";
 import { useSavings } from "@/context/savings-context";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { db } from "@/lib/firebase";
 import { doc, updateDoc } from 'firebase/firestore';
 import { ExportDataDialog } from "@/components/dashboard/export-data-dialog";
@@ -46,6 +45,7 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const { t, locale, setLocale, currency, setCurrency } = useLocale();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const { resetTransactions } = useTransactions();
   const { resetBudgets } = useBudgets();
@@ -283,6 +283,19 @@ export default function SettingsPage() {
             <ExportDataDialog />
         </CardContent>
       </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Aide & Support</CardTitle>
+          <CardDescription>Besoin d'un coup de main ?</CardDescription>
+        </CardHeader>
+        <CardContent>
+             <Button onClick={() => setShowTutorial(true)}>
+                <HelpCircle className="mr-2 h-4 w-4" />
+                Revoir le tutoriel
+             </Button>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -414,5 +427,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    

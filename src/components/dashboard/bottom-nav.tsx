@@ -24,7 +24,7 @@ export function BottomNav() {
   ];
 
   return (
-    <footer className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50">
+    <footer id="bottom-nav-tutorial" className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50">
       <Dialog open={isScanOpen} onOpenChange={setIsScanOpen}>
         <nav className="flex items-center justify-around h-16">
           {navItems.map((item) => {

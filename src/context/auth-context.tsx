@@ -16,6 +16,7 @@ interface User {
   profileComplete?: boolean;
   stripeCustomerId?: string;
   subscriptionStatus?: 'active' | 'inactive';
+  hasCompletedTutorial?: boolean;
 }
 
 type SignupFunction = (
@@ -71,7 +72,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                   displayName: fbUser.displayName || 'Wisebil User',
                   avatar: fbUser.photoURL,
                   profileComplete: false,
-                  subscriptionStatus: 'inactive'
+                  subscriptionStatus: 'inactive',
+                  hasCompletedTutorial: false,
                };
                setUser({ uid: fbUser.uid, ...profileData });
           }
@@ -110,6 +112,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       phone,
       subscriptionStatus: 'inactive',
       profileComplete: true,
+      hasCompletedTutorial: false,
     };
     
     await setDoc(userDocRef, { profile: { ...profileData, avatar: null } }, { merge: true });
@@ -134,6 +137,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         profileComplete: true, // Mark as complete
         subscriptionStatus: 'inactive',
         phone: result.user.phoneNumber,
+        hasCompletedTutorial: false,
       };
       await setDoc(userDocRef, { profile: profileData }, { merge: true });
       return { isNewUser: true, user: result.user };

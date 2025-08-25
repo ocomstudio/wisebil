@@ -66,7 +66,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       <BottomNav />
       
       {/* Desktop AI Assistant */}
-      <aside className="hidden md:flex flex-col border-l bg-muted/40 h-screen">
+      <aside id="conseil-panel-tutorial" className="hidden md:flex flex-col border-l bg-muted/40 h-screen">
         <ConseilPanel />
       </aside>
     </div>
