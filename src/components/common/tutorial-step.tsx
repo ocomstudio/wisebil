@@ -15,7 +15,6 @@ interface Step {
   title: string;
   content: string;
   targetId: string;
-  side?: "top" | "bottom" | "left" | "right";
 }
 
 export const TutorialSteps: Step[] = [
@@ -24,42 +23,36 @@ export const TutorialSteps: Step[] = [
     title: "Bienvenue sur Wisebil !",
     content: "Suivez ce guide rapide pour découvrir les fonctionnalités clés de votre tableau de bord.",
     targetId: "balance-card-tutorial",
-    side: "bottom",
   },
   {
     id: "step2",
     title: "Votre Solde en un clin d'œil",
     content: "Ici, vous voyez votre solde total, ainsi que le total de vos revenus et de vos dépenses pour la période en cours.",
     targetId: "balance-card-tutorial",
-    side: "bottom",
   },
   {
     id: "step3",
     title: "Ajoutez vos Transactions",
     content: "Utilisez ces boutons pour enregistrer rapidement une nouvelle dépense ou un nouveau revenu.",
     targetId: "add-transaction-tutorial",
-    side: "bottom",
   },
   {
     id: "step4",
     title: "Transactions Récentes",
     content: "Vos dernières opérations apparaissent ici. Vous pouvez les modifier ou les supprimer à tout moment.",
     targetId: "recent-transactions-tutorial",
-    side: "top",
   },
   {
     id: "step5",
     title: "Votre Assistant IA",
     content: "Sur ordinateur, votre assistant personnel se trouve ici. Posez-lui des questions sur vos finances ou dictez-lui vos transactions avec l'Agent W.",
     targetId: "conseil-panel-tutorial",
-    side: "left"
   },
     {
     id: "step6",
     title: "Navigation Principale",
     content: "Sur mobile, utilisez cette barre pour naviguer entre les différentes sections : rapports, budgets, épargne et plus encore.",
     targetId: "bottom-nav-tutorial",
-    side: "top"
   }
 ];
 
@@ -124,10 +117,8 @@ export function Tutorial({ steps, isOpen, onFinish }: TutorialProps) {
         ></div>
       </PopoverTrigger>
        <PopoverContent
-        side={step.side}
         align="center"
-        className="z-50 max-w-sm"
-        style={getPopoverPosition(targetElement)}
+        className="z-50 max-w-sm fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
       >
         <div className="space-y-4">
           <h3 className="font-bold font-headline">{step.title}</h3>
@@ -155,18 +146,4 @@ function getHighlightPath(element: HTMLElement) {
     M-1,-1 L-1,${window.innerHeight + 1} L${window.innerWidth + 1},${window.innerHeight + 1} L${window.innerWidth + 1},-1 L-1,-1 Z
     M${left - padding},${top - padding} h${width + 2 * padding} v${height + 2 * padding} h-${width + 2 * padding} Z
   `;
-}
-
-
-function getPopoverPosition(element: HTMLElement): React.CSSProperties {
-  const { top, left, width, height } = element.getBoundingClientRect();
-  
-  // This positions the popover relative to the viewport, not the element, which is what we need for fixed positioning
-  return {
-    position: 'fixed',
-    top: `${top}px`,
-    left: `${left}px`,
-    // We don't set width/height as PopoverContent handles it.
-    // The side prop will handle the exact placement relative to these coordinates.
-  };
 }
