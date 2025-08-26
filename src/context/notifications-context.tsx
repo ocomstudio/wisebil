@@ -1,7 +1,7 @@
 // src/context/notifications-context.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { Lightbulb, TrendingUp, Bell } from "lucide-react";
 import { useLocale } from './locale-context';
 
@@ -72,9 +72,9 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  const markAllAsRead = () => {
+  const markAllAsRead = useCallback(() => {
     setNotifications(prev => prev.map(n => ({ ...n, isNew: false })));
-  };
+  }, []);
 
   return (
     <NotificationsContext.Provider value={{ notifications, unreadCount, removeNotification, markAllAsRead }}>
