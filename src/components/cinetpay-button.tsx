@@ -49,8 +49,15 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
         }
         
         try {
-            const [firstName, ...lastNameParts] = (user.displayName || 'Utilisateur Wisebil').split(' ');
-            const lastName = lastNameParts.join(' ') || 'Utilisateur';
+            let firstName = "Client";
+            let lastName = "Wisebil";
+
+            if (user.displayName) {
+                const nameParts = user.displayName.split(' ');
+                firstName = nameParts[0];
+                lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Utilisateur';
+            }
+
 
             CinetPay.setConfig({
                 apikey: apiKey,
@@ -68,7 +75,7 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
                 // These fields are mandatory for card payments
                 customer_name: firstName,
                 customer_surname: lastName,
-                customer_email: user.email,
+                customer_email: user.email || 'contact@wisebil.com',
                 customer_phone_number: user.phone || '000000000',
                 customer_address: "BP 0024",
                 customer_city: "Dakar",
