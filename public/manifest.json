@@ -1,7 +1,11 @@
 {
   "name": "Wisebil",
   "short_name": "Wisebil",
-  "description": "Maîtrisez vos finances avec l'IA.",
+  "description": "Maîtrisez vos finances avec l'IA. Wisebil est votre conseiller financier personnel pour la gestion de budget, le suivi des dépenses et l'épargne intelligente.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -13,10 +17,5 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ],
-  "theme_color": "#09090b",
-  "background_color": "#09090b",
-  "start_url": "/",
-  "display": "standalone",
-  "orientation": "portrait"
+  ]
 }

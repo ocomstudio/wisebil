@@ -1,0 +1,7 @@
+# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+#
+# Allow all robots to crawl the entire site.
+User-agent: *
+Allow: /
+
+Sitemap: https://www.wisebil.com/sitemap.xml
