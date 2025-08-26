@@ -17,9 +17,12 @@ import {
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from '../ui/badge';
+import { useNotifications } from '@/context/notifications-context';
+
 
 export function DashboardHeader() {
   const { t } = useLocale();
+  const { unreadCount, markAllAsRead } = useNotifications();
   
   const playNotificationSound = () => {
     // Note for developer: Place your notification sound file (e.g., notification.mp3) in the /public folder.
@@ -29,6 +32,7 @@ export function DashboardHeader() {
 
   const handleNotificationClick = () => {
     playNotificationSound();
+    markAllAsRead();
     toast.custom((toastObject) => (
       <div
         className={`${
@@ -96,9 +100,12 @@ export function DashboardHeader() {
             </DropdownMenuContent>
         </DropdownMenu>
 
-         <Button variant="ghost" size="icon" asChild className="rounded-full" onClick={handleNotificationClick}>
+         <Button variant="ghost" size="icon" asChild className="rounded-full relative" onClick={handleNotificationClick}>
           <Link href="/dashboard/notifications">
             <Bell className="h-5 w-5" />
+             {unreadCount > 0 && (
+              <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 justify-center p-0">{unreadCount}</Badge>
+            )}
           </Link>
         </Button>
         <UserProfile />

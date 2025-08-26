@@ -20,10 +20,16 @@ import { Toaster as HotToaster } from 'react-hot-toast';
 import Link from "next/link";
 import { LocaleProvider, useLocale } from "@/context/locale-context";
 import { TutorialProvider } from "@/context/tutorial-context";
+import { useNotifications } from "@/context/notifications-context";
+import { Badge } from "@/components/ui/badge";
+import { NotificationsProvider } from "@/context/notifications-context";
+
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { t } = useLocale();
   const pathname = usePathname();
+  const { unreadCount, markAllAsRead } = useNotifications();
+
 
   // Hide main layout for the full-screen scan page on mobile
   if (pathname.startsWith('/dashboard/scan-receipt')) {
@@ -44,9 +50,12 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         {/* Desktop Header */}
         <header className="hidden md:flex items-center justify-end h-14 px-6 border-b bg-muted/40 flex-shrink-0">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="rounded-full" asChild>
+            <Button variant="ghost" size="icon" className="rounded-full relative" asChild onClick={markAllAsRead}>
               <Link href="/dashboard/notifications">
                 <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                   <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 justify-center p-0">{unreadCount}</Badge>
+                )}
                 <span className="sr-only">{t('notifications')}</span>
               </Link>
             </Button>
@@ -85,19 +94,21 @@ export default function DashboardLayout({
         <LocaleProvider>
           <SettingsProvider>
             <TransactionsProvider>
-              <BudgetProvider>
-                <SavingsProvider>
-                  <TutorialProvider>
-                    <DashboardLayoutContent>{children}</DashboardLayoutContent>
-                  </TutorialProvider>
-                   <HotToaster
-                    position="top-center"
-                    toastOptions={{
-                      className: 'bg-card text-card-foreground',
-                    }}
-                  />
-                </SavingsProvider>
-              </BudgetProvider>
+                <BudgetProvider>
+                  <SavingsProvider>
+                    <NotificationsProvider>
+                      <TutorialProvider>
+                        <DashboardLayoutContent>{children}</DashboardLayoutContent>
+                      </TutorialProvider>
+                    </NotificationsProvider>
+                    <HotToaster
+                      position="top-center"
+                      toastOptions={{
+                        className: 'bg-card text-card-foreground',
+                      }}
+                    />
+                  </SavingsProvider>
+                </BudgetProvider>
             </TransactionsProvider>
           </SettingsProvider>
         </LocaleProvider>

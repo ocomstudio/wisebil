@@ -1,59 +1,30 @@
 // src/app/dashboard/notifications/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Bell, Lightbulb, TrendingUp, X } from "lucide-react";
+import { ArrowLeft, Bell, X } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "@/context/locale-context";
 import { cn } from "@/lib/utils";
+import { useNotifications } from "@/context/notifications-context";
+
 
 export default function NotificationsPage() {
   const { t } = useLocale();
-
-  const initialNotifications = [
-    {
-      id: 1,
-      icon: <Lightbulb className="h-6 w-6 text-yellow-400" />,
-      title: t('notification_tip_title'),
-      description: t('notification_tip_desc'),
-      time: t('time_5_minutes_ago'),
-      isNew: true,
-    },
-    {
-      id: 2,
-      icon: <TrendingUp className="h-6 w-6 text-green-500" />,
-      title: t('notification_goal_title'),
-      description: t('notification_goal_desc'),
-      time: t('time_2_hours_ago'),
-      isNew: true,
-    },
-    {
-      id: 3,
-      icon: <Bell className="h-6 w-6 text-primary" />,
-      title: t('notification_bill_title'),
-      description: t('notification_bill_desc'),
-      time: t('time_yesterday'),
-      isNew: false,
-    },
-    {
-      id: 4,
-      icon: <Lightbulb className="h-6 w-6 text-yellow-400" />,
-      title: t('notification_advice_title'),
-      description: t('notification_advice_desc'),
-      time: t('time_2_days_ago'),
-      isNew: false,
-    },
-  ];
-
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const { notifications, removeNotification, markAllAsRead } = useNotifications();
   const [closingId, setClosingId] = useState<number | null>(null);
+
+  useEffect(() => {
+    markAllAsRead();
+  }, [markAllAsRead]);
+
 
   const handleClose = (id: number) => {
     setClosingId(id);
     setTimeout(() => {
-      setNotifications(prev => prev.filter(n => n.id !== id));
+      removeNotification(id);
       setClosingId(null);
     }, 300); // Wait for fade-out animation
   };
