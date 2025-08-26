@@ -288,7 +288,7 @@ export function ConseilPanel() {
         scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' });
       }
     }
-  }, [currentConversation, isThinking]);
+  }, [currentConversation.length, isThinking]);
   
   const startListening = useCallback(async () => {
     if (isListening || transcriptionMode) return;
