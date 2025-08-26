@@ -70,7 +70,7 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
             CinetPay.setConfig({
                 apikey: apiKey,
                 site_id: finalSiteId,
-                notify_url: 'https://wisebil-596a8.web.app/api/cinetpay/notify/',
+                notify_url: 'https://wisebil-596a8.web.app/api/cinetpay/notify',
                 mode: 'PRODUCTION',
             });
 
