@@ -27,6 +27,7 @@ function AuthButtons() {
     const { firebaseUser, isLoading } = useAuth();
     const [loginOpen, setLoginOpen] = useState(false);
     const [signupOpen, setSignupOpen] = useState(false);
+    const router = useRouter();
 
     const handleSwitchToSignup = () => {
         setLoginOpen(false);
@@ -36,6 +37,15 @@ function AuthButtons() {
     const handleSwitchToLogin = () => {
         setSignupOpen(false);
         setLoginOpen(true);
+    };
+    
+    const handleSubscriptionClick = (plan: string) => {
+        if (firebaseUser) {
+            router.push('/dashboard/billing');
+        } else {
+            sessionStorage.setItem('redirect_plan', plan);
+            setSignupOpen(true);
+        }
     };
 
     if (isLoading) {
@@ -74,7 +84,7 @@ function AuthButtons() {
             </Dialog>
             <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
                 <DialogTrigger asChild>
-                    <Button>{t('signup_button')}</Button>
+                     <Button onClick={() => handleSubscriptionClick('free')}>{t('signup_button')}</Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
@@ -92,25 +102,13 @@ export default function DesktopLandingPage() {
     const { t, currency, formatCurrency } = useLocale();
     const { firebaseUser } = useAuth();
     const router = useRouter();
-    const [loginOpen, setLoginOpen] = useState(false);
-    const [signupOpen, setSignupOpen] = useState(false);
-
-    const handleSwitchToSignup = () => {
-        setLoginOpen(false);
-        setSignupOpen(true);
-    };
-
-    const handleSwitchToLogin = () => {
-        setSignupOpen(false);
-        setLoginOpen(true);
-    };
 
     const handleSubscriptionClick = (plan: string) => {
         if (firebaseUser) {
             router.push('/dashboard/billing');
         } else {
             sessionStorage.setItem('redirect_plan', plan);
-            setSignupOpen(true);
+            // This will be handled by the signup button in AuthButtons now
         }
     };
 
@@ -240,18 +238,7 @@ export default function DesktopLandingPage() {
                     <AuthButtons />
                 </nav>
                 <div className="ml-auto lg:hidden">
-                     <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
-                        <DialogTrigger asChild>
-                            <Button>{t('login_button')}</Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                           <DialogHeader>
-                               <DialogTitle className="sr-only">{t('login_title')}</DialogTitle>
-                               <DialogDescription className="sr-only">{t('login_subtitle')}</DialogDescription>
-                           </DialogHeader>
-                           <LoginPage onSwitchToSignup={handleSwitchToSignup} />
-                        </DialogContent>
-                    </Dialog>
+                    <AuthButtons />
                 </div>
             </div>
         </header>
@@ -557,24 +544,6 @@ export default function DesktopLandingPage() {
             </div>
             </div>
         </footer>
-        <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
-                <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle className="sr-only">{t('signup_title')}</DialogTitle>
-                        <DialogDescription className="sr-only">{t('signup_subtitle')}</DialogDescription>
-                    </DialogHeader>
-                    <SignupPage onSwitchToLogin={handleSwitchToLogin} />
-                </DialogContent>
-            </Dialog>
-             <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
-                <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle className="sr-only">{t('login_title')}</DialogTitle>
-                        <DialogDescription className="sr-only">{t('login_subtitle')}</DialogDescription>
-                    </DialogHeader>
-                    <LoginPage onSwitchToSignup={handleSwitchToSignup} />
-                </DialogContent>
-            </Dialog>
         </div>
     </AuthProvider>
   );
