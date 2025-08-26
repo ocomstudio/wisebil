@@ -29,26 +29,26 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
     const { t } = useLocale();
     
     const handlePayment = () => {
-        if (!user) {
-            toast({ variant: 'destructive', title: t('error_title'), description: t('login_required_for_subscription') });
-            return;
-        }
-        
-        if (typeof window.CinetPay === 'undefined') {
-            toast({ variant: 'destructive', title: "Erreur de Service", description: "Le service de paiement n'a pas pu être chargé. Veuillez rafraîchir la page." });
-            return;
-        }
-
-        const apiKey = process.env.NEXT_PUBLIC_CINETPAY_API_KEY;
-        const siteId = process.env.NEXT_PUBLIC_CINETPAY_SITE_ID;
-
-        if (!apiKey || !siteId) {
-            console.error("CinetPay API Key or Site ID is missing.");
-            toast({ variant: 'destructive', title: "Erreur de Configuration", description: "Les clés de paiement ne sont pas configurées. Veuillez contacter le support." });
-            return;
-        }
-        
         try {
+            if (typeof window.CinetPay === 'undefined') {
+                toast({ variant: 'destructive', title: "Erreur de Service", description: "Le service de paiement n'a pas pu être chargé. Veuillez rafraîchir la page." });
+                return;
+            }
+
+            const apiKey = process.env.NEXT_PUBLIC_CINETPAY_API_KEY;
+            const siteId = process.env.NEXT_PUBLIC_CINETPAY_SITE_ID;
+
+            if (!apiKey || !siteId) {
+                console.error("CinetPay API Key or Site ID is missing.");
+                toast({ variant: 'destructive', title: "Erreur de Configuration", description: "Les clés de paiement ne sont pas configurées. Veuillez contacter le support." });
+                return;
+            }
+            
+            if (!user) {
+                toast({ variant: 'destructive', title: t('error_title'), description: t('login_required_for_subscription') });
+                return;
+            }
+
             let firstName = "Client";
             let lastName = "Wisebil";
 
@@ -62,7 +62,7 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
             CinetPay.setConfig({
                 apikey: apiKey,
                 site_id: parseInt(siteId),
-                notify_url: 'https://wisebil-596a8.web.app/api/cinetpay/notify',
+                notify_url: 'https://wisebil-596a8.web.app/api/cinetpay/notify/',
                 mode: 'PRODUCTION',
             });
 
@@ -86,32 +86,28 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
 
             CinetPay.waitResponse(function(data: any) {
                 if (data.status === "REFUSED") {
-                    toast({
-                        variant: "destructive",
-                        title: "Paiement Échoué",
-                        description: "Votre paiement a échoué. Veuillez réessayer.",
-                    });
+                    if (alert("Votre paiement a échoué")) {
+                        window.location.reload();
+                    }
                 } else if (data.status === "ACCEPTED") {
-                    toast({
-                        title: "Paiement Réussi",
-                        description: "Votre paiement a été effectué avec succès. Votre abonnement sera activé.",
-                    });
-                    router.push('/dashboard');
+                    if (alert("Votre paiement a été effectué avec succès")) {
+                        window.location.reload();
+                    }
                 }
             });
 
             CinetPay.onError(function(err: any) {
                 console.error("CinetPay Error:", err);
-                toast({
-                    variant: "destructive",
-                    title: "Erreur de Paiement",
-                    description: "Une erreur technique est survenue. Veuillez réessayer.",
-                });
+                if (alert("Une erreur technique est survenue. Veuillez réessayer.")) {
+                    window.location.reload();
+                }
             });
 
         } catch (error) {
             console.error("CinetPay SDK Critical Error:", error);
-            toast({ variant: 'destructive', title: "Erreur Critique", description: "Impossible de lancer le module de paiement." });
+            if (alert("Impossible de lancer le module de paiement.")) {
+                 window.location.reload();
+            }
         }
     };
 
