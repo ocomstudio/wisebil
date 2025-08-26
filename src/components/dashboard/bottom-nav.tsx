@@ -3,13 +3,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BarChart, Plus, User, Shield, Target, Lightbulb, ScanLine } from 'lucide-react';
+import { Home, BarChart, Settings, Target, ScanLine } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLocale } from '@/context/locale-context';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import ScanReceiptPage from '@/app/dashboard/scan-receipt/page';
 import { useState } from 'react';
-import { useAuth } from '../context/auth-context';
+import { useAuth } from '@/context/auth-context';
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -24,7 +24,7 @@ export function BottomNav() {
     { href: '/dashboard/reports', label: t('nav_reports'), icon: BarChart },
     { href: '/dashboard/scan-receipt', label: t('nav_scan'), icon: ScanLine },
     { href: '/dashboard/budget', label: t('nav_budgets'), icon: Target },
-    { href: '/dashboard/conseil', label: t('nav_advice'), icon: Lightbulb, notification: isEmailUnverified },
+    { href: '/dashboard/settings', label: t('nav_settings'), icon: Settings, notification: isEmailUnverified },
   ];
 
   return (

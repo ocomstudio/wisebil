@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { BarChart, Lightbulb, Home, Settings, Shield, Target, Wallet, Bell } from "lucide-react"
 import { useLocale } from "@/context/locale-context";
-import { useAuth } from "../context/auth-context";
+import { useAuth } from "@/context/auth-context";
 
 export function SidebarNav() {
   const pathname = usePathname();
