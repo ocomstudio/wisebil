@@ -13,6 +13,14 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Le service de paiement est temporairement indisponible.' }, { status: 503 });
     }
   
+    const CINETPAY_API_KEY = process.env.CINETPAY_API_KEY;
+    const CINETPAY_SITE_ID = process.env.CINETPAY_SITE_ID;
+
+    if (!CINETPAY_API_KEY || !CINETPAY_SITE_ID) {
+        console.error("CinetPay API Key or Site ID is not configured in environment variables.");
+        return NextResponse.json({ error: 'La configuration du serveur de paiement est incomplète.' }, { status: 500 });
+    }
+
     try {
         const authToken = request.headers.get('Authorization')?.split('Bearer ')[1];
         if (!authToken) {
@@ -22,7 +30,6 @@ export async function POST(request: Request) {
         const decodedToken = await adminAuth.verifyIdToken(authToken);
         const userId = decodedToken.uid;
         
-        // Fetch user profile from Firestore to get additional details
         const userDoc = await db.collection('users').doc(userId).get();
         if (!userDoc.exists) {
             return NextResponse.json({ error: 'User profile not found.' }, { status: 404 });
@@ -48,8 +55,8 @@ export async function POST(request: Request) {
         const lastName = lastNameParts.join(' ') || 'Utilisateur';
 
         const data = {
-            apikey: process.env.CINETPAY_API_KEY,
-            site_id: process.env.CINETPAY_SITE_ID,
+            apikey: CINETPAY_API_KEY,
+            site_id: CINETPAY_SITE_ID,
             transaction_id: transaction_id,
             amount: amount,
             currency: currency,
@@ -59,7 +66,6 @@ export async function POST(request: Request) {
             customer_surname: lastName,
             customer_email: userProfile.email || decodedToken.email,
             customer_phone_number: userProfile.phone || '000000000',
-            // Using generic but valid data as fallback for required fields not in user profile
             customer_address: "Adresse par défaut",
             customer_city: "Dakar",
             customer_country: "SN",
@@ -79,16 +85,16 @@ export async function POST(request: Request) {
         if (response.data.code === '201') {
             return NextResponse.json({ payment_url: response.data.data.payment_url });
         } else {
-            console.error("CinetPay Error:", response.data);
+            console.error("CinetPay API Error (Handled):", response.data);
             return NextResponse.json({ error: response.data.description || response.data.message, details: response.data }, { status: 500 });
         }
 
     } catch (error: any) {
-        if (error.response) {
-          console.error('CinetPay API Error:', error.response.data);
+        if (error.isAxiosError && error.response) {
+          console.error('CinetPay API Error (Caught):', error.response.data);
           return NextResponse.json({ error: 'CinetPay API error', details: error.response.data }, { status: 500 });
         }
-        console.error('Internal Server Error:', error);
+        console.error('Internal Server Error (Caught):', error);
         return NextResponse.json({ error: 'Internal Server Error', details: error.message || String(error) }, { status: 500 });
     }
 }
