@@ -61,10 +61,10 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
             case 'auth/user-not-found':
             case 'auth/wrong-password':
             case 'auth/invalid-credential':
-                description = t('Invalid email or password.');
+                description = t('invalid_credential_error');
                 break;
             case 'auth/too-many-requests':
-                description = t('Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.');
+                description = t('too_many_requests_error');
                 break;
             default:
                 description = error.message;

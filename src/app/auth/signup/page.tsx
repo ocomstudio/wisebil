@@ -96,13 +96,13 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
     if (error instanceof FirebaseError) {
         switch (error.code) {
             case 'auth/email-already-in-use':
-                description = t('This email is already in use by another account.');
+                description = t('email_already_in_use_error');
                 break;
             case 'auth/weak-password':
-                description = t('The password is too weak. Please choose a stronger password.');
+                description = t('signup_password_error');
                 break;
             case 'auth/too-many-requests':
-                description = t('Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.');
+                description = t('too_many_requests_error');
                 break;
             default:
                 description = error.message;

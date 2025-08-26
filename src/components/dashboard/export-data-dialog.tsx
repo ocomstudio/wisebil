@@ -90,7 +90,7 @@ export function ExportDataDialog() {
                 Category: b.category,
             }));
             const ws = XLSX.utils.json_to_sheet(sheetData);
-            XLSX.utils.book_append_sheet(wb, ws, "Budgets");
+            XLSX.utils.book_append_sheet(wb, ws, t("nav_budgets"));
         }
 
         if (data.dataTypes.includes("savingsGoals")) {
@@ -101,7 +101,7 @@ export function ExportDataDialog() {
                 Emoji: sg.emoji,
             }));
             const ws = XLSX.utils.json_to_sheet(sheetData);
-            XLSX.utils.book_append_sheet(wb, ws, "Savings Goals");
+            XLSX.utils.book_append_sheet(wb, ws, t("nav_savings"));
         }
 
         const fileName = `Wisebil_Export_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
