@@ -38,13 +38,13 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
         const siteId = process.env.NEXT_PUBLIC_CINETPAY_SITE_ID;
 
         if (!apiKey || !siteId) {
-            console.error("CinetPay API Key or Site ID is missing.");
+            console.error("CinetPay API Key or Site ID is missing from .env.local");
             toast({ variant: 'destructive', title: "Erreur de Configuration", description: "Les clés de paiement ne sont pas configurées. Veuillez contacter le support." });
             return;
         }
 
         if (typeof window.CinetPay === 'undefined') {
-            toast({ variant: 'destructive', title: "Erreur de Service", description: "Le service de paiement n'a pas pu être chargé." });
+            toast({ variant: 'destructive', title: "Erreur de Service", description: "Le service de paiement n'a pas pu être chargé. Veuillez rafraîchir la page." });
             return;
         }
 
@@ -70,10 +70,10 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
                 customer_surname: lastName,
                 customer_email: user.email,
                 customer_phone_number: user.phone || '000000000',
-                customer_address: "N/A",
-                customer_city: "N/A",
-                customer_country: "SN", // Default to Senegal, can be dynamic later
-                customer_state: "DK", // Default to Dakar
+                customer_address: "BP 0024",
+                customer_city: "Dakar",
+                customer_country: "SN",
+                customer_state: "DK",
                 customer_zip_code: "10000",
             });
 
@@ -106,7 +106,7 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
             });
 
         } catch (error) {
-            console.error("CinetPay SDK Error:", error);
+            console.error("CinetPay SDK Critical Error:", error);
             toast({ variant: 'destructive', title: "Erreur Critique", description: "Impossible de lancer le module de paiement." });
         }
     };
