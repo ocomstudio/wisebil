@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck, Languages, Wallet, Trash2, Download, HelpCircle, RefreshCw, MailWarning, Send } from "lucide-react";
+import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck, Languages, Wallet, Trash2, Download, HelpCircle, RefreshCw, MailWarning, Send, KeyRound } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useSettings } from "@/context/settings-context";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +26,7 @@ import { useLocale } from "@/context/locale-context";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Language, Currency } from "@/context/locale-context";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogDescription } from "@/components/ui/dialog";
 import { useTransactions } from "@/context/transactions-context";
 import { useBudgets } from "@/context/budget-context";
 import { useSavings } from "@/context/savings-context";
@@ -43,12 +44,14 @@ import { FirebaseError } from "firebase/app";
 
 export default function SettingsPage() {
   const { settings, updateSettings, checkPin } = useSettings();
-  const { user, updateUser, logout, sendVerificationEmail } = useAuth();
+  const { user, updateUser, logout, sendVerificationEmail, updateUserEmail, updateUserPassword } = useAuth();
   const { toast } = useToast();
   const { t, locale, setLocale, currency, setCurrency } = useLocale();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { setShowTutorial } = useTutorial();
   const [isSendingVerification, setIsSendingVerification] = useState(false);
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
 
   const { resetTransactions } = useTransactions();
   const { resetBudgets } = useBudgets();
@@ -72,6 +75,32 @@ export default function SettingsPage() {
       phone: ""
     },
   });
+  
+  const emailSchema = z.object({
+      newEmail: z.string().email({ message: t('signup_email_error') }),
+      password: z.string().min(1, { message: t('password_required') }),
+  });
+  type EmailFormValues = z.infer<typeof emailSchema>;
+
+  const emailForm = useForm<EmailFormValues>({
+    resolver: zodResolver(emailSchema),
+    defaultValues: { newEmail: "", password: "" },
+  });
+  
+  const passwordSchema = z.object({
+      currentPassword: z.string().min(1, { message: t('password_required') }),
+      newPassword: z.string().min(8, { message: t('signup_password_error') }),
+  }).refine(data => data.currentPassword !== data.newPassword, {
+      message: t('password_new_different_error'),
+      path: ["newPassword"],
+  });
+  type PasswordFormValues = z.infer<typeof passwordSchema>;
+
+  const passwordForm = useForm<PasswordFormValues>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: { currentPassword: "", newPassword: "" },
+  });
+
 
   useEffect(() => {
     if (user) {
@@ -89,6 +118,48 @@ export default function SettingsPage() {
       title: t('profile_updated_title'),
       description: t('profile_updated_desc'),
     });
+  };
+
+  const handleEmailChange = async (data: EmailFormValues) => {
+    try {
+      await updateUserEmail(data.password, data.newEmail);
+      toast({
+        title: t('email_update_success_title'),
+        description: t('email_update_success_desc'),
+      });
+      setIsEmailDialogOpen(false);
+      emailForm.reset();
+    } catch (error) {
+      let description = t('email_update_error');
+      if (error instanceof FirebaseError) {
+        if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+          description = t('incorrect_password_error');
+        } else if (error.code === 'auth/email-already-in-use') {
+           description = t('This email is already in use by another account.');
+        }
+      }
+      toast({ variant: "destructive", title: t('error_title'), description });
+    }
+  };
+
+  const handlePasswordChange = async (data: PasswordFormValues) => {
+    try {
+      await updateUserPassword(data.currentPassword, data.newPassword);
+      toast({
+        title: t('password_update_success_title'),
+        description: t('password_update_success_desc'),
+      });
+      setIsPasswordDialogOpen(false);
+      passwordForm.reset();
+    } catch (error) {
+       let description = t('password_update_error');
+       if (error instanceof FirebaseError) {
+        if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+          description = t('incorrect_password_error');
+        }
+      }
+      toast({ variant: "destructive", title: t('error_title'), description });
+    }
   };
   
   const handleTogglePinLock = (isChecked: boolean) => {
@@ -318,19 +389,7 @@ export default function SettingsPage() {
                   />
                 </div>
               </div>
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('email_label')}</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="votre@email.com" {...field} readOnly />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              
               <FormField
                 control={form.control}
                 name="phone"
@@ -355,6 +414,109 @@ export default function SettingsPage() {
               </div>
             </form>
           </Form>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('account_security_title')}</CardTitle>
+          <CardDescription>{t('account_security_desc')}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+             <div className="p-4 border rounded-lg flex justify-between items-center">
+                <div>
+                  <p className="font-medium">{t('email_label')}</p>
+                  <p className="text-sm text-muted-foreground">{user?.email}</p>
+                </div>
+                <Dialog open={isEmailDialogOpen} onOpenChange={setIsEmailDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline">{t('change_button')}</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>{t('change_email_title')}</DialogTitle>
+                            <DialogDescription>{t('change_email_desc')}</DialogDescription>
+                        </DialogHeader>
+                        <Form {...emailForm}>
+                            <form onSubmit={emailForm.handleSubmit(handleEmailChange)} className="space-y-4">
+                                <FormField
+                                    control={emailForm.control}
+                                    name="newEmail"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>{t('new_email_label')}</FormLabel>
+                                            <FormControl><Input type="email" {...field} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={emailForm.control}
+                                    name="password"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>{t('current_password_label')}</FormLabel>
+                                            <FormControl><Input type="password" {...field} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <div className="flex justify-end gap-2">
+                                     <DialogClose asChild><Button type="button" variant="ghost">{t('cancel')}</Button></DialogClose>
+                                     <Button type="submit" disabled={emailForm.formState.isSubmitting}>{t('save_changes_button')}</Button>
+                                </div>
+                            </form>
+                        </Form>
+                    </DialogContent>
+                </Dialog>
+            </div>
+             <div className="p-4 border rounded-lg flex justify-between items-center">
+                <div>
+                  <p className="font-medium">{t('password_label')}</p>
+                  <p className="text-sm text-muted-foreground">********</p>
+                </div>
+                <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline">{t('change_button')}</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>{t('change_password_title')}</DialogTitle>
+                             <DialogDescription>{t('change_password_desc')}</DialogDescription>
+                        </DialogHeader>
+                        <Form {...passwordForm}>
+                             <form onSubmit={passwordForm.handleSubmit(handlePasswordChange)} className="space-y-4">
+                                <FormField
+                                    control={passwordForm.control}
+                                    name="currentPassword"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>{t('current_password_label')}</FormLabel>
+                                            <FormControl><Input type="password" {...field} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={passwordForm.control}
+                                    name="newPassword"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>{t('new_password_label')}</FormLabel>
+                                            <FormControl><Input type="password" {...field} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <div className="flex justify-end gap-2">
+                                     <DialogClose asChild><Button type="button" variant="ghost">{t('cancel')}</Button></DialogClose>
+                                     <Button type="submit" disabled={passwordForm.formState.isSubmitting}>{t('change_password_button')}</Button>
+                                </div>
+                            </form>
+                        </Form>
+                    </DialogContent>
+                </Dialog>
+            </div>
         </CardContent>
       </Card>
       

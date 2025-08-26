@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile, UserCredential, sendEmailVerification, sendPasswordResetEmail, confirmPasswordReset } from 'firebase/auth';
+import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile, UserCredential, sendEmailVerification, sendPasswordResetEmail, confirmPasswordReset, EmailAuthProvider, reauthenticateWithCredential, updateEmail, updatePassword } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
@@ -35,6 +35,8 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<{ isNewUser: boolean; user: FirebaseUser }>;
   logout: () => Promise<void>;
   updateUser: (newUserData: Partial<Omit<User, 'uid'>>) => Promise<void>;
+  updateUserEmail: (currentPassword: string, newEmail: string) => Promise<void>;
+  updateUserPassword: (currentPassword: string, newPassword: string) => Promise<void>;
   sendVerificationEmail: () => Promise<void>;
   sendPasswordResetEmail: typeof sendPasswordResetEmail;
   confirmPasswordReset: typeof confirmPasswordReset;
@@ -173,6 +175,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const reauthenticate = async (password: string) => {
+    if (!firebaseUser || !firebaseUser.email) throw new Error("User not found or email is missing.");
+    const credential = EmailAuthProvider.credential(firebaseUser.email, password);
+    await reauthenticateWithCredential(firebaseUser, credential);
+  };
+  
+  const updateUserEmail = async (currentPassword: string, newEmail: string) => {
+    if (!firebaseUser) throw new Error("User not found.");
+    await reauthenticate(currentPassword);
+    await updateEmail(firebaseUser, newEmail);
+    // Also update firestore
+    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    await updateDoc(userDocRef, { 'profile.email': newEmail });
+    await sendEmailVerification(firebaseUser); // Send verification to new email
+  };
+
+  const updateUserPassword = async (currentPassword: string, newPassword: string) => {
+    if (!firebaseUser) throw new Error("User not found.");
+    await reauthenticate(currentPassword);
+    await updatePassword(firebaseUser, newPassword);
+  };
+
   const sendVerificationEmail = async () => {
     if (firebaseUser) {
       await sendEmailVerification(firebaseUser);
@@ -190,6 +214,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loginWithGoogle: safeFunction(loginWithGoogle),
     logout: safeFunction(logout),
     updateUser: safeFunction(updateUser),
+    updateUserEmail: safeFunction(updateUserEmail),
+    updateUserPassword: safeFunction(updateUserPassword),
     sendVerificationEmail: safeFunction(sendVerificationEmail),
     sendPasswordResetEmail: safeFunction((...args) => sendPasswordResetEmail(auth, ...args)),
     confirmPasswordReset: safeFunction((...args) => confirmPasswordReset(auth, ...args)),
