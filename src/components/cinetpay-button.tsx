@@ -54,7 +54,7 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
 
             if (user.displayName) {
                 const nameParts = user.displayName.split(' ');
-                firstName = nameParts[0];
+                firstName = nameParts[0] || "Client";
                 lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Utilisateur';
             }
 
