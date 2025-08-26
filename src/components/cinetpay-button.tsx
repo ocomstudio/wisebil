@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
 import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
+import { useLocale } from "@/context/locale-context";
 
 // Extend window type to include CinetPay
 declare global {
@@ -25,15 +26,25 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
     const { user } = useAuth();
     const { toast } = useToast();
     const router = useRouter();
+    const { t } = useLocale();
 
     const handlePayment = () => {
         if (!user) {
-            toast({ variant: 'destructive', title: "Erreur", description: "Vous devez être connecté pour payer." });
+            toast({ variant: 'destructive', title: t('error_title'), description: t('login_required_for_subscription') });
+            return;
+        }
+
+        const apiKey = process.env.NEXT_PUBLIC_CINETPAY_API_KEY;
+        const siteId = process.env.NEXT_PUBLIC_CINETPAY_SITE_ID;
+
+        if (!apiKey || !siteId) {
+            console.error("CinetPay API Key or Site ID is missing.");
+            toast({ variant: 'destructive', title: "Erreur de Configuration", description: "Les clés de paiement ne sont pas configurées. Veuillez contacter le support." });
             return;
         }
 
         if (typeof window.CinetPay === 'undefined') {
-            toast({ variant: 'destructive', title: "Erreur", description: "Le service de paiement n'a pas pu être chargé." });
+            toast({ variant: 'destructive', title: "Erreur de Service", description: "Le service de paiement n'a pas pu être chargé." });
             return;
         }
 
@@ -42,9 +53,9 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
 
         try {
             window.CinetPay.setConfig({
-                apikey: process.env.NEXT_PUBLIC_CINETPAY_API_KEY,
-                site_id: process.env.NEXT_PUBLIC_CINETPAY_SITE_ID,
-                notify_url: 'https://wisebil-596a8.web.app/api/cinetpay/notify', // You will need to create this notify URL handler
+                apikey: apiKey,
+                site_id: siteId,
+                notify_url: 'https://wisebil-596a8.web.app/api/cinetpay/notify',
                 mode: 'PRODUCTION',
             });
 
@@ -60,9 +71,9 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
                 customer_phone_number: user.phone || '000000000',
                 customer_address: "N/A",
                 customer_city: "N/A",
-                customer_country: "SN", // Default country, can be dynamic
-                customer_state: "DK", // Default state
-                customer_zip_code: "10000",
+                customer_country : "SN",
+                customer_state : "DK",
+                customer_zip_code : "10000",
             });
 
             window.CinetPay.waitResponse(function(data: any) {
@@ -79,6 +90,7 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
                     });
                     // Here you would typically call your backend to verify the transaction
                     // and update the user's subscription status.
+                    // For now, redirect to dashboard.
                     router.push('/dashboard');
                 }
             });
