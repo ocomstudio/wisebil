@@ -48,24 +48,23 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
                 toast({ variant: 'destructive', title: t('error_title'), description: t('login_required_for_subscription') });
                 return;
             }
+            
+            const finalAmount = Math.round(amount);
+            const finalSiteId = parseInt(siteId);
+
+            if (isNaN(finalSiteId)) {
+                console.error("CinetPay Site ID is not a valid number.");
+                toast({ variant: 'destructive', title: "Erreur de Configuration", description: "L'ID du site de paiement est invalide." });
+                return;
+            }
 
             let customerName = "Client";
             let customerSurname = "Wisebil";
 
             if (user.displayName) {
                 const nameParts = user.displayName.split(' ');
-                customerName = nameParts[0];
-                customerSurname = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Utilisateur';
-            }
-
-            // Ensure amount and site_id are integers, as per documentation
-            const finalAmount = Math.round(amount);
-            const finalSiteId = parseInt(siteId);
-            
-            if (isNaN(finalSiteId)) {
-                console.error("CinetPay Site ID is not a valid number.");
-                toast({ variant: 'destructive', title: "Erreur de Configuration", description: "L'ID du site de paiement est invalide." });
-                return;
+                customerName = nameParts[0] || "Client";
+                customerSurname = nameParts.length > 1 ? nameParts.slice(1).join(' ') : "Wisebil";
             }
 
             CinetPay.setConfig({
@@ -85,7 +84,7 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
                 customer_name: customerName,
                 customer_surname: customerSurname,
                 customer_email: user.email || 'contact@wisebil.com',
-                customer_phone_number: user.phone || '+221000000000',
+                customer_phone_number: user.phone || '+221770000000',
                 customer_address : "BP 0024",
                 customer_city: "Dakar",
                 customer_country : "SN",
