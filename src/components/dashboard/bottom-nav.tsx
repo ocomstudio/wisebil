@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BarChart, Settings, Target, ScanLine } from 'lucide-react';
+import { Home, BarChart, Settings, Target, ScanLine, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLocale } from '@/context/locale-context';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
@@ -24,7 +24,7 @@ export function BottomNav() {
     { href: '/dashboard/reports', label: t('nav_reports'), icon: BarChart },
     { href: '/dashboard/scan-receipt', label: t('nav_scan'), icon: ScanLine },
     { href: '/dashboard/budget', label: t('nav_budgets'), icon: Target },
-    { href: '/dashboard/settings', label: t('nav_settings'), icon: Settings },
+    { href: '/dashboard/conseil', label: t('nav_advice'), icon: Lightbulb },
   ];
 
   return (
