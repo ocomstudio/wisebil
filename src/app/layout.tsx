@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { LocaleProvider } from '@/context/locale-context';
 import { AuthProvider } from '@/context/auth-context';
+import Script from 'next/script';
 
 const APP_NAME = "Wisebil";
 const APP_DESCRIPTION = "Maîtrisez vos finances avec l'IA. Wisebil est votre conseiller financier personnel pour la gestion de budget, le suivi des dépenses et l'épargne intelligente.";
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
     template: `%s - ${APP_NAME}`,
   },
   description: APP_DESCRIPTION,
-  keywords: ["gestion de budget", "suivi de dépenses", "conseiller financier ia", "épargne", "finances personnelles", "wisebil", "gestion financière"],
+  keywords: ["gestion de budget", "suivi de dépenses", "conseiller financier ia", "épargne", "finances personnelles", "wisebil", "gestion financière", "afrique", "senegal", "cameroun"],
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -41,6 +42,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
+        <Script src="https://cdn.cinetpay.com/seamless/main.js" strategy="beforeInteractive" />
       </head>
       <body className="font-body antialiased" suppressHydrationWarning={true}>
         <AuthProvider>
