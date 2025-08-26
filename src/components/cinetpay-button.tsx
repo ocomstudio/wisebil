@@ -38,7 +38,7 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
         const siteId = process.env.NEXT_PUBLIC_CINETPAY_SITE_ID;
 
         if (!apiKey || !siteId) {
-            console.error("CinetPay API Key or Site ID is missing from .env.local");
+            console.error("CinetPay API Key or Site ID is missing.");
             toast({ variant: 'destructive', title: "Erreur de Configuration", description: "Les clés de paiement ne sont pas configurées. Veuillez contacter le support." });
             return;
         }
@@ -54,7 +54,7 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
         try {
             window.CinetPay.setConfig({
                 apikey: apiKey,
-                site_id: siteId,
+                site_id: parseInt(siteId), // Ensure site_id is an integer
                 notify_url: 'https://wisebil-596a8.web.app/api/cinetpay/notify',
                 mode: 'PRODUCTION',
             });
@@ -72,8 +72,8 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
                 customer_phone_number: user.phone || '000000000',
                 customer_address: "N/A",
                 customer_city: "N/A",
-                customer_country: "SN",
-                customer_state: "DK",
+                customer_country: "SN", // Default to Senegal, can be dynamic later
+                customer_state: "DK", // Default to Dakar
                 customer_zip_code: "10000",
             });
 
