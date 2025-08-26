@@ -65,15 +65,16 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
                 currency: currency,
                 channels: 'ALL',
                 description: description,
+                // These fields are required for card payments
                 customer_name: firstName,
                 customer_surname: lastName,
                 customer_email: user.email,
                 customer_phone_number: user.phone || '000000000',
                 customer_address: "N/A",
                 customer_city: "N/A",
-                customer_country : "SN",
-                customer_state : "DK",
-                customer_zip_code : "10000",
+                customer_country: "SN",
+                customer_state: "DK",
+                customer_zip_code: "10000",
             });
 
             window.CinetPay.waitResponse(function(data: any) {
