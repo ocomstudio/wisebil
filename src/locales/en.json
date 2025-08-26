@@ -377,5 +377,21 @@
     "phone_or_email_required": "Email or phone number is required.",
     "email_or_phone_label": "Email or Phone Number",
     "email_or_phone_placeholder": "your@email.com or +221 77...",
-    "all_transactions": "All Transactions"
+    "all_transactions": "All Transactions",
+    "transcription_error_title": "Transcription Error",
+    "transcription_error_desc": "Could not transcribe audio. Please try again.",
+    "listening_error": "Microphone access error",
+    "empty_transcript_error": "Transcript is empty. Cannot validate.",
+    "validate_button": "Validate",
+    "transcription_placeholder": "Verify the transcript here...",
+    "stop_recording_button": "Stop Recording",
+    "agent_w_placeholder": "Dictate your expenses, incomes, budgets...",
+    "thinking_in_progress": "Thinking in progress...",
+    "agent_w_success": "Financial actions added successfully!",
+    "agent_w_summary_title": "I have added the following actions:",
+    "agent_w_no_action": "I did not detect any financial actions in your message.",
+    "budget": "Budget",
+    "contribution": "Contribution",
+    "agent_w_welcome_title": "Welcome to Agent W",
+    "agent_w_welcome_desc": "Dictate your finances to me. For example, say: 'Yesterday, I paid the rent for 150,000, received my salary of 500,000, and bought credit for 500.' I'll take care of the rest."
 }

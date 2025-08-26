@@ -377,5 +377,21 @@
     "phone_or_email_required": "L'e-mail ou le numéro de téléphone est requis.",
     "email_or_phone_label": "E-mail ou Numéro de téléphone",
     "email_or_phone_placeholder": "votre@email.com ou +221 77...",
-    "all_transactions": "Toutes les transactions"
+    "all_transactions": "Toutes les transactions",
+    "transcription_error_title": "Erreur de transcription",
+    "transcription_error_desc": "Impossible de transcrire l'audio. Veuillez réessayer.",
+    "listening_error": "Erreur d'accès au microphone",
+    "empty_transcript_error": "La transcription est vide. Impossible de valider.",
+    "validate_button": "Valider",
+    "transcription_placeholder": "Vérifiez la transcription ici...",
+    "stop_recording_button": "Arrêter l'enregistrement",
+    "agent_w_placeholder": "Dictez vos dépenses, revenus, budgets...",
+    "thinking_in_progress": "Réflexion en cours...",
+    "agent_w_success": "Actions financières ajoutées avec succès !",
+    "agent_w_summary_title": "J'ai ajouté les actions suivantes :",
+    "agent_w_no_action": "Je n'ai détecté aucune action financière dans votre message.",
+    "budget": "Budget",
+    "contribution": "Contribution",
+    "agent_w_welcome_title": "Bienvenue dans l'Agent W",
+    "agent_w_welcome_desc": "Dictez-moi vos finances. Dites par exemple : 'Hier, j'ai payé le loyer de 150000, reçu mon salaire de 500000 et acheté du crédit pour 5000.' Je m'occupe du reste."
 }
