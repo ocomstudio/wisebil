@@ -7,7 +7,7 @@ import { useAuth } from '@/context/auth-context';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, firebaseUser, isLoading } = useAuth();
+  const { firebaseUser, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -23,26 +23,14 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       router.push('/');
       return;
     }
-
-    // If firebaseUser exists, proceed with checks
-    if (firebaseUser) {
-      // For email/password users, if email is not verified, redirect to verification page.
-      const isEmailUser = firebaseUser.providerData.some(p => p.providerId === 'password');
-      if (isEmailUser && !firebaseUser.emailVerified && pathname !== '/auth/verify-email') {
-        router.push('/auth/verify-email');
+    
+    // If user is authenticated and they land on a public or auth page, redirect to dashboard.
+    if (pathname === '/' || pathname.startsWith('/auth')) {
+        router.push('/dashboard');
         return;
-      }
-      
-      // If user is verified and they land on a public or auth page, redirect to dashboard.
-      if ( (isEmailUser && firebaseUser.emailVerified) || !isEmailUser) {
-        if (pathname === '/' || pathname.startsWith('/auth')) {
-          router.push('/dashboard');
-          return;
-        }
-      }
     }
 
-  }, [firebaseUser, user, isLoading, router, pathname]);
+  }, [firebaseUser, isLoading, router, pathname]);
 
   // While loading, show a full-screen skeleton.
   if (isLoading) {
@@ -57,12 +45,6 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // we show nothing while redirecting.
   if (!firebaseUser && pathname.startsWith('/dashboard')) {
       return null;
-  }
-  
-  // If user is authenticated but not fully set up (e.g., email not verified), we also show nothing
-  // during the redirect to the appropriate auth page.
-  if(firebaseUser && firebaseUser.providerData.some(p => p.providerId === 'password') && !firebaseUser.emailVerified && pathname !== '/auth/verify-email') {
-    return null;
   }
 
   return <>{children}</>;

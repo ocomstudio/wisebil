@@ -17,6 +17,7 @@ interface User {
   stripeCustomerId?: string;
   subscriptionStatus?: 'active' | 'inactive';
   hasCompletedTutorial?: boolean;
+  emailVerified?: boolean;
 }
 
 type SignupFunction = (
@@ -34,7 +35,7 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<{ isNewUser: boolean; user: FirebaseUser }>;
   logout: () => Promise<void>;
   updateUser: (newUserData: Partial<Omit<User, 'uid'>>) => Promise<void>;
-  resendVerificationEmail: () => Promise<void>;
+  sendVerificationEmail: () => Promise<void>;
   sendPasswordResetEmail: typeof sendPasswordResetEmail;
   confirmPasswordReset: typeof confirmPasswordReset;
 }
@@ -63,25 +64,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userDocRef = doc(db, 'users', fbUser.uid);
         
         const unsubscribeDoc = onSnapshot(userDocRef, (docSnap) => {
-          if (docSnap.exists() && docSnap.data().profile) {
-              const profile = docSnap.data().profile;
-              // Ensure hasCompletedTutorial is not undefined for existing users
-              if (profile.hasCompletedTutorial === undefined) {
-                  profile.hasCompletedTutorial = true; // Assume existing users have completed it
-              }
-              setUser({ uid: fbUser.uid, ...profile });
-          } else {
-               // This case handles initial user creation before profile completion
-               const profileData = {
-                  email: fbUser.email,
-                  displayName: fbUser.displayName || 'Wisebil User',
-                  avatar: fbUser.photoURL,
-                  profileComplete: false,
-                  subscriptionStatus: 'inactive',
-                  hasCompletedTutorial: false,
-               };
-               setUser({ uid: fbUser.uid, ...profileData });
+          const profileData = docSnap.exists() ? docSnap.data().profile : null;
+          const combinedUser: User = {
+            uid: fbUser.uid,
+            email: fbUser.email,
+            displayName: fbUser.displayName,
+            avatar: fbUser.photoURL,
+            emailVerified: fbUser.emailVerified,
+            ...profileData
+          };
+
+          if (!docSnap.exists() || !profileData) {
+              // This case handles initial user creation before profile is set in Firestore
+              combinedUser.profileComplete = false;
+              combinedUser.subscriptionStatus = 'inactive';
+              combinedUser.hasCompletedTutorial = false;
           }
+          
+          setUser(combinedUser);
           setIsLoading(false);
         }, (error) => {
             console.error("Firestore snapshot error:", error);
@@ -106,21 +106,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Update Firebase Auth profile
     await updateProfile(fbUser, { displayName: fullName });
     
-    // Send verification email
-    await sendEmailVerification(fbUser);
-
     // Create Firestore document with all the correct data
     const userDocRef = doc(db, 'users', fbUser.uid);
-    const profileData: Omit<User, 'uid' | 'avatar'> = {
-      email: fbUser.email,
-      displayName: fullName,
+    const profileData: Omit<User, 'uid' | 'avatar' | 'email' | 'displayName' | 'emailVerified'> = {
       phone,
       subscriptionStatus: 'inactive',
       profileComplete: true,
       hasCompletedTutorial: false,
     };
     
-    await setDoc(userDocRef, { profile: { ...profileData, avatar: null } }, { merge: true });
+    await setDoc(userDocRef, { 
+      profile: { 
+        ...profileData, 
+        avatar: null,
+        email: fbUser.email,
+        displayName: fullName
+      } 
+    }, { merge: true });
 
     return userCredential;
   };
@@ -143,6 +145,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         subscriptionStatus: 'inactive',
         phone: result.user.phoneNumber,
         hasCompletedTutorial: false,
+        emailVerified: true, // Google emails are considered verified
       };
       await setDoc(userDocRef, { profile: profileData }, { merge: true });
       return { isNewUser: true, user: result.user };
@@ -170,7 +173,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const resendVerificationEmail = async () => {
+  const sendVerificationEmail = async () => {
     if (firebaseUser) {
       await sendEmailVerification(firebaseUser);
     } else {
@@ -187,7 +190,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loginWithGoogle: safeFunction(loginWithGoogle),
     logout: safeFunction(logout),
     updateUser: safeFunction(updateUser),
-    resendVerificationEmail: safeFunction(resendVerificationEmail),
+    sendVerificationEmail: safeFunction(sendVerificationEmail),
     sendPasswordResetEmail: safeFunction((...args) => sendPasswordResetEmail(auth, ...args)),
     confirmPasswordReset: safeFunction((...args) => confirmPasswordReset(auth, ...args)),
   };

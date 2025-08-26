@@ -9,18 +9,22 @@ import { useLocale } from '@/context/locale-context';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import ScanReceiptPage from '@/app/dashboard/scan-receipt/page';
 import { useState } from 'react';
+import { useAuth } from '../context/auth-context';
 
 export function BottomNav() {
   const pathname = usePathname();
   const { t } = useLocale();
   const [isScanOpen, setIsScanOpen] = useState(false);
+  const { user } = useAuth();
+
+  const isEmailUnverified = user?.email && !user.emailVerified;
 
   const navItems = [
     { href: '/dashboard', label: t('nav_home'), icon: Home },
     { href: '/dashboard/reports', label: t('nav_reports'), icon: BarChart },
     { href: '/dashboard/scan-receipt', label: t('nav_scan'), icon: ScanLine },
     { href: '/dashboard/budget', label: t('nav_budgets'), icon: Target },
-    { href: '/dashboard/conseil', label: t('nav_advice'), icon: Lightbulb },
+    { href: '/dashboard/conseil', label: t('nav_advice'), icon: Lightbulb, notification: isEmailUnverified },
   ];
 
   return (
@@ -46,12 +50,15 @@ export function BottomNav() {
                 key={item.label}
                 href={item.href || '#'}
                 className={cn(
-                  'flex flex-col items-center justify-center text-muted-foreground hover:text-primary transition-colors w-16',
+                  'flex flex-col items-center justify-center text-muted-foreground hover:text-primary transition-colors w-16 relative',
                   isActive && 'text-primary'
                 )}
               >
                 <item.icon className={cn('h-6 w-6')} />
                 <span className={cn('text-xs mt-1')}>{item.label}</span>
+                 {item.notification && (
+                    <span className="absolute top-1 right-4 h-2 w-2 rounded-full bg-red-500"></span>
+                  )}
               </Link>
             );
           })}

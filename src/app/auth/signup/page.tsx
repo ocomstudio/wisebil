@@ -126,9 +126,9 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
       
       toast({
         title: t('signup_success_title'),
-        description: t('signup_success_desc_verify'),
+        description: t('welcome_message'),
       });
-      router.push("/auth/verify-email");
+      router.push("/dashboard");
     } catch (error) {
       handleAuthError(error);
     } finally {

@@ -496,10 +496,14 @@
     "help_and_support_title": "Aide & Support",
     "help_and_support_desc": "Besoin d'un coup de main ?",
     "review_tutorial_button": "Revoir le tutoriel",
-    "reset_data_button": "Réinitialiser les données",
+    "reset_data_button": "Réinitialiser les données financières",
     "reset_data_warning_title": "Réinitialiser vos données financières ?",
     "reset_data_warning_desc": "Cette action supprimera définitivement toutes vos transactions, budgets et objectifs d'épargne. Vous resterez connecté à votre compte.",
     "reset_data_confirm_button": "Oui, réinitialiser les données",
     "reset_data_success_title": "Données réinitialisées",
-    "reset_data_success_desc": "Vos données financières ont été effacées."
+    "reset_data_success_desc": "Vos données financières ont été effacées.",
+    "verify_email_warning_title": "Vérifiez votre adresse e-mail",
+    "verify_email_warning_desc": "Votre adresse e-mail n'est pas vérifiée. Veuillez consulter votre boîte de réception pour le lien de vérification, ou demandez à en recevoir un nouveau.",
+    "send_verification_email_button": "Envoyer l'e-mail de vérification",
+    "sending_email_button": "Envoi en cours..."
 }

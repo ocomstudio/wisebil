@@ -6,10 +6,14 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { BarChart, Lightbulb, Home, Settings, Shield, Target, Wallet, Bell } from "lucide-react"
 import { useLocale } from "@/context/locale-context";
+import { useAuth } from "../context/auth-context";
 
 export function SidebarNav() {
   const pathname = usePathname();
   const { t } = useLocale();
+  const { user } = useAuth();
+  
+  const isEmailUnverified = user?.email && !user.emailVerified;
 
   const menuItems = [
     {
@@ -46,6 +50,7 @@ export function SidebarNav() {
       href: "/dashboard/settings",
       label: t('nav_settings'),
       icon: <Settings />,
+      notification: isEmailUnverified
     },
   ]
 
@@ -56,12 +61,15 @@ export function SidebarNav() {
           key={item.href}
           href={item.href}
           className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-primary/10",
+            "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-primary/10 relative",
             (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))) && "bg-primary/10 text-primary"
           )}
         >
           {item.icon}
           {item.label}
+          {item.notification && (
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-red-500"></span>
+          )}
         </Link>
       ))}
     </nav>

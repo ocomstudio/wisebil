@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck, Languages, Wallet, Trash2, Download, HelpCircle, RefreshCw } from "lucide-react";
+import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck, Languages, Wallet, Trash2, Download, HelpCircle, RefreshCw, MailWarning, Send } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useSettings } from "@/context/settings-context";
 import { useToast } from "@/hooks/use-toast";
@@ -38,15 +38,17 @@ import { ExportDataDialog } from "@/components/dashboard/export-data-dialog";
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { useTutorial } from "@/context/tutorial-context";
+import { FirebaseError } from "firebase/app";
 
 
 export default function SettingsPage() {
   const { settings, updateSettings, checkPin } = useSettings();
-  const { user, updateUser, logout } = useAuth();
+  const { user, updateUser, logout, sendVerificationEmail } = useAuth();
   const { toast } = useToast();
   const { t, locale, setLocale, currency, setCurrency } = useLocale();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { setShowTutorial } = useTutorial();
+  const [isSendingVerification, setIsSendingVerification] = useState(false);
 
   const { resetTransactions } = useTransactions();
   const { resetBudgets } = useBudgets();
@@ -222,12 +224,58 @@ export default function SettingsPage() {
     router.push('/dashboard');
   }
 
+  const handleSendVerification = async () => {
+    setIsSendingVerification(true);
+    try {
+        await sendVerificationEmail();
+        toast({
+            title: t('verification_sent_title'),
+            description: t('verification_sent_desc'),
+        });
+    } catch (error) {
+        console.error(error);
+        let description = t('verification_sent_error');
+        if (error instanceof FirebaseError && error.code === 'auth/too-many-requests') {
+            description = t('Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.');
+        }
+        toast({
+            variant: 'destructive',
+            title: t('error_title'),
+            description: description,
+        });
+    } finally {
+        setIsSendingVerification(false);
+    }
+  };
+
+  const isEmailPasswordUser = user?.email && !user.emailVerified;
+
   return (
     <div className="space-y-8 pb-24 md:pb-8">
       <div>
         <h1 className="text-3xl font-bold font-headline">{t('nav_settings')}</h1>
         <p className="text-muted-foreground">{t('settings_subtitle')}</p>
       </div>
+
+       {isEmailPasswordUser && (
+            <Card className="border-yellow-500/50 bg-yellow-500/10">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-yellow-400">
+                        <MailWarning className="h-5 w-5" />
+                        {t('verify_email_warning_title')}
+                    </CardTitle>
+                    <CardDescription className="text-yellow-400/80">
+                        {t('verify_email_warning_desc')}
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button onClick={handleSendVerification} disabled={isSendingVerification}>
+                        <Send className="mr-2 h-4 w-4" />
+                        {isSendingVerification ? t('sending_email_button') : t('send_verification_email_button')}
+                    </Button>
+                </CardContent>
+            </Card>
+        )}
 
       <Card>
         <CardHeader>
