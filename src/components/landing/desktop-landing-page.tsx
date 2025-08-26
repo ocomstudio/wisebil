@@ -260,18 +260,9 @@ export default function DesktopLandingPage() {
                                 </p>
                             </div>
                             <div className="flex flex-col gap-4 min-[400px]:flex-row">
-                                <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
-                                    <DialogTrigger asChild>
-                                        <Button size="lg" className="shadow-lg shadow-primary/20">{t('hero_cta_free')}</Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="sm:max-w-md">
-                                        <DialogHeader>
-                                            <DialogTitle className="sr-only">{t('signup_title')}</DialogTitle>
-                                            <DialogDescription className="sr-only">{t('signup_subtitle')}</DialogDescription>
-                                        </DialogHeader>
-                                        <SignupPage onSwitchToLogin={handleSwitchToLogin} />
-                                    </DialogContent>
-                                </Dialog>
+                                <Button asChild size="lg" className="shadow-lg shadow-primary/20">
+                                    <Link href="/dashboard/billing">{t('hero_cta_free')}</Link>
+                                </Button>
                                 <Button asChild size="lg" variant="outline">
                                     <Link href="#features">{t('hero_cta_features')}</Link>
                                 </Button>
@@ -366,18 +357,9 @@ export default function DesktopLandingPage() {
                                 </ul>
                             </CardContent>
                             <div className="p-6 pt-0 mt-auto">
-                                <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
-                                    <DialogTrigger asChild>
-                                        <Button variant="outline" className="w-full">{t('choose_plan_button')}</Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="sm:max-w-md">
-                                       <DialogHeader>
-                                           <DialogTitle className="sr-only">{t('signup_title')}</DialogTitle>
-                                           <DialogDescription className="sr-only">{t('signup_subtitle')}</DialogDescription>
-                                       </DialogHeader>
-                                        <SignupPage onSwitchToLogin={handleSwitchToLogin} />
-                                    </DialogContent>
-                                </Dialog>
+                                <Button asChild variant="outline" className="w-full">
+                                    <Link href="/dashboard/billing">{t('choose_plan_button')}</Link>
+                                </Button>
                             </div>
                         </Card>
                         <Card className="flex flex-col border-primary shadow-2xl shadow-primary/20 transform-gpu scale-105">
@@ -396,18 +378,9 @@ export default function DesktopLandingPage() {
                                 </ul>
                             </CardContent>
                             <div className="p-6 pt-0 mt-auto">
-                                <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
-                                    <DialogTrigger asChild>
-                                        <Button className="w-full">{t('upgrade_premium_button')}</Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="sm:max-w-md">
-                                        <DialogHeader>
-                                            <DialogTitle className="sr-only">{t('signup_title')}</DialogTitle>
-                                            <DialogDescription className="sr-only">{t('signup_subtitle')}</DialogDescription>
-                                        </DialogHeader>
-                                        <SignupPage onSwitchToLogin={handleSwitchToLogin} />
-                                    </DialogContent>
-                                </Dialog>
+                                <Button asChild className="w-full">
+                                    <Link href="/dashboard/billing">{t('upgrade_premium_button')}</Link>
+                                </Button>
                             </div>
                         </Card>
                         <Card className="flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/10 shadow-lg">
@@ -425,18 +398,9 @@ export default function DesktopLandingPage() {
                                 </ul>
                             </CardContent>
                             <div className="p-6 pt-0 mt-auto">
-                                <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
-                                    <DialogTrigger asChild>
-                                        <Button variant="outline" className="w-full">{t('choose_plan_button')}</Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="sm:max-w-md">
-                                        <DialogHeader>
-                                            <DialogTitle className="sr-only">{t('signup_title')}</DialogTitle>
-                                            <DialogDescription className="sr-only">{t('signup_subtitle')}</DialogDescription>
-                                        </DialogHeader>
-                                        <SignupPage onSwitchToLogin={handleSwitchToLogin} />
-                                    </DialogContent>
-                                </Dialog>
+                                <Button asChild variant="outline" className="w-full">
+                                    <Link href="/dashboard/billing">{t('choose_plan_button')}</Link>
+                                </Button>
                             </div>
                         </Card>
                     </div>
