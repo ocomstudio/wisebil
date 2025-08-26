@@ -67,7 +67,6 @@ interface TutorialProps {
 export function Tutorial({ isOpen, onFinish }: TutorialProps) {
   const { t } = useLocale();
   const [currentStep, setCurrentStep] = useState(0);
-  const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
   const isMobile = useIsMobile();
   const overlayRef = useRef<HTMLDivElement>(null);
   
@@ -82,26 +81,44 @@ export function Tutorial({ isOpen, onFinish }: TutorialProps) {
 
     if (!step) return;
     
-    // Skip irrelevant steps based on device
-    if ((isMobile && step.targetId === 'conseil-panel-tutorial') || (!isMobile && step.targetId === 'bottom-nav-tutorial')) {
-      handleNext();
-      return;
-    }
-    
     const element = document.getElementById(step.targetId);
-    setTargetElement(element);
-
+    
     if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+
+        const highlightElement = () => {
+             if (overlayRef.current && element) {
+                const rect = element.getBoundingClientRect();
+                const safePadding = 10;
+                overlayRef.current.style.setProperty('--highlight-top', `${rect.top - safePadding}px`);
+                overlayRef.current.style.setProperty('--highlight-left', `${rect.left - safePadding}px`);
+                overlayRef.current.style.setProperty('--highlight-width', `${rect.width + safePadding * 2}px`);
+                overlayRef.current.style.setProperty('--highlight-height', `${rect.height + safePadding * 2}px`);
+                overlayRef.current.style.opacity = '1';
+             }
+        }
+        
+        // Use a timeout to ensure the element has scrolled into view before highlighting
+        setTimeout(highlightElement, 300);
+    } else {
+        if(overlayRef.current) overlayRef.current.style.opacity = '0';
     }
     
-    if (overlayRef.current && element) {
-        const rect = element.getBoundingClientRect();
-        overlayRef.current.style.setProperty('--highlight-top', `${rect.top}px`);
-        overlayRef.current.style.setProperty('--highlight-left', `${rect.left}px`);
-        overlayRef.current.style.setProperty('--highlight-width', `${rect.width}px`);
-        overlayRef.current.style.setProperty('--highlight-height', `${rect.height}px`);
-    }
+    const handleResize = () => {
+       if (element) {
+            const rect = element.getBoundingClientRect();
+            const safePadding = 10;
+            if(overlayRef.current) {
+                overlayRef.current.style.setProperty('--highlight-top', `${rect.top - safePadding}px`);
+                overlayRef.current.style.setProperty('--highlight-left', `${rect.left - safePadding}px`);
+                overlayRef.current.style.setProperty('--highlight-width', `${rect.width + safePadding * 2}px`);
+                overlayRef.current.style.setProperty('--highlight-height', `${rect.height + safePadding * 2}px`);
+            }
+       }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
 
   }, [currentStep, isOpen, isMobile, step]);
 
@@ -127,27 +144,19 @@ export function Tutorial({ isOpen, onFinish }: TutorialProps) {
     <>
       <div 
         ref={overlayRef}
-        className="fixed inset-0 z-[99] pointer-events-none"
+        className="fixed inset-0 z-[99] pointer-events-none transition-opacity duration-300 opacity-0"
         style={{
-            background: `radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0,0,0,0.7) 100%)`,
-            clipPath: `evenodd`,
-            WebkitMask: `
-                radial-gradient(
-                    circle at calc(var(--highlight-left, 0px) + var(--highlight-width, 0px) / 2) calc(var(--highlight-top, 0px) + var(--highlight-height, 0px) / 2),
-                    transparent 0,
-                    transparent calc(max(var(--highlight-width, 0px), var(--highlight-height, 0px)) / 1.5),
-                    black calc(max(var(--highlight-width, 0px), var(--highlight-height, 0px)) / 1.5 + 50px),
-                    black 100%
-                ),
-                linear-gradient(white, white)
-            `,
-            WebkitMaskComposite: 'destination-out',
-            maskComposite: 'exclude',
+            boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.7)',
+            borderRadius: '1rem',
+            top: 'var(--highlight-top, 0px)',
+            left: 'var(--highlight-left, 0px)',
+            width: 'var(--highlight-width, 0px)',
+            height: 'var(--highlight-height, 0px)',
         }}
       ></div>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onFinish()}>
         <DialogContent 
-            className="z-[100] max-w-sm bg-background/80 backdrop-blur-sm border-0"
+            className="z-[100] max-w-sm bg-background/80 backdrop-blur-sm border-0 shadow-2xl"
             onInteractOutside={(e) => e.preventDefault()}
         >
           <DialogHeader>

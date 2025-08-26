@@ -24,7 +24,7 @@ export function DashboardPageContent() {
     // Only show tutorial if the flag is explicitly false.
     // Using a timeout gives the DOM a moment to paint, preventing race conditions.
     if (user && user.hasCompletedTutorial === false) {
-       setTimeout(() => setShowTutorial(true), 100);
+       setTimeout(() => setShowTutorial(true), 500);
     }
   }, [user, setShowTutorial]);
   
