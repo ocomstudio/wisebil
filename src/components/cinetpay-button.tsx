@@ -7,7 +7,6 @@ import { Button } from "./ui/button";
 import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/context/locale-context";
-import { useEffect } from "react";
 
 // Extend window type to include CinetPay
 declare global {
@@ -28,60 +27,15 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
     const { toast } = useToast();
     const router = useRouter();
     const { t } = useLocale();
-
-    // Set up event listeners once when the component mounts
-    useEffect(() => {
-        if (typeof window.CinetPay === 'undefined') {
-            return;
-        }
-
-        const handleResponse = (data: any) => {
-            if (data.status === "REFUSED") {
-                toast({
-                    variant: "destructive",
-                    title: "Paiement Échoué",
-                    description: "Votre paiement a échoué. Veuillez réessayer.",
-                });
-            } else if (data.status === "ACCEPTED") {
-                toast({
-                    title: "Paiement Réussi",
-                    description: "Votre paiement a été effectué avec succès. Votre abonnement sera activé.",
-                });
-                // Here you would typically call your backend to verify the transaction
-                // and update the user's subscription status.
-                // For now, redirect to dashboard.
-                router.push('/dashboard');
-            }
-        };
-
-        const handleError = (err: any) => {
-            console.error("CinetPay Error:", err);
-            toast({
-                variant: "destructive",
-                title: "Erreur de Paiement",
-                description: "Une erreur technique est survenue. Veuillez réessayer.",
-            });
-        };
-
-        // Attach listeners
-        window.CinetPay.waitResponse(handleResponse);
-        window.CinetPay.onError(handleError);
-
-        // Cleanup listeners on component unmount
-        return () => {
-            // CinetPay SDK does not provide a way to remove listeners,
-            // so we set them to empty functions to prevent old logic from running.
-            if (typeof window.CinetPay !== 'undefined') {
-                window.CinetPay.waitResponse(() => {});
-                window.CinetPay.onError(() => {});
-            }
-        };
-    }, [toast, router]);
-
-
+    
     const handlePayment = () => {
         if (!user) {
             toast({ variant: 'destructive', title: t('error_title'), description: t('login_required_for_subscription') });
+            return;
+        }
+        
+        if (typeof window.CinetPay === 'undefined') {
+            toast({ variant: 'destructive', title: "Erreur de Service", description: "Le service de paiement n'a pas pu être chargé. Veuillez rafraîchir la page." });
             return;
         }
 
@@ -91,11 +45,6 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
         if (!apiKey || !siteId) {
             console.error("CinetPay API Key or Site ID is missing.");
             toast({ variant: 'destructive', title: "Erreur de Configuration", description: "Les clés de paiement ne sont pas configurées. Veuillez contacter le support." });
-            return;
-        }
-
-        if (typeof window.CinetPay === 'undefined') {
-            toast({ variant: 'destructive', title: "Erreur de Service", description: "Le service de paiement n'a pas pu être chargé. Veuillez rafraîchir la page." });
             return;
         }
         
@@ -116,6 +65,7 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
                 currency: currency,
                 channels: 'ALL',
                 description: description,
+                // These fields are mandatory for card payments
                 customer_name: firstName,
                 customer_surname: lastName,
                 customer_email: user.email,
@@ -125,6 +75,31 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
                 customer_country: "SN",
                 customer_state: "SN",
                 customer_zip_code: "10000",
+            });
+
+            CinetPay.waitResponse(function(data: any) {
+                if (data.status === "REFUSED") {
+                    toast({
+                        variant: "destructive",
+                        title: "Paiement Échoué",
+                        description: "Votre paiement a échoué. Veuillez réessayer.",
+                    });
+                } else if (data.status === "ACCEPTED") {
+                    toast({
+                        title: "Paiement Réussi",
+                        description: "Votre paiement a été effectué avec succès. Votre abonnement sera activé.",
+                    });
+                    router.push('/dashboard');
+                }
+            });
+
+            CinetPay.onError(function(err: any) {
+                console.error("CinetPay Error:", err);
+                toast({
+                    variant: "destructive",
+                    title: "Erreur de Paiement",
+                    description: "Une erreur technique est survenue. Veuillez réessayer.",
+                });
             });
 
         } catch (error) {
