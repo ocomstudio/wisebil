@@ -6,7 +6,7 @@ import { auth as adminAuth } from '@/lib/firebase-admin';
 import { db } from '@/lib/firebase-admin';
 
 // Set this to true to enable payments, false to disable them temporarily.
-const paymentsEnabled = false;
+const paymentsEnabled = true;
 
 export async function POST(request: Request) {
     if (!paymentsEnabled) {

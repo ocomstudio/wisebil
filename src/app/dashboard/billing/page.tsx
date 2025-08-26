@@ -29,7 +29,7 @@ interface Plan {
 }
 
 // Set this to true to enable payments, false to disable them temporarily.
-const paymentsEnabled = false;
+const paymentsEnabled = true;
 
 export default function BillingPage() {
     const { t, currency, formatCurrency, getConvertedAmount } = useLocale();
@@ -162,7 +162,7 @@ export default function BillingPage() {
                                         <Button
                                             variant={plan.buttonVariant as any}
                                             className="w-full"
-                                            disabled={plan.isCurrent || !!isLoading || !paymentsEnabled}
+                                            disabled={plan.isCurrent || !!isLoading}
                                             onClick={() => plan.name !== 'free' && handleUpgrade(plan)}
                                         >
                                             {isLoading === plan.name ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
