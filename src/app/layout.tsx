@@ -6,7 +6,20 @@ import { AuthProvider } from '@/context/auth-context';
 import Script from 'next/script';
 
 const APP_NAME = "Wisebil";
-const APP_DESCRIPTION = "Maîtrisez vos finances avec l'IA. Wisebil est votre conseiller financier personnel pour la gestion de budget, le suivi des dépenses et l'épargne intelligente.";
+const APP_DESCRIPTION = "Maîtrisez vos finances avec l'IA. Wisebil est votre conseiller financier personnel pour la gestion de budget, le suivi des dépenses, l'épargne intelligente et la planification financière au Sénégal, Cameroun, Côte d'Ivoire et dans toute l'Afrique francophone.";
+
+const KEYWORDS = [
+  // Français
+  "gestion de budget", "suivi de dépenses", "conseiller financier ia", "épargne", "finances personnelles", 
+  "wisebil", "gestion financière", "planification financière", "intelligence artificielle finance", "budget app", 
+  "application de budget", "coach financier", "assistant financier", "automatisation financière", "fintech",
+  "afrique", "sénégal", "cameroun", "côte d'ivoire", "afrique francophone", "dakar", "douala", "abidjan",
+  "argent", "économiser de l'argent", "gérer son argent", "dépenses quotidiennes", "analyse financière",
+  // Anglais
+  "budgeting app", "expense tracker", "ai financial advisor", "personal finance", "savings app",
+  "financial planning", "ai in finance", "finance africa", "money management", "fintech africa"
+];
+
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
@@ -15,7 +28,7 @@ export const metadata: Metadata = {
     template: `%s - ${APP_NAME}`,
   },
   description: APP_DESCRIPTION,
-  keywords: ["gestion de budget", "suivi de dépenses", "conseiller financier ia", "épargne", "finances personnelles", "wisebil", "gestion financière", "afrique", "senegal", "cameroun"],
+  keywords: KEYWORDS,
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -25,6 +38,19 @@ export const metadata: Metadata = {
     telephone: false,
   },
   manifest: "/manifest.json",
+  openGraph: {
+    type: 'website',
+    url: 'https://wisebil-596a8.web.app/', // Remplacez par votre URL de production
+    title: 'Wisebil - Votre Conseiller Financier IA',
+    description: APP_DESCRIPTION,
+    siteName: APP_NAME,
+    images: [{
+      url: 'https://images.unsplash.com/photo-1579621970795-87facc2f976d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxmaW5hbmNlfGVufDB8fHx8MTc1NDk1NTgxNXww&ixlib=rb-4.1.0&q=80&w=1080',
+      width: 1200,
+      height: 630,
+      alt: 'Wisebil App aidea-mem-generated',
+    }],
+  }
 };
 
 export const viewport: Viewport = {
