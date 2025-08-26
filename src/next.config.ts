@@ -35,6 +35,10 @@ const nextConfig: NextConfig = {
       'https://6000-firebase-studio-1753596464106.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev',
     ],
   },
+  env: {
+    NEXT_PUBLIC_CINETPAY_API_KEY: process.env.NEXT_PUBLIC_CINETPAY_API_KEY,
+    NEXT_PUBLIC_CINETPAY_SITE_ID: process.env.NEXT_PUBLIC_CINETPAY_SITE_ID,
+  }
 };
 
 export default nextConfig;

@@ -38,7 +38,7 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
         const siteId = process.env.NEXT_PUBLIC_CINETPAY_SITE_ID;
 
         if (!apiKey || !siteId) {
-            console.error("CinetPay API Key or Site ID is missing.");
+            console.error("CinetPay API Key or Site ID is missing from .env.local");
             toast({ variant: 'destructive', title: "Erreur de Configuration", description: "Les clés de paiement ne sont pas configurées. Veuillez contacter le support." });
             return;
         }
