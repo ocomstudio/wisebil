@@ -24,7 +24,7 @@ export function BottomNav() {
     { href: '/dashboard/reports', label: t('nav_reports'), icon: BarChart },
     { href: '/dashboard/scan-receipt', label: t('nav_scan'), icon: ScanLine },
     { href: '/dashboard/budget', label: t('nav_budgets'), icon: Target },
-    { href: '/dashboard/settings', label: t('nav_settings'), icon: Settings, notification: isEmailUnverified },
+    { href: '/dashboard/settings', label: t('nav_settings'), icon: Settings },
   ];
 
   return (
@@ -56,9 +56,6 @@ export function BottomNav() {
               >
                 <item.icon className={cn('h-6 w-6')} />
                 <span className={cn('text-xs mt-1')}>{item.label}</span>
-                 {item.notification && (
-                    <span className="absolute top-1 right-4 h-2 w-2 rounded-full bg-red-500"></span>
-                  )}
               </Link>
             );
           })}

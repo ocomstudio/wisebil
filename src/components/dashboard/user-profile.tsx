@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/context/auth-context"
 import { useLocale } from "@/context/locale-context"
+import { cn } from "@/lib/utils"
 
 export function UserProfile() {
   const router = useRouter();
@@ -47,6 +48,8 @@ export function UserProfile() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   }
 
+  const isEmailUnverified = user?.email && !user.emailVerified;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -55,6 +58,9 @@ export function UserProfile() {
             <AvatarImage src={user?.avatar || undefined} alt={user?.displayName || "User avatar"} data-ai-hint="man avatar" />
             <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
           </Avatar>
+           {isEmailUnverified && (
+            <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-red-500 ring-2 ring-background" />
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -69,9 +75,12 @@ export function UserProfile() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-             <Link href="/dashboard/settings">
+             <Link href="/dashboard/settings" className="relative flex items-center">
                 <Settings className="mr-2 h-4 w-4" />
                 <span>{t('nav_settings')}</span>
+                 {isEmailUnverified && (
+                    <span className="absolute right-2 h-2 w-2 rounded-full bg-red-500"></span>
+                  )}
              </Link>
           </DropdownMenuItem>
            <DropdownMenuItem asChild>

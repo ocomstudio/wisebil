@@ -13,8 +13,6 @@ export function SidebarNav() {
   const { t } = useLocale();
   const { user } = useAuth();
   
-  const isEmailUnverified = user?.email && !user.emailVerified;
-
   const menuItems = [
     {
       href: "/dashboard",
@@ -50,7 +48,6 @@ export function SidebarNav() {
       href: "/dashboard/settings",
       label: t('nav_settings'),
       icon: <Settings />,
-      notification: isEmailUnverified
     },
   ]
 
@@ -67,9 +64,6 @@ export function SidebarNav() {
         >
           {item.icon}
           {item.label}
-          {item.notification && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-red-500"></span>
-          )}
         </Link>
       ))}
     </nav>
