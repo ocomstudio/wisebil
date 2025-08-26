@@ -29,7 +29,7 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
     const router = useRouter();
     const { t } = useLocale();
 
-    useEffect(() => {
+     useEffect(() => {
         if (typeof window.CinetPay === 'undefined') return;
 
         const handleSuccess = (data: any) => {
@@ -60,11 +60,6 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
         CinetPay.waitResponse(handleSuccess);
         CinetPay.onError(handleError);
         
-        return () => {
-            // It's good practice to clean up, though CinetPay SDK might not have a dedicated function for it.
-            // This part is speculative, as the SDK documentation doesn't specify a cleanup method.
-        };
-
     }, [router, toast]);
     
     const handlePayment = () => {
@@ -116,11 +111,11 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
                 customer_surname: lastName,
                 customer_email: user.email || 'contact@wisebil.com',
                 customer_phone_number: user.phone || '000000000',
-                customer_address: "BP 0024",
+                customer_address : "BP 0024",
                 customer_city: "Dakar",
-                customer_country: "SN",
-                customer_state: "SN",
-                customer_zip_code: "10000",
+                customer_country : "SN",
+                customer_state : "SN",
+                customer_zip_code : "10000",
             });
 
         } catch (error) {
