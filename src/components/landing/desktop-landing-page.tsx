@@ -341,7 +341,7 @@ export default function DesktopLandingPage() {
                                 </p>
                             </div>
                         </div>
-                        <div className="mx-auto grid max-w-5xl items-stretch gap-8 sm:grid-cols-1 lg:grid-cols-3 mt-12">
+                        <div className="mx-auto grid max-w-5xl items-stretch gap-8 grid-cols-1 lg:grid-cols-3 mt-12">
                             <Card className="flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/10 shadow-lg">
                                 <CardHeader className="pb-4">
                                     <CardTitle className="font-headline text-2xl">{t('plan_free_title')}</CardTitle>
