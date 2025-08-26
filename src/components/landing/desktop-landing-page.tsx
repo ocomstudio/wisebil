@@ -20,6 +20,7 @@ import SignupPage from '@/app/auth/signup/page';
 import { AuthProvider, useAuth } from '@/context/auth-context';
 import { useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
+import { useRouter } from 'next/navigation';
 
 function AuthButtons() {
     const { t } = useLocale();
@@ -89,6 +90,8 @@ function AuthButtons() {
 
 export default function DesktopLandingPage() {
     const { t, currency, formatCurrency } = useLocale();
+    const { firebaseUser } = useAuth();
+    const router = useRouter();
     const [loginOpen, setLoginOpen] = useState(false);
     const [signupOpen, setSignupOpen] = useState(false);
 
@@ -101,6 +104,16 @@ export default function DesktopLandingPage() {
         setSignupOpen(false);
         setLoginOpen(true);
     };
+
+    const handleSubscriptionClick = (plan: string) => {
+        if (firebaseUser) {
+            router.push('/dashboard/billing');
+        } else {
+            sessionStorage.setItem('redirect_plan', plan);
+            setSignupOpen(true);
+        }
+    };
+
 
     const features = [
         {
@@ -260,8 +273,8 @@ export default function DesktopLandingPage() {
                                 </p>
                             </div>
                             <div className="flex flex-col gap-4 min-[400px]:flex-row">
-                                <Button asChild size="lg" className="shadow-lg shadow-primary/20">
-                                    <Link href="/dashboard/billing">{t('hero_cta_free')}</Link>
+                                <Button size="lg" className="shadow-lg shadow-primary/20" onClick={() => handleSubscriptionClick('free')}>
+                                    {t('hero_cta_free')}
                                 </Button>
                                 <Button asChild size="lg" variant="outline">
                                     <Link href="#features">{t('hero_cta_features')}</Link>
@@ -357,8 +370,8 @@ export default function DesktopLandingPage() {
                                 </ul>
                             </CardContent>
                             <div className="p-6 pt-0 mt-auto">
-                                <Button asChild variant="outline" className="w-full">
-                                    <Link href="/dashboard/billing">{t('choose_plan_button')}</Link>
+                                <Button variant="outline" className="w-full" onClick={() => handleSubscriptionClick('free')}>
+                                    {t('choose_plan_button')}
                                 </Button>
                             </div>
                         </Card>
@@ -378,8 +391,8 @@ export default function DesktopLandingPage() {
                                 </ul>
                             </CardContent>
                             <div className="p-6 pt-0 mt-auto">
-                                <Button asChild className="w-full">
-                                    <Link href="/dashboard/billing">{t('upgrade_premium_button')}</Link>
+                                <Button className="w-full" onClick={() => handleSubscriptionClick('premium')}>
+                                    {t('upgrade_premium_button')}
                                 </Button>
                             </div>
                         </Card>
@@ -398,8 +411,8 @@ export default function DesktopLandingPage() {
                                 </ul>
                             </CardContent>
                             <div className="p-6 pt-0 mt-auto">
-                                <Button asChild variant="outline" className="w-full">
-                                    <Link href="/dashboard/billing">{t('choose_plan_button')}</Link>
+                                <Button variant="outline" className="w-full" onClick={() => handleSubscriptionClick('business')}>
+                                    {t('choose_plan_button')}
                                 </Button>
                             </div>
                         </Card>
@@ -544,6 +557,24 @@ export default function DesktopLandingPage() {
             </div>
             </div>
         </footer>
+        <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="sr-only">{t('signup_title')}</DialogTitle>
+                        <DialogDescription className="sr-only">{t('signup_subtitle')}</DialogDescription>
+                    </DialogHeader>
+                    <SignupPage onSwitchToLogin={handleSwitchToLogin} />
+                </DialogContent>
+            </Dialog>
+             <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="sr-only">{t('login_title')}</DialogTitle>
+                        <DialogDescription className="sr-only">{t('login_subtitle')}</DialogDescription>
+                    </DialogHeader>
+                    <LoginPage onSwitchToSignup={handleSwitchToSignup} />
+                </DialogContent>
+            </Dialog>
         </div>
     </AuthProvider>
   );

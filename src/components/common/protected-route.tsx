@@ -1,3 +1,4 @@
+
 // src/components/common/protected-route.tsx
 "use client";
 
@@ -17,18 +18,32 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const isAuthPage = pathname.startsWith('/auth');
     const isPublicPage = ['/', '/contact', '/privacy-policy', '/terms-of-service'].includes(pathname) || isAuthPage;
 
-    // If there is no authenticated user
     if (!firebaseUser) {
       if (isPublicPage) {
-        // Allow access to public pages
         return;
       }
-      // For protected pages, redirect to home to login/signup
+      const intendedUrl = pathname;
+      sessionStorage.setItem('redirect_url', intendedUrl);
       router.push('/');
       return;
     }
     
-    // If user is authenticated and tries to access a public page (except contact/legal)
+    // User is authenticated
+    const redirectUrl = sessionStorage.getItem('redirect_url');
+    sessionStorage.removeItem('redirect_url');
+
+    const planToSubscribe = sessionStorage.getItem('redirect_plan');
+     if (planToSubscribe) {
+        sessionStorage.removeItem('redirect_plan');
+        router.push('/dashboard/billing');
+        return;
+    }
+
+    if (redirectUrl && redirectUrl !== pathname) {
+        router.push(redirectUrl);
+        return;
+    }
+
     if (isAuthPage || pathname === '/') {
         router.push('/dashboard');
         return;
@@ -36,7 +51,6 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   }, [firebaseUser, isLoading, router, pathname]);
 
-  // While loading, show a full-screen skeleton.
   if (isLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center">
@@ -45,8 +59,6 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If user is not authenticated and is trying to access a protected route,
-  // we show nothing while redirecting.
   if (!firebaseUser && !pathname.startsWith('/auth') && pathname !== '/') {
       return null;
   }
