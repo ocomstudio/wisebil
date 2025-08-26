@@ -9,7 +9,6 @@ import { Check, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { CinetPayButton } from "@/components/cinetpay-button";
 
 export const pricing = {
     premium: { XOF: 3000, EUR: 5, USD: 5 },
@@ -23,7 +22,7 @@ interface Plan {
   description: string;
   features: string[];
   isCurrent: boolean;
-  buttonText?: string; // Optional, as it will be replaced by CinetPayButton
+  buttonText?: string; 
   isPopular?: boolean;
 }
 
@@ -115,12 +114,21 @@ export default function BillingPage() {
                                 {t('current_plan_button')}
                               </Button>
                            ) : (
-                             <CinetPayButton
-                                amount={plan.prices[currency]}
-                                currency={currency}
-                                description={`Abonnement ${plan.title} - Wisebil`}
-                                buttonText={t('upgrade_premium_button')}
-                             />
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                 <div className="w-full">
+                                    <Button
+                                        className="w-full"
+                                        disabled={true}
+                                    >
+                                        {t('upgrade_premium_button')}
+                                    </Button>
+                                 </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Les paiements sont temporairement indisponibles.</p>
+                              </TooltipContent>
+                            </Tooltip>
                            )}
                         </div>
                     </Card>
