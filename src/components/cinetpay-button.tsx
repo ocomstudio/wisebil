@@ -7,6 +7,7 @@ import { Button } from "./ui/button";
 import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/context/locale-context";
+import { useEffect } from "react";
 
 // Extend window type to include CinetPay
 declare global {
@@ -27,6 +28,44 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
     const { toast } = useToast();
     const router = useRouter();
     const { t } = useLocale();
+
+    useEffect(() => {
+        if (typeof window.CinetPay === 'undefined') return;
+
+        const handleSuccess = (data: any) => {
+             if (data.status === "ACCEPTED") {
+                toast({
+                    title: "Paiement réussi",
+                    description: "Votre paiement a été effectué avec succès. Votre abonnement est maintenant actif.",
+                });
+                router.refresh();
+            } else {
+                toast({
+                    variant: 'destructive',
+                    title: "Paiement refusé",
+                    description: "Votre paiement a été refusé. Veuillez réessayer.",
+                });
+            }
+        };
+
+        const handleError = (err: any) => {
+            console.error("CinetPay SDK Error:", err);
+            toast({
+                variant: 'destructive',
+                title: "Erreur de paiement",
+                description: "Une erreur technique est survenue. Veuillez réessayer.",
+            });
+        };
+        
+        CinetPay.waitResponse(handleSuccess);
+        CinetPay.onError(handleError);
+        
+        return () => {
+            // It's good practice to clean up, though CinetPay SDK might not have a dedicated function for it.
+            // This part is speculative, as the SDK documentation doesn't specify a cleanup method.
+        };
+
+    }, [router, toast]);
     
     const handlePayment = () => {
         try {
@@ -84,30 +123,13 @@ export function CinetPayButton({ amount, currency, description, buttonText }: Ci
                 customer_zip_code: "10000",
             });
 
-            CinetPay.waitResponse(function(data: any) {
-                if (data.status === "REFUSED") {
-                    if (alert("Votre paiement a échoué")) {
-                        window.location.reload();
-                    }
-                } else if (data.status === "ACCEPTED") {
-                    if (alert("Votre paiement a été effectué avec succès")) {
-                        window.location.reload();
-                    }
-                }
-            });
-
-            CinetPay.onError(function(err: any) {
-                console.error("CinetPay Error:", err);
-                if (alert("Une erreur technique est survenue. Veuillez réessayer.")) {
-                    window.location.reload();
-                }
-            });
-
         } catch (error) {
             console.error("CinetPay SDK Critical Error:", error);
-            if (alert("Impossible de lancer le module de paiement.")) {
-                 window.location.reload();
-            }
+            toast({
+                variant: 'destructive',
+                title: "Erreur Critique",
+                description: "Impossible de lancer le module de paiement. Veuillez rafraîchir la page et réessayer.",
+            });
         }
     };
 
