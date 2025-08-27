@@ -113,7 +113,7 @@ export function TransactionForm({
   };
   
   const handleFormSubmit = (data: FormValues) => {
-    const finalCategory = data.category === 'Autre' ? data.customCategory : data.category;
+    const finalCategory = data.category === 'Autre' && data.customCategory ? data.customCategory : data.category;
     onSubmit({
         ...data,
         category: finalCategory || "Autre",
