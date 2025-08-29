@@ -1,7 +1,11 @@
 {
-  "name": "Wisebil - Conseiller Financier IA & Gestion de Budget",
+  "name": "Wisebil",
   "short_name": "Wisebil",
-  "description": "Maîtrisez vos finances avec l'IA. Wisebil est votre conseiller financier personnel pour la gestion de budget, le suivi des dépenses et l'épargne intelligente.",
+  "description": "Maîtrisez vos finances avec l'IA. Wisebil est votre conseiller financier personnel pour la gestion de budget, le suivi des dépenses, l'épargne intelligente et la planification financière au Sénégal, Cameroun, Côte d'Ivoire et dans toute l'Afrique francophone.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -13,10 +17,5 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ],
-  "theme_color": "#50C878",
-  "background_color": "#F0FAF4",
-  "start_url": "/",
-  "display": "standalone",
-  "orientation": "portrait"
+  ]
 }

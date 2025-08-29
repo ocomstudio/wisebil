@@ -34,11 +34,16 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: APP_NAME,
+    // startUpImage: [],
   },
   formatDetection: {
     telephone: false,
   },
   manifest: "/manifest.json",
+  icons: [
+    { rel: "apple-touch-icon", url: "/icons/icon-192x192.png" },
+    { rel: "icon", url: "/icons/icon-192x192.png" },
+  ],
   openGraph: {
     type: 'website',
     url: 'https://wisebil-596a8.web.app/', // Remplacez par votre URL de production
