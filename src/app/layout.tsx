@@ -10,15 +10,32 @@ const APP_NAME = "Wisebil";
 const APP_DESCRIPTION = "Maîtrisez vos finances avec l'IA. Wisebil est votre conseiller financier personnel pour la gestion de budget, le suivi des dépenses, l'épargne intelligente et la planification financière au Sénégal, Cameroun, Côte d'Ivoire et dans toute l'Afrique francophone.";
 
 const KEYWORDS = [
-  // Français
+  // Français - Global & Thématique
   "gestion de budget", "suivi de dépenses", "conseiller financier ia", "épargne", "finances personnelles", 
   "wisebil", "gestion financière", "planification financière", "intelligence artificielle finance", "budget app", 
   "application de budget", "coach financier", "assistant financier", "automatisation financière", "fintech",
-  "afrique", "sénégal", "cameroun", "côte d'ivoire", "afrique francophone", "dakar", "douala", "abidjan",
   "argent", "économiser de l'argent", "gérer son argent", "dépenses quotidiennes", "analyse financière",
-  // Anglais
+  "gestion de patrimoine", "suivi des investissements", "réduction de la dette", "planification de la retraite", "liberté financière",
+  "chatbot financier", "IA pour les finances",
+
+  // Anglais - Global & Thématique
   "budgeting app", "expense tracker", "ai financial advisor", "personal finance", "savings app",
-  "financial planning", "ai in finance", "finance africa", "money management", "fintech africa"
+  "financial planning", "ai in finance", "finance africa", "money management", "fintech",
+  "save money", "manage money", "daily expenses", "financial analysis",
+  "wealth management", "investment tracking", "debt reduction", "retirement planning", "financial freedom",
+  "financial chatbot", "AI for finance", "machine learning budgeting", "secure finance app", "private budget tracker",
+
+  // Géographique - Français
+  "finance afrique", "fintech afrique", "sénégal", "cameroun", "côte d'ivoire", "afrique francophone", "dakar", "douala", "abidjan",
+  "finance france", "budget belgique", "gestion argent suisse", "finance québec", "europe",
+
+  // Géographique - Anglais
+  "finance africa", "fintech africa", "finance nigeria", "finance south africa", "finance kenya", "finance ghana",
+  "finance europe", "finance asia", "finance usa", "finance canada", "finance uk", "london", "new york", "toronto",
+
+  // Mots-clés "Longue Traîne" (questions)
+  "comment gérer son budget", "meilleure application de budget", "suivre mes dépenses application",
+  "how to manage my budget", "best budgeting app", "app to track my expenses", "ai money manager"
 ];
 
 
@@ -74,6 +91,8 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
+         <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png"></link>
       </head>
       <body className="font-body antialiased" suppressHydrationWarning={true}>
         <AuthProvider>
