@@ -59,14 +59,17 @@ interface Message {
 type Conversation = Message[];
 type AgentMode = 'wise' | 'agent';
 
+// Changed history to be an object instead of an array of arrays
+type ConversationHistoryObject = { [timestamp: string]: Conversation };
+
 interface ConversationHistory {
     wise: {
       current: Conversation;
-      history: Conversation[];
+      history: ConversationHistoryObject;
     },
     agentW: {
       current: Conversation;
-      history: Conversation[];
+      history: ConversationHistoryObject;
     }
 }
 
@@ -151,9 +154,9 @@ export function ConseilPanel() {
   const [isClient, setIsClient] = useState(false);
   
   const [wiseConversation, setWiseConversation] = useState<Conversation>([]);
-  const [wiseHistory, setWiseHistory] = useState<Conversation[]>([]);
+  const [wiseHistory, setWiseHistory] = useState<ConversationHistoryObject>({});
   const [agentWConversation, setAgentWConversation] = useState<Conversation>([]);
-  const [agentWHistory, setAgentWHistory] = useState<Conversation[]>([]);
+  const [agentWHistory, setAgentWHistory] = useState<ConversationHistoryObject>({});
 
   const [isThinking, setIsThinking] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -207,7 +210,7 @@ export function ConseilPanel() {
                     agentMode: 'wise'
                 }]);
             }
-            setWiseHistory(loadedHistory?.wise?.history || []);
+            setWiseHistory(loadedHistory?.wise?.history || {});
 
             const agentWCurrent = loadedHistory?.agentW?.current;
             if (agentWCurrent && agentWCurrent.length > 0) {
@@ -215,7 +218,7 @@ export function ConseilPanel() {
             } else {
                  setAgentWConversation([]);
             }
-            setAgentWHistory(loadedHistory?.agentW?.history || []);
+            setAgentWHistory(loadedHistory?.agentW?.history || {});
 
         } else {
             // Document doesn't exist, set initial welcome message for Wise
@@ -389,7 +392,11 @@ export function ConseilPanel() {
         if(currentConversation.length === 1 && currentConversation[0].role === 'model') {
             // do nothing
         } else {
-            setConversationHistory(prev => [currentConversation, ...prev].filter(c => c.length > 0));
+             setConversationHistory(prev => {
+                const newHistory = { ...prev };
+                newHistory[new Date().toISOString()] = currentConversation;
+                return newHistory;
+            });
         }
     }
     
@@ -405,8 +412,12 @@ export function ConseilPanel() {
     }
   };
 
-  const deleteConversationFromHistory = (indexToDelete: number) => {
-    setConversationHistory(prev => prev.filter((_, i) => i !== indexToDelete));
+  const deleteConversationFromHistory = (timestamp: string) => {
+    setConversationHistory(prev => {
+        const newHistory = { ...prev };
+        delete newHistory[timestamp];
+        return newHistory;
+    });
     toast.success(t('history_deleted_success'));
   };
 
@@ -658,23 +669,23 @@ export function ConseilPanel() {
 
        {transcriptionMode ? <TranscriptionEditor /> : (
             <footer className='p-4 md:p-6 border-t space-y-4 flex-shrink-0 bg-background'>
-                {conversationHistory.length > 0 && (
+                {Object.keys(conversationHistory).length > 0 && (
                 <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="item-1">
                     <AccordionTrigger>{t('history_button')}</AccordionTrigger>
                     <AccordionContent>
                         <ScrollArea className="h-32">
                         <div className='space-y-2 pr-2'>
-                            {conversationHistory.map((convo, index) => (
-                            <div key={index} className="grid grid-cols-[1fr_auto] items-center gap-2 p-2 bg-muted/50 rounded-md text-sm">
+                            {Object.entries(conversationHistory).sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime()).map(([timestamp, convo]) => (
+                            <div key={timestamp} className="grid grid-cols-[1fr_auto] items-center gap-2 p-2 bg-muted/50 rounded-md text-sm">
                                 <span
                                 className="truncate cursor-pointer hover:text-primary"
                                 onClick={() => {
                                     setConversationHistory(prev => {
-                                        const newHistory = [...prev];
-                                        newHistory.splice(index, 1);
+                                        const newHistory = { ...prev };
+                                        delete newHistory[timestamp];
                                         if (currentConversation && currentConversation.length > 0 && !(currentConversation.length === 1 && currentConversation[0].role === 'model')) {
-                                            newHistory.unshift(currentConversation);
+                                            newHistory[new Date().toISOString()] = currentConversation;
                                         }
                                         return newHistory;
                                     });
@@ -701,7 +712,7 @@ export function ConseilPanel() {
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                     <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => deleteConversationFromHistory(index)} className="bg-destructive hover:bg-destructive/90">
+                                    <AlertDialogAction onClick={() => deleteConversationFromHistory(timestamp)} className="bg-destructive hover:bg-destructive/90">
                                         {t('delete')}
                                     </AlertDialogAction>
                                     </AlertDialogFooter>
