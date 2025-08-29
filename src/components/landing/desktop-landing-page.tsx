@@ -144,7 +144,7 @@ export default function DesktopLandingPage() {
             role: t('testimonial1_role'),
             quote: t('testimonial1_quote'),
             rating: 5,
-            avatar: "https://placehold.co/40x40.png",
+            avatar: "https://images.unsplash.com/photo-1530404805506-c03b57ae586f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjaGVmJTIwZGUlMjBwcm9qZXR8ZW58MHx8fHwxNzU2NDYwNDIwfDA&ixlib=rb-4.1.0&q=80&w=1080",
             "data-ai-hint": "woman avatar"
         },
         {
