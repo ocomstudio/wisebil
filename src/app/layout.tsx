@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { LocaleProvider } from '@/context/locale-context';
 import { AuthProvider } from '@/context/auth-context';
 import Script from 'next/script';
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const APP_NAME = "Wisebil";
 const APP_DESCRIPTION = "Maîtrisez vos finances avec l'IA. Wisebil est votre conseiller financier personnel pour la gestion de budget, le suivi des dépenses, l'épargne intelligente et la planification financière au Sénégal, Cameroun, Côte d'Ivoire et dans toute l'Afrique francophone.";
@@ -76,6 +77,7 @@ export default function RootLayout({
           </LocaleProvider>
         </AuthProvider>
         <Toaster />
+        <SpeedInsights />
       </body>
     </html>
   );
