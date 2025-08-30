@@ -159,8 +159,8 @@ export default function DesktopLandingPage() {
             role: t('testimonial3_role'),
             quote: t('testimonial3_quote'),
             rating: 5,
-            avatar: "https://placehold.co/40x40.png",
-            "data-ai-hint": "woman avatar"
+            avatar: "https://images.unsplash.com/photo-1600880292210-252c71cf577c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxhZnJpY2FuJTIwYnVzaW5lc3MlMjBvd25lcnxlbnwwfHx8fDE3MTk0Mjg0NzV8MA&ixlib=rb-4.0.3&q=80&w=1080",
+            "data-ai-hint": "african business owner"
         }
     ];
 
@@ -445,7 +445,7 @@ export default function DesktopLandingPage() {
                                 <Card key={testimonial.name} className="bg-card/50 backdrop-blur-sm border-border/50 transform-gpu transition-transform hover:scale-105 hover:shadow-primary/20 shadow-xl">
                                     <CardContent className="p-6">
                                         <div className="flex items-center mb-4 gap-3">
-                                            <Image src={testimonial.avatar} alt={testimonial.name} width={40} height={40} className="rounded-full" data-ai-hint={testimonial['data-ai-hint']} />
+                                            <Image src={testimonial.avatar} alt={testimonial.name} width={40} height={40} className="rounded-full object-cover" data-ai-hint={testimonial['data-ai-hint']} />
                                             <div>
                                             <div className="font-semibold">{testimonial.name}</div>
                                             <div className="text-xs text-muted-foreground">{testimonial.role}</div>
