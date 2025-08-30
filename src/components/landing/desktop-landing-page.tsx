@@ -1,4 +1,3 @@
-
 // src/components/landing/desktop-landing-page.tsx
 "use client";
 
@@ -531,7 +530,7 @@ export default function DesktopLandingPage() {
                     <div>
                     <h4 className="font-semibold mb-2">{t('footer_product')}</h4>
                     <nav className="flex flex-col gap-2 text-sm">
-                        <Link href="#features" className="text-muted-foreground hover:text-primary">{t('nav_features')}</Link>
+                        <Link href="/about" className="text-muted-foreground hover:text-primary">{t('about_title')}</Link>
                         <Link href="#pricing" className="text-muted-foreground hover:text-primary">{t('nav_pricing')}</Link>
                         <Link href="#" className="text-muted-foreground hover:text-primary">{t('footer_updates')}</Link>
                     </nav>
