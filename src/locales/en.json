@@ -465,7 +465,6 @@
     "reset_password_title": "Reset Your Password",
     "reset_password_desc": "Enter a new password for your account.",
     "invalid_reset_link_error": "This password reset link is invalid or has expired.",
-    "error_title": "Error",
     "password_reset_success_title": "Password Reset!",
     "password_reset_success_desc": "Your password has been successfully reset. You can now log in with your new password.",
     "proceed_to_login_button": "Proceed to Login",
@@ -485,7 +484,25 @@
     "tutorial_step5_content": "This is your financial coach. Ask it questions, get advice, or use the 'Agent W' mode to enter your expenses by simply describing them!",
     "tutorial_step6_title": "Easy Navigation",
     "tutorial_step6_content": "Use this navigation bar to access all sections of the application.",
-    "category_dons": "Donations"
+    "category_dons": "Donations",
+    "about_hero_title1": "More than an app.",
+    "about_hero_title2": "A financial revolution.",
+    "about_hero_subtitle": "Wisebil is not just a tool. It's a movement towards financial freedom accessible to all, powered by technology that understands you.",
+    "about_manifesto_title": "Our Manifesto",
+    "about_manifesto_desc": "In a complex financial world, we saw confusion, stress, and a lack of control. We saw complicated tools that add more work than they remove. Wisebil was born from a simple belief: the most advanced technology should make life radically simpler. Our mission is to give you back power over your money, effortlessly.",
+    "about_how_title1": "AI for Humans",
+    "about_how_desc1": "Our AI is not a gadget. It's an intelligent partner trained to simplify your life, automate tedious tasks, and offer you relevant advice. It learns from you, for you.",
+    "about_how_title2": "Unshakeable Security",
+    "about_how_desc2": "Your trust is our most valuable asset. We protect it with military-grade encryption and an absolute privacy policy. Your data is yours, and only yours.",
+    "about_how_title3": "Radical Simplicity",
+    "about_how_desc3": "Every screen, every button, every interaction is designed to be intuitive. If you have to read a manual, we have failed. Financial power should never be complicated.",
+    "about_allies_title": "Meet your new allies",
+    "about_allies_subtitle": "Wisebil is not a single AI, but a team of specialized agents at your service.",
+    "about_wise_title": "Wise, The Advisor",
+    "about_wise_desc": "Your personal coach. Ask any question about your finances, seek advice on your budgets, or let it analyze your expenses to give you a clear summary and areas for improvement.",
+    "about_agentw_title": "Agent W, The Assistant",
+    "about_agentw_desc": "Your data entry specialist. Dictate a list of expenses and incomes in a single sentence, or take a picture of a receipt. Agent W extracts, categorizes, and records everything for you in seconds.",
+    "about_cta_title": "Your transformation starts now.",
+    "about_cta_subtitle": "Enough talk. It's time to act. Join us and discover what it truly means to be in control of your financial future.",
+    "about_cta_button": "Start my transformation"
 }
-
-    

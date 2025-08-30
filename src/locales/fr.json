@@ -484,7 +484,25 @@
     "tutorial_step5_content": "Ceci est votre coach financier. Posez-lui des questions, obtenez des conseils, ou utilisez le mode 'Agent W' pour entrer vos dépenses en les décrivant simplement !",
     "tutorial_step6_title": "Navigation Facile",
     "tutorial_step6_content": "Utilisez cette barre de navigation pour accéder à toutes les sections de l'application.",
-    "category_dons": "Dons"
+    "category_dons": "Dons",
+    "about_hero_title1": "Bien plus qu'une application.",
+    "about_hero_title2": "Une révolution financière.",
+    "about_hero_subtitle": "Wisebil n'est pas seulement un outil. C'est un mouvement vers une liberté financière accessible à tous, propulsé par une technologie qui vous comprend.",
+    "about_manifesto_title": "Notre Manifeste",
+    "about_manifesto_desc": "Dans un monde financier complexe, nous avons vu la confusion, le stress et le manque de contrôle. Nous avons vu des outils compliqués qui ajoutent plus de travail qu'ils n'en enlèvent. Wisebil est né d'une conviction simple : la technologie la plus avancée doit rendre la vie radicalement plus simple. Notre mission est de vous redonner le pouvoir sur votre argent, sans effort.",
+    "about_how_title1": "IA au service de l'Humain",
+    "about_how_desc1": "Notre IA n'est pas un gadget. C'est un partenaire intelligent formé pour vous simplifier la vie, automatiser les tâches fastidieuses et vous offrir des conseils pertinents. Elle apprend de vous, pour vous.",
+    "about_how_title2": "Sécurité Inébranlable",
+    "about_how_desc2": "Votre confiance est notre capital le plus précieux. Nous la protégeons avec un cryptage de niveau militaire et une politique de confidentialité absolue. Vos données sont à vous, et seulement à vous.",
+    "about_how_title3": "Simplicité Radicale",
+    "about_how_desc3": "Chaque écran, chaque bouton, chaque interaction est pensée pour être intuitive. Si vous devez lire un manuel, nous avons échoué. La puissance financière ne devrait jamais être compliquée.",
+    "about_allies_title": "Rencontrez vos nouveaux alliés",
+    "about_allies_subtitle": "Wisebil, ce n'est pas une seule IA, mais une équipe d'agents spécialisés à votre service.",
+    "about_wise_title": "Wise, Le Conseiller",
+    "about_wise_desc": "Votre coach personnel. Posez-lui n'importe quelle question sur vos finances, demandez des conseils sur vos budgets, ou laissez-le analyser vos dépenses pour vous donner un résumé clair et des pistes d'amélioration.",
+    "about_agentw_title": "Agent W, L'Assistant",
+    "about_agentw_desc": "Votre spécialiste de la saisie de données. Dictez-lui une liste de dépenses et de revenus en une seule phrase, ou prenez une photo d'un ticket. Agent W extrait, catégorise et enregistre tout pour vous, en quelques secondes.",
+    "about_cta_title": "Votre transformation commence maintenant.",
+    "about_cta_subtitle": "Assez parlé. Il est temps d'agir. Rejoignez-nous et découvrez ce que signifie vraiment être en contrôle de votre avenir financier.",
+    "about_cta_button": "Commencer ma transformation"
 }
-
-    

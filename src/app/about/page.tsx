@@ -6,6 +6,7 @@ import { ArrowLeft, BrainCircuit, CheckCircle, Heart, ShieldCheck, Zap } from "l
 import Link from "next/link";
 import { Logo } from "@/components/common/logo";
 import { Button } from "@/components/ui/button";
+import { useLocale } from "@/context/locale-context";
 
 const cardVariants = {
   offscreen: {
@@ -24,6 +25,7 @@ const cardVariants = {
 };
 
 export default function AboutPage() {
+    const { t } = useLocale();
   return (
     <div className="bg-background text-foreground min-h-screen overflow-x-hidden">
       <header className="sticky top-0 bg-background/80 backdrop-blur-sm border-b z-50">
@@ -32,7 +34,7 @@ export default function AboutPage() {
           <Button asChild variant="outline">
             <Link href="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour à l'accueil
+              {t('back_to_home')}
             </Link>
           </Button>
         </div>
@@ -50,12 +52,12 @@ export default function AboutPage() {
           <div className="absolute -bottom-20 -right-20 w-72 h-72 bg-accent/10 rounded-full mix-blend-lighten filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
 
           <h1 className="text-4xl md:text-6xl font-bold font-headline mb-4">
-            Bien plus qu'une application.
+            {t('about_hero_title1')}
             <br />
-            <span className="text-primary">Une révolution financière.</span>
+            <span className="text-primary">{t('about_hero_title2')}</span>
           </h1>
           <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground">
-            Wisebil n'est pas seulement un outil. C'est un mouvement vers une liberté financière accessible à tous, propulsé par une technologie qui vous comprend.
+            {t('about_hero_subtitle')}
           </p>
         </motion.section>
 
@@ -68,9 +70,9 @@ export default function AboutPage() {
           className="mt-24"
         >
           <div className="text-center max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline">Notre Manifeste</h2>
+            <h2 className="text-3xl md:text-4xl font-bold font-headline">{t('about_manifesto_title')}</h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Dans un monde financier complexe, nous avons vu la confusion, le stress et le manque de contrôle. Nous avons vu des outils compliqués qui ajoutent plus de travail qu'ils n'en enlèvent. Wisebil est né d'une conviction simple : la technologie la plus avancée doit rendre la vie radicalement plus simple. Notre mission est de vous redonner le pouvoir sur votre argent, sans effort.
+              {t('about_manifesto_desc')}
             </p>
           </div>
         </motion.section>
@@ -79,37 +81,37 @@ export default function AboutPage() {
         <section className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
             <motion.div initial="offscreen" whileInView="onscreen" viewport={{ once: true, amount: 0.5 }} variants={cardVariants} className="bg-card p-8 rounded-2xl shadow-xl border border-primary/20 text-center">
                 <BrainCircuit className="h-12 w-12 text-primary mx-auto mb-4"/>
-                <h3 className="text-2xl font-bold font-headline">IA au service de l'Humain</h3>
-                <p className="mt-2 text-muted-foreground">Notre IA n'est pas un gadget. C'est un partenaire intelligent formé pour vous simplifier la vie, automatiser les tâches fastidieuses et vous offrir des conseils pertinents. Elle apprend de vous, pour vous.</p>
+                <h3 className="text-2xl font-bold font-headline">{t('about_how_title1')}</h3>
+                <p className="mt-2 text-muted-foreground">{t('about_how_desc1')}</p>
             </motion.div>
              <motion.div initial="offscreen" whileInView="onscreen" viewport={{ once: true, amount: 0.5, delay: 0.2 }} variants={cardVariants} className="bg-card p-8 rounded-2xl shadow-xl border border-primary/20 text-center">
                 <ShieldCheck className="h-12 w-12 text-primary mx-auto mb-4"/>
-                <h3 className="text-2xl font-bold font-headline">Sécurité Inébranlable</h3>
-                <p className="mt-2 text-muted-foreground">Votre confiance est notre capital le plus précieux. Nous la protégeons avec un cryptage de niveau militaire et une politique de confidentialité absolue. Vos données sont à vous, et seulement à vous.</p>
+                <h3 className="text-2xl font-bold font-headline">{t('about_how_title2')}</h3>
+                <p className="mt-2 text-muted-foreground">{t('about_how_desc2')}</p>
             </motion.div>
              <motion.div initial="offscreen" whileInView="onscreen" viewport={{ once: true, amount: 0.5, delay: 0.4 }} variants={cardVariants} className="bg-card p-8 rounded-2xl shadow-xl border border-primary/20 text-center">
                 <Heart className="h-12 w-12 text-primary mx-auto mb-4"/>
-                <h3 className="text-2xl font-bold font-headline">Simplicité Radicale</h3>
-                <p className="mt-2 text-muted-foreground">Chaque écran, chaque bouton, chaque interaction est pensée pour être intuitive. Si vous devez lire un manuel, nous avons échoué. La puissance financière ne devrait jamais être compliquée.</p>
+                <h3 className="text-2xl font-bold font-headline">{t('about_how_title3')}</h3>
+                <p className="mt-2 text-muted-foreground">{t('about_how_desc3')}</p>
             </motion.div>
         </section>
         
         {/* Meet the AI */}
         <section className="mt-24">
            <div className="text-center">
-                <h2 className="text-3xl md:text-4xl font-bold font-headline">Rencontrez vos nouveaux alliés</h2>
+                <h2 className="text-3xl md:text-4xl font-bold font-headline">{t('about_allies_title')}</h2>
                 <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-                    Wisebil, ce n'est pas une seule IA, mais une équipe d'agents spécialisés à votre service.
+                    {t('about_allies_subtitle')}
                 </p>
            </div>
            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
                 <motion.div initial="offscreen" whileInView="onscreen" viewport={{ once: true, amount: 0.5 }} variants={cardVariants} className="bg-card p-8 rounded-2xl shadow-2xl border border-border">
-                    <h3 className="text-2xl font-bold font-headline text-primary flex items-center gap-2"><Zap /> Wise, Le Conseiller</h3>
-                    <p className="mt-4 text-muted-foreground">Votre coach personnel. Posez-lui n'importe quelle question sur vos finances, demandez des conseils sur vos budgets, ou laissez-le analyser vos dépenses pour vous donner un résumé clair et des pistes d'amélioration.</p>
+                    <h3 className="text-2xl font-bold font-headline text-primary flex items-center gap-2"><Zap /> {t('about_wise_title')}</h3>
+                    <p className="mt-4 text-muted-foreground">{t('about_wise_desc')}</p>
                 </motion.div>
                  <motion.div initial="offscreen" whileInView="onscreen" viewport={{ once: true, amount: 0.5, delay: 0.2 }} variants={cardVariants} className="bg-card p-8 rounded-2xl shadow-2xl border border-border">
-                    <h3 className="text-2xl font-bold font-headline text-primary flex items-center gap-2"><CheckCircle /> Agent W, L'Assistant</h3>
-                    <p className="mt-4 text-muted-foreground">Votre spécialiste de la saisie de données. Dictez-lui une liste de dépenses et de revenus en une seule phrase, ou prenez une photo d'un ticket. Agent W extrait, catégorise et enregistre tout pour vous, en quelques secondes.</p>
+                    <h3 className="text-2xl font-bold font-headline text-primary flex items-center gap-2"><CheckCircle /> {t('about_agentw_title')}</h3>
+                    <p className="mt-4 text-muted-foreground">{t('about_agentw_desc')}</p>
                 </motion.div>
            </div>
         </section>
@@ -122,12 +124,12 @@ export default function AboutPage() {
             variants={cardVariants}
             className="mt-24 text-center bg-primary/10 p-12 rounded-2xl"
         >
-          <h2 className="text-3xl font-bold font-headline mb-4">Votre transformation commence maintenant.</h2>
+          <h2 className="text-3xl font-bold font-headline mb-4">{t('about_cta_title')}</h2>
           <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">
-            Assez parlé. Il est temps d'agir. Rejoignez-nous et découvrez ce que signifie vraiment être en contrôle de votre avenir financier.
+            {t('about_cta_subtitle')}
           </p>
           <Button asChild size="lg" className="shadow-lg shadow-primary/20 transform-gpu transition-transform hover:scale-105">
-            <Link href="/dashboard">Commencer ma transformation</Link>
+            <Link href="/dashboard">{t('about_cta_button')}</Link>
           </Button>
         </motion.section>
       </main>
