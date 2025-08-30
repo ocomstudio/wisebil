@@ -127,7 +127,7 @@ export default function AboutPage() {
             Assez parlé. Il est temps d'agir. Rejoignez-nous et découvrez ce que signifie vraiment être en contrôle de votre avenir financier.
           </p>
           <Button asChild size="lg" className="shadow-lg shadow-primary/20 transform-gpu transition-transform hover:scale-105">
-            <Link href="/auth/signup">Commencer ma transformation</Link>
+            <Link href="/dashboard">Commencer ma transformation</Link>
           </Button>
         </motion.section>
       </main>
