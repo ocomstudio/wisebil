@@ -9,7 +9,7 @@ import { BottomNav } from "@/components/dashboard/bottom-nav";
 import { TransactionsProvider } from "@/context/transactions-context";
 import { ConseilPanel } from "@/components/dashboard/conseil-panel";
 import { Button } from "@/components/ui/button";
-import { Bell } from "lucide-react";
+import { Bell, Info } from "lucide-react";
 import { UserProfile } from "@/components/dashboard/user-profile";
 import { BudgetProvider } from "@/context/budget-context";
 import { SavingsProvider } from "@/context/savings-context";
@@ -50,6 +50,11 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         {/* Desktop Header */}
         <header className="hidden md:flex items-center justify-end h-14 px-6 border-b bg-muted/40 flex-shrink-0">
           <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" className="rounded-full" asChild>
+                <Link href="/about" aria-label={t('about_title')}>
+                    <Info className="h-5 w-5" />
+                </Link>
+            </Button>
             <Button variant="ghost" size="icon" className="rounded-full relative" asChild>
               <Link href="/dashboard/notifications">
                 <Bell className="h-5 w-5" />
