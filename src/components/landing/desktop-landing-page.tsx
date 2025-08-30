@@ -159,8 +159,8 @@ export default function DesktopLandingPage() {
             role: t('testimonial3_role'),
             quote: t('testimonial3_quote'),
             rating: 5,
-            avatar: "https://images.unsplash.com/photo-1600880292210-252c71cf577c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxhZnJpY2FuJTIwYnVzaW5lc3MlMjBvd25lcnxlbnwwfHx8fDE3MTk0Mjg0NzV8MA&ixlib=rb-4.0.3&q=80&w=1080",
-            "data-ai-hint": "african business owner"
+            avatar: "https://images.unsplash.com/photo-1544717305-2782549b5136?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxldHVkaWFudHxlbnwwfHx8fDE3NTY1NjM2MzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+            "data-ai-hint": "etudiante"
         }
     ];
 
