@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/common/logo';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Check, Eye, BarChart, Bot, Shield, Star, Twitter, Facebook, Instagram, HeartHandshake, Zap, Rocket } from 'lucide-react';
+import { Check, Eye, BarChart, Bot, Shield, Star, Twitter, Facebook, Instagram, HeartHandshake, Zap, Rocket, Info } from 'lucide-react';
 import { GooglePlayLogo } from './logos/google-play-logo';
 import { AppStoreLogo } from './logos/app-store-logo';
 import { LanguageSelector } from '../common/language-selector';
@@ -143,7 +143,7 @@ export default function DesktopLandingPage() {
             role: t('testimonial1_role'),
             quote: t('testimonial1_quote'),
             rating: 5,
-            avatar: "https://images.unsplash.com/photo-1530404805506-c03b57ae586f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjaGVmJTIwZGUlMjBwcm9qZXR8ZW58MHx8fHwxNzU2NDYwNDIwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+            avatar: "https://images.unsplash.com/photo-1637684666772-1f215bfd0f5d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxkaXJlY3RldXJ8ZW58MHx8fHwxNzU2NTYzNDE4fDA&ixlib=rb-4.1.0&q=80&w=1080",
             "data-ai-hint": "woman avatar"
         },
         {
