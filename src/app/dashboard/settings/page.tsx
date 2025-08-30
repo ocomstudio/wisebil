@@ -298,7 +298,7 @@ export default function SettingsPage() {
   const handleSendVerification = async () => {
     setIsSendingVerification(true);
     try {
-        await sendVerificationEmail();
+        await sendEmailVerification();
         toast({
             title: t('verification_sent_title'),
             description: t('verification_sent_desc'),
@@ -680,11 +680,15 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <Info className="h-5 w-5"/>
                 <p>{t('app_info')}</p>
             </div>
              <Separator />
             <div className="space-y-2">
+                 <Button variant="ghost" className="w-full justify-start p-0 h-auto" asChild>
+                    <Link href="/about">
+                         <Info className="mr-2 h-4 w-4"/> {t('about_title')}
+                    </Link>
+                </Button>
                 <Button variant="ghost" className="w-full justify-start p-0 h-auto" asChild>
                     <Link href="/privacy-policy">
                          <ShieldCheck className="mr-2 h-4 w-4"/> {t('privacy_policy')}
