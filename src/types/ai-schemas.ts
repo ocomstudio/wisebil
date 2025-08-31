@@ -80,6 +80,7 @@ export const AgentWInputSchema = z.object({
 export type AgentWInput = z.infer<typeof AgentWInputSchema>;
 
 export const AgentWOutputSchema = z.object({
+  transactions: z.array(TransactionSchemaForAgent).optional().default([]).describe('A list of all financial transactions found. Do not separate into income/expense.'),
   incomes: z.array(TransactionSchemaForAgent).optional().default([]).describe('A list of all income transactions found.'),
   expenses: z.array(TransactionSchemaForAgent).optional().default([]).describe('A list of all expense transactions found.'),
   newBudgets: z.array(NewBudgetSchema).optional().default([]).describe('A list of new budgets to be created.'),
