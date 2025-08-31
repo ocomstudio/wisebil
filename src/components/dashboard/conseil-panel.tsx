@@ -567,7 +567,7 @@ const AgentWReviewCard = ({ message }: { message: Message }) => {
 
     return (
         <div className="p-4 rounded-lg bg-accent/50 border border-primary/20 space-y-4">
-            <p className="text-sm font-medium">{message.content}</p>
+            <p className="text-sm font-medium">{message.isProcessed ? t('agent_w_actions_cancelled') : message.content}</p>
             <div className="space-y-2 text-xs">
                 {transactions.map((item, index) => (
                     <div key={`tx-${index}`} className="flex items-center gap-2">
