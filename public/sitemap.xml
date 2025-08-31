@@ -1,27 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://www.wisebil.com/</loc>
-    <lastmod>2024-07-29</lastmod>
-    <changefreq>monthly</changefreq>
+    <loc>https://wisebil-596a8.web.app</loc>
+    <lastmod>2024-07-28</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://www.wisebil.com/contact</loc>
-    <lastmod>2024-07-29</lastmod>
-    <changefreq>yearly</changefreq>
+    <loc>https://wisebil-596a8.web.app/about</loc>
+    <lastmod>2024-07-28</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.wisebil.com/privacy-policy</loc>
-    <lastmod>2024-07-29</lastmod>
+    <loc>https://wisebil-596a8.web.app/contact</loc>
+    <lastmod>2024-07-28</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
-  <url>
-    <loc>https://www.wisebil.com/terms-of-service</loc>
-    <lastmod>2024-07-29</lastmod>
+   <url>
+    <loc>https://wisebil-596a8.web.app/privacy-policy</loc>
+    <lastmod>2024-07-28</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.3</priority>
+  </url>
+   <url>
+    <loc>https://wisebil-596a8.web.app/terms-of-service</loc>
+    <lastmod>2024-07-28</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 </urlset>
