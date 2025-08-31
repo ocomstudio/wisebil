@@ -84,7 +84,7 @@ export default function ScanResultsPage() {
                 setResults(editableResponse);
             } catch (error) {
                 console.error("Error processing scan:", error);
-                toast({ variant: 'destructive', title: 'Scan Failed', description: 'Could not extract information from the document.' });
+                toast({ variant: 'destructive', title: t('scan_failed_title'), description: t('scan_failed_desc') });
                 router.push('/dashboard');
             } finally {
                 setIsLoading(false);
@@ -156,11 +156,11 @@ export default function ScanResultsPage() {
             }
             
             await Promise.all(promises);
-            toast({ title: 'Success!', description: `${itemsAdded} items have been added to your account.` });
+            toast({ title: t('scan_save_success_title'), description: t('scan_save_success_desc', { count: itemsAdded }) });
             router.push('/dashboard');
         } catch (error) {
             console.error("Failed to save results:", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save all items.' });
+            toast({ variant: 'destructive', title: t('error_title'), description: t('scan_save_error_desc') });
         } finally {
             setIsSaving(false);
             sessionStorage.removeItem('scannedImageDataUri');
@@ -175,12 +175,12 @@ export default function ScanResultsPage() {
         if (item.isEditing) {
             return (
                 <div key={item.id} className="p-3 bg-muted/50 rounded-lg space-y-2">
-                    <Input value={item.description} onChange={(e) => handleUpdate(item.id, 'description', e.target.value)} placeholder="Description" />
-                    <Input value={item.amount} type="number" onChange={(e) => handleUpdate(item.id, 'amount', parseFloat(e.target.value) || 0)} placeholder="Amount" />
+                    <Input value={item.description} onChange={(e) => handleUpdate(item.id, 'description', e.target.value)} placeholder={t('description_label')} />
+                    <Input value={item.amount} type="number" onChange={(e) => handleUpdate(item.id, 'amount', parseFloat(e.target.value) || 0)} placeholder={t('amount_label')} />
                     
                     {showCategorySelect && (
                       <Select value={item.category} onValueChange={(value) => handleUpdate(item.id, 'category', value)}>
-                          <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder={t('category_label')} /></SelectTrigger>
                           <SelectContent>
                               {categories.map(c => <SelectItem key={c.name} value={c.name}>{c.emoji} {getCategoryName(c.name)}</SelectItem>)}
                           </SelectContent>
@@ -188,7 +188,7 @@ export default function ScanResultsPage() {
                     )}
                     {showSavingsGoalSelect && (
                       <Select value={item.category} onValueChange={(value) => handleUpdate(item.id, 'category', value)}>
-                        <SelectTrigger><SelectValue placeholder="Select a savings goal" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={t('scan_select_goal_placeholder')} /></SelectTrigger>
                         <SelectContent>
                           {savingsGoals.map(g => <SelectItem key={g.id} value={g.id}>{g.emoji} {g.name}</SelectItem>)}
                         </SelectContent>
@@ -213,7 +213,7 @@ export default function ScanResultsPage() {
                         <p className="font-semibold">{item.description}</p>
                         <p className="font-bold text-lg">{formatCurrency(item.amount)}</p>
                         {showCategorySelect && <p className="text-sm text-muted-foreground">{getCategoryName(item.category || "Autre")}</p>}
-                        {showSavingsGoalSelect && <p className="text-sm text-blue-400">{savingsGoals.find(g => g.id === item.category)?.name || "Select a goal"}</p>}
+                        {showSavingsGoalSelect && <p className="text-sm text-blue-400">{savingsGoals.find(g => g.id === item.category)?.name || t('scan_select_goal_placeholder')}</p>}
                     </div>
                     <div className="flex flex-col gap-2">
                         <Button size="icon" variant="ghost" onClick={() => toggleEdit(item.id)}><Pencil className="h-4 w-4" /></Button>
@@ -241,23 +241,23 @@ export default function ScanResultsPage() {
                 <Button variant="outline" size="icon" onClick={() => router.back()}>
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
-                <h1 className="text-xl font-bold font-headline">Scan Results</h1>
+                <h1 className="text-xl font-bold font-headline">{t('scan_results_title')}</h1>
             </header>
 
             <main className="space-y-6 pb-24">
                 { !hasResults && !isLoading && (
                     <Card className="text-center p-8">
-                        <CardTitle>No financial data found</CardTitle>
+                        <CardTitle>{t('scan_no_data_title')}</CardTitle>
                         <CardContent className="pt-4">
-                            <p className="text-muted-foreground mt-2">We couldn't detect any financial actions on your document.</p>
-                            <Button className="mt-4" onClick={() => router.push('/dashboard')}>Back to Dashboard</Button>
+                            <p className="text-muted-foreground mt-2">{t('scan_no_data_desc')}</p>
+                            <Button className="mt-4" onClick={() => router.push('/dashboard')}>{t('back_to_dashboard')}</Button>
                         </CardContent>
                     </Card>
                 )}
 
                 {results.transactions && results.transactions.length > 0 && (
                     <Card>
-                        <CardHeader><CardTitle>Transactions to classify</CardTitle></CardHeader>
+                        <CardHeader><CardTitle>{t('scan_transactions_title')}</CardTitle></CardHeader>
                         <CardContent className="space-y-4">{results.transactions.map(item => renderTransactionItem(item))}</CardContent>
                     </Card>
                 )}
@@ -267,11 +267,11 @@ export default function ScanResultsPage() {
             {hasResults && (
                 <footer className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t grid grid-cols-2 gap-4">
                     <Button variant="outline" size="lg" onClick={() => router.back()}>
-                        <X className="mr-2 h-4 w-4"/> Cancel
+                        <X className="mr-2 h-4 w-4"/> {t('cancel')}
                     </Button>
                     <Button size="lg" disabled={isSaving} onClick={handleSave}>
                         {isSaving ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Check className="mr-2 h-4 w-4" />}
-                        Save All
+                        {t('scan_save_all_button')}
                     </Button>
                 </footer>
             )}

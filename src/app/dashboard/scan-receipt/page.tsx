@@ -59,13 +59,13 @@ function ScanReceiptContent({ onComplete }: ScanReceiptPageProps) {
       router.push('/dashboard/scan-receipt/results');
     } catch (error) {
        console.error('Error during processing:', error);
-       let message = 'Could not process the image. Please try again.';
+       let message = t('processing_failed_desc');
        if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-           message = "The image is too large to be processed. Please try a smaller image."
+           message = t('image_too_large_error');
        }
        toast({
         variant: 'destructive',
-        title: 'Processing Failed',
+        title: t('processing_failed_title'),
         description: message,
       });
       setIsProcessing(false);
@@ -106,8 +106,8 @@ function ScanReceiptContent({ onComplete }: ScanReceiptPageProps) {
       reader.onerror = () => {
         toast({
           variant: "destructive",
-          title: "File Read Error",
-          description: "Could not read the selected file.",
+          title: t('file_read_error_title'),
+          description: t('file_read_error_desc'),
         });
         setIsProcessing(false);
       }
@@ -156,7 +156,7 @@ function ScanReceiptContent({ onComplete }: ScanReceiptPageProps) {
             disabled={isProcessing} 
             variant="ghost"
             className="w-20 h-20 rounded-full flex items-center justify-center text-white hover:bg-white/20"
-            aria-label="Upload file"
+            aria-label={t('upload_file_label')}
           >
            <Paperclip className="h-8 w-8" />
          </Button>
@@ -166,7 +166,7 @@ function ScanReceiptContent({ onComplete }: ScanReceiptPageProps) {
             onClick={handleCapture} 
             disabled={isProcessing || hasCameraPermission !== true} 
             className="w-20 h-20 rounded-full border-4 border-white/50 bg-white/30 hover:bg-white/50 flex items-center justify-center"
-            aria-label="Capture photo"
+            aria-label={t('capture_photo_label')}
           >
            <Camera className="h-8 w-8 text-white" />
          </Button>
