@@ -30,46 +30,6 @@ export function DashboardHeader() {
     audio.play().catch(error => console.error("Error playing sound:", error));
   };
 
-  const handleNotificationClick = () => {
-    playNotificationSound();
-    toast.custom((toastObject) => (
-      <div
-        className={`${
-          toastObject.visible ? 'animate-fade-in-up' : 'animate-out'
-        } max-w-md w-full bg-card shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
-      >
-        <div className="flex-1 w-0 p-4">
-          <div className="flex items-start">
-            <div className="flex-shrink-0 pt-0.5">
-              <div className="p-2 bg-primary/20 rounded-full">
-                <Lightbulb className="h-6 w-6 text-primary" />
-              </div>
-            </div>
-            <div className="ml-3 flex-1">
-              <p className="text-sm font-medium text-foreground">
-                {t('tip_of_the_day')}
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {t('toast_tip_desc')}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="flex border-l border-border">
-          <button
-            onClick={() => toast.dismiss(toastObject.id)}
-            className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-primary hover:text-primary/80 focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            {t('toast_close_button')}
-          </button>
-        </div>
-      </div>
-    ), {
-        vibrate: 1, // Add vibration on notification
-    });
-  }
-
-
   return (
     <header className="flex items-center justify-between p-4 border-b bg-background md:hidden">
       <Logo />
@@ -99,7 +59,7 @@ export function DashboardHeader() {
             </DropdownMenuContent>
         </DropdownMenu>
 
-         <Button variant="ghost" size="icon" asChild className="rounded-full relative">
+         <Button variant="ghost" size="icon" asChild className="relative">
           <Link href="/dashboard/notifications">
             <Bell className="h-5 w-5" />
              {unreadCount > 0 && (
