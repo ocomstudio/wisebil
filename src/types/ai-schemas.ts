@@ -47,7 +47,7 @@ export type FinancialSummaryOutput = z.infer<typeof FinancialSummaryOutputSchema
 // Schema for wise-agent.ts
 const TransactionSchemaForAgent = z.object({
   description: z.string().describe('The detailed description of the transaction.'),
-  amount: z.number().describe('The numeric amount of the transaction.'),
+  amount: z.number().describe('The numeric amount of the transaction. Use a negative sign for expenses (e.g., -5000) and a positive sign for incomes (e.g., 10000).'),
   category: z.string().describe('The most relevant category for the transaction.'),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format.").describe("The date of the transaction in YYYY-MM-DD format. This is required."),
 });
@@ -80,9 +80,7 @@ export const AgentWInputSchema = z.object({
 export type AgentWInput = z.infer<typeof AgentWInputSchema>;
 
 export const AgentWOutputSchema = z.object({
-  transactions: z.array(TransactionSchemaForAgent).optional().default([]).describe('A list of all financial transactions found. Do not separate into income/expense.'),
-  incomes: z.array(TransactionSchemaForAgent).optional().default([]).describe('A list of all income transactions found.'),
-  expenses: z.array(TransactionSchemaForAgent).optional().default([]).describe('A list of all expense transactions found.'),
+  transactions: z.array(TransactionSchemaForAgent).optional().default([]).describe('A list of all financial transactions found. Do not separate into income/expense. Use negative amounts for expenses.'),
   newBudgets: z.array(NewBudgetSchema).optional().default([]).describe('A list of new budgets to be created.'),
   newSavingsGoals: z.array(NewSavingsGoalSchema).optional().default([]).describe('A list of new savings goals to be created.'),
   savingsContributions: z.array(SavingsContributionSchema).optional().default([]).describe('A list of contributions to existing savings goals.'),

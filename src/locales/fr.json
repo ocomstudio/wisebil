@@ -260,7 +260,7 @@
     "new_chat_button": "Nouvelle discussion",
     "history_button": "Historique",
     "empty_conversation": "Conversation vide",
-    "history_delete_confirmation": "Cette action est irréversible. La conversation sera supprimée définitivement.",
+    "history_delete_confirmation": "Cette action est irréversible. La conversation sera supprimée définitivelement.",
     "history_deleted_success": "Conversation supprimée de l'historique.",
     "toast_tip_desc": "Pensez à noter vos petites dépenses, elles s'additionnent vite !",
     "toast_close_button": "Fermer",
@@ -526,5 +526,8 @@
     "scan_save_all_button": "Tout enregistrer",
     "scan_save_success_title": "Succès !",
     "scan_save_success_desc": "{{count}} éléments ont été ajoutés à votre compte.",
-    "scan_save_error_desc": "Échec de l'enregistrement de tous les éléments."
+    "scan_save_error_desc": "Échec de l'enregistrement de tous les éléments.",
+    "agent_w_review_prompt": "J'ai trouvé quelques éléments. Veuillez vérifier et confirmer :",
+    "agent_w_actions_cancelled": "Actions annulées.",
+    "agent_w_success_feedback": "C'est noté ! J'ai ajouté {{count}} nouveaux éléments à vos finances."
 }

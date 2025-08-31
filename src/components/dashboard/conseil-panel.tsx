@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send, PlusCircle, Mic, BrainCircuit, Bot, MessageSquare, ScanLine, Trash2, X, Check, Play, Pause, Trash, Pencil, Sparkles } from 'lucide-react';
+import { Loader2, Send, PlusCircle, Mic, BrainCircuit, Bot, MessageSquare, ScanLine, Trash2, X, Check, Play, Pause, Trash, Pencil, Sparkles, TrendingDown, TrendingUp, PiggyBank, Briefcase } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   AlertDialog,
@@ -48,12 +48,12 @@ const assistantSchema = z.object({
 type AssistantFormValues = z.infer<typeof assistantSchema>;
 
 interface Message {
+  id: string;
   role: 'user' | 'model';
-  type: 'text' | 'audio';
+  type: 'text' | 'audio' | 'agent-review';
   content: string;
-  audioUrl?: string;
-  agentMode?: AgentMode;
-  isError?: boolean;
+  agentData?: AgentWOutput;
+  isProcessed?: boolean;
 }
 
 type Conversation = Message[];
@@ -89,58 +89,6 @@ const cleanObjectForFirestore = (obj: any): any => {
         }
     }
     return cleanedObj;
-};
-
-
-const AudioPlayer = ({ src }: { src: string }) => {
-    const audioRef = useRef<HTMLAudioElement>(null);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [isReady, setIsReady] = useState(false);
-    const [progress, setProgress] = useState(0);
-
-    const togglePlay = () => {
-        if (!audioRef.current || !isReady) return;
-        if (isPlaying) {
-            audioRef.current.pause();
-        } else {
-            audioRef.current.play();
-        }
-    };
-    
-    const handleTimeUpdate = () => {
-        if (audioRef.current) {
-            setProgress((audioRef.current.currentTime / audioRef.current.duration) * 100);
-        }
-    }
-
-    return (
-        <div className="flex items-center gap-2 w-48">
-            <audio
-                ref={audioRef}
-                src={src}
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-                onEnded={() => { setIsPlaying(false); setProgress(0); }}
-                onCanPlay={() => setIsReady(true)}
-                onTimeUpdate={handleTimeUpdate}
-                className="hidden"
-                preload="auto"
-            />
-            <Button variant="ghost" size="icon" onClick={togglePlay} disabled={!isReady} className="h-8 w-8 shrink-0">
-                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            </Button>
-            <div className="w-full h-1 bg-muted-foreground/30 rounded-full cursor-pointer" onClick={(e) => {
-                if (audioRef.current) {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const clickPosition = e.clientX - rect.left;
-                    const clickRatio = clickPosition / rect.width;
-                    audioRef.current.currentTime = audioRef.current.duration * clickRatio;
-                }
-            }}>
-                <div className="h-1 bg-primary rounded-full" style={{ width: `${progress}%` }}></div>
-            </div>
-        </div>
-    );
 };
 
 
@@ -204,10 +152,10 @@ export function ConseilPanel() {
                 setWiseConversation(wiseCurrent);
             } else {
                 setWiseConversation([{
+                    id: uuidv4(),
                     role: 'model',
                     type: 'text',
                     content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || 'Utilisateur'),
-                    agentMode: 'wise'
                 }]);
             }
             setWiseHistory(loadedHistory?.wise?.history || {});
@@ -223,10 +171,10 @@ export function ConseilPanel() {
         } else {
             // Document doesn't exist, set initial welcome message for Wise
             setWiseConversation([{
+                id: uuidv4(),
                 role: 'model',
                 type: 'text',
                 content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || 'Utilisateur'),
-                agentMode: 'wise'
             }]);
         }
     }, (error) => {
@@ -350,33 +298,10 @@ export function ConseilPanel() {
         uiToast({ variant: 'destructive', title: t('error_title'), description: t('empty_transcript_error') });
         return;
     };
-  
-    const userMessage: Message = { role: 'user', type: 'text', content: finalTranscript, agentMode };
-    setCurrentConversation(prev => [...prev, userMessage]);
+    
     resetAudioFlow();
-    setIsThinking(true);
-  
-    try {
-        const agentWInput: AgentWInput = {
-            prompt: finalTranscript,
-            currency,
-            budgets,
-            savingsGoals,
-            language: locale,
-        };
-        const result = await runAgentW(agentWInput);
-        const summary = processAgentWResponse(result);
-        const assistantMessage: Message = { role: 'model', type: 'text', content: summary, agentMode };
-        setCurrentConversation(prev => [...prev, assistantMessage]);
-        toast.success(t('agent_w_success'));
-  
-    } catch (error) {
-        console.error("Error during agent processing:", error);
-        const assistantMessage: Message = { role: 'model', type: 'text', content: t('assistant_error_desc'), agentMode, isError: true };
-        setCurrentConversation(prev => [...prev, assistantMessage]);
-    } finally {
-        setIsThinking(false);
-    }
+    
+    await processAgentWPrompt(finalTranscript);
   };
 
   const resetAudioFlow = () => {
@@ -402,10 +327,10 @@ export function ConseilPanel() {
     
     if (agentMode === 'wise') {
         setCurrentConversation([{
+            id: uuidv4(),
             role: 'model',
             type: 'text',
             content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || 'Utilisateur'),
-            agentMode: agentMode,
         }]);
     } else {
         setCurrentConversation([]);
@@ -421,98 +346,123 @@ export function ConseilPanel() {
     toast.success(t('history_deleted_success'));
   };
 
-  const processAgentWResponse = (response: AgentWOutput) => {
-    let summary = t('agent_w_summary_title') + '\n';
+  const processAgentWResponse = (response: AgentWOutput, messageId: string) => {
     let itemsAdded = 0;
-
-    if (response.incomes?.length) {
-        response.incomes.forEach((i: any) => {
-            addTransaction({ ...i, type: 'income', id: uuidv4() });
-            summary += `- ${t('income')}: ${i.description} (${formatCurrency(i.amount)})\n`;
-            itemsAdded++;
-        });
-    }
-    if (response.expenses?.length) {
-        response.expenses.forEach((e: any) => {
-            addTransaction({ ...e, type: 'expense', id: uuidv4() });
-            summary += `- ${t('expense')}: ${e.description} (${formatCurrency(e.amount)})\n`;
+    
+    if (response.transactions?.length) {
+        response.transactions.forEach((t: any) => {
+            addTransaction({ ...t, type: t.amount > 0 ? 'income' : 'expense', id: uuidv4() });
             itemsAdded++;
         });
     }
     if (response.newBudgets?.length) {
         response.newBudgets.forEach((b: any) => {
             addBudget({ ...b, id: uuidv4() });
-            summary += `- ${t('budget')}: ${b.name} (${formatCurrency(b.amount)})\n`;
             itemsAdded++;
         });
     }
     if (response.newSavingsGoals?.length) {
         response.newSavingsGoals.forEach((g: any) => {
             addSavingsGoal({ ...g, id: uuidv4() });
-            summary += `- ${t('goal')}: ${g.name} (${formatCurrency(g.targetAmount)})\n`;
             itemsAdded++;
         });
     }
     if (response.savingsContributions?.length) {
         response.savingsContributions.forEach((c: any) => {
             addFunds(c.goalName, c.amount);
-            summary += `- ${t('contribution')}: ${c.goalName} (+${formatCurrency(c.amount)})\n`;
             itemsAdded++;
         });
     }
 
     if (itemsAdded === 0) {
-        return t('agent_w_no_action');
+        const agentMessage: Message = { id: uuidv4(), role: 'model', type: 'text', content: t('agent_w_no_action')};
+        setCurrentConversation(prev => [...prev, agentMessage]);
+    } else {
+        const successMessage = t('agent_w_success_feedback', { count: itemsAdded });
+        const agentMessage: Message = { id: uuidv4(), role: 'model', type: 'text', content: successMessage};
+        setCurrentConversation(prev => [...prev.map(m => m.id === messageId ? {...m, isProcessed: true} : m), agentMessage]);
+        toast.success(t('agent_w_success'));
     }
-
-    return summary;
   };
+  
+  const processAgentWPrompt = async (prompt: string) => {
+    const userMessage: Message = { id: uuidv4(), role: 'user', type: 'text', content: prompt };
+    setCurrentConversation(prev => [...prev, userMessage]);
+    setIsThinking(true);
+    try {
+        const agentWInput: AgentWInput = {
+            prompt,
+            currency,
+            budgets,
+            savingsGoals,
+            language: locale,
+        };
+        const result = await runAgentW(agentWInput);
+        const hasActions = (result.transactions && result.transactions.length > 0) || 
+                           (result.newBudgets && result.newBudgets.length > 0) ||
+                           (result.newSavingsGoals && result.newSavingsGoals.length > 0) ||
+                           (result.savingsContributions && result.savingsContributions.length > 0);
+
+        if (hasActions) {
+            const assistantMessage: Message = { 
+                id: uuidv4(), 
+                role: 'model', 
+                type: 'agent-review', 
+                content: t('agent_w_review_prompt'),
+                agentData: result
+            };
+            setCurrentConversation(prev => [...prev, assistantMessage]);
+        } else {
+             const assistantMessage: Message = { id: uuidv4(), role: 'model', type: 'text', content: t('agent_w_no_action') };
+             setCurrentConversation(prev => [...prev, assistantMessage]);
+        }
+
+    } catch (error) {
+        console.error("Error during agent processing:", error);
+        const assistantMessage: Message = { id: uuidv4(), role: 'model', type: 'text', content: t('assistant_error_desc') };
+        setCurrentConversation(prev => [...prev, assistantMessage]);
+    } finally {
+        setIsThinking(false);
+    }
+  }
+
 
   const onSubmit = async (data: AssistantFormValues) => {
     const prompt = data.prompt.trim();
     if (!prompt) return;
 
-    const userMessage: Message = { role: 'user', type: 'text', content: prompt, agentMode };
-    setCurrentConversation(prev => [...prev, userMessage]);
     form.reset();
+
+    if (agentMode === 'agent') {
+        await processAgentWPrompt(prompt);
+        return;
+    }
+    
+    // Wise Mode
+    const userMessage: Message = { id: uuidv4(), role: 'user', type: 'text', content: prompt };
+    setCurrentConversation(prev => [...prev, userMessage]);
     setIsThinking(true);
 
     try {
-        if (agentMode === 'wise') {
-            // Filter out the initial welcome message from the history sent to the API
-            const historyForApi = currentConversation
-                .filter(m => !(m.role === 'model' && currentConversation.indexOf(m) === 0))
-                .map(m => ({role: m.role as 'user' | 'model', content: m.content}));
+        const historyForApi = currentConversation
+            .filter(m => m.type === 'text' && !(m.role === 'model' && currentConversation.indexOf(m) === 0))
+            .map(m => ({role: m.role as 'user' | 'model', content: m.content}));
 
-            const input: ExpenseAssistantInput = {
-                question: prompt,
-                history: historyForApi,
-                language: locale,
-                currency: currency,
-                userName: user?.displayName || 'User',
-                financialData: { income, expenses, transactions, budgets, savingsGoals }
-            };
-            const result = await askExpenseAssistant(input);
-            const assistantMessage: Message = { role: 'model', type: 'text', content: result.answer, agentMode };
-            setCurrentConversation(prev => [...prev, assistantMessage]);
+        const input: ExpenseAssistantInput = {
+            question: prompt,
+            history: historyForApi,
+            language: locale,
+            currency: currency,
+            userName: user?.displayName || 'User',
+            financialData: { income, expenses, transactions, budgets, savingsGoals }
+        };
+        const result = await askExpenseAssistant(input);
+        const assistantMessage: Message = { id: uuidv4(), role: 'model', type: 'text', content: result.answer };
+        setCurrentConversation(prev => [...prev, assistantMessage]);
 
-        } else { // AgentW mode
-             const input: AgentWInput = {
-                prompt,
-                currency,
-                budgets,
-                savingsGoals,
-                language: locale,
-            };
-            const result = await runAgentW(input);
-            const summary = processAgentWResponse(result);
-            const assistantMessage: Message = { role: 'model', type: 'text', content: summary, agentMode };
-            setCurrentConversation(prev => [...prev, assistantMessage]);
-            toast.success(t('agent_w_success'));
-        }
     } catch (error) {
         console.error("Error during agent processing:", error);
-        const assistantMessage: Message = { role: 'model', type: 'text', content: t('assistant_error_desc'), agentMode, isError: true };
+        const assistantMessage: Message = { id: uuidv4(), role: 'model', type: 'text', content: t('assistant_error_desc') };
         setCurrentConversation(prev => [...prev, assistantMessage]);
     } finally {
         setIsThinking(false);
@@ -596,6 +546,66 @@ export function ConseilPanel() {
     </div>
 );
 
+const AgentWReviewCard = ({ message }: { message: Message }) => {
+    if (!message.agentData) return null;
+
+    const { transactions = [], newBudgets = [], newSavingsGoals = [], savingsContributions = [] } = message.agentData;
+
+    const handleConfirm = () => {
+        processAgentWResponse(message.agentData!, message.id);
+    };
+
+    const handleCancel = () => {
+        setCurrentConversation(prev => prev.map(m => 
+            m.id === message.id ? { ...m, isProcessed: true, content: t('agent_w_actions_cancelled') } : m
+        ));
+        toast.error(t('agent_w_actions_cancelled'));
+    };
+
+    return (
+        <div className="p-4 rounded-lg bg-accent/50 border border-primary/20 space-y-4">
+            <p className="text-sm font-medium">{message.content}</p>
+            <div className="space-y-2 text-xs">
+                {transactions.map((item, index) => (
+                    <div key={`tx-${index}`} className="flex items-center gap-2">
+                       {item.amount > 0 ? <TrendingUp className="h-4 w-4 text-green-500" /> : <TrendingDown className="h-4 w-4 text-red-500" />}
+                       <span>{item.description}</span>
+                       <span className="ml-auto font-semibold">{formatCurrency(item.amount)}</span>
+                    </div>
+                ))}
+                {newBudgets.map((item, index) => (
+                    <div key={`bg-${index}`} className="flex items-center gap-2">
+                       <Briefcase className="h-4 w-4 text-blue-500" />
+                       <span>{t('budget')}: {item.name}</span>
+                       <span className="ml-auto font-semibold">{formatCurrency(item.amount)}</span>
+                    </div>
+                ))}
+                 {newSavingsGoals.map((item, index) => (
+                    <div key={`sg-${index}`} className="flex items-center gap-2">
+                       <PiggyBank className="h-4 w-4 text-pink-500" />
+                       <span>{t('goal')}: {item.name}</span>
+                       <span className="ml-auto font-semibold">{formatCurrency(item.targetAmount)}</span>
+                    </div>
+                ))}
+                 {savingsContributions.map((item, index) => (
+                    <div key={`sc-${index}`} className="flex items-center gap-2">
+                       <PiggyBank className="h-4 w-4 text-pink-500" />
+                       <span>{t('contribution')}: {item.goalName}</span>
+                       <span className="ml-auto font-semibold">{formatCurrency(item.amount)}</span>
+                    </div>
+                ))}
+            </div>
+            
+            {!message.isProcessed && (
+                 <div className="flex justify-end gap-2 pt-2 border-t border-primary/20">
+                    <Button size="sm" variant="ghost" onClick={handleCancel}>{t('cancel')}</Button>
+                    <Button size="sm" onClick={handleConfirm}><Check className="mr-2 h-4 w-4"/> {t('validate_button')}</Button>
+                </div>
+            )}
+        </div>
+    );
+};
+
 
   return (
     <div className="flex flex-col h-full bg-background md:bg-transparent">
@@ -619,9 +629,9 @@ export function ConseilPanel() {
                         <p className="text-sm">{t('agent_w_welcome_desc')}</p>
                     </div>
                 )}
-                {currentConversation.map((message, index) => (
+                {currentConversation.map((message) => (
                   <div
-                    key={index}
+                    key={message.id}
                     className={`flex items-start gap-3 ${
                       message.role === 'user' ? 'justify-end' : 'justify-start'
                     }`}
@@ -634,12 +644,12 @@ export function ConseilPanel() {
                     <div
                       className={cn(`rounded-lg px-4 py-2 max-w-sm`, 
                         message.role === 'user' ? 'bg-primary text-primary-foreground'
-                        : message.isError ? 'bg-destructive text-destructive-foreground'
-                        : message.agentMode === 'agent' ? 'bg-accent text-accent-foreground' : 'bg-muted'
+                        : message.type === 'agent-review' ? 'bg-transparent p-0'
+                        : agentMode === 'agent' ? 'bg-accent text-accent-foreground' : 'bg-muted'
                       )}
                     >
-                      {message.type === 'audio' && message.audioUrl ? (
-                         <AudioPlayer src={message.audioUrl} />
+                      {message.type === 'agent-review' ? (
+                          <AgentWReviewCard message={message} />
                       ) : (
                         <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                       )}

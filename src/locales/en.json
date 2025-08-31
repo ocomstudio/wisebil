@@ -526,5 +526,8 @@
     "scan_save_all_button": "Save All",
     "scan_save_success_title": "Success!",
     "scan_save_success_desc": "{{count}} items have been added to your account.",
-    "scan_save_error_desc": "Failed to save all items."
+    "scan_save_error_desc": "Failed to save all items.",
+    "agent_w_review_prompt": "I found a few things. Please review and confirm:",
+    "agent_w_actions_cancelled": "Actions cancelled.",
+    "agent_w_success_feedback": "All set! I've added {{count}} new items to your finances."
 }
