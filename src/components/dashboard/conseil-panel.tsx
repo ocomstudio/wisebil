@@ -351,7 +351,9 @@ export function ConseilPanel() {
     
     if (response.transactions?.length) {
         response.transactions.forEach((t: any) => {
-            addTransaction({ ...t, type: t.amount > 0 ? 'income' : 'expense', id: uuidv4() });
+            const transactionType = t.amount >= 0 ? 'income' : 'expense';
+            const finalAmount = Math.abs(t.amount);
+            addTransaction({ ...t, amount: finalAmount, type: transactionType, id: uuidv4() });
             itemsAdded++;
         });
     }
@@ -409,7 +411,8 @@ export function ConseilPanel() {
                 role: 'model', 
                 type: 'agent-review', 
                 content: t('agent_w_review_prompt'),
-                agentData: result
+                agentData: result,
+                isProcessed: false
             };
             setCurrentConversation(prev => [...prev, assistantMessage]);
         } else {
@@ -568,9 +571,9 @@ const AgentWReviewCard = ({ message }: { message: Message }) => {
             <div className="space-y-2 text-xs">
                 {transactions.map((item, index) => (
                     <div key={`tx-${index}`} className="flex items-center gap-2">
-                       {item.amount > 0 ? <TrendingUp className="h-4 w-4 text-green-500" /> : <TrendingDown className="h-4 w-4 text-red-500" />}
+                       {item.amount >= 0 ? <TrendingUp className="h-4 w-4 text-green-500" /> : <TrendingDown className="h-4 w-4 text-red-500" />}
                        <span>{item.description}</span>
-                       <span className="ml-auto font-semibold">{formatCurrency(item.amount)}</span>
+                       <span className="ml-auto font-semibold">{formatCurrency(Math.abs(item.amount))}</span>
                     </div>
                 ))}
                 {newBudgets.map((item, index) => (
@@ -644,7 +647,7 @@ const AgentWReviewCard = ({ message }: { message: Message }) => {
                     <div
                       className={cn(`rounded-lg px-4 py-2 max-w-sm`, 
                         message.role === 'user' ? 'bg-primary text-primary-foreground'
-                        : message.type === 'agent-review' ? 'bg-transparent p-0'
+                        : message.type === 'agent-review' ? 'bg-transparent p-0 w-full'
                         : agentMode === 'agent' ? 'bg-accent text-accent-foreground' : 'bg-muted'
                       )}
                     >
