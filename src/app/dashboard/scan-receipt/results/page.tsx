@@ -25,6 +25,7 @@ import {
 import { expenseCategories, incomeCategories, allCategories } from '@/config/categories';
 import { cn } from '@/lib/utils';
 import type { Transaction } from '@/types/transaction';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 type EditableTransaction = Omit<Transaction, 'id' | 'type'> & {
@@ -174,61 +175,92 @@ export default function ScanResultsPage() {
         
         if (item.isEditing) {
             return (
-                <div key={item.id} className="p-3 bg-muted/50 rounded-lg space-y-2">
-                    <Input value={item.description} onChange={(e) => handleUpdate(item.id, 'description', e.target.value)} placeholder={t('description_label')} />
-                    <Input value={item.amount} type="number" onChange={(e) => handleUpdate(item.id, 'amount', parseFloat(e.target.value) || 0)} placeholder={t('amount_label')} />
-                    
-                    {showCategorySelect && (
-                      <Select value={item.category} onValueChange={(value) => handleUpdate(item.id, 'category', value)}>
-                          <SelectTrigger><SelectValue placeholder={t('category_label')} /></SelectTrigger>
-                          <SelectContent>
-                              {categories.map(c => <SelectItem key={c.name} value={c.name}>{c.emoji} {getCategoryName(c.name)}</SelectItem>)}
-                          </SelectContent>
-                      </Select>
-                    )}
-                    {showSavingsGoalSelect && (
-                      <Select value={item.category} onValueChange={(value) => handleUpdate(item.id, 'category', value)}>
-                        <SelectTrigger><SelectValue placeholder={t('scan_select_goal_placeholder')} /></SelectTrigger>
-                        <SelectContent>
-                          {savingsGoals.map(g => <SelectItem key={g.id} value={g.id}>{g.emoji} {g.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    )}
+                <Card key={item.id} className="p-4 bg-muted/50">
+                    <div className="space-y-3">
+                        <Input value={item.description} onChange={(e) => handleUpdate(item.id, 'description', e.target.value)} placeholder={t('description_label')} />
+                        <Input value={item.amount} type="number" onChange={(e) => handleUpdate(item.id, 'amount', parseFloat(e.target.value) || 0)} placeholder={t('amount_label')} />
+                        
+                        {showCategorySelect && (
+                        <Select value={item.category} onValueChange={(value) => handleUpdate(item.id, 'category', value)}>
+                            <SelectTrigger><SelectValue placeholder={t('category_label')} /></SelectTrigger>
+                            <SelectContent>
+                                {categories.map(c => <SelectItem key={c.name} value={c.name}>{c.emoji} {getCategoryName(c.name)}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                        )}
+                        {showSavingsGoalSelect && (
+                        <Select value={item.category} onValueChange={(value) => handleUpdate(item.id, 'category', value)}>
+                            <SelectTrigger><SelectValue placeholder={t('scan_select_goal_placeholder')} /></SelectTrigger>
+                            <SelectContent>
+                            {savingsGoals.map(g => <SelectItem key={g.id} value={g.id}>{g.emoji} {g.name}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                        )}
 
-                    <div className="flex justify-end gap-2">
-                         <Button size="icon" variant="ghost" onClick={() => toggleEdit(item.id)}><Check className="h-4 w-4 text-green-500" /></Button>
+                        <div className="flex justify-end">
+                            <Button size="icon" variant="ghost" onClick={() => toggleEdit(item.id)}><Check className="h-4 w-4 text-primary" /></Button>
+                        </div>
                     </div>
-                </div>
+                </Card>
             );
         }
         return (
-            <div key={item.id} className="p-3 bg-card rounded-lg shadow-sm">
-                <div className="flex gap-4">
-                    <div className="flex flex-col gap-2">
-                        <Button variant={item.type === 'income' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => handleUpdate(item.id, 'type', 'income')}><TrendingUp className="h-4 w-4 text-green-500"/></Button>
-                        <Button variant={item.type === 'expense' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => handleUpdate(item.id, 'type', 'expense')}><TrendingDown className="h-4 w-4 text-red-500"/></Button>
-                        <Button variant={item.type === 'savings' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => handleUpdate(item.id, 'type', 'savings')}><PiggyBank className="h-4 w-4 text-blue-500"/></Button>
+             <Card key={item.id} className="p-4 bg-card shadow-sm">
+                <div className="flex justify-between items-start gap-4">
+                    <div className="flex-grow space-y-2">
+                        <p className="font-semibold text-lg">{item.description}</p>
+                        <p className="font-bold text-2xl text-primary">{formatCurrency(item.amount)}</p>
+                         {showCategorySelect && <p className="text-sm text-muted-foreground">{getCategoryName(item.category || "Autre")}</p>}
+                         {showSavingsGoalSelect && <p className="text-sm text-blue-400">{savingsGoals.find(g => g.id === item.category)?.name || t('scan_select_goal_placeholder')}</p>}
                     </div>
-                    <div className="flex-grow space-y-1">
-                        <p className="font-semibold">{item.description}</p>
-                        <p className="font-bold text-lg">{formatCurrency(item.amount)}</p>
-                        {showCategorySelect && <p className="text-sm text-muted-foreground">{getCategoryName(item.category || "Autre")}</p>}
-                        {showSavingsGoalSelect && <p className="text-sm text-blue-400">{savingsGoals.find(g => g.id === item.category)?.name || t('scan_select_goal_placeholder')}</p>}
-                    </div>
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 shrink-0">
                         <Button size="icon" variant="ghost" onClick={() => toggleEdit(item.id)}><Pencil className="h-4 w-4" /></Button>
                         <Button size="icon" variant="ghost" onClick={() => handleDelete(item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                     </div>
                 </div>
-            </div>
+
+                <div className="grid grid-cols-3 gap-2 mt-4">
+                     <Button variant={item.type === 'expense' ? 'destructive' : 'outline'} className="h-12 flex-col gap-1" onClick={() => handleUpdate(item.id, 'type', 'expense')}>
+                        <TrendingDown className="h-4 w-4" />
+                        <span className="text-xs">{t('expenses')}</span>
+                    </Button>
+                     <Button variant={item.type === 'income' ? 'default' : 'outline'} className={cn("h-12 flex-col gap-1", item.type === 'income' && "bg-green-600 hover:bg-green-700")} onClick={() => handleUpdate(item.id, 'type', 'income')}>
+                        <TrendingUp className="h-4 w-4" />
+                        <span className="text-xs">{t('income')}</span>
+                    </Button>
+                     <Button variant={item.type === 'savings' ? 'default' : 'outline'} className={cn("h-12 flex-col gap-1", item.type === 'savings' && "bg-blue-600 hover:bg-blue-700")} onClick={() => handleUpdate(item.id, 'type', 'savings')}>
+                        <PiggyBank className="h-4 w-4" />
+                        <span className="text-xs">{t('nav_savings')}</span>
+                    </Button>
+                </div>
+                 {showSavingsGoalSelect && (
+                    <Select value={item.category} onValueChange={(value) => handleUpdate(item.id, 'category', value)}>
+                        <SelectTrigger className="mt-2"><SelectValue placeholder={t('scan_select_goal_placeholder')} /></SelectTrigger>
+                        <SelectContent>
+                        {savingsGoals.map(g => <SelectItem key={g.id} value={g.id}>{g.emoji} {g.name}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                 )}
+            </Card>
         );
     };
 
     if (isLoading) {
         return (
-            <div className="flex flex-col h-screen items-center justify-center bg-background p-4 space-y-4">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                <p className="text-muted-foreground">{t('scanning_button')}...</p>
+            <div className="p-4 bg-muted/40 min-h-screen">
+                <header className="flex items-center gap-4 pb-4">
+                     <Skeleton className="h-10 w-10 rounded-md" />
+                     <Skeleton className="h-7 w-40 rounded-md" />
+                </header>
+                <main className="space-y-4 pb-24">
+                     <Skeleton className="h-32 w-full rounded-lg" />
+                     <Skeleton className="h-32 w-full rounded-lg" />
+                     <Skeleton className="h-32 w-full rounded-lg" />
+                </main>
+                 <footer className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t grid grid-cols-2 gap-4">
+                     <Skeleton className="h-12 w-full rounded-md" />
+                     <Skeleton className="h-12 w-full rounded-md" />
+                </footer>
             </div>
         )
     }
@@ -244,7 +276,7 @@ export default function ScanResultsPage() {
                 <h1 className="text-xl font-bold font-headline">{t('scan_results_title')}</h1>
             </header>
 
-            <main className="space-y-6 pb-24">
+            <main className="space-y-4 pb-24">
                 { !hasResults && !isLoading && (
                     <Card className="text-center p-8">
                         <CardTitle>{t('scan_no_data_title')}</CardTitle>
@@ -256,10 +288,7 @@ export default function ScanResultsPage() {
                 )}
 
                 {results.transactions && results.transactions.length > 0 && (
-                    <Card>
-                        <CardHeader><CardTitle>{t('scan_transactions_title')}</CardTitle></CardHeader>
-                        <CardContent className="space-y-4">{results.transactions.map(item => renderTransactionItem(item))}</CardContent>
-                    </Card>
+                     results.transactions.map(item => renderTransactionItem(item))
                 )}
                  {/* TODO: Add editable views for budgets and savings goals */}
             </main>
