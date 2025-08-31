@@ -1,7 +1,7 @@
 // src/app/dashboard/scan-receipt/page.tsx
 "use client";
 
-import { useState, useRef, useEffect, Suspense } from 'react';
+import { useState, useRef, useEffect, Suspense, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Camera, Loader2, ArrowLeft, AlertTriangle, Paperclip, X } from 'lucide-react';
@@ -23,10 +23,30 @@ function ScanReceiptContent({ onComplete }: ScanReceiptPageProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  const acquireWakeLock = useCallback(async () => {
+    if ('wakeLock' in navigator) {
+      try {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+      } catch (err: any) {
+        console.error(`${err.name}, ${err.message}`);
+      }
+    }
+  }, []);
+
+  const releaseWakeLock = useCallback(() => {
+    if (wakeLockRef.current) {
+      wakeLockRef.current.release();
+      wakeLockRef.current = null;
+    }
+  }, []);
+
 
   useEffect(() => {
     const getCameraPermission = async () => {
       try {
+        await acquireWakeLock();
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             throw new Error("Camera API not supported");
         }
@@ -49,8 +69,9 @@ function ScanReceiptContent({ onComplete }: ScanReceiptPageProps) {
             const stream = videoRef.current.srcObject as MediaStream;
             stream.getTracks().forEach(track => track.stop());
         }
+        releaseWakeLock();
     }
-  }, []);
+  }, [acquireWakeLock, releaseWakeLock]);
   
   const processImageAndNavigate = (dataUri: string) => {
     try {
