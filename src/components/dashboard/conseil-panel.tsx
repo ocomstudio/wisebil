@@ -32,7 +32,7 @@ import { Skeleton } from '../ui/skeleton';
 import { askExpenseAssistant } from '@/ai/flows/expense-assistant';
 import { runAgentW } from '@/ai/flows/wise-agent';
 import { transcribeAudio } from '@/ai/flows/transcribe-audio';
-import type { TranscribeAudioInput } from '@/types/ai-schemas';
+import type { TranscribeAudioInput, AgentWTransaction, AgentWNewBudget, AgentWNewSavingsGoal } from '@/types/ai-schemas';
 import { useTransactions } from '@/context/transactions-context';
 import { useBudgets } from '@/context/budget-context';
 import { useSavings } from '@/context/savings-context';
@@ -47,12 +47,18 @@ const assistantSchema = z.object({
 
 type AssistantFormValues = z.infer<typeof assistantSchema>;
 
+interface AugmentedAgentWOutput extends AgentWOutput {
+    transactions?: (AgentWTransaction & { id: string })[];
+    newBudgets?: (AgentWNewBudget & { id: string })[];
+    newSavingsGoals?: (AgentWNewSavingsGoal & { id: string })[];
+}
+
 interface Message {
   id: string;
   role: 'user' | 'model';
   type: 'text' | 'audio' | 'agent-review';
   content: string;
-  agentData?: AgentWOutput;
+  agentData?: AugmentedAgentWOutput;
   isProcessed?: boolean;
 }
 
@@ -346,7 +352,7 @@ export function ConseilPanel() {
     toast.success(t('history_deleted_success'));
   };
 
-  const processAgentWResponse = (response: AgentWOutput, messageId: string) => {
+  const processAgentWResponse = (response: AugmentedAgentWOutput, messageId: string) => {
     let itemsAdded = 0;
     
     if (response.transactions?.length) {
@@ -400,18 +406,27 @@ export function ConseilPanel() {
             language: locale,
         };
         const result = await runAgentW(agentWInput);
+        
         const hasActions = (result.transactions && result.transactions.length > 0) || 
                            (result.newBudgets && result.newBudgets.length > 0) ||
                            (result.newSavingsGoals && result.newSavingsGoals.length > 0) ||
                            (result.savingsContributions && result.savingsContributions.length > 0);
 
         if (hasActions) {
+            const augmentedResult: AugmentedAgentWOutput = {
+                ...result,
+                transactions: result.transactions?.map(t => ({...t, id: uuidv4()})),
+                newBudgets: result.newBudgets?.map(b => ({...b, id: uuidv4()})),
+                newSavingsGoals: result.newSavingsGoals?.map(g => ({...g, id: uuidv4()})),
+                // savingsContributions don't need a client-side ID for display
+            }
+
             const assistantMessage: Message = { 
                 id: uuidv4(), 
                 role: 'model', 
                 type: 'agent-review', 
                 content: t('agent_w_review_prompt'),
-                agentData: result,
+                agentData: augmentedResult,
                 isProcessed: false
             };
             setCurrentConversation(prev => [...prev, assistantMessage]);
@@ -555,7 +570,9 @@ const AgentWReviewCard = ({ message }: { message: Message }) => {
     const { transactions = [], newBudgets = [], newSavingsGoals = [], savingsContributions = [] } = message.agentData;
 
     const handleConfirm = () => {
-        processAgentWResponse(message.agentData!, message.id);
+        if (message.agentData) {
+            processAgentWResponse(message.agentData, message.id);
+        }
     };
 
     const handleCancel = () => {
@@ -569,22 +586,22 @@ const AgentWReviewCard = ({ message }: { message: Message }) => {
         <div className="p-4 rounded-lg bg-accent/50 border border-primary/20 space-y-4">
             <p className="text-sm font-medium">{message.isProcessed ? t('agent_w_actions_cancelled') : message.content}</p>
             <div className="space-y-2 text-xs">
-                {transactions.map((item, index) => (
-                    <div key={`tx-${index}`} className="flex items-center gap-2">
+                {transactions.map((item) => (
+                    <div key={item.id} className="flex items-center gap-2">
                        {item.amount >= 0 ? <TrendingUp className="h-4 w-4 text-green-500" /> : <TrendingDown className="h-4 w-4 text-red-500" />}
                        <span>{item.description}</span>
                        <span className="ml-auto font-semibold">{formatCurrency(Math.abs(item.amount))}</span>
                     </div>
                 ))}
-                {newBudgets.map((item, index) => (
-                    <div key={`bg-${index}`} className="flex items-center gap-2">
+                {newBudgets.map((item) => (
+                    <div key={item.id} className="flex items-center gap-2">
                        <Briefcase className="h-4 w-4 text-blue-500" />
                        <span>{t('budget')}: {item.name}</span>
                        <span className="ml-auto font-semibold">{formatCurrency(item.amount)}</span>
                     </div>
                 ))}
-                 {newSavingsGoals.map((item, index) => (
-                    <div key={`sg-${index}`} className="flex items-center gap-2">
+                 {newSavingsGoals.map((item) => (
+                    <div key={item.id} className="flex items-center gap-2">
                        <PiggyBank className="h-4 w-4 text-pink-500" />
                        <span>{t('goal')}: {item.name}</span>
                        <span className="ml-auto font-semibold">{formatCurrency(item.targetAmount)}</span>
