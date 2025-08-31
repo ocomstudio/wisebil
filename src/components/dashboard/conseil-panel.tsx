@@ -127,6 +127,8 @@ export function ConseilPanel() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast: uiToast } = useToast();
   
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  
   const currentConversation = agentMode === 'wise' ? wiseConversation : agentWConversation;
   const conversationHistory = agentMode === 'wise' ? wiseHistory : agentWHistory;
   const setCurrentConversation = agentMode === 'wise' ? setWiseConversation : setAgentWConversation;
@@ -247,10 +249,32 @@ export function ConseilPanel() {
     }
   }, [currentConversation.length, isThinking]);
   
+    const acquireWakeLock = useCallback(async () => {
+        if ('wakeLock' in navigator) {
+            try {
+                wakeLockRef.current = await navigator.wakeLock.request('screen');
+                wakeLockRef.current.addEventListener('release', () => {
+                    // console.log('Wake Lock was released');
+                });
+                // console.log('Wake Lock is active');
+            } catch (err: any) {
+                console.error(`${err.name}, ${err.message}`);
+            }
+        }
+    }, []);
+
+    const releaseWakeLock = useCallback(() => {
+        if (wakeLockRef.current) {
+            wakeLockRef.current.release();
+            wakeLockRef.current = null;
+        }
+    }, []);
+  
   const startListening = useCallback(async () => {
     if (isListening || transcriptionMode) return;
 
     try {
+        await acquireWakeLock();
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'audio/webm' });
         audioChunksRef.current = [];
@@ -272,6 +296,7 @@ export function ConseilPanel() {
                      const { transcript } = await transcribeAudio(input);
                      setTranscriptForVerification(transcript || "");
                      setIsTranscribing(false);
+                     releaseWakeLock(); 
                  };
                  reader.onerror = () => { throw new Error("Failed to read audio file."); }
                  reader.readAsDataURL(audioBlob);
@@ -288,15 +313,17 @@ export function ConseilPanel() {
     } catch (err) {
         console.error("Error accessing microphone:", err);
         uiToast({ variant: 'destructive', title: t('listening_error') });
+        releaseWakeLock();
     }
-  }, [isListening, transcriptionMode, uiToast, t]);
+  }, [isListening, transcriptionMode, uiToast, t, acquireWakeLock, releaseWakeLock]);
 
   const stopListening = useCallback(() => {
     if (mediaRecorderRef.current && isListening) {
         mediaRecorderRef.current.stop();
         setIsListening(false);
+        releaseWakeLock();
     }
-  }, [isListening]);
+  }, [isListening, releaseWakeLock]);
   
   const handleVerificationSubmit = async () => {
     const finalTranscript = transcriptForVerification.trim();
@@ -315,6 +342,7 @@ export function ConseilPanel() {
     setTranscriptForVerification('');
     setIsTranscribing(false);
     if(isListening) stopListening();
+    releaseWakeLock();
   }
 
   const handleNewConversation = () => {
@@ -357,9 +385,7 @@ export function ConseilPanel() {
     
     if (response.transactions?.length) {
         response.transactions.forEach((t: any) => {
-            const transactionType = t.amount >= 0 ? 'income' : 'expense';
-            const finalAmount = Math.abs(t.amount);
-            addTransaction({ ...t, amount: finalAmount, type: transactionType, id: uuidv4() });
+            addTransaction({ ...t, id: uuidv4() });
             itemsAdded++;
         });
     }
@@ -608,7 +634,7 @@ const AgentWReviewCard = ({ message }: { message: Message }) => {
                     </div>
                 ))}
                  {savingsContributions.map((item, index) => (
-                    <div key={`sc-${index}`} className="flex items-center gap-2">
+                    <div key={item.id || `sc-${index}`} className="flex items-center gap-2">
                        <PiggyBank className="h-4 w-4 text-pink-500" />
                        <span>{t('contribution')}: {item.goalName}</span>
                        <span className="ml-auto font-semibold">{formatCurrency(item.amount)}</span>
