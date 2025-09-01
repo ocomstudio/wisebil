@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { BarChart, Lightbulb, Home, Settings, Shield, Target, Wallet, Bell } from "lucide-react"
+import { BarChart, Lightbulb, Home, Settings, Shield, Target, Wallet, Bell, Briefcase } from "lucide-react"
 import { useLocale } from "@/context/locale-context";
 import { useAuth } from "@/context/auth-context";
 
@@ -39,6 +39,12 @@ export function SidebarNav() {
       label: t('nav_accounts'),
       icon: <Wallet />
     },
+     {
+      href: "/dashboard/accounting",
+      label: 'Entreprise',
+      icon: <Briefcase />,
+      desktopOnly: true,
+    },
     {
       href: "/dashboard/notifications",
       label: t('nav_notifications'),
@@ -59,7 +65,8 @@ export function SidebarNav() {
           href={item.href}
           className={cn(
             "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-primary/10 relative",
-            (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))) && "bg-primary/10 text-primary"
+            (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))) && "bg-primary/10 text-primary",
+            item.desktopOnly && "hidden md:flex"
           )}
         >
           {item.icon}

@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BarChart, Settings, Target, ScanLine, Lightbulb } from 'lucide-react';
+import { Home, BarChart, Settings, Target, ScanLine, Lightbulb, Briefcase } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLocale } from '@/context/locale-context';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
