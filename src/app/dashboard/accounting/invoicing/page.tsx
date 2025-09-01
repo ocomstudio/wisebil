@@ -16,61 +16,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-const sampleInvoices: Invoice[] = [
-  {
-    id: "INV001",
-    invoiceNumber: "INV001",
-    customerName: "Ocomstudio",
-    customerEmail: "contact@ocomstudio.com",
-    customerAddress: "Dakar, Senegal",
-    issueDate: "2024-08-15",
-    dueDate: "2024-09-14",
-    lineItems: [
-      { id: "1", description: "Développement de site web", quantity: 1, unitPrice: 250000, total: 250000 },
-      { id: "2", description: "Hébergement (1 an)", quantity: 1, unitPrice: 50000, total: 50000 },
-    ],
-    subtotal: 300000,
-    tax: 0,
-    total: 300000,
-    status: "paid",
-  },
-  {
-    id: "INV002",
-    invoiceNumber: "INV002",
-    customerName: "Innovatech",
-    customerEmail: "contact@innovatech.com",
-    customerAddress: "Abidjan, Côte d'Ivoire",
-    issueDate: "2024-08-20",
-    dueDate: "2024-09-19",
-    lineItems: [
-      { id: "1", description: "Consultation IA", quantity: 10, unitPrice: 25000, total: 250000 },
-    ],
-    subtotal: 250000,
-    tax: 0,
-    total: 250000,
-    status: "sent",
-  },
-    {
-    id: "INV003",
-    invoiceNumber: "INV003",
-    customerName: "Solutions Futura",
-    customerEmail: "contact@futura.com",
-    customerAddress: "Douala, Cameroun",
-    issueDate: "2024-07-30",
-    dueDate: "2024-08-29",
-    lineItems: [
-      { id: "1", description: "Maintenance applicative", quantity: 1, unitPrice: 150000, total: 150000 },
-    ],
-    subtotal: 150000,
-    tax: 0,
-    total: 150000,
-    status: "overdue",
-  },
-];
+import { useInvoicing } from "@/context/invoicing-context";
 
 export default function InvoicingPage() {
-  const [invoices, setInvoices] = useState<Invoice[]>(sampleInvoices);
+  const { invoices } = useInvoicing();
   const { t, formatCurrency, formatDate } = useLocale();
 
   const getStatusVariant = (status: Invoice['status']) => {

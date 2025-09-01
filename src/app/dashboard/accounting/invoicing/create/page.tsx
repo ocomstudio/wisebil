@@ -20,9 +20,10 @@ import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { useLocale } from '@/context/locale-context';
 import { ArrowLeft, PlusCircle, Trash2, CalendarIcon, Loader2, Upload } from 'lucide-react';
-import { Invoice, InvoiceLineItem } from '@/types/invoice';
+import { Invoice } from '@/types/invoice';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { useInvoicing } from '@/context/invoicing-context';
 
 const lineItemSchema = z.object({
   id: z.string(),
@@ -88,6 +89,7 @@ export default function CreateInvoicePage() {
   const router = useRouter();
   const { toast } = useToast();
   const { t, formatCurrency } = useLocale();
+  const { addInvoice, isLoading } = useInvoicing();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<InvoiceFormValues>({
@@ -113,20 +115,38 @@ export default function CreateInvoicePage() {
   const tax = subtotal * 0; // Assuming 0% tax for now
   const total = subtotal + tax;
 
-  const onSubmit = (data: InvoiceFormValues) => {
+  const onSubmit = async (data: InvoiceFormValues) => {
     setIsSubmitting(true);
-    // Here you would typically send the data to your backend
-    console.log({ ...data, subtotal, tax, total });
     
-    toast({
-      title: "Facture créée",
-      description: "La nouvelle facture a été enregistrée en tant que brouillon.",
-    });
+    const newInvoice: Omit<Invoice, 'id' | 'invoiceNumber' | 'status'> = {
+        ...data,
+        issueDate: data.issueDate.toISOString(),
+        dueDate: data.dueDate.toISOString(),
+        lineItems: data.lineItems.map(item => ({
+            ...item,
+            total: item.quantity * item.unitPrice
+        })),
+        subtotal,
+        tax,
+        total,
+    }
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      router.push('/dashboard/accounting/invoicing');
-    }, 1000);
+    try {
+        await addInvoice(newInvoice);
+        toast({
+            title: "Facture créée",
+            description: "La nouvelle facture a été enregistrée et l'écriture comptable a été générée.",
+        });
+        router.push('/dashboard/accounting/invoicing');
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible de créer la facture."
+        });
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   return (
@@ -284,8 +304,8 @@ export default function CreateInvoicePage() {
 
             <div className="flex justify-end gap-2">
                  <Button type="button" variant="outline" onClick={() => router.push('/dashboard/accounting/invoicing')}>Annuler</Button>
-                 <Button type="submit" disabled={isSubmitting}>
-                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                 <Button type="submit" disabled={isSubmitting || isLoading}>
+                     {(isSubmitting || isLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                      Enregistrer la facture
                  </Button>
             </div>

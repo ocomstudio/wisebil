@@ -24,6 +24,7 @@ import { useNotifications } from "@/context/notifications-context";
 import { Badge } from "@/components/ui/badge";
 import { NotificationsProvider } from "@/context/notifications-context";
 import { AccountingProvider } from "@/context/accounting-context";
+import { InvoicingProvider } from "@/context/invoicing-context";
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
@@ -104,9 +105,11 @@ export default function DashboardLayout({
                   <SavingsProvider>
                     <NotificationsProvider>
                       <AccountingProvider>
-                        <TutorialProvider>
-                          <DashboardLayoutContent>{children}</DashboardLayoutContent>
-                        </TutorialProvider>
+                        <InvoicingProvider>
+                          <TutorialProvider>
+                            <DashboardLayoutContent>{children}</DashboardLayoutContent>
+                          </TutorialProvider>
+                        </InvoicingProvider>
                       </AccountingProvider>
                     </NotificationsProvider>
                     <HotToaster
