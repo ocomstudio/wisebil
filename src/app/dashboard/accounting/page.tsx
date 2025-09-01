@@ -1,4 +1,3 @@
-
 // src/app/dashboard/accounting/page.tsx
 "use client";
 
@@ -10,6 +9,7 @@ import { TrialBalance } from "@/components/dashboard/accounting/trial-balance";
 import { useAccounting } from "@/context/accounting-context";
 import { AccountingDashboard } from "@/components/dashboard/accounting/accounting-dashboard";
 import InvoicingPage from "./invoicing/page";
+import { IncomeStatement } from "@/components/dashboard/accounting/income-statement";
 
 export default function AccountingPage() {
   const { entries, addEntry } = useAccounting();
@@ -34,6 +34,9 @@ export default function AccountingPage() {
            <TabsTrigger value="ledger">
             Grand Livre
           </TabsTrigger>
+           <TabsTrigger value="income-statement">
+            Compte de Résultat
+          </TabsTrigger>
           <TabsTrigger value="chart-of-accounts">
             Plan Comptable
           </TabsTrigger>
@@ -53,6 +56,9 @@ export default function AccountingPage() {
         </TabsContent>
         <TabsContent value="ledger" className="space-y-4">
             <GeneralLedger entries={entries} />
+        </TabsContent>
+         <TabsContent value="income-statement" className="space-y-4">
+            <IncomeStatement entries={entries} />
         </TabsContent>
         <TabsContent value="chart-of-accounts" className="space-y-4">
             <ChartOfAccounts />
