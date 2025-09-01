@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartOfAccounts } from "@/components/dashboard/accounting/chart-of-accounts";
 import { JournalEntries, type JournalEntry } from "@/components/dashboard/accounting/journal-entries";
 import { GeneralLedger } from "@/components/dashboard/accounting/general-ledger";
+import { TrialBalance } from "@/components/dashboard/accounting/trial-balance";
 
 export default function AccountingPage() {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
@@ -27,7 +28,7 @@ export default function AccountingPage() {
           <TabsTrigger value="chart-of-accounts">
             Plan Comptable
           </TabsTrigger>
-           <TabsTrigger value="balance" disabled>
+           <TabsTrigger value="balance">
             Balance
           </TabsTrigger>
         </TabsList>
@@ -40,6 +41,9 @@ export default function AccountingPage() {
         </TabsContent>
         <TabsContent value="chart-of-accounts" className="space-y-4">
             <ChartOfAccounts />
+        </TabsContent>
+        <TabsContent value="balance" className="space-y-4">
+            <TrialBalance entries={entries} />
         </TabsContent>
       </Tabs>
     </div>
