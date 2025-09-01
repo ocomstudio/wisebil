@@ -1,14 +1,14 @@
 // src/app/dashboard/accounting/page.tsx
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartOfAccounts } from "@/components/dashboard/accounting/chart-of-accounts";
-import { JournalEntries } from "@/components/dashboard/accounting/journal-entries";
-import { FilePlus } from "lucide-react";
+import { JournalEntries, type JournalEntry } from "@/components/dashboard/accounting/journal-entries";
+import { GeneralLedger } from "@/components/dashboard/accounting/general-ledger";
 
 export default function AccountingPage() {
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
 
   return (
     <div className="space-y-6">
@@ -21,11 +21,11 @@ export default function AccountingPage() {
           <TabsTrigger value="journals">
             Journaux
           </TabsTrigger>
+           <TabsTrigger value="ledger">
+            Grand Livre
+          </TabsTrigger>
           <TabsTrigger value="chart-of-accounts">
             Plan Comptable
-          </TabsTrigger>
-          <TabsTrigger value="ledger" disabled>
-            Grand Livre
           </TabsTrigger>
            <TabsTrigger value="balance" disabled>
             Balance
@@ -33,7 +33,10 @@ export default function AccountingPage() {
         </TabsList>
         
         <TabsContent value="journals" className="space-y-4">
-            <JournalEntries />
+            <JournalEntries entries={entries} setEntries={setEntries} />
+        </TabsContent>
+        <TabsContent value="ledger" className="space-y-4">
+            <GeneralLedger entries={entries} />
         </TabsContent>
         <TabsContent value="chart-of-accounts" className="space-y-4">
             <ChartOfAccounts />
