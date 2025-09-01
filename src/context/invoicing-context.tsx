@@ -16,6 +16,7 @@ import type { JournalEntry } from '@/components/dashboard/accounting/journal-ent
 interface InvoicingContextType {
   invoices: Invoice[];
   addInvoice: (invoice: Omit<Invoice, 'id' | 'invoiceNumber' | 'status'>) => Promise<void>;
+  updateInvoiceStatus: (id: string, status: Invoice['status']) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -131,9 +132,33 @@ export const InvoicingProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [getUserDocRef, toast, addEntry]);
 
+  const updateInvoiceStatus = useCallback(async (id: string, status: Invoice['status']) => {
+    const userDocRef = getUserDocRef();
+    if (!userDocRef) return;
+
+    const currentInvoices = [...invoices];
+    const invoiceIndex = currentInvoices.findIndex(inv => inv.id === id);
+    if (invoiceIndex === -1) {
+        toast({ variant: "destructive", title: "Erreur", description: "Facture non trouvée." });
+        return;
+    }
+    
+    currentInvoices[invoiceIndex].status = status;
+
+    try {
+        await setDoc(userDocRef, { invoices: currentInvoices }, { merge: true });
+        toast({ title: "Statut mis à jour", description: `La facture a été marquée comme ${status}.`});
+    } catch(e) {
+         console.error("Failed to update invoice status in Firestore", e);
+         toast({ variant: "destructive", title: "Erreur", description: "Impossible de mettre à jour le statut de la facture." });
+         throw e;
+    }
+
+  }, [invoices, getUserDocRef, toast]);
+
 
   return (
-    <InvoicingContext.Provider value={{ invoices, addInvoice, isLoading }}>
+    <InvoicingContext.Provider value={{ invoices, addInvoice, updateInvoiceStatus, isLoading }}>
       {children}
     </InvoicingContext.Provider>
   );

@@ -38,7 +38,7 @@ const invoiceSchema = z.object({
   signatureUrl: z.string().optional(),
   stampUrl: z.string().optional(),
   customerName: z.string().min(2, "Le nom du client est requis."),
-  customerEmail: z.string().email("L'e-mail du client est invalide."),
+  customerEmail: z.string().email("L'e-mail du client est invalide.").optional().or(z.literal('')),
   customerAddress: z.string().min(5, "L'adresse du client est requise."),
   issueDate: z.date(),
   dueDate: z.date(),
@@ -196,7 +196,7 @@ export default function CreateInvoicePage() {
                         <FormItem><FormLabel>Nom du client</FormLabel><FormControl><Input placeholder="John Doe" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="customerEmail" render={({ field }) => (
-                         <FormItem><FormLabel>Email du client</FormLabel><FormControl><Input type="email" placeholder="client@email.com" {...field} /></FormControl><FormMessage /></FormItem>
+                         <FormItem><FormLabel>Email du client (facultatif)</FormLabel><FormControl><Input type="email" placeholder="client@email.com" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="customerAddress" render={({ field }) => (
                          <FormItem className="md:col-span-2"><FormLabel>Adresse du client</FormLabel><FormControl><Textarea placeholder="123 Rue Principale, Dakar, Sénégal" {...field} /></FormControl><FormMessage /></FormItem>

@@ -1,7 +1,6 @@
 // src/app/dashboard/accounting/invoicing/page.tsx
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -19,7 +18,7 @@ import {
 import { useInvoicing } from "@/context/invoicing-context";
 
 export default function InvoicingPage() {
-  const { invoices } = useInvoicing();
+  const { invoices, updateInvoiceStatus } = useInvoicing();
   const { t, formatCurrency, formatDate } = useLocale();
 
   const getStatusVariant = (status: Invoice['status']) => {
@@ -95,9 +94,11 @@ export default function InvoicingPage() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                                <DropdownMenuItem>Voir</DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/dashboard/accounting/invoicing/view/${invoice.id}`}>Voir</Link>
+                                </DropdownMenuItem>
                                 <DropdownMenuItem>Télécharger en PDF</DropdownMenuItem>
-                                <DropdownMenuItem>Marquer comme payée</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => updateInvoiceStatus(invoice.id, 'paid')}>Marquer comme payée</DropdownMenuItem>
                             </DropdownMenuContent>
                            </DropdownMenu>
                         </TableCell>
