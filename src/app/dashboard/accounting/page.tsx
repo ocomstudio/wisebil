@@ -41,7 +41,7 @@ export default function AccountingPage() {
             <AccountingDashboard entries={entries} />
         </TabsContent>
         <TabsContent value="journals" className="space-y-4">
-            <JournalEntries entries={entries} setEntries={addEntry} />
+            <JournalEntries entries={entries} setEntries={addEntry as any} />
         </TabsContent>
         <TabsContent value="ledger" className="space-y-4">
             <GeneralLedger entries={entries} />
