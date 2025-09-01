@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartOfAccounts } from "@/components/dashboard/accounting/chart-of-accounts";
+import { JournalEntries } from "@/components/dashboard/accounting/journal-entries";
 import { FilePlus } from "lucide-react";
 
 export default function AccountingPage() {
@@ -13,19 +14,15 @@ export default function AccountingPage() {
     <div className="space-y-6">
        <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold font-headline">Comptabilité</h1>
-        <Button>
-          <FilePlus className="mr-2 h-4 w-4" />
-          Nouvelle Écriture
-        </Button>
       </div>
 
-       <Tabs defaultValue="chart-of-accounts" className="space-y-4">
+       <Tabs defaultValue="journals" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="journals">
+            Journaux
+          </TabsTrigger>
           <TabsTrigger value="chart-of-accounts">
             Plan Comptable
-          </TabsTrigger>
-          <TabsTrigger value="journals" disabled>
-            Journaux
           </TabsTrigger>
           <TabsTrigger value="ledger" disabled>
             Grand Livre
@@ -35,6 +32,9 @@ export default function AccountingPage() {
           </TabsTrigger>
         </TabsList>
         
+        <TabsContent value="journals" className="space-y-4">
+            <JournalEntries />
+        </TabsContent>
         <TabsContent value="chart-of-accounts" className="space-y-4">
             <ChartOfAccounts />
         </TabsContent>

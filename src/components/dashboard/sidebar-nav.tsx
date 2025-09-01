@@ -41,7 +41,7 @@ export function SidebarNav() {
     },
      {
       href: "/dashboard/accounting",
-      label: 'Entreprise',
+      label: 'Comptabilité',
       icon: <Briefcase />,
       desktopOnly: true,
     },
