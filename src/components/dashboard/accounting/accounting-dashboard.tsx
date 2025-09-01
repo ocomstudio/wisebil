@@ -1,3 +1,4 @@
+
 // src/components/dashboard/accounting/accounting-dashboard.tsx
 "use client";
 

@@ -111,7 +111,7 @@ export function JournalEntries({ entries, setEntries }: JournalEntriesProps) {
                 };
             });
 
-        setEntries([...entries, ...newEntries].sort((a,b) => b.date.getTime() - a.date.getTime()));
+        setEntries(newEntries);
         toast({
             title: "Écriture ajoutée",
             description: "La nouvelle écriture de journal a été enregistrée.",

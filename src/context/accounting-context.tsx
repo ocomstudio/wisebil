@@ -1,3 +1,4 @@
+
 // src/context/accounting-context.tsx
 "use client";
 

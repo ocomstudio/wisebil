@@ -1,3 +1,4 @@
+
 // src/app/dashboard/accounting/page.tsx
 "use client";
 
