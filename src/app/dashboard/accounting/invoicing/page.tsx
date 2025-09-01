@@ -97,7 +97,9 @@ export default function InvoicingPage() {
                                 <DropdownMenuItem asChild>
                                   <Link href={`/dashboard/accounting/invoicing/view/${invoice.id}`}>Voir</Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>Télécharger en PDF</DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/dashboard/accounting/invoicing/view/${invoice.id}`}>Télécharger en PDF</Link>
+                                </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => updateInvoiceStatus(invoice.id, 'paid')}>Marquer comme payée</DropdownMenuItem>
                             </DropdownMenuContent>
                            </DropdownMenu>

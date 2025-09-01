@@ -1,6 +1,7 @@
 // src/components/dashboard/accounting/invoice-preview.tsx
 "use client";
 
+import React from 'react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -12,11 +13,11 @@ interface InvoicePreviewProps {
   invoice: Invoice;
 }
 
-export function InvoicePreview({ invoice }: InvoicePreviewProps) {
+export const InvoicePreview = React.forwardRef<HTMLDivElement, InvoicePreviewProps>(({ invoice }, ref) => {
     const { formatCurrency, formatDate } = useLocale();
 
   return (
-    <Card className="max-w-4xl mx-auto my-8 shadow-2xl">
+    <Card className="max-w-4xl mx-auto my-8 shadow-2xl" ref={ref}>
       <CardHeader className="p-8 bg-muted/30">
         <div className="flex justify-between items-start">
           <div>
@@ -104,4 +105,6 @@ export function InvoicePreview({ invoice }: InvoicePreviewProps) {
       </CardFooter>
     </Card>
   );
-}
+});
+
+InvoicePreview.displayName = 'InvoicePreview';
