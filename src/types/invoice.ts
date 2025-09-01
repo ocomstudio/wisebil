@@ -10,6 +10,10 @@ export interface InvoiceLineItem {
 export interface Invoice {
   id: string;
   invoiceNumber: string;
+  companyAddress: string;
+  companyLogoUrl?: string;
+  signatureUrl?: string;
+  stampUrl?: string;
   customerName: string;
   customerEmail: string;
   customerAddress: string;

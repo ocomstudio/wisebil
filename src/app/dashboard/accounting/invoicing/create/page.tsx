@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
+import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -18,7 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { useLocale } from '@/context/locale-context';
-import { ArrowLeft, PlusCircle, Trash2, CalendarIcon, Loader2 } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Trash2, CalendarIcon, Loader2, Upload } from 'lucide-react';
 import { Invoice, InvoiceLineItem } from '@/types/invoice';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -31,6 +32,10 @@ const lineItemSchema = z.object({
 });
 
 const invoiceSchema = z.object({
+  companyAddress: z.string().min(5, "L'adresse de votre entreprise est requise."),
+  companyLogoUrl: z.string().optional(),
+  signatureUrl: z.string().optional(),
+  stampUrl: z.string().optional(),
   customerName: z.string().min(2, "Le nom du client est requis."),
   customerEmail: z.string().email("L'e-mail du client est invalide."),
   customerAddress: z.string().min(5, "L'adresse du client est requise."),
@@ -41,6 +46,44 @@ const invoiceSchema = z.object({
 
 type InvoiceFormValues = z.infer<typeof invoiceSchema>;
 
+const ImageUpload = ({ field, label }: { field: any, label: string }) => {
+    const [preview, setPreview] = useState(field.value || null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const result = reader.result as string;
+                setPreview(result);
+                field.onChange(result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    return (
+        <FormItem>
+            <FormLabel>{label}</FormLabel>
+            <FormControl>
+                 <label className="cursor-pointer border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/50 h-32">
+                    {preview ? (
+                        <Image src={preview} alt={`${label} preview`} width={80} height={80} className="max-h-full w-auto object-contain" />
+                    ) : (
+                        <>
+                            <Upload className="h-8 w-8 mb-2" />
+                            <span>Cliquer pour charger</span>
+                        </>
+                    )}
+                    <Input type="file" className="hidden" accept="image/png, image/jpeg" onChange={handleFileChange} />
+                 </label>
+            </FormControl>
+            <FormMessage />
+        </FormItem>
+    );
+};
+
+
 export default function CreateInvoicePage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -50,6 +93,7 @@ export default function CreateInvoicePage() {
   const form = useForm<InvoiceFormValues>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
+      companyAddress: "",
       customerName: "",
       customerEmail: "",
       customerAddress: "",
@@ -98,6 +142,30 @@ export default function CreateInvoicePage() {
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+
+             <Card>
+                <CardHeader>
+                    <CardTitle>Informations de votre Entreprise</CardTitle>
+                    <CardDescription>Personnalisez la facture avec vos informations.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <FormField control={form.control} name="companyAddress" render={({ field }) => (
+                         <FormItem><FormLabel>Votre adresse</FormLabel><FormControl><Textarea placeholder="123 Rue Principale, Dakar, Sénégal" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <div className="grid md:grid-cols-3 gap-6">
+                        <FormField control={form.control} name="companyLogoUrl" render={({ field }) => (
+                             <ImageUpload field={field} label="Votre Logo" />
+                        )} />
+                        <FormField control={form.control} name="signatureUrl" render={({ field }) => (
+                             <ImageUpload field={field} label="Votre Signature" />
+                        )} />
+                        <FormField control={form.control} name="stampUrl" render={({ field }) => (
+                             <ImageUpload field={field} label="Votre Cachet" />
+                        )} />
+                    </div>
+                </CardContent>
+            </Card>
+
             <Card>
                 <CardHeader>
                     <CardTitle>Informations du Client</CardTitle>
