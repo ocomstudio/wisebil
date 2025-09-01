@@ -24,11 +24,6 @@ export function SidebarNav() {
       label: t('nav_reports'),
       icon: <BarChart />,
     },
-     {
-      href: "/dashboard/invoicing",
-      label: 'Facturation',
-      icon: <FileText />,
-    },
     {
       href: "/dashboard/accounting",
       label: 'Comptabilité',

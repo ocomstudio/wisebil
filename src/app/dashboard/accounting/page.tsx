@@ -8,6 +8,7 @@ import { GeneralLedger } from "@/components/dashboard/accounting/general-ledger"
 import { TrialBalance } from "@/components/dashboard/accounting/trial-balance";
 import { useAccounting } from "@/context/accounting-context";
 import { AccountingDashboard } from "@/components/dashboard/accounting/accounting-dashboard";
+import InvoicingPage from "./invoicing/page";
 
 export default function AccountingPage() {
   const { entries, addEntry } = useAccounting();
@@ -22,6 +23,9 @@ export default function AccountingPage() {
         <TabsList>
            <TabsTrigger value="dashboard">
             Tableau de bord
+          </TabsTrigger>
+          <TabsTrigger value="invoicing">
+            Facturation
           </TabsTrigger>
           <TabsTrigger value="journals">
             Journaux
@@ -39,6 +43,9 @@ export default function AccountingPage() {
         
         <TabsContent value="dashboard" className="space-y-4">
             <AccountingDashboard entries={entries} />
+        </TabsContent>
+         <TabsContent value="invoicing" className="space-y-4">
+            <InvoicingPage />
         </TabsContent>
         <TabsContent value="journals" className="space-y-4">
             <JournalEntries entries={entries} setEntries={addEntry as any} />

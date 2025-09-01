@@ -1,4 +1,4 @@
-// src/app/dashboard/invoicing/create/page.tsx
+// src/app/dashboard/accounting/invoicing/create/page.tsx
 "use client";
 
 import { useState } from 'react';
@@ -81,7 +81,7 @@ export default function CreateInvoicePage() {
 
     setTimeout(() => {
       setIsSubmitting(false);
-      router.push('/dashboard/invoicing');
+      router.push('/dashboard/accounting/invoicing');
     }, 1000);
   };
 
@@ -89,7 +89,7 @@ export default function CreateInvoicePage() {
     <div className="space-y-6">
       <div className="flex items-center gap-4 mb-6">
         <Button variant="outline" size="icon" asChild>
-          <Link href="/dashboard/invoicing">
+          <Link href="/dashboard/accounting/invoicing">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
@@ -215,7 +215,7 @@ export default function CreateInvoicePage() {
             </div>
 
             <div className="flex justify-end gap-2">
-                 <Button type="button" variant="outline" onClick={() => router.push('/dashboard/invoicing')}>Annuler</Button>
+                 <Button type="button" variant="outline" onClick={() => router.push('/dashboard/accounting/invoicing')}>Annuler</Button>
                  <Button type="submit" disabled={isSubmitting}>
                      {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                      Enregistrer la facture

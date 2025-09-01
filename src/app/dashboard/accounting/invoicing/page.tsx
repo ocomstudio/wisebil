@@ -1,4 +1,4 @@
-// src/app/dashboard/invoicing/page.tsx
+// src/app/dashboard/accounting/invoicing/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -91,7 +91,7 @@ export default function InvoicingPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold font-headline">Facturation</h1>
         <Button asChild>
-          <Link href="/dashboard/invoicing/create">
+          <Link href="/dashboard/accounting/invoicing/create">
             <PlusCircle className="mr-2 h-4 w-4" />
             Créer une facture
           </Link>
@@ -110,7 +110,7 @@ export default function InvoicingPage() {
                 <h3 className="text-xl font-semibold">Aucune facture pour le moment</h3>
                 <p className="text-muted-foreground mt-2 mb-4">Commencez par créer votre première facture pour vos clients.</p>
                 <Button asChild>
-                  <Link href="/dashboard/invoicing/create">
+                  <Link href="/dashboard/accounting/invoicing/create">
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Créer la première facture
                   </Link>
