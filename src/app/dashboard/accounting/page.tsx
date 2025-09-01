@@ -1,15 +1,16 @@
 // src/app/dashboard/accounting/page.tsx
 "use client";
 
-import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartOfAccounts } from "@/components/dashboard/accounting/chart-of-accounts";
-import { JournalEntries, type JournalEntry } from "@/components/dashboard/accounting/journal-entries";
+import { JournalEntries } from "@/components/dashboard/accounting/journal-entries";
 import { GeneralLedger } from "@/components/dashboard/accounting/general-ledger";
 import { TrialBalance } from "@/components/dashboard/accounting/trial-balance";
+import { useAccounting } from "@/context/accounting-context";
+import { AccountingDashboard } from "@/components/dashboard/accounting/accounting-dashboard";
 
 export default function AccountingPage() {
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const { entries, addEntry } = useAccounting();
 
   return (
     <div className="space-y-6">
@@ -17,8 +18,11 @@ export default function AccountingPage() {
         <h1 className="text-3xl font-bold font-headline">Comptabilité</h1>
       </div>
 
-       <Tabs defaultValue="journals" className="space-y-4">
+       <Tabs defaultValue="dashboard" className="space-y-4">
         <TabsList>
+           <TabsTrigger value="dashboard">
+            Tableau de bord
+          </TabsTrigger>
           <TabsTrigger value="journals">
             Journaux
           </TabsTrigger>
@@ -33,8 +37,11 @@ export default function AccountingPage() {
           </TabsTrigger>
         </TabsList>
         
+        <TabsContent value="dashboard" className="space-y-4">
+            <AccountingDashboard entries={entries} />
+        </TabsContent>
         <TabsContent value="journals" className="space-y-4">
-            <JournalEntries entries={entries} setEntries={setEntries} />
+            <JournalEntries entries={entries} setEntries={addEntry} />
         </TabsContent>
         <TabsContent value="ledger" className="space-y-4">
             <GeneralLedger entries={entries} />
