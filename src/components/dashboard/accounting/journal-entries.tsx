@@ -1,3 +1,4 @@
+
 // src/components/dashboard/accounting/journal-entries.tsx
 "use client";
 
@@ -72,7 +73,7 @@ const entrySchema = z.object({
 
 interface JournalEntriesProps {
     entries: JournalEntry[];
-    setEntries: React.Dispatch<React.SetStateAction<JournalEntry[]>>;
+    setEntries: (entries: JournalEntry[]) => void;
 }
 
 export function JournalEntries({ entries, setEntries }: JournalEntriesProps) {
@@ -105,12 +106,12 @@ export function JournalEntries({ entries, setEntries }: JournalEntriesProps) {
                     description: values.description,
                     accountNumber: entry.accountNumber,
                     accountName: account?.accountName || 'Compte inconnu',
-                    debit: entry.debit,
-                    credit: entry.credit,
+                    debit: entry.debit || 0,
+                    credit: entry.credit || 0,
                 };
             });
 
-        setEntries(prev => [...prev, ...newEntries].sort((a,b) => b.date.getTime() - a.date.getTime()));
+        setEntries([...entries, ...newEntries].sort((a,b) => b.date.getTime() - a.date.getTime()));
         toast({
             title: "Écriture ajoutée",
             description: "La nouvelle écriture de journal a été enregistrée.",
@@ -249,7 +250,7 @@ export function JournalEntries({ entries, setEntries }: JournalEntriesProps) {
                                                                             role="combobox"
                                                                             className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
                                                                         >
-                                                                            {field.value
+                                                                            {field.value && field.value > 0
                                                                                 ? `${field.value} - ${syscohadaChartOfAccounts.find(acc => acc.accountNumber === field.value)?.accountName}`
                                                                                 : "Choisir un compte"}
                                                                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

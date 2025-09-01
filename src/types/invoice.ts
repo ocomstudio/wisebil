@@ -1,3 +1,4 @@
+
 // src/types/invoice.ts
 export interface InvoiceLineItem {
   id: string;
@@ -11,9 +12,9 @@ export interface Invoice {
   id: string;
   invoiceNumber: string;
   companyAddress: string;
-  companyLogoUrl?: string;
-  signatureUrl?: string;
-  stampUrl?: string;
+  companyLogoUrl?: string | null;
+  signatureUrl?: string | null;
+  stampUrl?: string | null;
   customerName: string;
   customerEmail: string;
   customerAddress: string;

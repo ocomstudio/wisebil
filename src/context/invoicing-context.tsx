@@ -1,3 +1,4 @@
+
 // src/context/invoicing-context.tsx
 "use client";
 
@@ -83,11 +84,15 @@ export const InvoicingProvider = ({ children }: { children: ReactNode }) => {
 
     try {
         const invoiceNumber = await generateInvoiceNumber();
+        
         const newInvoice: Invoice = {
             id: uuidv4(),
             invoiceNumber,
             status: 'draft',
             ...invoiceData,
+            companyLogoUrl: invoiceData.companyLogoUrl || null,
+            signatureUrl: invoiceData.signatureUrl || null,
+            stampUrl: invoiceData.stampUrl || null,
         };
         
         // Step 1: Save invoice to Firestore
@@ -103,6 +108,7 @@ export const InvoicingProvider = ({ children }: { children: ReactNode }) => {
                 accountName: 'Clients',
                 description: `Facture ${newInvoice.invoiceNumber} - ${newInvoice.customerName}`,
                 debit: newInvoice.total,
+                credit: 0
             },
             // Credit Sales Account (7060 - Prestations de services)
             {
@@ -112,6 +118,7 @@ export const InvoicingProvider = ({ children }: { children: ReactNode }) => {
                 accountName: 'Prestations de services',
                 description: `Facture ${newInvoice.invoiceNumber} - ${newInvoice.customerName}`,
                 credit: newInvoice.total,
+                debit: 0
             },
         ];
         
