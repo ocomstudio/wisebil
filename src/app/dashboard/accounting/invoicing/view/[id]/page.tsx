@@ -10,14 +10,14 @@ import { useInvoicing } from '@/context/invoicing-context';
 import { Invoice } from '@/types/invoice';
 import { InvoicePreview } from '@/components/dashboard/accounting/invoice-preview';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Download } from 'lucide-react';
+import { ArrowLeft, Loader2, Download, CheckCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ViewInvoicePage() {
   const router = useRouter();
   const params = useParams();
-  const { invoices, isLoading } = useInvoicing();
+  const { invoices, updateInvoiceStatus, isLoading } = useInvoicing();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const { toast } = useToast();
@@ -118,10 +118,18 @@ export default function ViewInvoicePage() {
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Retour aux factures
             </Button>
-             <Button onClick={handleDownload} disabled={isDownloading}>
-                {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                Télécharger en PDF
-            </Button>
+            <div className="flex items-center gap-2">
+                 {invoice.status !== 'paid' && (
+                    <Button onClick={() => updateInvoiceStatus(invoice.id, 'paid')} size="sm">
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Marquer comme Payée
+                    </Button>
+                 )}
+                 <Button onClick={handleDownload} disabled={isDownloading} size="sm">
+                    {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                    Télécharger en PDF
+                </Button>
+            </div>
         </div>
         <InvoicePreview invoice={invoice} ref={invoicePreviewRef} />
     </div>

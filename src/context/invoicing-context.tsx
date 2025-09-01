@@ -1,4 +1,3 @@
-
 // src/context/invoicing-context.tsx
 "use client";
 
@@ -134,7 +133,7 @@ export const InvoicingProvider = ({ children }: { children: ReactNode }) => {
 
   const updateInvoiceStatus = useCallback(async (id: string, status: Invoice['status']) => {
     const userDocRef = getUserDocRef();
-    if (!userDocRef) return;
+    if (!userDocRef || !addEntry) return;
 
     const currentInvoices = [...invoices];
     const invoiceIndex = currentInvoices.findIndex(inv => inv.id === id);
@@ -143,18 +142,54 @@ export const InvoicingProvider = ({ children }: { children: ReactNode }) => {
         return;
     }
     
+    // Prevent re-processing if already paid
+    if (currentInvoices[invoiceIndex].status === 'paid' && status === 'paid') {
+        toast({ title: "Info", description: "Cette facture a déjà été marquée comme payée."});
+        return;
+    }
+
     currentInvoices[invoiceIndex].status = status;
+    const updatedInvoice = currentInvoices[invoiceIndex];
 
     try {
         await setDoc(userDocRef, { invoices: currentInvoices }, { merge: true });
         toast({ title: "Statut mis à jour", description: `La facture a été marquée comme ${status}.`});
+
+        // If status is 'paid', create the payment journal entry
+        if (status === 'paid') {
+            const paymentEntries: JournalEntry[] = [
+                // Debit Bank Account (5210)
+                {
+                    id: uuidv4(),
+                    date: new Date(), // Use today's date for payment
+                    accountNumber: 5210,
+                    accountName: 'Banques',
+                    description: `Règlement Facture ${updatedInvoice.invoiceNumber} - ${updatedInvoice.customerName}`,
+                    debit: updatedInvoice.total,
+                    credit: 0
+                },
+                // Credit Client Account (4111)
+                {
+                    id: uuidv4(),
+                    date: new Date(),
+                    accountNumber: 4111,
+                    accountName: 'Clients',
+                    description: `Règlement Facture ${updatedInvoice.invoiceNumber} - ${updatedInvoice.customerName}`,
+                    credit: updatedInvoice.total,
+                    debit: 0
+                },
+            ];
+            await addEntry(paymentEntries);
+            toast({ title: "Comptabilité mise à jour", description: "L'écriture de règlement a été générée."});
+        }
+
     } catch(e) {
-         console.error("Failed to update invoice status in Firestore", e);
-         toast({ variant: "destructive", title: "Erreur", description: "Impossible de mettre à jour le statut de la facture." });
+         console.error("Failed to update invoice status or journal entry", e);
+         toast({ variant: "destructive", title: "Erreur", description: "Impossible de mettre à jour le statut ou de générer l'écriture." });
          throw e;
     }
 
-  }, [invoices, getUserDocRef, toast]);
+  }, [invoices, getUserDocRef, toast, addEntry]);
 
 
   return (
