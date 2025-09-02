@@ -28,6 +28,7 @@ export function SidebarNav() {
       href: "/dashboard/accounting",
       label: 'Comptabilité',
       icon: <Briefcase />,
+      className: "hidden md:flex"
     },
     {
       href: "/dashboard/budget",
@@ -65,6 +66,7 @@ export function SidebarNav() {
           className={cn(
             "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-primary/10 relative",
             (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))) && "bg-primary/10 text-primary",
+            item.className
           )}
         >
           {item.icon}

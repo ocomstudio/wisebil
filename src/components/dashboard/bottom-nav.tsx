@@ -23,7 +23,6 @@ export function BottomNav() {
     { href: '/dashboard', label: t('nav_home'), icon: Home },
     { href: '/dashboard/reports', label: t('nav_reports'), icon: BarChart },
     { href: '/dashboard/scan-receipt', label: t('nav_scan'), icon: ScanLine },
-    { href: '/dashboard/accounting', label: 'Compta', icon: Briefcase },
     { href: '/dashboard/conseil', label: t('nav_advice'), icon: Lightbulb },
   ];
 
