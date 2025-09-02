@@ -1,3 +1,4 @@
+
 // src/components/dashboard/dashboard-header.tsx
 "use client";
 import toast from 'react-hot-toast';
@@ -59,7 +60,7 @@ export function DashboardHeader() {
             </DropdownMenuContent>
         </DropdownMenu>
 
-         <Button variant="ghost" size="icon" asChild className="relative">
+         <Button variant="ghost" size="icon" asChild className="relative" onClick={playNotificationSound}>
           <Link href="/dashboard/notifications">
             <Bell className="h-5 w-5" />
              {unreadCount > 0 && (
