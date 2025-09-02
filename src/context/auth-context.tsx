@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile, UserCredential, sendEmailVerification, sendPasswordResetEmail, confirmPasswordReset, EmailAuthProvider, reauthenticateWithCredential, updateEmail, updatePassword } from 'firebase/auth';
+import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile, UserCredential, sendEmailVerification as firebaseSendEmailVerification, sendPasswordResetEmail, confirmPasswordReset, EmailAuthProvider, reauthenticateWithCredential, updateEmail, updatePassword } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc, getDoc, setDoc, onSnapshot, updateDoc } from 'firebase/firestore';
@@ -188,7 +188,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Also update firestore
     const userDocRef = doc(db, 'users', firebaseUser.uid);
     await updateDoc(userDocRef, { 'profile.email': newEmail });
-    await sendEmailVerification(firebaseUser); // Send verification to new email
+    await firebaseSendEmailVerification(firebaseUser); // Send verification to new email
   };
 
   const updateUserPassword = async (currentPassword: string, newPassword: string) => {
@@ -199,7 +199,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const sendVerificationEmail = async () => {
     if (firebaseUser) {
-      await sendEmailVerification(firebaseUser);
+      await firebaseSendEmailVerification(firebaseUser);
     } else {
       throw new Error("No user is currently signed in.");
     }
