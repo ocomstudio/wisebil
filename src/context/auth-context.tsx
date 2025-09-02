@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect, useCa
 import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile, UserCredential, sendEmailVerification, sendPasswordResetEmail, confirmPasswordReset, EmailAuthProvider, reauthenticateWithCredential, updateEmail, updatePassword } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 
 interface User {
   uid: string;
@@ -161,16 +161,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const updatedLocalUser = { ...user, ...newUserData };
         setUser(updatedLocalUser);
         
-        // Update Firebase Auth profile ONLY for displayName
-        if(newUserData.displayName && newUserData.displayName !== user.displayName) {
+        // Update Firebase Auth profile ONLY for displayName and avatar
+        if((newUserData.displayName && newUserData.displayName !== user.displayName) || (newUserData.avatar && newUserData.avatar !== user.avatar)) {
             await updateProfile(firebaseUser, {
                 displayName: newUserData.displayName,
+                photoURL: newUserData.avatar
             });
         }
         
-        // Update Firestore profile with all data (including avatar)
+        // Update Firestore profile with all data
         const userDocRef = doc(db, 'users', user.uid);
-        // We only pass the fields that are being updated to avoid overwriting anything unexpectedly.
         await setDoc(userDocRef, { profile: newUserData }, { merge: true });
     }
   };
