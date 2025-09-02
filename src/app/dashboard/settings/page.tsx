@@ -1,3 +1,4 @@
+
 // src/app/dashboard/settings/page.tsx
 "use client";
 
@@ -298,7 +299,7 @@ export default function SettingsPage() {
   const handleSendVerification = async () => {
     setIsSendingVerification(true);
     try {
-        await sendEmailVerification();
+        await sendVerificationEmail();
         toast({
             title: t('verification_sent_title'),
             description: t('verification_sent_desc'),
