@@ -58,8 +58,8 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   icons: [
-    { rel: "apple-touch-icon", url: "/icons/icon-192x192.png" },
-    { rel: "icon", url: "/icons/icon-192x192.png" },
+    { rel: "apple-touch-icon", url: "/icons/icon-512x512.png" },
+    { rel: "icon", url: "/icons/icon-512x512.png" },
   ],
   openGraph: {
     type: 'website',
@@ -92,7 +92,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
          <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png"></link>
+        <link rel="apple-touch-icon" href="/icons/icon-512x512.png"></link>
       </head>
       <body className="font-body antialiased" suppressHydrationWarning={true}>
         <AuthProvider>
