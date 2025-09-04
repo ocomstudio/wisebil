@@ -36,11 +36,11 @@ export default function EntrepriseHubPage() {
   return (
     <div className="space-y-8">
       <Tabs defaultValue="enterprises" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid grid-cols-1 md:grid-cols-2">
            <TabsTrigger value="enterprises">
             Vos Entreprises
           </TabsTrigger>
-          <TabsTrigger value="accounting">
+          <TabsTrigger value="accounting" className="hidden md:inline-flex">
             Comptabilité Générale
           </TabsTrigger>
         </TabsList>
@@ -168,7 +168,7 @@ export default function EntrepriseHubPage() {
                 </Card>
             </div>
         </TabsContent>
-        <TabsContent value="accounting">
+        <TabsContent value="accounting" className="hidden md:block">
             <AccountingPage />
         </TabsContent>
       </Tabs>
