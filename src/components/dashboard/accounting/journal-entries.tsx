@@ -1,4 +1,3 @@
-
 // src/components/dashboard/accounting/journal-entries.tsx
 "use client";
 

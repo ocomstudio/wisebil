@@ -1,4 +1,3 @@
-
 // src/types/invoice.ts
 export interface InvoiceLineItem {
   id: string;
