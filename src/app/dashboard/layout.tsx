@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { NotificationsProvider } from "@/context/notifications-context";
 import { AccountingProvider } from "@/context/accounting-context";
 import { InvoicingProvider } from "@/context/invoicing-context";
+import { TeamChat } from "@/components/dashboard/team/team-chat";
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
@@ -37,6 +38,8 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   if (pathname.startsWith('/dashboard/scan-receipt')) {
     return <div className="h-screen w-screen">{children}</div>;
   }
+  
+  const showTeamChat = pathname === '/dashboard/team/management';
   
   return (
     <div className="grid h-screen w-full overflow-hidden md:grid-cols-[250px_1fr_350px]">
@@ -82,9 +85,9 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       {/* Mobile Bottom Nav */}
       <BottomNav />
       
-      {/* Desktop AI Assistant */}
+      {/* Desktop AI Assistant or Team Chat */}
       <aside id="conseil-panel-tutorial" className="hidden md:flex flex-col border-l bg-muted/40 h-screen">
-        <ConseilPanel />
+        {showTeamChat ? <TeamChat /> : <ConseilPanel />}
       </aside>
     </div>
   );
