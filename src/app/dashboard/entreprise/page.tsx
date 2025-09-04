@@ -51,7 +51,7 @@ export default function EntreprisePage() {
           </CardHeader>
           <CardContent className="flex justify-center">
             <Button asChild>
-                <Link href="/dashboard/team">
+                <Link href="/dashboard/team/management">
                     Gérer l'équipe <ArrowRight className="ml-2 h-4 w-4"/>
                 </Link>
             </Button>

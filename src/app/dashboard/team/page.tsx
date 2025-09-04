@@ -15,12 +15,14 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Building, ArrowLeft } from "lucide-react";
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function TeamPage() {
   const { t } = useLocale();
   const { user } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const teamFormSchema = z.object({
     companyName: z.string().min(2, "Le nom de l'entreprise est requis."),
@@ -56,7 +58,7 @@ export default function TeamPage() {
             description: "Vous allez être redirigé vers l'interface de gestion.",
         });
         setIsLoading(false);
-        // router.push('/dashboard/team/management'); // Redirection future
+        router.push('/dashboard/team/management'); // Redirection vers la nouvelle page
     }, 2000);
   };
 
