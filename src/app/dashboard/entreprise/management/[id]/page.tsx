@@ -57,6 +57,11 @@ export default function TeamManagementPage() {
     const { selectedMember, setSelectedMember } = useTeamChat();
     const { toast } = useToast();
 
+    const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+    const [totalIncome, setTotalIncome] = useState(0);
+    const [totalExpenses, setTotalExpenses] = useState(0);
+
+
     const id = params.id as string;
 
     useEffect(() => {
@@ -66,17 +71,6 @@ export default function TeamManagementPage() {
         }
     }, [id, isLoadingEnterprises, enterprises]);
     
-    // Données de simulation
-    const recentTransactions = [
-        { id: "1", member: "Alice Dupont", description: "Licence logiciel", amount: 15000, type: "expense" },
-        { id: "2", member: "Bob Martin", description: "Publicité Facebook", amount: 75000, type: "expense" },
-        { id: "3", member: "Ocomstudio", description: "Paiement Client X", amount: 550000, type: "income" },
-        { id: "4", member: "Alice Dupont", description: "Abonnement Cloud", amount: 25000, type: "expense" },
-    ];
-    const totalIncome = 550000;
-    const totalExpenses = 115000;
-
-
     const addMemberSchema = z.object({
         email: z.string().email("Veuillez entrer une adresse e-mail valide."),
     });
@@ -152,7 +146,7 @@ export default function TeamManagementPage() {
                 </Link>
                 </Button>
                 <div className="flex-1">
-                    <h1 className="text-3xl font-bold font-headline">{enterprise.name} - Dépenses</h1>
+                    <h1 className="text-3xl font-bold font-headline">Bienvenue - {enterprise.name}</h1>
                     <p className="text-muted-foreground">Suivez et gérez les finances de votre équipe.</p>
                 </div>
             </div>
@@ -292,20 +286,28 @@ export default function TeamManagementPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {recentTransactions.map(tx => (
-                                <TableRow key={tx.id}>
-                                    <TableCell className="font-medium">{tx.member}</TableCell>
-                                    <TableCell>{tx.description}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={tx.type === 'income' ? 'default' : 'secondary'} className={cn(tx.type === 'income' && "bg-green-600/20 text-green-500 border-green-500/20", tx.type === 'expense' && "bg-red-600/10 text-red-500 border-red-500/20")}>
-                                            {tx.type === 'income' ? 'Revenu' : 'Dépense'}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className={cn("text-right font-semibold", tx.type === 'income' ? 'text-green-500' : 'text-red-500')}>
-                                        {formatCurrency(tx.amount, 'XOF')}
-                                    </TableCell>
-                                </TableRow>
-                                ))}
+                                {recentTransactions.length > 0 ? (
+                                    recentTransactions.map(tx => (
+                                    <TableRow key={tx.id}>
+                                        <TableCell className="font-medium">{tx.member}</TableCell>
+                                        <TableCell>{tx.description}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={tx.type === 'income' ? 'default' : 'secondary'} className={cn(tx.type === 'income' && "bg-green-600/20 text-green-500 border-green-500/20", tx.type === 'expense' && "bg-red-600/10 text-red-500 border-red-500/20")}>
+                                                {tx.type === 'income' ? 'Revenu' : 'Dépense'}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className={cn("text-right font-semibold", tx.type === 'income' ? 'text-green-500' : 'text-red-500')}>
+                                            {formatCurrency(tx.amount, 'XOF')}
+                                        </TableCell>
+                                    </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={4} className="h-24 text-center">
+                                            Aucune transaction récente.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </Table>
                     </CardContent>
