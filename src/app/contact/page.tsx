@@ -15,20 +15,23 @@ import { Loader2, Mail, Phone, HelpCircle, ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/common/logo";
 import Link from "next/link";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useLocale } from "@/context/locale-context";
 
-
-const contactSchema = z.object({
-  name: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères." }),
-  email: z.string().email({ message: "Veuillez entrer une adresse e-mail valide." }),
-  subject: z.string().min(3, { message: "L'objet doit contenir au moins 3 caractères." }),
-  message: z.string().min(10, { message: "Le message doit contenir au moins 10 caractères." }),
-});
-
-type ContactFormValues = z.infer<typeof contactSchema>;
 
 export default function ContactPage() {
+  const { t } = useLocale();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  
+  const contactSchema = z.object({
+    name: z.string().min(2, { message: t('contact_name_error') }),
+    email: z.string().email({ message: t('signup_email_error') }),
+    subject: z.string().min(3, { message: t('contact_subject_error') }),
+    message: z.string().min(10, { message: t('contact_message_error') }),
+  });
+
+  type ContactFormValues = z.infer<typeof contactSchema>;
+
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
@@ -47,8 +50,8 @@ export default function ContactPage() {
     // Simuler un appel API
     setTimeout(() => {
         toast({
-            title: "Message envoyé !",
-            description: "Merci de nous avoir contactés. Nous vous répondrons dans les plus brefs délais.",
+            title: t('contact_success_title'),
+            description: t('contact_success_desc'),
         });
         form.reset();
         setIsLoading(false);
@@ -58,16 +61,16 @@ export default function ContactPage() {
   
     const faqs = [
         {
-            question: "Comment fonctionne Wisebil ?",
-            answer: "Wisebil est une application de gestion financière qui utilise l'IA pour vous aider à suivre vos dépenses, créer des budgets et recevoir des conseils personnalisés pour atteindre vos objectifs financiers."
+            question: t('faq1_q'),
+            answer: t('faq1_a')
         },
         {
-            question: "Mes données financières sont-elles en sécurité ?",
-            answer: "Oui, la sécurité est notre priorité absolue. Nous utilisons un chiffrement de niveau bancaire pour toutes vos données et nous ne les partageons jamais avec des tiers à des fins de marketing."
+            question: t('faq2_q'),
+            answer: t('faq2_a')
         },
         {
-            question: "Puis-je utiliser l'application hors ligne ?",
-            answer: "Oui, les fonctionnalités de base comme l'ajout de transactions fonctionnent hors ligne. Une connexion internet est nécessaire pour synchroniser vos données et utiliser les fonctionnalités de l'IA."
+            question: t('faq3_q'),
+            answer: t('faq3_a')
         },
     ]
 
@@ -79,7 +82,7 @@ export default function ContactPage() {
            <Button asChild variant="outline">
             <Link href="/">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Retour à l'accueil
+                {t('back_to_home')}
             </Link>
           </Button>
         </div>
@@ -87,14 +90,14 @@ export default function ContactPage() {
 
        <main className="container mx-auto px-4 md:px-6 py-12 md:py-16">
          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl font-bold font-headline mb-2 text-primary">Centre d'Aide & Contact</h1>
-            <p className="text-lg text-muted-foreground">Nous sommes là pour vous aider. Trouvez des réponses ou contactez-nous directement.</p>
+            <h1 className="text-4xl font-bold font-headline mb-2 text-primary">{t('contact_title')}</h1>
+            <p className="text-lg text-muted-foreground">{t('contact_subtitle')}</p>
          </div>
 
          <div className="grid md:grid-cols-2 gap-12 mt-12">
             <div className="space-y-8">
                 <div>
-                    <h2 className="text-2xl font-bold font-headline mb-4 flex items-center gap-2"><HelpCircle className="text-primary"/> Questions Fréquentes</h2>
+                    <h2 className="text-2xl font-bold font-headline mb-4 flex items-center gap-2"><HelpCircle className="text-primary"/> {t('faq_title')}</h2>
                      <Accordion type="single" collapsible className="w-full">
                         {faqs.map((faq, index) => (
                             <AccordionItem key={index} value={`item-${index}`}>
@@ -107,7 +110,7 @@ export default function ContactPage() {
                     </Accordion>
                 </div>
                  <div>
-                    <h2 className="text-2xl font-bold font-headline mb-4">Nos Coordonnées</h2>
+                    <h2 className="text-2xl font-bold font-headline mb-4">{t('contact_details_title')}</h2>
                     <div className="space-y-4">
                         <div className="flex items-center gap-4">
                             <Mail className="h-6 w-6 text-primary" />
@@ -123,8 +126,8 @@ export default function ContactPage() {
             <div>
                  <Card>
                     <CardHeader>
-                        <CardTitle className="font-headline text-2xl">Envoyez-nous un message</CardTitle>
-                        <CardDescription>Remplissez le formulaire ci-dessous et notre équipe vous contactera.</CardDescription>
+                        <CardTitle className="font-headline text-2xl">{t('contact_form_title')}</CardTitle>
+                        <CardDescription>{t('contact_form_desc')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Form {...form}>
@@ -134,7 +137,7 @@ export default function ContactPage() {
                                     name="name"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Votre nom</FormLabel>
+                                            <FormLabel>{t('contact_name_label')}</FormLabel>
                                             <FormControl>
                                                 <Input placeholder="John Doe" {...field} />
                                             </FormControl>
@@ -147,7 +150,7 @@ export default function ContactPage() {
                                     name="email"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Votre e-mail</FormLabel>
+                                            <FormLabel>{t('contact_email_label')}</FormLabel>
                                             <FormControl>
                                                 <Input type="email" placeholder="votre@email.com" {...field} />
                                             </FormControl>
@@ -160,9 +163,9 @@ export default function ContactPage() {
                                     name="subject"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Objet</FormLabel>
+                                            <FormLabel>{t('contact_subject_label')}</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Question sur la facturation" {...field} />
+                                                <Input placeholder={t('contact_subject_placeholder')} {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -173,9 +176,9 @@ export default function ContactPage() {
                                     name="message"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Votre message</FormLabel>
+                                            <FormLabel>{t('contact_message_label')}</FormLabel>
                                             <FormControl>
-                                                <Textarea placeholder="Bonjour, j'aimerais avoir des informations sur..." {...field} rows={5} />
+                                                <Textarea placeholder={t('contact_message_placeholder')} {...field} rows={5} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -183,7 +186,7 @@ export default function ContactPage() {
                                 />
                                 <Button type="submit" className="w-full" disabled={isLoading}>
                                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Envoyer le message
+                                    {t('contact_send_button')}
                                 </Button>
                             </form>
                         </Form>
