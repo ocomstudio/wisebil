@@ -44,7 +44,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const showTeamChatPanel = pathname.startsWith('/dashboard/team/management');
   
   return (
-    <div className={cn("grid h-screen w-full overflow-hidden", showTeamChatPanel ? "md:grid-cols-[250px_1fr_350px]" : "md:grid-cols-[250px_1fr]")}>
+    <div className={cn("grid h-screen w-full overflow-hidden", showTeamChatPanel ? "md:grid-cols-[250px_1fr_350px]" : "md:grid-cols-[250px_1fr_350px]")}>
       {/* Desktop Sidebar */}
       <aside className="hidden border-r bg-muted/40 md:flex flex-col gap-6 p-4">
         <div className="px-2">
