@@ -26,8 +26,14 @@ export function SidebarNav() {
     },
     {
       href: "/dashboard/entreprise",
-      label: 'Entreprise',
+      label: 'Gestion Entreprise',
       icon: <Building />,
+      className: "hidden md:flex"
+    },
+     {
+      href: "/dashboard/accounting",
+      label: t('nav_accounting'),
+      icon: <Briefcase />,
       className: "hidden md:flex"
     },
     {

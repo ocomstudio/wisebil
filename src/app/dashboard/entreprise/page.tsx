@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Briefcase, ArrowRight, PlusCircle, Trash2, Settings, Building } from "lucide-react";
+import { Briefcase, ArrowRight, PlusCircle, Trash2, Settings, Building, Mail, Check, X } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "@/context/locale-context";
 import {
@@ -25,16 +25,44 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useEnterprise } from "@/context/enterprise-context";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import AccountingPage from "../accounting/page";
 
 
-function EnterpriseManagement() {
+export default function EntrepriseHubPage() {
   const { t } = useLocale();
   const { enterprises, deleteEnterprise, isLoading } = useEnterprise();
 
+  // Données de simulation pour les invitations
+  const pendingInvitations = [
+      { id: 'invite1', enterpriseName: 'Ocomstudio SARL' }
+  ];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      
+       {/* Section des invitations en attente */}
+      <div>
+        <h2 className="text-2xl font-bold font-headline mb-4">Invitations en attente</h2>
+        {pendingInvitations.length > 0 ? (
+            <div className="grid gap-4">
+                {pendingInvitations.map(invite => (
+                    <Card key={invite.id}>
+                        <CardContent className="p-4 flex items-center justify-between">
+                            <p>Vous avez été invité à rejoindre <strong>{invite.enterpriseName}</strong>.</p>
+                            <div className="flex gap-2">
+                                <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 hover:text-destructive"><X className="h-5 w-5"/></Button>
+                                <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10 hover:text-primary"><Check className="h-5 w-5"/></Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        ) : (
+             <p className="text-sm text-muted-foreground">Vous n'avez aucune invitation en attente.</p>
+        )}
+      </div>
+
+       {/* Section de gestion des entreprises créées */}
+       <div className="space-y-6">
        <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold font-headline">Vos Entreprises</h1>
         <Button asChild>
@@ -131,25 +159,6 @@ function EnterpriseManagement() {
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-
-export default function EntrepriseHubPage() {
-  const { t } = useLocale();
-
-  return (
-    <Tabs defaultValue="management" className="space-y-4">
-      <TabsList>
-        <TabsTrigger value="management">Gestion d'Entreprise</TabsTrigger>
-        <TabsTrigger value="accounting">Comptabilité</TabsTrigger>
-      </TabsList>
-      <TabsContent value="management">
-        <EnterpriseManagement />
-      </TabsContent>
-      <TabsContent value="accounting">
-        <AccountingPage />
-      </TabsContent>
-    </Tabs>
+    </div>
   );
 }

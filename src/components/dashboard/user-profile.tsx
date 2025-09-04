@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { CreditCard, LogOut, Settings } from "lucide-react"
+import { CreditCard, LogOut, Settings, Building } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
@@ -82,6 +82,12 @@ export function UserProfile() {
                     <span className="absolute right-2 h-2 w-2 rounded-full bg-red-500"></span>
                   )}
              </Link>
+          </DropdownMenuItem>
+           <DropdownMenuItem asChild>
+            <Link href="/dashboard/entreprise">
+              <Building className="mr-2 h-4 w-4" />
+              <span>Entreprise</span>
+            </Link>
           </DropdownMenuItem>
            <DropdownMenuItem asChild>
             <Link href="/dashboard/billing">
