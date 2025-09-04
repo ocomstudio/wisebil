@@ -32,13 +32,15 @@ import Link from "next/link";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import axios from "axios";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { Currency } from "@/context/locale-context";
 
 interface SignupPageProps {
   onSwitchToLogin?: () => void;
 }
 
 export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
-  const { t } = useLocale();
+  const { t, currency } = useLocale();
   const { toast } = useToast();
   const router = useRouter();
   const { signupWithEmail, loginWithGoogle } = useAuth();
@@ -68,6 +70,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
     email: z.string().email(t('signup_email_error')),
     password: z.string().min(8, t('signup_password_error')),
     confirmPassword: z.string(),
+    currency: z.string().min(1, "Please select a currency"),
     terms: z.boolean().refine(val => val === true, {
       message: t('signup_terms_error'),
     })
@@ -87,6 +90,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
       email: "",
       password: "",
       confirmPassword: "",
+      currency: currency,
       terms: false,
     },
   });
@@ -122,6 +126,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
       await signupWithEmail(data.email, data.password, {
         fullName: data.fullName,
         phone: data.phone,
+        currency: data.currency as Currency,
       });
       
       toast({
@@ -173,6 +178,29 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
               </FormItem>
             )}
           />
+           <FormField
+            control={form.control}
+            name="currency"
+            render={({ field }) => (
+                <FormItem>
+                    <FormLabel>{t('currency_label')}</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder={t('currency')} />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="USD">{t('currency_usd')} (USD)</SelectItem>
+                            <SelectItem value="EUR">{t('currency_eur')} (EUR)</SelectItem>
+                            <SelectItem value="XOF">{t('currency_xof')} (XOF)</SelectItem>
+                            <SelectItem value="VND">{t('currency_vnd')} (VND)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                </FormItem>
+            )}
+            />
           <FormField
             control={form.control}
             name="phone"

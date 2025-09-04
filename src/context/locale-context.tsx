@@ -4,18 +4,22 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import fr from '@/locales/fr.json';
 import en from '@/locales/en.json';
+import de from '@/locales/de.json';
+import es from '@/locales/es.json';
+import vi from '@/locales/vi.json';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, onSnapshot, getDoc } from 'firebase/firestore';
 
-export type Language = 'fr' | 'en';
-export type Currency = 'XOF' | 'EUR' | 'USD';
+export type Language = 'fr' | 'en' | 'de' | 'es' | 'vi';
+export type Currency = 'XOF' | 'EUR' | 'USD' | 'VND';
 
 // Taux de conversion approximatifs par rapport à XOF
 const conversionRates: Record<Currency, number> = {
     XOF: 1,
-    EUR: 655.957, 
+    EUR: 655.957,
     USD: 610,
+    VND: 0.024, // 1 VND = 0.024 XOF
 };
 
 
@@ -31,13 +35,13 @@ interface LocaleContextType {
   getCategoryName: (key: string) => string;
 }
 
-const translations = { fr, en };
+const translations = { fr, en, de, es, vi };
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
 
 export const LocaleProvider = ({ children }: { children: ReactNode }) => {
-  const [locale, setLocaleState] = useState<Language>('fr');
-  const [currency, setCurrencyState] = useState<Currency>('XOF');
+  const [locale, setLocaleState] = useState<Language>('en');
+  const [currency, setCurrencyState] = useState<Currency>('USD');
   const [isLoaded, setIsLoaded] = useState(false);
   const { user } = useAuth();
 
@@ -69,8 +73,8 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
 
     } else {
         // User is not logged in, use default values.
-        setLocaleState('fr');
-        setCurrencyState('XOF');
+        setLocaleState('en');
+        setCurrencyState('USD');
         setIsLoaded(true);
     }
   }, [user, getUserDocRef]);
@@ -127,8 +131,8 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
     const options: Intl.NumberFormatOptions = {
       style: 'currency',
       currency: currency,
-      minimumFractionDigits: currency === 'XOF' ? 0 : 2,
-      maximumFractionDigits: currency === 'XOF' ? 0 : 2,
+      minimumFractionDigits: ['XOF', 'VND'].includes(currency) ? 0 : 2,
+      maximumFractionDigits: ['XOF', 'VND'].includes(currency) ? 0 : 2,
     };
 
     // Special formatting for XOF to place the symbol after the number.

@@ -15,12 +15,16 @@ import SignupPage from '@/app/auth/signup/page';
 const languages = [
     { code: 'fr' as Language, name: 'Français', flag: '🇫🇷' },
     { code: 'en' as Language, name: 'English', flag: '🇬🇧' },
+    { code: 'de' as Language, name: 'Deutsch', flag: '🇩🇪' },
+    { code: 'es' as Language, name: 'Español', flag: '🇪🇸' },
+    { code: 'vi' as Language, name: 'Tiếng Việt', flag: '🇻🇳' },
 ];
 
 const currencies = [
     { code: 'XOF' as Currency, name: 'Franc CFA', icon: <CircleDollarSign className="h-8 w-8 text-primary" /> },
     { code: 'EUR' as Currency, name: 'Euro', icon: <Euro className="h-8 w-8 text-primary" /> },
     { code: 'USD' as Currency, name: 'US Dollar', icon: <DollarSign className="h-8 w-8 text-primary" /> },
+    { code: 'VND' as Currency, name: 'Vietnamese Dong', icon: <span className="text-2xl font-bold text-primary">₫</span> },
 ];
 
 export function MobileWelcomeFlow() {

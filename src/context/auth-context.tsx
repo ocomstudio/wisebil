@@ -7,6 +7,7 @@ import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, c
 import { auth, db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc, getDoc, setDoc, onSnapshot, updateDoc } from 'firebase/firestore';
+import type { Currency } from './locale-context';
 
 interface User {
   uid: string;
@@ -24,7 +25,7 @@ interface User {
 type SignupFunction = (
   email: string,
   password: string,
-  profileData: { fullName: string; phone: string }
+  profileData: { fullName: string; phone: string, currency: Currency }
 ) => Promise<UserCredential>;
 
 interface AuthContextType {
@@ -67,7 +68,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userDocRef = doc(db, 'users', fbUser.uid);
         
         const unsubscribeDoc = onSnapshot(userDocRef, (docSnap) => {
-          const profileData = docSnap.exists() ? docSnap.data().profile : null;
+          const data = docSnap.data();
+          const profileData = data?.profile;
+          
           const combinedUser: User = {
             uid: fbUser.uid,
             email: fbUser.email,
@@ -102,14 +105,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribeAuth(); // Unsubscribe from auth listener on cleanup
   }, []);
   
-  const signupWithEmail: SignupFunction = async (email, password, { fullName, phone }) => {
+  const signupWithEmail: SignupFunction = async (email, password, { fullName, phone, currency }) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const { user: fbUser } = userCredential;
 
     // Update Firebase Auth profile
     await updateProfile(fbUser, { displayName: fullName });
     
-    // Create Firestore document with all the correct data
     const userDocRef = doc(db, 'users', fbUser.uid);
     const profileData: Omit<User, 'uid' | 'avatar' | 'email' | 'displayName' | 'emailVerified'> = {
       phone,
@@ -124,7 +126,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         avatar: null,
         email: fbUser.email,
         displayName: fullName
-      } 
+      },
+      preferences: {
+        currency: currency,
+        language: 'en' // Default language
+      }
     }, { merge: true });
 
     return userCredential;
@@ -150,7 +156,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         hasCompletedTutorial: false,
         emailVerified: true, // Google emails are considered verified
       };
-      await setDoc(userDocRef, { profile: profileData }, { merge: true });
+      await setDoc(userDocRef, { profile: profileData, preferences: { currency: 'USD', language: 'en'} }, { merge: true });
       return { isNewUser: true, user: result.user };
     }
   }

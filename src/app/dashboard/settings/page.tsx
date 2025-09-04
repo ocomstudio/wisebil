@@ -562,6 +562,9 @@ export default function SettingsPage() {
                 <SelectContent>
                     <SelectItem value="fr">Français</SelectItem>
                     <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="de">Deutsch</SelectItem>
+                    <SelectItem value="es">Español</SelectItem>
+                    <SelectItem value="vi">Tiếng Việt</SelectItem>
                 </SelectContent>
             </Select>
           </div>
@@ -578,6 +581,7 @@ export default function SettingsPage() {
                     <SelectItem value="XOF">{t('currency_xof')} (XOF)</SelectItem>
                     <SelectItem value="EUR">{t('currency_eur')} (EUR)</SelectItem>
                     <SelectItem value="USD">{t('currency_usd')} (USD)</SelectItem>
+                    <SelectItem value="VND">{t('currency_vnd')} (VND)</SelectItem>
                 </SelectContent>
             </Select>
           </div>
