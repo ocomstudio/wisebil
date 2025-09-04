@@ -29,6 +29,7 @@ import { InvoicingProvider } from "@/context/invoicing-context";
 import { cn } from "@/lib/utils";
 import { TeamChatProvider } from "@/context/team-chat-context";
 import { TeamChat } from "@/components/dashboard/team/team-chat";
+import { EnterpriseProvider } from "@/context/enterprise-context";
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
@@ -106,6 +107,7 @@ export default function DashboardLayout({
         <LocaleProvider>
           <SettingsProvider>
             <TransactionsProvider>
+              <EnterpriseProvider>
                 <BudgetProvider>
                   <SavingsProvider>
                     <NotificationsProvider>
@@ -127,6 +129,7 @@ export default function DashboardLayout({
                     />
                   </SavingsProvider>
                 </BudgetProvider>
+              </EnterpriseProvider>
             </TransactionsProvider>
           </SettingsProvider>
         </LocaleProvider>
