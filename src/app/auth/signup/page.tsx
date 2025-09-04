@@ -40,24 +40,25 @@ interface SignupPageProps {
 }
 
 export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
-  const { t, currency } = useLocale();
+  const { t, currency, setCurrency, setLocale } = useLocale();
   const { toast } = useToast();
   const router = useRouter();
   const { signupWithEmail, loginWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [detectedCountry, setDetectedCountry] = useState<Country>('SN');
+  const [detectedCountry, setDetectedCountry] = useState<Country>('US');
 
   useEffect(() => {
     const fetchCountry = async () => {
         try {
             const response = await axios.get('https://ipapi.co/json/');
-            if (response.data && response.data.country_code) {
-                setDetectedCountry(response.data.country_code as Country);
+            const countryCode = response.data?.country_code as Country | undefined;
+            if (countryCode) {
+                setDetectedCountry(countryCode);
             }
         } catch (error) {
-            console.warn("Could not detect user country, defaulting to SN.", error);
+            console.warn("Could not detect user country, defaulting to US.", error);
         }
     };
 
@@ -70,7 +71,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
     email: z.string().email(t('signup_email_error')),
     password: z.string().min(8, t('signup_password_error')),
     confirmPassword: z.string(),
-    currency: z.string().min(1, "Please select a currency"),
+    currency: z.string().min(3, "Please select a currency").max(3, "Please select a currency"),
     terms: z.boolean().refine(val => val === true, {
       message: t('signup_terms_error'),
     })
@@ -94,6 +95,15 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
       terms: false,
     },
   });
+
+  // Watch for currency changes and update context
+  const watchedCurrency = form.watch('currency');
+  useEffect(() => {
+    if (watchedCurrency) {
+        setCurrency(watchedCurrency as Currency);
+    }
+  }, [watchedCurrency, setCurrency]);
+
 
   const handleAuthError = (error: any) => {
     let description = t('An unknown error occurred.');

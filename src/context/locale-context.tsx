@@ -2,6 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import axios from 'axios';
 import fr from '@/locales/fr.json';
 import en from '@/locales/en.json';
 import de from '@/locales/de.json';
@@ -9,7 +10,7 @@ import es from '@/locales/es.json';
 import vi from '@/locales/vi.json';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, onSnapshot, getDoc } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 
 export type Language = 'fr' | 'en' | 'de' | 'es' | 'vi';
 export type Currency = 'XOF' | 'EUR' | 'USD' | 'VND';
@@ -19,7 +20,7 @@ const conversionRates: Record<Currency, number> = {
     XOF: 1,
     EUR: 655.957,
     USD: 610,
-    VND: 0.024, // 1 VND = 0.024 XOF
+    VND: 0.024,
 };
 
 
@@ -39,6 +40,41 @@ const translations = { fr, en, de, es, vi };
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
 
+const getLocaleFromCountry = (countryCode: string): { lang: Language, curr: Currency } => {
+    const countryMap: Record<string, { lang: Language, curr: Currency }> = {
+        // Europe
+        'FR': { lang: 'fr', curr: 'EUR' },
+        'BE': { lang: 'fr', curr: 'EUR' },
+        'CH': { lang: 'de', curr: 'EUR' }, // Swiss Franc not supported, default to EUR
+        'LU': { lang: 'fr', curr: 'EUR' },
+        'DE': { lang: 'de', curr: 'EUR' },
+        'AT': { lang: 'de', curr: 'EUR' },
+        'ES': { lang: 'es', curr: 'EUR' },
+        // Africa (Francophone)
+        'SN': { lang: 'fr', curr: 'XOF' },
+        'CM': { lang: 'fr', curr: 'XOF' },
+        'CI': { lang: 'fr', curr: 'XOF' },
+        'TG': { lang: 'fr', curr: 'XOF' },
+        'BJ': { lang: 'fr', curr: 'XOF' },
+        'BF': { lang: 'fr', curr: 'XOF' },
+        'NE': { lang: 'fr', curr: 'XOF' },
+        'ML': { lang: 'fr', curr: 'XOF' },
+        'GA': { lang: 'fr', curr: 'XOF' },
+        'CG': { lang: 'fr', curr: 'XOF' },
+        'CD': { lang: 'fr', curr: 'USD' }, // Use USD for DRC
+        'TN': { lang: 'fr', curr: 'EUR' }, // Use EUR for Tunisia
+        // Asia
+        'VN': { lang: 'vi', curr: 'VND' },
+        // North America
+        'US': { lang: 'en', curr: 'USD' },
+        'CA': { lang: 'en', curr: 'USD' }, // Default to USD for Canada
+        // UK
+        'GB': { lang: 'en', curr: 'EUR' }, // Default to EUR for UK
+    };
+
+    return countryMap[countryCode] || { lang: 'en', curr: 'USD' }; // Default to English/USD
+}
+
 export const LocaleProvider = ({ children }: { children: ReactNode }) => {
   const [locale, setLocaleState] = useState<Language>('en');
   const [currency, setCurrencyState] = useState<Currency>('USD');
@@ -51,32 +87,45 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
   
   useEffect(() => {
-    if (user) {
-        // User is logged in, load from Firestore
-        const userDocRef = getUserDocRef();
-        if (!userDocRef) {
-            setIsLoaded(true);
-            return;
+    const initializeLocale = async () => {
+        if (user) {
+            // User is logged in, load from Firestore
+            const userDocRef = getUserDocRef();
+            if (userDocRef) {
+                const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+                    if (docSnap.exists() && docSnap.data().preferences) {
+                        const { language, currency } = docSnap.data().preferences;
+                        if (language) setLocaleState(language);
+                        if (currency) setCurrencyState(currency);
+                    }
+                    setIsLoaded(true);
+                }, () => {
+                    setIsLoaded(true); // Ensure app loads even if Firestore fails
+                });
+                return unsubscribe;
+            } else {
+                 setIsLoaded(true);
+            }
+        } else {
+            // User not logged in, auto-detect from browser/IP
+            try {
+                const response = await axios.get('https://ipapi.co/json/');
+                const countryCode = response.data?.country_code;
+                if (countryCode) {
+                    const { lang, curr } = getLocaleFromCountry(countryCode);
+                    setLocaleState(lang);
+                    setCurrencyState(curr);
+                }
+            } catch (error) {
+                console.warn("Could not detect user country, using defaults.", error);
+            } finally {
+                setIsLoaded(true);
+            }
         }
+    };
 
-        const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
-          if (docSnap.exists() && docSnap.data().preferences) {
-            const { language, currency } = docSnap.data().preferences;
-            if (language) setLocaleState(language);
-            if (currency) setCurrencyState(currency);
-          }
-          setIsLoaded(true);
-        }, () => {
-          setIsLoaded(true); // Ensure app loads even if Firestore fails
-        });
-        return unsubscribe;
+    initializeLocale();
 
-    } else {
-        // User is not logged in, use default values.
-        setLocaleState('en');
-        setCurrencyState('USD');
-        setIsLoaded(true);
-    }
   }, [user, getUserDocRef]);
 
 
