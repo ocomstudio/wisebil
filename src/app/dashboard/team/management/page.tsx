@@ -103,8 +103,8 @@ export default function TeamManagementPage() {
 
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_350px] h-full gap-6">
-            <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_350px] h-full gap-6 -mx-8 -my-8">
+            <div className="space-y-6 p-8 overflow-y-auto">
                 <div className="flex items-center gap-4">
                     <Button variant="outline" size="icon" asChild>
                     <Link href="/dashboard/entreprise">
@@ -293,9 +293,9 @@ export default function TeamManagementPage() {
                 </div>
             </div>
             
-            <div className="hidden md:block h-full">
+            <aside className="hidden md:flex flex-col border-l bg-muted/40 h-screen">
                 <TeamChat selectedMember={selectedMember} />
-            </div>
+            </aside>
 
         </div>
     )

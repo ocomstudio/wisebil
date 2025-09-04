@@ -39,7 +39,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     return <div className="h-screen w-screen">{children}</div>;
   }
   
-  const showRightPanel = pathname === '/dashboard/team/management';
+  const showRightPanel = !pathname.startsWith('/dashboard/team/management');
   
   return (
     <div className={cn("grid h-screen w-full overflow-hidden", showRightPanel ? "md:grid-cols-[250px_1fr_350px]" : "md:grid-cols-[250px_1fr]")}>
@@ -86,11 +86,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       <BottomNav />
       
       {/* Conditionally render the right panel based on the route */}
-      {showRightPanel ? (
-         <aside id="team-chat-panel" className="hidden md:flex flex-col border-l bg-muted/40 h-screen">
-           {/* The TeamChat component will now be rendered by the page */}
-         </aside>
-      ) : (
+      {showRightPanel && (
          <aside id="conseil-panel-tutorial" className="hidden md:flex flex-col border-l bg-muted/40 h-screen">
             <ConseilPanel />
         </aside>
