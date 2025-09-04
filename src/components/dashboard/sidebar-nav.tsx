@@ -30,12 +30,6 @@ export function SidebarNav() {
       icon: <Building />,
       className: "hidden md:flex"
     },
-     {
-      href: "/dashboard/accounting",
-      label: t('nav_accounting'),
-      icon: <Briefcase />,
-      className: "hidden md:flex"
-    },
     {
       href: "/dashboard/budget",
       label: t('nav_budgets'),
