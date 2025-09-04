@@ -20,7 +20,6 @@ interface TransactionsContextType {
   income: number;
   expenses: number;
   isLoading: boolean;
-  setContextId: (id: string | null) => void; // Can be enterpriseId or null for personal
 }
 
 const TransactionsContext = createContext<TransactionsContextType | undefined>(undefined);
@@ -28,20 +27,14 @@ const TransactionsContext = createContext<TransactionsContextType | undefined>(u
 export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [contextId, setContextId] = useState<string | null>(null); // null for personal, enterpriseId for enterprise
   const { toast } = useToast();
   const { t } = useLocale();
   const { user } = useAuth();
 
-  const getDocRef = useCallback(() => {
+  const getUserDocRef = useCallback(() => {
     if (!user) return null;
-    if (contextId) {
-      // Enterprise context
-      return doc(db, 'enterprises', contextId);
-    }
-    // Personal context
     return doc(db, 'users', user.uid);
-  }, [user, contextId]);
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
@@ -50,7 +43,7 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    const docRef = getDocRef();
+    const docRef = getUserDocRef();
     if (!docRef) {
       setTransactions([]);
       setIsLoading(false);
@@ -73,27 +66,27 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => unsubscribe();
-  }, [user, getDocRef, toast, t]);
+  }, [user, getUserDocRef, toast, t]);
 
   const addTransaction = useCallback(async (transaction: Transaction) => {
-    const docRef = getDocRef();
+    const docRef = getUserDocRef();
     if (!docRef) return;
     
     try {
       await updateDoc(docRef, { transactions: arrayUnion(transaction) });
     } catch(error: any) {
-       if (error.code === 'not-found') {
-           await setDoc(docRef, { transactions: [transaction] });
+       if (error.code === 'not-found' || error.message.includes('No document to update')) {
+           await setDoc(docRef, { transactions: [transaction] }, { merge: true });
        } else {
            console.error("Failed to add transaction to Firestore", error);
            toast({ variant: "destructive", title: t('error_title'), description: "Failed to save transaction." });
            throw error;
        }
     }
-  }, [getDocRef, toast, t]);
+  }, [getUserDocRef, toast, t]);
   
   const updateTransaction = useCallback(async (id: string, updatedTransactionData: Partial<Omit<Transaction, 'id' | 'type'>>) => {
-    const docRef = getDocRef();
+    const docRef = getUserDocRef();
     if (!docRef) return;
 
     const currentTransactions = [...transactions];
@@ -115,11 +108,11 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
       toast({ variant: "destructive", title: t('error_title'), description: t('transaction_update_error_desc') });
       throw error;
     }
-  }, [transactions, getDocRef, toast, t]);
+  }, [transactions, getUserDocRef, toast, t]);
 
 
   const deleteTransaction = useCallback(async (id: string) => {
-    const docRef = getDocRef();
+    const docRef = getUserDocRef();
     if (!docRef) return;
 
     const transactionToDelete = transactions.find(t => t.id === id);
@@ -137,14 +130,14 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
       toast({ variant: "destructive", title: t('error_title'), description: "Failed to delete transaction." });
       throw error;
     }
-  }, [transactions, getDocRef, toast, t]);
+  }, [transactions, getUserDocRef, toast, t]);
 
   const getTransactionById = useCallback((id: string) => {
     return transactions.find(t => t.id === id);
   }, [transactions]);
 
   const resetTransactions = async () => {
-    const docRef = getDocRef();
+    const docRef = getUserDocRef();
     if (!docRef) return;
     try {
       await updateDoc(docRef, { transactions: deleteField() });
@@ -181,15 +174,14 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
         balance, 
         income, 
         expenses,
-        isLoading,
-        setContextId
+        isLoading
     }}>
       {children}
     </TransactionsContext.Provider>
   );
 };
 
-export const useTransactions = (contextId?: string | null) => {
+export const useTransactions = () => {
   const context = useContext(TransactionsContext);
   if (context === undefined) {
     throw new Error('useTransactions must be used within a TransactionsProvider');

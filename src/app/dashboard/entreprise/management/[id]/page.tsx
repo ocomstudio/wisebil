@@ -46,7 +46,9 @@ import type { TeamMember } from "@/context/team-chat-context";
 import { useEnterprise } from "@/context/enterprise-context";
 import type { Enterprise } from "@/types/enterprise";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTransactions } from "@/context/transactions-context";
+import type { Transaction } from "@/types/transaction";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function TeamManagementPage() {
     const { t, formatCurrency } = useLocale();
@@ -58,21 +60,41 @@ export default function TeamManagementPage() {
     const { setSelectedMember } = useTeamChat();
     const { toast } = useToast();
     
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [isLoadingTransactions, setIsLoadingTransactions] = useState(true);
+
     const id = params.id as string;
     
-    const { transactions, income, expenses, setContextId } = useTransactions(id);
-    
     useEffect(() => {
-        setContextId(id);
-        return () => setContextId(null); // Reset on unmount
-    }, [id, setContextId]);
+        if (!id) return;
+        const enterpriseDocRef = doc(db, 'enterprises', id);
+        const unsubscribe = onSnapshot(enterpriseDocRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const enterpriseData = { id: docSnap.id, ...docSnap.data() } as Enterprise;
+                setEnterprise(enterpriseData);
+                setTransactions(enterpriseData.transactions || []);
+            } else {
+                setEnterprise(null);
+            }
+            setIsLoadingTransactions(false);
+        }, (error) => {
+            console.error("Failed to listen to enterprise document:", error);
+            setIsLoadingTransactions(false);
+        });
 
-    useEffect(() => {
-        if (!isLoadingEnterprises && id) {
-            const foundEnterprise = enterprises.find(e => e.id === id);
-            setEnterprise(foundEnterprise || null);
-        }
-    }, [id, isLoadingEnterprises, enterprises]);
+        return () => unsubscribe();
+    }, [id]);
+    
+    const { income, expenses } = React.useMemo(() => {
+        return transactions.reduce((acc, tx) => {
+            if (tx.type === 'income') {
+                acc.income += tx.amount;
+            } else {
+                acc.expenses += tx.amount;
+            }
+            return acc;
+        }, { income: 0, expenses: 0 });
+    }, [transactions]);
     
     const addMemberSchema = z.object({
         email: z.string().email("Veuillez entrer une adresse e-mail valide."),
@@ -105,7 +127,7 @@ export default function TeamManagementPage() {
         }
     };
     
-    if (isLoadingEnterprises) {
+    if (isLoadingEnterprises || isLoadingTransactions) {
         return (
             <div className="space-y-6">
                 <Skeleton className="h-10 w-1/3" />
