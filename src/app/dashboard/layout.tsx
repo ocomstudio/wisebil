@@ -26,6 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { NotificationsProvider } from "@/context/notifications-context";
 import { AccountingProvider } from "@/context/accounting-context";
 import { InvoicingProvider } from "@/context/invoicing-context";
+import { cn } from "@/lib/utils";
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
@@ -85,10 +86,14 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       <BottomNav />
       
       {/* Conditionally render the right panel based on the route */}
-      {showRightPanel && (
+      {showRightPanel ? (
          <aside id="team-chat-panel" className="hidden md:flex flex-col border-l bg-muted/40 h-screen">
            {/* The TeamChat component will now be rendered by the page */}
          </aside>
+      ) : (
+         <aside id="conseil-panel-tutorial" className="hidden md:flex flex-col border-l bg-muted/40 h-screen">
+            <ConseilPanel />
+        </aside>
       )}
     </div>
   );
