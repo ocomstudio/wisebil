@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/context/auth-context"
 import { useLocale } from "@/context/locale-context"
 import { cn } from "@/lib/utils"
+import { Badge } from "../ui/badge"
 
 export function UserProfile() {
   const router = useRouter();
@@ -87,6 +88,7 @@ export function UserProfile() {
             <Link href="/dashboard/entreprise">
               <Building className="mr-2 h-4 w-4" />
               <span>Entreprise</span>
+              <Badge variant="secondary" className="ml-auto">Bientôt</Badge>
             </Link>
           </DropdownMenuItem>
            <DropdownMenuItem asChild>
