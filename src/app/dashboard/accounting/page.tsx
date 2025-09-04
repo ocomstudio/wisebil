@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Briefcase, Construction } from "lucide-react";
+import { ArrowLeft, Briefcase, Construction } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "@/context/locale-context";
 
@@ -39,15 +39,18 @@ export default function AccountingPage() {
             Le module complet de comptabilité et de facturation est en cours de finalisation.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-            <p className="text-sm text-muted-foreground mb-6">
+        <CardContent className="flex flex-col gap-4">
+            <p className="text-sm text-muted-foreground">
                 Nous travaillons d'arrache-pied pour vous apporter des outils puissants pour gérer votre comptabilité comme un pro. Merci pour votre patience !
             </p>
-            <Button asChild>
-                <Link href="/dashboard">
-                    {t('back_to_dashboard')}
-                </Link>
-            </Button>
+             <div className="flex justify-center">
+                 <Button asChild variant="outline">
+                    <Link href="/dashboard/entreprise">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Retour à l'Espace Entreprise
+                    </Link>
+                </Button>
+            </div>
         </CardContent>
       </Card>
     </div>
