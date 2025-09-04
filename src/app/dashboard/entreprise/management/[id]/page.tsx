@@ -1,7 +1,8 @@
-// src/app/dashboard/team/management/page.tsx
+// src/app/dashboard/entreprise/management/[id]/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams, useRouter } from 'next/navigation';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useLocale } from "@/context/locale-context";
-import { ArrowLeft, DollarSign, PlusCircle, User, Users, Loader2, MoreVertical, Edit, Trash2, TrendingUp, TrendingDown, Search } from "lucide-react";
+import { ArrowLeft, PlusCircle, Users, Loader2, MoreVertical, Trash2, Search, TrendingUp, TrendingDown } from "lucide-react";
 import Link from "next/link";
 import {
   Dialog,
@@ -26,10 +27,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   Form,
   FormControl,
@@ -44,37 +43,48 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTeamChat } from "@/context/team-chat-context";
 import type { TeamMember } from "@/context/team-chat-context";
-
+import { useEnterprise } from "@/context/enterprise-context";
+import type { Enterprise } from "@/types/enterprise";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function TeamManagementPage() {
     const { t, formatCurrency } = useLocale();
+    const router = useRouter();
+    const params = useParams();
+    const { enterprises, isLoading: isLoadingEnterprises } = useEnterprise();
+    const [enterprise, setEnterprise] = useState<Enterprise | null>(null);
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
     const { selectedMember, setSelectedMember } = useTeamChat();
     const { toast } = useToast();
 
+    const id = params.id as string;
+
+    useEffect(() => {
+        if (!isLoadingEnterprises && id) {
+            const foundEnterprise = enterprises.find(e => e.id === id);
+            setEnterprise(foundEnterprise || null);
+        }
+    }, [id, isLoadingEnterprises, enterprises]);
+    
     // Données de simulation
-    const teamMembers: TeamMember[] = [
-        { id: '1', name: "Alice Dupont", role: "Développeur", avatar: "https://images.unsplash.com/photo-1544717305-2782549b5136?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxldHVkaWFudHxlbnwwfHx8fDE3NTY1NjM2MzB8MA&ixlib=rb-4.1.0&q=80&w=1080", "data-ai-hint": "woman avatar" },
-        { id: '2', name: "Bob Martin", role: "Marketing", avatar: "https://images.unsplash.com/photo-1620477403960-4188fdd7cee0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyMHx8RCVDMyVBOXZlbG9wcGV1cnxlbnwwfHx8fDE3NTY1NjM1MDd8MA&ixlib=rb-4.1.0&q=80&w=1080", "data-ai-hint": "man avatar" },
-    ];
     const recentTransactions = [
         { id: "1", member: "Alice Dupont", description: "Licence logiciel", amount: 15000, type: "expense" },
         { id: "2", member: "Bob Martin", description: "Publicité Facebook", amount: 75000, type: "expense" },
         { id: "3", member: "Ocomstudio", description: "Paiement Client X", amount: 550000, type: "income" },
         { id: "4", member: "Alice Dupont", description: "Abonnement Cloud", amount: 25000, type: "expense" },
     ];
+    const totalIncome = 550000;
+    const totalExpenses = 115000;
+
 
     const addMemberSchema = z.object({
         email: z.string().email("Veuillez entrer une adresse e-mail valide."),
     });
-
     type AddMemberFormValues = z.infer<typeof addMemberSchema>;
 
     const form = useForm<AddMemberFormValues>({
         resolver: zodResolver(addMemberSchema),
-        defaultValues: {
-            email: "",
-        },
+        defaultValues: { email: "" },
     });
     
     const onAddMemberSubmit = (data: AddMemberFormValues) => {
@@ -94,7 +104,44 @@ export default function TeamManagementPage() {
             setSelectedMember(member);
         }
     };
+    
+    if (isLoadingEnterprises) {
+        return (
+            <div className="space-y-6">
+                <Skeleton className="h-10 w-1/3" />
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <Skeleton className="h-24 w-full" />
+                    <Skeleton className="h-24 w-full" />
+                    <Skeleton className="h-24 w-full" />
+                </div>
+                 <div className="grid gap-6 lg:grid-cols-3">
+                    <Skeleton className="lg:col-span-1 h-80 w-full" />
+                    <Skeleton className="lg:col-span-2 h-80 w-full" />
+                 </div>
+            </div>
+        )
+    }
 
+    if (!enterprise) {
+        return (
+             <div className="text-center">
+                <h2 className="text-2xl font-bold">Entreprise non trouvée</h2>
+                <p className="text-muted-foreground mt-2">L'entreprise que vous recherchez n'existe pas.</p>
+                <Button onClick={() => router.back()} className="mt-4">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Retour
+                </Button>
+            </div>
+        )
+    }
+
+    const teamMembers = enterprise.members.map(member => ({
+        id: member.uid,
+        name: member.name,
+        role: member.role,
+        avatar: "", // Placeholder, you might want to store this in Firestore
+        'data-ai-hint': "person avatar"
+    }));
 
     return (
         <div className="space-y-6">
@@ -105,7 +152,7 @@ export default function TeamManagementPage() {
                 </Link>
                 </Button>
                 <div className="flex-1">
-                    <h1 className="text-3xl font-bold font-headline">Ocomstudio - Dépenses</h1>
+                    <h1 className="text-3xl font-bold font-headline">{enterprise.name} - Dépenses</h1>
                     <p className="text-muted-foreground">Suivez et gérez les finances de votre équipe.</p>
                 </div>
             </div>
@@ -117,7 +164,7 @@ export default function TeamManagementPage() {
                         <TrendingUp className="h-4 w-4 text-green-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{formatCurrency(550000, 'XOF')}</div>
+                        <div className="text-2xl font-bold">{formatCurrency(totalIncome, 'XOF')}</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -126,7 +173,7 @@ export default function TeamManagementPage() {
                         <TrendingDown className="h-4 w-4 text-red-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{formatCurrency(115000, 'XOF')}</div>
+                        <div className="text-2xl font-bold">{formatCurrency(totalExpenses, 'XOF')}</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -135,7 +182,7 @@ export default function TeamManagementPage() {
                         <Users className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">2</div>
+                        <div className="text-2xl font-bold">{teamMembers.length}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -152,7 +199,7 @@ export default function TeamManagementPage() {
                     </CardHeader>
                     <CardContent className="space-y-1">
                         {teamMembers.map(member => (
-                             <div key={member.name} className="flex items-center gap-4">
+                             <div key={member.id} className="flex items-center gap-4">
                                 <Button
                                     variant="ghost"
                                     className={cn(
@@ -177,9 +224,9 @@ export default function TeamManagementPage() {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
-                                        <DropdownMenuItem>
-                                            <Trash2 className="mr-2 h-4 w-4 text-destructive" />
-                                            <span className="text-destructive">Retirer</span>
+                                        <DropdownMenuItem className="text-destructive">
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            <span>Retirer</span>
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -242,7 +289,6 @@ export default function TeamManagementPage() {
                                     <TableHead>Description</TableHead>
                                     <TableHead>Type</TableHead>
                                     <TableHead className="text-right">Montant</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -257,25 +303,6 @@ export default function TeamManagementPage() {
                                     </TableCell>
                                     <TableCell className={cn("text-right font-semibold", tx.type === 'income' ? 'text-green-500' : 'text-red-500')}>
                                         {formatCurrency(tx.amount, 'XOF')}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <MoreVertical className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                <DropdownMenuItem>
-                                                    <Edit className="mr-2 h-4 w-4" />
-                                                    Modifier
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem className="text-destructive">
-                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                    Supprimer
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
                                     </TableCell>
                                 </TableRow>
                                 ))}

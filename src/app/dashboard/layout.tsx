@@ -42,7 +42,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     return <div className="h-screen w-screen">{children}</div>;
   }
   
-  const showTeamChatPanel = pathname.startsWith('/dashboard/team/management');
+  const showTeamChatPanel = pathname.startsWith('/dashboard/entreprise/management');
   
   return (
     <div className={cn("grid h-screen w-full overflow-hidden", showTeamChatPanel ? "md:grid-cols-[250px_1fr_350px]" : "md:grid-cols-[250px_1fr_350px]")}>

@@ -69,7 +69,7 @@ function EnterpriseManagement() {
                     </CardHeader>
                     <CardContent className="flex items-center justify-between">
                         <Button asChild>
-                            <Link href="/dashboard/team/management">
+                            <Link href={`/dashboard/entreprise/management/${enterprise.id}`}>
                                 Gérer <ArrowRight className="ml-2 h-4 w-4"/>
                             </Link>
                         </Button>
