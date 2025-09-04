@@ -1,6 +1,7 @@
 // src/app/dashboard/layout.tsx
 "use client";
 
+import React from "react";
 import { usePathname } from "next/navigation";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { Logo } from "@/components/common/logo";
@@ -25,7 +26,6 @@ import { Badge } from "@/components/ui/badge";
 import { NotificationsProvider } from "@/context/notifications-context";
 import { AccountingProvider } from "@/context/accounting-context";
 import { InvoicingProvider } from "@/context/invoicing-context";
-import { TeamChat } from "@/components/dashboard/team/team-chat";
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
@@ -33,16 +33,15 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { unreadCount } = useNotifications();
 
-
   // Hide main layout for the full-screen scan page on mobile
   if (pathname.startsWith('/dashboard/scan-receipt')) {
     return <div className="h-screen w-screen">{children}</div>;
   }
   
-  const showTeamChat = pathname === '/dashboard/team/management';
+  const showRightPanel = pathname === '/dashboard/team/management';
   
   return (
-    <div className="grid h-screen w-full overflow-hidden md:grid-cols-[250px_1fr_350px]">
+    <div className={cn("grid h-screen w-full overflow-hidden", showRightPanel ? "md:grid-cols-[250px_1fr_350px]" : "md:grid-cols-[250px_1fr]")}>
       {/* Desktop Sidebar */}
       <aside className="hidden border-r bg-muted/40 md:flex flex-col gap-6 p-4">
         <div className="px-2">
@@ -85,10 +84,12 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       {/* Mobile Bottom Nav */}
       <BottomNav />
       
-      {/* Desktop AI Assistant or Team Chat */}
-      <aside id="conseil-panel-tutorial" className="hidden md:flex flex-col border-l bg-muted/40 h-screen">
-        {showTeamChat ? <TeamChat /> : <ConseilPanel />}
-      </aside>
+      {/* Conditionally render the right panel based on the route */}
+      {showRightPanel && (
+         <aside id="team-chat-panel" className="hidden md:flex flex-col border-l bg-muted/40 h-screen">
+           {/* The TeamChat component will now be rendered by the page */}
+         </aside>
+      )}
     </div>
   );
 }

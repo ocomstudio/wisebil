@@ -6,19 +6,37 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLocale } from "@/context/locale-context";
-import { Send, Phone, Video } from "lucide-react";
+import { Send, Phone, Video, MessageSquare } from "lucide-react";
 
+interface TeamMember {
+    name: string;
+    avatar: string;
+    'data-ai-hint': string;
+}
 
-export function TeamChat() {
+interface TeamChatProps {
+    selectedMember: TeamMember | null;
+}
+
+export function TeamChat({ selectedMember }: TeamChatProps) {
     const { t } = useLocale();
 
     // Données de simulation pour l'interface
-    const selectedMember = { name: "Alice Dupont", avatar: "https://images.unsplash.com/photo-1544717305-2782549b5136?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxldHVkaWFudHxlbnwwfHx8fDE3NTY1NjM2MzB8MA&ixlib=rb-4.1.0&q=80&w=1080", "data-ai-hint": "woman avatar" };
     const messages = [
         { from: "me", text: "Bonjour Alice, peux-tu me faire un point sur le dossier X ?" },
         { from: "other", text: "Bonjour ! Bien sûr, je vous envoie ça dans l'après-midi." },
         { from: "me", text: "Parfait, merci." },
     ];
+    
+    if (!selectedMember) {
+        return (
+            <div className="flex flex-col h-full items-center justify-center bg-background md:bg-transparent text-center p-4">
+                <MessageSquare className="h-16 w-16 text-muted-foreground mb-4" />
+                <h3 className="font-bold text-lg">Messagerie d'équipe</h3>
+                <p className="text-muted-foreground text-sm">Sélectionnez un membre de l'équipe pour démarrer une conversation.</p>
+            </div>
+        )
+    }
 
     return (
         <div className="flex flex-col h-full bg-background md:bg-transparent">
