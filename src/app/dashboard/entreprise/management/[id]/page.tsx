@@ -46,23 +46,26 @@ import type { TeamMember } from "@/context/team-chat-context";
 import { useEnterprise } from "@/context/enterprise-context";
 import type { Enterprise } from "@/types/enterprise";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTransactions } from "@/context/transactions-context";
 
 export default function TeamManagementPage() {
     const { t, formatCurrency } = useLocale();
     const router = useRouter();
     const params = useParams();
-    const { enterprises, isLoading: isLoadingEnterprises } = useEnterprise();
+    const { enterprises, isLoading: isLoadingEnterprises, sendInvitation } = useEnterprise();
     const [enterprise, setEnterprise] = useState<Enterprise | null>(null);
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
-    const { selectedMember, setSelectedMember } = useTeamChat();
+    const { setSelectedMember } = useTeamChat();
     const { toast } = useToast();
-
-    const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
-    const [totalIncome, setTotalIncome] = useState(0);
-    const [totalExpenses, setTotalExpenses] = useState(0);
-
-
+    
     const id = params.id as string;
+    
+    const { transactions, income, expenses, setContextId } = useTransactions(id);
+    
+    useEffect(() => {
+        setContextId(id);
+        return () => setContextId(null); // Reset on unmount
+    }, [id, setContextId]);
 
     useEffect(() => {
         if (!isLoadingEnterprises && id) {
@@ -73,29 +76,32 @@ export default function TeamManagementPage() {
     
     const addMemberSchema = z.object({
         email: z.string().email("Veuillez entrer une adresse e-mail valide."),
+        role: z.string().min(2, "Le rôle est requis."),
     });
     type AddMemberFormValues = z.infer<typeof addMemberSchema>;
 
     const form = useForm<AddMemberFormValues>({
         resolver: zodResolver(addMemberSchema),
-        defaultValues: { email: "" },
+        defaultValues: { email: "", role: "" },
     });
     
-    const onAddMemberSubmit = (data: AddMemberFormValues) => {
-        console.log("Inviting member:", data.email);
-        toast({
-            title: "Invitation envoyée",
-            description: `Une invitation a été envoyée à ${data.email}.`,
-        });
-        setIsAddMemberOpen(false);
-        form.reset();
-    };
+    const onAddMemberSubmit = async (data: AddMemberFormValues) => {
+        if (!enterprise) return;
 
-    const handleSelectMember = (member: TeamMember) => {
-        if (selectedMember && selectedMember.id === member.id) {
-            setSelectedMember(null); // Deselect if clicking the same member
-        } else {
-            setSelectedMember(member);
+        try {
+            await sendInvitation(enterprise.id, data.email, data.role);
+            toast({
+                title: "Invitation envoyée",
+                description: `Une invitation a été envoyée à ${data.email}.`,
+            });
+            setIsAddMemberOpen(false);
+            form.reset();
+        } catch (error: any) {
+             toast({
+                variant: "destructive",
+                title: "Erreur",
+                description: error.message || "Impossible d'envoyer l'invitation.",
+            });
         }
     };
     
@@ -158,7 +164,7 @@ export default function TeamManagementPage() {
                         <TrendingUp className="h-4 w-4 text-green-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{formatCurrency(totalIncome, 'XOF')}</div>
+                        <div className="text-2xl font-bold">{formatCurrency(income, 'XOF')}</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -167,7 +173,7 @@ export default function TeamManagementPage() {
                         <TrendingDown className="h-4 w-4 text-red-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{formatCurrency(totalExpenses, 'XOF')}</div>
+                        <div className="text-2xl font-bold">{formatCurrency(expenses, 'XOF')}</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -196,11 +202,8 @@ export default function TeamManagementPage() {
                              <div key={member.id} className="flex items-center gap-4">
                                 <Button
                                     variant="ghost"
-                                    className={cn(
-                                        "flex items-center gap-4 p-2 rounded-md w-full justify-start h-auto",
-                                        selectedMember?.id === member.id && "bg-muted"
-                                    )}
-                                    onClick={() => handleSelectMember(member)}
+                                    className="flex items-center gap-4 p-2 rounded-md w-full justify-start h-auto"
+                                    onClick={() => setSelectedMember(member)}
                                 >
                                     <Avatar>
                                         <AvatarImage src={member.avatar} data-ai-hint={member['data-ai-hint']} />
@@ -255,6 +258,19 @@ export default function TeamManagementPage() {
                                                 </FormItem>
                                             )}
                                         />
+                                         <FormField
+                                            control={form.control}
+                                            name="role"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Rôle du membre</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="Ex: Comptable" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
                                         <DialogFooter>
                                             <DialogClose asChild>
                                                 <Button type="button" variant="ghost">Annuler</Button>
@@ -272,8 +288,8 @@ export default function TeamManagementPage() {
                 </Card>
                 <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle>Transactions Récentes</CardTitle>
-                        <CardDescription>Les dernières transactions enregistrées par votre équipe.</CardDescription>
+                        <CardTitle>Transactions Récentes de l'Entreprise</CardTitle>
+                        <CardDescription>Les dernières transactions enregistrées pour cette entreprise.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
@@ -286,8 +302,8 @@ export default function TeamManagementPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {recentTransactions.length > 0 ? (
-                                    recentTransactions.map(tx => (
+                                {transactions.length > 0 ? (
+                                    transactions.map(tx => (
                                     <TableRow key={tx.id}>
                                         <TableCell className="font-medium">{tx.member}</TableCell>
                                         <TableCell>{tx.description}</TableCell>

@@ -23,7 +23,7 @@ export default function AccountingPage() {
       </div>
 
        <Tabs defaultValue="dashboard" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6">
            <TabsTrigger value="dashboard">
             Tableau de bord
           </TabsTrigger>
@@ -42,7 +42,7 @@ export default function AccountingPage() {
           <TabsTrigger value="chart-of-accounts">
             Plan Comptable
           </TabsTrigger>
-           <TabsTrigger value="balance">
+           <TabsTrigger value="balance" className="hidden">
             Balance
           </TabsTrigger>
         </TabsList>
