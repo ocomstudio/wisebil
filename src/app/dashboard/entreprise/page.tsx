@@ -25,16 +25,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useEnterprise } from "@/context/enterprise-context";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AccountingPage from "../accounting/page";
 
 
-export default function EntrepriseHubPage() {
+function EnterpriseManagement() {
   const { t } = useLocale();
   const { enterprises, deleteEnterprise, isLoading } = useEnterprise();
 
   return (
-     <div className="space-y-6">
+    <div className="space-y-6">
        <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold font-headline">Espace Entreprise</h1>
+        <h1 className="text-3xl font-bold font-headline">Vos Entreprises</h1>
         <Button asChild>
             <Link href="/dashboard/entreprise/create">
                 <PlusCircle className="mr-2 h-4 w-4" />
@@ -44,7 +46,7 @@ export default function EntrepriseHubPage() {
       </div>
       <Card>
         <CardHeader>
-            <CardTitle>Vos Entreprises</CardTitle>
+            <CardTitle>Liste des entreprises</CardTitle>
             <CardDescription>Sélectionnez une entreprise pour gérer son équipe et ses finances.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
@@ -129,5 +131,25 @@ export default function EntrepriseHubPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+
+export default function EntrepriseHubPage() {
+  const { t } = useLocale();
+
+  return (
+    <Tabs defaultValue="management" className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="management">Gestion d'Entreprise</TabsTrigger>
+        <TabsTrigger value="accounting">Comptabilité</TabsTrigger>
+      </TabsList>
+      <TabsContent value="management">
+        <EnterpriseManagement />
+      </TabsContent>
+      <TabsContent value="accounting">
+        <AccountingPage />
+      </TabsContent>
+    </Tabs>
   );
 }
