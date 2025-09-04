@@ -192,20 +192,6 @@ export default function DesktopLandingPage() {
         business: { XOF: 9900 },
     };
 
-    const conversionRates: Record<Currency, number> = {
-        XOF: 1,
-        EUR: 656, 
-        USD: 610,
-    };
-
-    const getConvertedPrice = (basePriceXOF: number, targetCurrency: Currency): number => {
-        if (targetCurrency === 'XOF') {
-            return basePriceXOF;
-        }
-        const rate = conversionRates[targetCurrency];
-        return Math.round(basePriceXOF / rate);
-    };
-
   return (
     <AuthProvider>
         <TooltipProvider>
@@ -346,7 +332,7 @@ export default function DesktopLandingPage() {
                             <Card className="flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/10 shadow-lg">
                                 <CardHeader className="pb-4">
                                     <CardTitle className="font-headline text-2xl">{t('plan_free_title')}</CardTitle>
-                                    <p className="text-4xl font-bold">{formatCurrency(0)} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
+                                    <p className="text-4xl font-bold">{formatCurrency(0, currency)} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
                                     <p className="text-muted-foreground text-sm pt-2">{t('plan_free_desc')}</p>
                                 </CardHeader>
                                 <CardContent className="flex-1 space-y-4">
@@ -374,7 +360,7 @@ export default function DesktopLandingPage() {
                                 <CardHeader className="pb-4">
                                     <p className="text-sm font-semibold text-primary">{t('plan_premium_badge')}</p>
                                     <CardTitle className="font-headline text-2xl">{t('plan_premium_title')}</CardTitle>
-                                    <p className="text-4xl font-bold">{formatCurrency(getConvertedPrice(pricing.premium.XOF, currency))} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
+                                    <p className="text-4xl font-bold">{formatCurrency(pricing.premium.XOF, 'XOF')} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
                                     <p className="text-muted-foreground text-sm pt-2">{t('plan_premium_desc')}</p>
                                 </CardHeader>
                                 <CardContent className="flex-1 space-y-4">
@@ -401,7 +387,7 @@ export default function DesktopLandingPage() {
                             <Card className="flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/10 shadow-lg">
                                 <CardHeader className="pb-4">
                                     <CardTitle className="font-headline text-2xl">{t('plan_business_title')}</CardTitle>
-                                    <p className="text-4xl font-bold">{formatCurrency(getConvertedPrice(pricing.business.XOF, currency))} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
+                                    <p className="text-4xl font-bold">{formatCurrency(pricing.business.XOF, 'XOF')} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
                                     <p className="text-muted-foreground text-sm pt-2">{t('plan_business_desc')}</p>
                                 </CardHeader>
                                 <CardContent className="flex-1 space-y-4">

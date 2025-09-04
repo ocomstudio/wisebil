@@ -15,12 +15,12 @@ import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 export type Language = 'fr' | 'en' | 'de' | 'es' | 'vi';
 export type Currency = 'XOF' | 'EUR' | 'USD' | 'VND';
 
-// Taux de conversion approximatifs par rapport à XOF
+// Taux de conversion approximatifs par rapport à USD (devise de base)
 const conversionRates: Record<Currency, number> = {
-    XOF: 1,
-    EUR: 655.957,
-    USD: 610,
-    VND: 0.024,
+    USD: 1,
+    EUR: 0.93,    // 1 USD = 0.93 EUR
+    XOF: 610,     // 1 USD = 610 XOF
+    VND: 25450,   // 1 USD = 25450 VND
 };
 
 
@@ -31,7 +31,7 @@ interface LocaleContextType {
   setCurrency: (currency: Currency) => void;
   t: (key: string, options?: { [key: string]: string | number }) => string;
   formatCurrency: (amount: number, fromCurrency?: Currency) => string;
-  getConvertedAmount: (amount: number, fromCurrency?: Currency) => number;
+  getConvertedAmount: (amount: number, fromCurrency?: Currency, toCurrency?: Currency) => number;
   formatDate: (dateString: string) => string;
   getCategoryName: (key: string) => string;
 }
@@ -97,6 +97,10 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
                         const { language, currency } = docSnap.data().preferences;
                         if (language) setLocaleState(language);
                         if (currency) setCurrencyState(currency);
+                    } else if (!docSnap.exists() || !docSnap.data().preferences) {
+                       // If user exists but has no preferences, set default
+                       setLocaleState('en');
+                       setCurrencyState('USD');
                     }
                     setIsLoaded(true);
                 }, () => {
@@ -165,17 +169,19 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
     return t(`category_${key.toLowerCase().replace(/ /g, '_')}`);
   }, [t]);
 
-  const getConvertedAmount = useCallback((amount: number, fromCurrency: Currency = 'XOF') => {
-    if (fromCurrency === currency) {
-      return amount;
-    }
-    // Convert amount from 'fromCurrency' to XOF (base), then to target currency
-    const amountInXOF = amount * conversionRates[fromCurrency];
-    return amountInXOF / conversionRates[currency];
+  const getConvertedAmount = useCallback((amount: number, fromCurrency: Currency = 'XOF', toCurrency?: Currency) => {
+    const targetCurrency = toCurrency || currency;
+    
+    // Convert amount from 'fromCurrency' to USD (base currency)
+    const amountInUSD = amount / conversionRates[fromCurrency];
+    
+    // Convert amount from USD to the target currency
+    return amountInUSD * conversionRates[targetCurrency];
+
   }, [currency]);
   
   const formatCurrency = useCallback((amount: number, fromCurrency: Currency = 'XOF') => {
-    const convertedAmount = getConvertedAmount(amount, fromCurrency);
+    const convertedAmount = getConvertedAmount(amount, fromCurrency, currency);
     
     const options: Intl.NumberFormatOptions = {
       style: 'currency',
@@ -186,7 +192,7 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
 
     // Special formatting for XOF to place the symbol after the number.
     if (currency === 'XOF') {
-      return `${convertedAmount.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} FCFA`;
+      return `${Math.round(convertedAmount).toLocaleString('fr-FR')} FCFA`;
     }
 
     return new Intl.NumberFormat(locale, options).format(convertedAmount);
