@@ -1,14 +1,6 @@
 // src/app/dashboard/accounting/page.tsx
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Briefcase, Construction } from "lucide-react";
-import Link from "next/link";
-import { useLocale } from "@/context/locale-context";
-
-// Note: The original accounting page content is commented out below to be easily restored later.
-/*
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartOfAccounts } from "@/components/dashboard/accounting/chart-of-accounts";
 import { JournalEntries } from "@/components/dashboard/accounting/journal-entries";
@@ -18,44 +10,13 @@ import { useAccounting } from "@/context/accounting-context";
 import { AccountingDashboard } from "@/components/dashboard/accounting/accounting-dashboard";
 import InvoicingPage from "./invoicing/page";
 import { IncomeStatement } from "@/components/dashboard/accounting/income-statement";
-*/
+import { useLocale } from "@/context/locale-context";
 
 export default function AccountingPage() {
   const { t } = useLocale();
-
-  /*
   const { entries, addEntry } = useAccounting();
-  */
 
   return (
-     <div className="flex items-center justify-center h-full pt-10 md:pt-0">
-      <Card className="w-full max-w-lg text-center shadow-xl">
-        <CardHeader>
-          <div className="mx-auto bg-secondary p-4 rounded-full mb-4 w-fit">
-            <Briefcase className="h-12 w-12 text-muted-foreground" />
-          </div>
-          <CardTitle className="font-headline">{t('coming_soon_title')}</CardTitle>
-          <CardDescription>
-            Le module complet de comptabilité et de facturation est en cours de finalisation.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-            <p className="text-sm text-muted-foreground">
-                Nous travaillons d'arrache-pied pour vous apporter des outils puissants pour gérer votre comptabilité comme un pro. Merci pour votre patience !
-            </p>
-             <div className="flex justify-center">
-                 <Button asChild variant="outline">
-                    <Link href="/dashboard/entreprise">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Retour à l'Espace Entreprise
-                    </Link>
-                </Button>
-            </div>
-        </CardContent>
-      </Card>
-    </div>
-    
-    /*
     <div className="space-y-6">
        <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold font-headline">Comptabilité</h1>
@@ -109,6 +70,5 @@ export default function AccountingPage() {
         </TabsContent>
       </Tabs>
     </div>
-    */
   );
 }
