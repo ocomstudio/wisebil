@@ -2,21 +2,15 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
+import type { Enterprise } from '@/types/enterprise';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot } from 'firebase/firestore';
 
-export interface Enterprise {
-    id: string;
-    name: string;
-    description: string;
-    ownerId: string;
-}
-
 interface EnterpriseContextType {
   enterprises: Enterprise[];
-  addEnterprise: (enterprise: Enterprise) => Promise<void>;
+  addEnterprise: (enterprise: Omit<Enterprise, 'ownerId' | 'members'>, ownerRole: string) => Promise<void>;
   deleteEnterprise: (id: string) => Promise<void>;
   isLoading: boolean;
 }
@@ -63,14 +57,26 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, [user, getUserDocRef]);
 
-  const addEnterprise = useCallback(async (enterprise: Enterprise) => {
+  const addEnterprise = useCallback(async (enterpriseData: Omit<Enterprise, 'ownerId' | 'members'>, ownerRole: string) => {
     const userDocRef = getUserDocRef();
-    if (!userDocRef || !user) return;
+    if (!userDocRef || !user || !user.email || !user.displayName) return;
     
-    const enterpriseWithOwner = { ...enterprise, ownerId: user.uid };
+    const newEnterprise: Enterprise = {
+        ...enterpriseData,
+        ownerId: user.uid,
+        members: [
+            {
+                uid: user.uid,
+                email: user.email,
+                name: user.displayName,
+                role: ownerRole,
+                type: 'owner'
+            }
+        ]
+    };
 
     try {
-      await setDoc(userDocRef, { enterprises: arrayUnion(enterpriseWithOwner) }, { merge: true });
+      await setDoc(userDocRef, { enterprises: arrayUnion(newEnterprise) }, { merge: true });
     } catch(e) {
       console.error("Failed to add enterprise to Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to save enterprise." });

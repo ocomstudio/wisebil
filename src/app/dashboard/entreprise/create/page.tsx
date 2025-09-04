@@ -10,7 +10,7 @@ import Link from "next/link";
 import { v4 as uuidv4 } from "uuid";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -21,16 +21,20 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, Building, User, Mail, Phone, Lock } from "lucide-react";
 import { useLocale } from "@/context/locale-context";
 import { useEnterprise } from "@/context/enterprise-context";
+import { useAuth } from "@/context/auth-context";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function CreateEnterprisePage() {
   const { t } = useLocale();
+  const { user } = useAuth();
   
   const enterpriseSchema = z.object({
-    name: z.string().min(3, "Le nom de l'entreprise est requis."),
+    name: z.string().min(2, "Le nom de l'entreprise est requis (2 caractères min)."),
     description: z.string().optional(),
+    ownerRole: z.string().min(2, "Votre rôle est requis (2 caractères min)."),
   });
 
   type EnterpriseFormValues = z.infer<typeof enterpriseSchema>;
@@ -45,6 +49,7 @@ export default function CreateEnterprisePage() {
     defaultValues: {
       name: "",
       description: "",
+      ownerRole: "",
     },
   });
 
@@ -55,8 +60,8 @@ export default function CreateEnterprisePage() {
         id: uuidv4(),
         name: data.name,
         description: data.description || "",
-        ownerId: "" // This would be set by the auth context in a real app
-      });
+      }, data.ownerRole);
+
       toast({
         title: "Entreprise créée",
         description: `L'entreprise "${data.name}" a été créée avec succès.`,
@@ -69,6 +74,7 @@ export default function CreateEnterprisePage() {
         title: "Erreur",
         description: "Impossible de créer l'entreprise.",
       });
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -83,9 +89,17 @@ export default function CreateEnterprisePage() {
         </Button>
         <h1 className="text-3xl font-bold font-headline">Créer une nouvelle entreprise</h1>
       </div>
-      <Card className="shadow-xl max-w-lg mx-auto">
+      <Card className="shadow-xl max-w-2xl mx-auto border-primary/20">
         <CardHeader>
-            <CardTitle>Détails de l'entreprise</CardTitle>
+            <div className="flex items-center gap-4">
+                <div className="bg-primary/10 p-3 rounded-lg">
+                    <Building className="h-8 w-8 text-primary"/>
+                </div>
+                <div>
+                    <CardTitle>Détails de l'entreprise</CardTitle>
+                    <CardDescription>Renseignez les informations de base pour commencer.</CardDescription>
+                </div>
+            </div>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -110,16 +124,70 @@ export default function CreateEnterprisePage() {
                   <FormItem>
                     <FormLabel>Description (Facultatif)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Agence de communication et d'innovation" {...field} />
+                      <Textarea placeholder="Agence de communication et d'innovation technologique..." {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Créer l'entreprise
-              </Button>
+
+              <div className="border-t pt-6 space-y-4">
+                 <h3 className="text-lg font-semibold text-muted-foreground">Vos informations de propriétaire</h3>
+                 <FormField
+                    control={form.control}
+                    name="ownerRole"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Votre Rôle / Poste</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input placeholder="Ex: Directeur Général" {...field} className="pl-10" />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                 <div className="grid sm:grid-cols-2 gap-4">
+                    <FormItem>
+                        <FormLabel>Nom complet</FormLabel>
+                         <div className="relative">
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input value={user?.displayName || ''} disabled className="pl-10"/>
+                        </div>
+                    </FormItem>
+                    <FormItem>
+                        <FormLabel>Adresse E-mail</FormLabel>
+                         <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input value={user?.email || ''} disabled className="pl-10"/>
+                        </div>
+                    </FormItem>
+                     <FormItem>
+                        <FormLabel>Numéro de téléphone</FormLabel>
+                         <div className="relative">
+                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input value={user?.phone || ''} disabled className="pl-10"/>
+                        </div>
+                    </FormItem>
+                     <FormItem>
+                        <FormLabel>Mot de passe du compte</FormLabel>
+                         <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input value="********" type="password" disabled className="pl-10"/>
+                        </div>
+                    </FormItem>
+                 </div>
+              </div>
+
+
+              <div className="flex justify-end pt-4">
+                <Button type="submit" size="lg" disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Créer l'entreprise
+                </Button>
+              </div>
             </form>
           </Form>
         </CardContent>
