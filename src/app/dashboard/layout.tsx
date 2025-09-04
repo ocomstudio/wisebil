@@ -1,7 +1,7 @@
 // src/app/dashboard/layout.tsx
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { usePathname } from "next/navigation";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { Logo } from "@/components/common/logo";
@@ -27,6 +27,8 @@ import { NotificationsProvider } from "@/context/notifications-context";
 import { AccountingProvider } from "@/context/accounting-context";
 import { InvoicingProvider } from "@/context/invoicing-context";
 import { cn } from "@/lib/utils";
+import { TeamChatProvider } from "@/context/team-chat-context";
+import { TeamChat } from "@/components/dashboard/team/team-chat";
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
@@ -39,10 +41,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     return <div className="h-screen w-screen">{children}</div>;
   }
   
-  const showRightPanel = !pathname.startsWith('/dashboard/team/management');
+  const showTeamChatPanel = pathname.startsWith('/dashboard/team/management');
   
   return (
-    <div className={cn("grid h-screen w-full overflow-hidden", showRightPanel ? "md:grid-cols-[250px_1fr_350px]" : "md:grid-cols-[250px_1fr]")}>
+    <div className={cn("grid h-screen w-full overflow-hidden", showTeamChatPanel ? "md:grid-cols-[250px_1fr_350px]" : "md:grid-cols-[250px_1fr]")}>
       {/* Desktop Sidebar */}
       <aside className="hidden border-r bg-muted/40 md:flex flex-col gap-6 p-4">
         <div className="px-2">
@@ -85,12 +87,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       {/* Mobile Bottom Nav */}
       <BottomNav />
       
-      {/* Conditionally render the right panel based on the route */}
-      {showRightPanel && (
-         <aside id="conseil-panel-tutorial" className="hidden md:flex flex-col border-l bg-muted/40 h-screen">
-            <ConseilPanel />
-        </aside>
-      )}
+      {/* Right Panel: Conditional rendering of TeamChat or ConseilPanel */}
+      <aside className="hidden md:flex flex-col border-l bg-muted/40 h-screen">
+          {showTeamChatPanel ? <TeamChat /> : <ConseilPanel />}
+      </aside>
     </div>
   );
 }
@@ -112,7 +112,9 @@ export default function DashboardLayout({
                       <AccountingProvider>
                         <InvoicingProvider>
                           <TutorialProvider>
-                            <DashboardLayoutContent>{children}</DashboardLayoutContent>
+                            <TeamChatProvider>
+                              <DashboardLayoutContent>{children}</DashboardLayoutContent>
+                            </TeamChatProvider>
                           </TutorialProvider>
                         </InvoicingProvider>
                       </AccountingProvider>

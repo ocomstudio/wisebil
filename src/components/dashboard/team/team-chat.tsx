@@ -7,19 +7,12 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLocale } from "@/context/locale-context";
 import { Send, Phone, Video, MessageSquare } from "lucide-react";
+import { useTeamChat } from "@/context/team-chat-context";
 
-interface TeamMember {
-    name: string;
-    avatar: string;
-    'data-ai-hint': string;
-}
 
-interface TeamChatProps {
-    selectedMember: TeamMember | null;
-}
-
-export function TeamChat({ selectedMember }: TeamChatProps) {
+export function TeamChat() {
     const { t } = useLocale();
+    const { selectedMember } = useTeamChat();
 
     // Données de simulation pour l'interface
     const messages = [
