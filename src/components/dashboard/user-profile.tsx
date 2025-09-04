@@ -83,7 +83,7 @@ export function UserProfile() {
                   )}
              </Link>
           </DropdownMenuItem>
-           <DropdownMenuItem asChild>
+           <DropdownMenuItem asChild className="md:hidden">
             <Link href="/dashboard/entreprise">
               <Building className="mr-2 h-4 w-4" />
               <span>Entreprise</span>
