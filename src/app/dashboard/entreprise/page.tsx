@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Briefcase, ArrowRight } from "lucide-react";
+import { Briefcase, ArrowRight, Users } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "@/context/locale-context";
 
@@ -32,6 +32,27 @@ export default function EntreprisePage() {
             <Button asChild>
                 <Link href="/dashboard/accounting">
                     Ouvrir la comptabilité <ArrowRight className="ml-2 h-4 w-4"/>
+                </Link>
+            </Button>
+          </CardContent>
+        </Card>
+        
+        <Card className="hover:border-primary/50 hover:shadow-xl transition-all">
+          <CardHeader>
+            <div className="mb-4 flex justify-center">
+                <div className="p-4 bg-primary/10 rounded-full">
+                    <Users className="h-8 w-8 text-primary"/>
+                </div>
+            </div>
+            <CardTitle className="text-center">Gestion d'équipe</CardTitle>
+            <CardDescription className="text-center">
+              Invitez vos collaborateurs, suivez les dépenses et gérez votre équipe.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <Button asChild>
+                <Link href="/dashboard/team">
+                    Gérer l'équipe <ArrowRight className="ml-2 h-4 w-4"/>
                 </Link>
             </Button>
           </CardContent>
