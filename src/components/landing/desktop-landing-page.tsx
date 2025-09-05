@@ -107,48 +107,48 @@ export default function DesktopLandingPage() {
     const features = [
         {
             icon: <Bot className="h-8 w-8 text-primary" />,
-            title: "Conseiller Financier IA",
-            description: "Recevez des analyses, des prévisions et des conseils personnalisés pour optimiser vos finances comme jamais auparavant.",
+            title: t('feature1_title'),
+            description: t('feature1_desc'),
         },
         {
             icon: <Zap className="h-8 w-8 text-primary" />,
-            title: "Saisie Automatisée 'Agent W'",
-            description: "Dictez vos opérations ou scannez un reçu. Notre IA extrait, classe et enregistre toutes les informations pour vous en quelques secondes.",
+            title: t('feature2_title'),
+            description: t('feature2_desc'),
         },
         {
             icon: <FileText className="h-8 w-8 text-primary" />,
-            title: "Facturation Professionnelle",
-            description: "Créez, personnalisez et suivez des factures pour vos clients. Simplifiez votre flux de travail et soyez payé plus rapidement.",
+            title: t('feature3_title'),
+            description: t('feature3_desc'),
         },
         {
             icon: <Scale className="h-8 w-8 text-primary" />,
-            title: "Comptabilité Conforme (SYSCOHADA)",
-            description: "Gérez votre plan comptable, enregistrez vos écritures et générez vos états financiers sans effort, idéal pour les freelances et PME.",
+            title: t('feature4_title'),
+            description: t('feature4_desc'),
         },
         {
             icon: <Target className="h-8 w-8 text-primary" />,
-            title: "Budgets Flexibles",
-            description: "Définissez des limites de dépenses par catégorie et suivez votre progression en temps réel pour ne jamais dépasser vos prévisions.",
+            title: t('feature5_title'),
+            description: t('feature5_desc'),
         },
         {
             icon: <PiggyBank className="h-8 w-8 text-primary" />,
-            title: "Objectifs d'Épargne Intelligents",
-            description: "Planifiez vos projets futurs, suivez vos progrès et restez motivé pour atteindre vos rêves, qu'il s'agisse d'un voyage ou d'un apport.",
+            title: t('feature6_title'),
+            description: t('feature6_desc'),
         },
         {
             icon: <BarChart className="h-8 w-8 text-primary" />,
-            title: "Rapports Visuels Clairs",
-            description: "Visualisez où va votre argent grâce à des graphiques simples et des rapports détaillés. Prenez des décisions basées sur des données, pas sur des suppositions.",
+            title: t('feature7_title'),
+            description: t('feature7_desc'),
         },
         {
             icon: <Shield className="h-8 w-8 text-primary" />,
-            title: "Sécurité de Niveau Bancaire",
-            description: "Vos données sont protégées par un cryptage AES-256. Votre vie privée est notre priorité absolue et ne sera jamais compromise.",
+            title: t('feature8_title'),
+            description: t('feature8_desc'),
         },
         {
             icon: <Globe className="h-8 w-8 text-primary" />,
-            title: "Vision Multi-Devises",
-            description: "Gérez vos finances dans la devise de votre choix (XOF, EUR, USD, etc.). Idéal pour ceux qui travaillent à l'international ou voyagent.",
+            title: t('feature9_title'),
+            description: t('feature9_desc'),
         }
     ];
 
@@ -163,8 +163,8 @@ export default function DesktopLandingPage() {
         },
         {
             name: "Elhadj N.",
-            role: "Entrepreneur & Freelance",
-            quote: "L'ajout de la comptabilité et de la facturation change la donne. Je peux maintenant gérer toute ma petite entreprise depuis une seule application. C'est incroyable.",
+            role: t('testimonial2_role'),
+            quote: t('testimonial2_quote'),
             rating: 5,
             avatar: "https://images.unsplash.com/photo-1620477403960-4188fdd7cee0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyMHx8RCVDMyVBOXZlbG9wcGV1cnxlbnwwfHx8fDE3NTY1NjM1MDd8MA&ixlib=rb-4.1.0&q=80&w=1080",
             "data-ai-hint": "man avatar"
@@ -181,8 +181,8 @@ export default function DesktopLandingPage() {
 
     const faqs = [
         {
-            question: "Est-ce que la comptabilité est conforme au plan SYSCOHADA ?",
-            answer: "Oui, notre module de comptabilité est basé sur le plan comptable SYSCOHADA révisé, ce qui le rend parfaitement adapté pour les entreprises en Afrique de l'Ouest et Centrale."
+            question: t('faq_accounting_q'),
+            answer: t('faq_accounting_a')
         },
         {
             question: t('faq1_q'),
@@ -193,8 +193,8 @@ export default function DesktopLandingPage() {
             answer: t('faq2_a')
         },
         {
-            question: "Puis-je utiliser Wisebil pour mon activité de freelance ?",
-            answer: "Absolument ! Wisebil est l'outil parfait pour les freelances. Vous pouvez suivre vos finances personnelles, et en même temps gérer la facturation et la comptabilité de votre activité professionnelle, le tout au même endroit."
+            question: t('faq_freelance_q'),
+            answer: t('faq_freelance_a')
         },
         {
             question: t('faq5_q'),

@@ -252,7 +252,6 @@
     "add_expense_button": "Ajouter la dépense",
     "income_added_title": "Revenu ajouté",
     "income_added_desc": "Le revenu \"{{incomeDesc}}\" a été ajouté avec succès.",
-    "error_title": "Erreur",
     "income_add_error_desc": "Impossible d'ajouter le revenu. Veuillez réessayer.",
     "add_income_page_title": "Ajouter un revenu",
     "add_income_button": "Ajouter le revenu",
