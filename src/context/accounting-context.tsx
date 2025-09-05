@@ -1,7 +1,7 @@
 // src/context/accounting-context.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo } from 'react';
 import type { JournalEntry } from '@/components/dashboard/accounting/journal-entries';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './auth-context';
