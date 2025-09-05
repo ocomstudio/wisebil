@@ -45,19 +45,14 @@ function getCroppedImg(
   const scaleX = image.naturalWidth / image.width;
   const scaleY = image.naturalHeight / image.height;
   
-  const cropX = crop.x * scaleX;
-  const cropY = crop.y * scaleY;
+  canvas.width = crop.width * scaleX;
+  canvas.height = crop.height * scaleY;
   
-  const cropWidth = crop.width * scaleX;
-  const cropHeight = crop.height * scaleY;
-  
-  canvas.width = cropWidth;
-  canvas.height = cropHeight;
-  
-  ctx.translate(cropWidth / 2, cropHeight / 2);
+  ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate((rotate * Math.PI) / 180);
-  ctx.translate(-image.naturalWidth/2, -image.naturalHeight/2);
-
+  ctx.scale(scale, scale);
+  ctx.translate(-image.naturalWidth / 2, -image.naturalHeight / 2);
+  
   ctx.drawImage(
     image,
     0,
@@ -66,20 +61,8 @@ function getCroppedImg(
     image.naturalHeight
   );
 
-  const data = ctx.getImageData(
-    cropX,
-    cropY,
-    cropWidth,
-    cropHeight
-  );
-
-  canvas.width = cropWidth;
-  canvas.height = cropHeight;
-  
-  ctx.putImageData(data,0,0);
-
-
   return new Promise((resolve) => {
+    // Convert canvas to a data URL and resolve the promise.
     resolve(canvas.toDataURL('image/jpeg', 0.9));
   });
 }
