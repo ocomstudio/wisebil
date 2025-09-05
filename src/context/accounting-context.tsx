@@ -1,4 +1,3 @@
-
 // src/context/accounting-context.tsx
 "use client";
 
@@ -8,6 +7,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField, onSnapshot } from 'firebase/firestore';
+import { useUserData } from './user-context';
+
 
 interface AccountingContextType {
   entries: JournalEntry[];
@@ -19,63 +20,41 @@ interface AccountingContextType {
 const AccountingContext = createContext<AccountingContextType | undefined>(undefined);
 
 export const AccountingProvider = ({ children }: { children: ReactNode }) => {
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { userData, isLoading: isUserDataLoading } = useUserData();
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  const entries = useMemo(() => {
+    if (!userData || !userData.journalEntries) return [];
+    // Ensure date objects are correctly parsed if they are stored as Timestamps
+    return userData.journalEntries.map((e: any) => ({
+      ...e,
+      date: e.date?.toDate ? e.date.toDate() : new Date(e.date),
+    }));
+  }, [userData]);
 
   const getUserDocRef = useCallback(() => {
     if (!user) return null;
     return doc(db, 'users', user.uid);
   }, [user]);
-
-  useEffect(() => {
-    if (!user) {
-      setEntries([]);
-      setIsLoading(false);
-      return;
-    }
-
-    const userDocRef = getUserDocRef();
-    if (!userDocRef) {
-        setIsLoading(false);
-        return;
-    }
-
-    setIsLoading(true);
-    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
-      if (docSnap.exists() && docSnap.data().journalEntries) {
-        const entriesWithDates = docSnap.data().journalEntries.map((e: any) => ({
-          ...e,
-          date: e.date.toDate(),
-        }));
-        setEntries(entriesWithDates);
-      } else {
-        setEntries([]);
-      }
-      setIsLoading(false);
-    }, (error) => {
-      console.error("Failed to listen to journal entries from Firestore", error);
-      setIsLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [user, getUserDocRef]);
-
+  
   const addEntry = useCallback(async (newEntries: JournalEntry[]) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) return;
     
-    try {
-      const updatedEntries = [...entries, ...newEntries];
-      await setDoc(userDocRef, { journalEntries: updatedEntries }, { merge: true });
+    // Convert Date objects to Firestore Timestamps for storage
+    const entriesToStore = newEntries.map(e => ({ ...e, date: e.date }));
 
+    try {
+      await updateDoc(userDocRef, { 
+        journalEntries: arrayUnion(...entriesToStore) 
+      });
     } catch(e) {
-      console.error("Failed to add journal entries to Firestore", e);
-      toast({ variant: "destructive", title: "Error", description: "Failed to save journal entries." });
-      throw e;
+       console.error("Failed to add journal entries to Firestore", e);
+       toast({ variant: "destructive", title: "Error", description: "Failed to save journal entries." });
+       throw e;
     }
-  }, [entries, getUserDocRef, toast]);
+  }, [getUserDocRef, toast]);
 
   const resetEntries = async () => {
     const userDocRef = getUserDocRef();
@@ -89,7 +68,7 @@ export const AccountingProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AccountingContext.Provider value={{ entries, addEntry, resetEntries, isLoading }}>
+    <AccountingContext.Provider value={{ entries, addEntry, resetEntries, isLoading: isUserDataLoading }}>
       {children}
     </AccountingContext.Provider>
   );

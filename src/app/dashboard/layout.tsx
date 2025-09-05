@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { TeamChatProvider } from "@/context/team-chat-context";
 import { TeamChat } from "@/components/dashboard/team/team-chat";
 import { EnterpriseProvider } from "@/context/enterprise-context";
+import { UserDataProvider } from "@/context/user-context";
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
@@ -104,35 +105,37 @@ export default function DashboardLayout({
   return (
     <AuthProvider>
       <ProtectedRoute>
-        <LocaleProvider>
-          <SettingsProvider>
-            <TransactionsProvider>
-              <EnterpriseProvider>
-                <BudgetProvider>
-                  <SavingsProvider>
-                    <NotificationsProvider>
-                      <AccountingProvider>
-                        <InvoicingProvider>
-                          <TutorialProvider>
-                            <TeamChatProvider>
-                              <DashboardLayoutContent>{children}</DashboardLayoutContent>
-                            </TeamChatProvider>
-                          </TutorialProvider>
-                        </InvoicingProvider>
-                      </AccountingProvider>
-                    </NotificationsProvider>
-                    <HotToaster
-                      position="top-center"
-                      toastOptions={{
-                        className: 'bg-card text-card-foreground',
-                      }}
-                    />
-                  </SavingsProvider>
-                </BudgetProvider>
-              </EnterpriseProvider>
-            </TransactionsProvider>
-          </SettingsProvider>
-        </LocaleProvider>
+        <UserDataProvider>
+          <LocaleProvider>
+            <SettingsProvider>
+              <TransactionsProvider>
+                <EnterpriseProvider>
+                  <BudgetProvider>
+                    <SavingsProvider>
+                      <NotificationsProvider>
+                        <AccountingProvider>
+                          <InvoicingProvider>
+                            <TutorialProvider>
+                              <TeamChatProvider>
+                                <DashboardLayoutContent>{children}</DashboardLayoutContent>
+                              </TeamChatProvider>
+                            </TutorialProvider>
+                          </InvoicingProvider>
+                        </AccountingProvider>
+                      </NotificationsProvider>
+                      <HotToaster
+                        position="top-center"
+                        toastOptions={{
+                          className: 'bg-card text-card-foreground',
+                        }}
+                      />
+                    </SavingsProvider>
+                  </BudgetProvider>
+                </EnterpriseProvider>
+              </TransactionsProvider>
+            </SettingsProvider>
+          </LocaleProvider>
+        </UserDataProvider>
       </ProtectedRoute>
     </AuthProvider>
   );

@@ -1,11 +1,12 @@
-
 // src/context/settings-context.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo } from 'react';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, updateDoc } from 'firebase/firestore';
+import { useUserData } from './user-context';
+
 
 interface Settings {
   isBalanceHidden: boolean;
@@ -21,58 +22,36 @@ interface SettingsContextType {
   setIsTemporarilyVisible: (visible: boolean) => void;
 }
 
+const defaultSettings: Settings = {
+  isBalanceHidden: false,
+  isPinLockEnabled: false,
+  pin: null,
+};
+
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
-  const [settings, setSettings] = useState<Settings>({
-    isBalanceHidden: false,
-    isPinLockEnabled: false,
-    pin: null,
-  });
+  const { userData } = useUserData();
   const [isTemporarilyVisible, setIsTemporarilyVisible] = useState(false);
   const { user } = useAuth();
+
+  const settings = useMemo(() => userData?.settings || defaultSettings, [userData]);
 
   const getUserDocRef = useCallback(() => {
     if (!user) return null;
     return doc(db, 'users', user.uid);
   }, [user]);
 
-  useEffect(() => {
-    if (!user) {
-      // Reset to default if user logs out
-      setSettings({ isBalanceHidden: false, isPinLockEnabled: false, pin: null });
-      return;
-    }
-
-    const userDocRef = getUserDocRef();
-    if (!userDocRef) return;
-
-    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
-      if (docSnap.exists() && docSnap.data().settings) {
-        setSettings(docSnap.data().settings);
-      } else {
-        // Initialize with default settings in Firestore if none exist
-        setDoc(userDocRef, { settings }, { merge: true });
-      }
-    });
-
-    return () => unsubscribe();
-  }, [user, getUserDocRef]);
-
-
   const updateSettings = useCallback(async (newSettings: Partial<Settings>) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) return;
     
     const updatedSettings = { ...settings, ...newSettings };
-    // Optimistically update local state
-    setSettings(updatedSettings);
-
+    
     try {
-        await setDoc(userDocRef, { settings: updatedSettings }, { merge: true });
+        await updateDoc(userDocRef, { settings: updatedSettings });
     } catch(e) {
         console.error("Failed to update settings in Firestore", e);
-        // Optionally revert local state or show an error
     }
   }, [settings, getUserDocRef]);
 
@@ -94,5 +73,3 @@ export const useSettings = () => {
   }
   return context;
 };
-
-    

@@ -8,6 +8,7 @@ import { useLocale } from './locale-context';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField, onSnapshot, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
+import { useUserData } from './user-context';
 
 interface TransactionsContextType {
   transactions: Transaction[];
@@ -25,49 +26,22 @@ interface TransactionsContextType {
 const TransactionsContext = createContext<TransactionsContextType | undefined>(undefined);
 
 export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { userData, isLoading: isUserDataLoading } = useUserData();
   const { toast } = useToast();
   const { t } = useLocale();
   const { user } = useAuth();
+  
+  const transactions = useMemo(() => {
+    if (!userData || !userData.transactions) return [];
+    return userData.transactions.sort((a: Transaction, b: Transaction) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [userData]);
+
 
   const getUserDocRef = useCallback(() => {
     if (!user) return null;
     return doc(db, 'users', user.uid);
   }, [user]);
-
-  useEffect(() => {
-    if (!user) {
-      setTransactions([]);
-      setIsLoading(false);
-      return;
-    }
-
-    const docRef = getUserDocRef();
-    if (!docRef) {
-      setTransactions([]);
-      setIsLoading(false);
-      return;
-    }
-    
-    setIsLoading(true);
-    const unsubscribe = onSnapshot(docRef, (docSnap) => {
-      if (docSnap.exists() && docSnap.data().transactions) {
-        const sortedTransactions = docSnap.data().transactions.sort((a: Transaction, b: Transaction) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        setTransactions(sortedTransactions);
-      } else {
-        setTransactions([]);
-      }
-      setIsLoading(false);
-    }, (error) => {
-      console.error("Failed to listen to transactions from Firestore", error);
-      toast({ variant: "destructive", title: t('error_title'), description: "Failed to load transactions." });
-      setIsLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [user, getUserDocRef, toast, t]);
-
+  
   const addTransaction = useCallback(async (transaction: Transaction) => {
     const docRef = getUserDocRef();
     if (!docRef) return;
@@ -75,7 +49,7 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
     try {
       await updateDoc(docRef, { transactions: arrayUnion(transaction) });
     } catch(error: any) {
-       if (error.code === 'not-found' || error.message.includes('No document to update')) {
+       if (error.code === 'not-found' || error.message.includes('No document to update') || (error.code === 'invalid-argument' && error.message.includes("does not exist"))) {
            await setDoc(docRef, { transactions: [transaction] }, { merge: true });
        } else {
            console.error("Failed to add transaction to Firestore", error);
@@ -174,7 +148,7 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
         balance, 
         income, 
         expenses,
-        isLoading
+        isLoading: isUserDataLoading
     }}>
       {children}
     </TransactionsContext.Provider>

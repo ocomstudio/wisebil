@@ -1,12 +1,13 @@
 // src/context/budget-context.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo } from 'react';
 import { Budget } from '@/types/budget';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField, onSnapshot } from 'firebase/firestore';
+import { useUserData } from './user-context';
 
 interface BudgetContextType {
   budgets: Budget[];
@@ -19,51 +20,23 @@ interface BudgetContextType {
 const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
 
 export const BudgetProvider = ({ children }: { children: ReactNode }) => {
-  const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { userData, isLoading: isUserDataLoading } = useUserData();
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  const budgets = useMemo(() => userData?.budgets || [], [userData]);
 
   const getUserDocRef = useCallback(() => {
     if (!user) return null;
     return doc(db, 'users', user.uid);
   }, [user]);
 
-  useEffect(() => {
-    if (!user) {
-      setBudgets([]);
-      setIsLoading(false);
-      return;
-    }
-
-    const userDocRef = getUserDocRef();
-    if (!userDocRef) {
-        setIsLoading(false);
-        return;
-    }
-
-    setIsLoading(true);
-    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
-      if (docSnap.exists() && docSnap.data().budgets) {
-        setBudgets(docSnap.data().budgets);
-      } else {
-        setBudgets([]);
-      }
-      setIsLoading(false);
-    }, (error) => {
-      console.error("Failed to listen to budgets from Firestore", error);
-      setIsLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [user, getUserDocRef]);
-
   const addBudget = useCallback(async (budget: Budget) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) return;
     
     try {
-      await setDoc(userDocRef, { budgets: arrayUnion(budget) }, { merge: true });
+      await updateDoc(userDocRef, { budgets: arrayUnion(budget) });
     } catch(e) {
       console.error("Failed to add budget to Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to save budget." });
@@ -103,7 +76,7 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <BudgetContext.Provider value={{ budgets, addBudget, deleteBudget, resetBudgets, isLoading }}>
+    <BudgetContext.Provider value={{ budgets, addBudget, deleteBudget, resetBudgets, isLoading: isUserDataLoading }}>
       {children}
     </BudgetContext.Provider>
   );

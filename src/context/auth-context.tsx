@@ -1,4 +1,3 @@
-
 // src/context/auth-context.tsx
 "use client";
 
@@ -8,8 +7,10 @@ import { auth, db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc, getDoc, setDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import type { Currency } from './locale-context';
+import type { UserData } from './user-context';
 
-interface User {
+
+export interface User {
   uid: string;
   email: string | null;
   displayName: string | null;
@@ -31,6 +32,7 @@ type SignupFunction = (
 interface AuthContextType {
   user: User | null;
   firebaseUser: FirebaseUser | null;
+  fullUserData: UserData | null;
   isLoading: boolean;
   loginWithEmail: typeof signInWithEmailAndPassword;
   signupWithEmail: SignupFunction;
@@ -49,6 +51,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [fullUserData, setFullUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const safeFunction = useCallback(<T extends (...args: any[]) => any>(fn: T): T => {
@@ -68,7 +71,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userDocRef = doc(db, 'users', fbUser.uid);
         
         const unsubscribeDoc = onSnapshot(userDocRef, (docSnap) => {
-          const data = docSnap.data();
+          const data = docSnap.data() as UserData | undefined;
+          setFullUserData(data || null);
+
           const profileData = data?.profile;
           
           const combinedUser: User = {
@@ -81,7 +86,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           };
 
           if (!docSnap.exists() || !profileData) {
-              // This case handles initial user creation before profile is set in Firestore
               combinedUser.profileComplete = false;
               combinedUser.subscriptionStatus = 'inactive';
               combinedUser.hasCompletedTutorial = false;
@@ -98,6 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else {
         setFirebaseUser(null);
         setUser(null);
+        setFullUserData(null);
         setIsLoading(false);
       }
     });
@@ -109,7 +114,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const { user: fbUser } = userCredential;
 
-    // Update Firebase Auth profile
     await updateProfile(fbUser, { displayName: fullName });
     
     const userDocRef = doc(db, 'users', fbUser.uid);
@@ -145,16 +149,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (docSnap.exists() && docSnap.data().profile?.profileComplete) {
       return { isNewUser: false, user: result.user };
     } else {
-      // For new Google users, create a complete profile immediately.
       const profileData: Omit<User, 'uid'> = {
         email: result.user.email,
         displayName: result.user.displayName,
         avatar: result.user.photoURL,
-        profileComplete: true, // Mark as complete
+        profileComplete: true,
         subscriptionStatus: 'inactive',
         phone: result.user.phoneNumber,
         hasCompletedTutorial: false,
-        emailVerified: true, // Google emails are considered verified
+        emailVerified: true,
       };
       await setDoc(userDocRef, { profile: profileData, preferences: { currency: 'USD', language: 'en'} }, { merge: true });
       return { isNewUser: true, user: result.user };
@@ -165,10 +168,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateUser = async (newUserData: Partial<Omit<User, 'uid'>>) => {
     if(user && firebaseUser) {
-        const updatedLocalUser = { ...user, ...newUserData };
-        setUser(updatedLocalUser);
-        
-        // Update Firebase Auth profile ONLY for displayName and avatar
         if((newUserData.displayName && newUserData.displayName !== user.displayName) || (newUserData.avatar && newUserData.avatar !== user.avatar)) {
             await updateProfile(firebaseUser, {
                 displayName: newUserData.displayName,
@@ -176,9 +175,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             });
         }
         
-        // Update Firestore profile with all data
         const userDocRef = doc(db, 'users', user.uid);
-        await setDoc(userDocRef, { profile: newUserData }, { merge: true });
+        await updateDoc(userDocRef, { [`profile`]: newUserData });
     }
   };
 
@@ -192,10 +190,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!firebaseUser) throw new Error("User not found.");
     await reauthenticate(currentPassword);
     await updateEmail(firebaseUser, newEmail);
-    // Also update firestore
     const userDocRef = doc(db, 'users', firebaseUser.uid);
     await updateDoc(userDocRef, { 'profile.email': newEmail });
-    await firebaseSendEmailVerification(firebaseUser); // Send verification to new email
+    await firebaseSendEmailVerification(firebaseUser);
   };
 
   const updateUserPassword = async (currentPassword: string, newPassword: string) => {
@@ -215,6 +212,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const value: AuthContextType = {
     user,
     firebaseUser,
+    fullUserData,
     isLoading,
     loginWithEmail: safeFunction((...args) => signInWithEmailAndPassword(auth, ...args)),
     signupWithEmail: safeFunction(signupWithEmail),

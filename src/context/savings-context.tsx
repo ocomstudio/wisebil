@@ -1,13 +1,14 @@
 // src/context/savings-context.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo } from 'react';
 import { SavingsGoal } from '@/types/savings-goal';
 import { useToast } from '@/hooks/use-toast';
 import { useLocale } from './locale-context';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField, onSnapshot } from 'firebase/firestore';
+import { useUserData } from './user-context';
 
 interface SavingsContextType {
   savingsGoals: SavingsGoal[];
@@ -21,52 +22,24 @@ interface SavingsContextType {
 const SavingsContext = createContext<SavingsContextType | undefined>(undefined);
 
 export const SavingsProvider = ({ children }: { children: ReactNode }) => {
-  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { userData, isLoading: isUserDataLoading } = useUserData();
   const { toast } = useToast();
   const { t, formatCurrency } = useLocale();
   const { user } = useAuth();
+  
+  const savingsGoals = useMemo(() => userData?.savingsGoals || [], [userData]);
 
   const getUserDocRef = useCallback(() => {
     if (!user) return null;
     return doc(db, 'users', user.uid);
   }, [user]);
 
-  useEffect(() => {
-    if (!user) {
-      setSavingsGoals([]);
-      setIsLoading(false);
-      return;
-    }
-
-    const userDocRef = getUserDocRef();
-    if (!userDocRef) {
-        setIsLoading(false);
-        return;
-    }
-
-    setIsLoading(true);
-    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
-      if (docSnap.exists() && docSnap.data().savingsGoals) {
-        setSavingsGoals(docSnap.data().savingsGoals);
-      } else {
-        setSavingsGoals([]);
-      }
-      setIsLoading(false);
-    }, (error) => {
-        console.error("Failed to listen to savings goals from Firestore", error);
-        setIsLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [user, getUserDocRef]);
-
   const addSavingsGoal = useCallback(async (goal: SavingsGoal) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) return;
 
     try {
-      await setDoc(userDocRef, { savingsGoals: arrayUnion(goal) }, { merge: true });
+      await updateDoc(userDocRef, { savingsGoals: arrayUnion(goal) });
     } catch(e) {
       console.error("Failed to add savings goal to Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to save goal." });
@@ -114,7 +87,7 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     currentGoals[goalIndex] = updatedGoal;
     
     try {
-      await setDoc(userDocRef, { savingsGoals: currentGoals }, { merge: true });
+      await updateDoc(userDocRef, { savingsGoals: currentGoals });
       toast({
         title: t('funds_added_title'),
         description: t('funds_added_desc', { amount: formatCurrency(amount), goalName: updatedGoal.name }),
@@ -138,7 +111,7 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <SavingsContext.Provider value={{ savingsGoals, addSavingsGoal, deleteSavingsGoal, addFunds, resetSavings, isLoading }}>
+    <SavingsContext.Provider value={{ savingsGoals, addSavingsGoal, deleteSavingsGoal, addFunds, resetSavings, isLoading: isUserDataLoading }}>
       {children}
     </SavingsContext.Provider>
   );
