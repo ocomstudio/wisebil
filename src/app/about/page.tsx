@@ -2,7 +2,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, BrainCircuit, CheckCircle, Heart, ShieldCheck, Zap } from "lucide-react";
+import { ArrowLeft, BrainCircuit, CheckCircle, Heart, ShieldCheck, Zap, Briefcase, FileText } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/common/logo";
 import { Button } from "@/components/ui/button";
@@ -112,6 +112,26 @@ export default function AboutPage() {
                  <motion.div initial="offscreen" whileInView="onscreen" viewport={{ once: true, amount: 0.5, delay: 0.2 }} variants={cardVariants} className="bg-card p-8 rounded-2xl shadow-2xl border border-border">
                     <h3 className="text-2xl font-bold font-headline text-primary flex items-center gap-2"><CheckCircle /> {t('about_agentw_title')}</h3>
                     <p className="mt-4 text-muted-foreground">{t('about_agentw_desc')}</p>
+                </motion.div>
+           </div>
+        </section>
+
+         {/* The Professional Vision */}
+        <section className="mt-24">
+           <div className="text-center">
+                <h2 className="text-3xl md:text-4xl font-bold font-headline">Notre Vision pour les Professionnels</h2>
+                <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+                    Wisebil n'est pas seulement pour les finances personnelles. Nous offrons une suite d'outils puissants pour les freelances et les petites entreprises.
+                </p>
+           </div>
+           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+                <motion.div initial="offscreen" whileInView="onscreen" viewport={{ once: true, amount: 0.5 }} variants={cardVariants} className="bg-card p-8 rounded-2xl shadow-2xl border border-border">
+                    <h3 className="text-2xl font-bold font-headline text-primary flex items-center gap-2"><Briefcase /> Comptabilité Conforme</h3>
+                    <p className="mt-4 text-muted-foreground">Gérez votre plan comptable (SYSCOHADA), enregistrez vos écritures de journal, et générez votre grand livre et votre compte de résultat en toute simplicité.</p>
+                </motion.div>
+                 <motion.div initial="offscreen" whileInView="onscreen" viewport={{ once: true, amount: 0.5, delay: 0.2 }} variants={cardVariants} className="bg-card p-8 rounded-2xl shadow-2xl border border-border">
+                    <h3 className="text-2xl font-bold font-headline text-primary flex items-center gap-2"><FileText /> Facturation Intuitive</h3>
+                    <p className="mt-4 text-muted-foreground">Créez des factures professionnelles, personnalisez-les avec votre logo et votre signature, et suivez leur statut (brouillon, payée, en retard) sans effort.</p>
                 </motion.div>
            </div>
         </section>

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/common/logo';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Check, Eye, BarChart, Bot, Shield, Star, Twitter, Facebook, Instagram, HeartHandshake, Zap, Rocket, Info } from 'lucide-react';
+import { Check, Eye, BarChart, Bot, Shield, Star, Twitter, Facebook, Instagram, HeartHandshake, Zap, Rocket, Info, Briefcase, FileText } from 'lucide-react';
 import { GooglePlayLogo } from './logos/google-play-logo';
 import { AppStoreLogo } from './logos/app-store-logo';
 import { LanguageSelector } from '../common/language-selector';
@@ -111,9 +111,14 @@ export default function DesktopLandingPage() {
             description: t('feature1_desc'),
         },
         {
-            icon: <Shield className="h-8 w-8 text-primary" />,
-            title: t('feature2_title'),
-            description: t('feature2_desc'),
+            icon: <FileText className="h-8 w-8 text-primary" />,
+            title: "Facturation Professionnelle",
+            description: "Créez, personnalisez et suivez des factures pour vos clients. Simplifiez votre flux de travail et soyez payé plus rapidement.",
+        },
+        {
+            icon: <Briefcase className="h-8 w-8 text-primary" />,
+            title: "Comptabilité Complète",
+            description: "Gérez votre plan comptable (SYSCOHADA), enregistrez vos écritures et générez vos états financiers sans effort.",
         },
         {
             icon: <BarChart className="h-8 w-8 text-primary" />,
@@ -121,19 +126,14 @@ export default function DesktopLandingPage() {
             description: t('feature3_desc'),
         },
         {
-            icon: <Eye className="h-8 w-8 text-primary" />,
-            title: t('feature4_title'),
-            description: t('feature4_desc'),
-        },
-        {
             icon: <Zap className="h-8 w-8 text-primary" />,
             title: t('feature5_title'),
             description: t('feature5_desc'),
         },
         {
-            icon: <HeartHandshake className="h-8 w-8 text-primary" />,
-            title: t('feature6_title'),
-            description: t('feature6_desc'),
+            icon: <Shield className="h-8 w-8 text-primary" />,
+            title: t('feature2_title'),
+            description: t('feature2_desc'),
         }
     ];
 
@@ -148,8 +148,8 @@ export default function DesktopLandingPage() {
         },
         {
             name: "Elhadj N.",
-            role: t('testimonial2_role'),
-            quote: t('testimonial2_quote'),
+            role: "Entrepreneur & Freelance",
+            quote: "L'ajout de la comptabilité et de la facturation change la donne. Je peux maintenant gérer toute ma petite entreprise depuis une seule application. C'est incroyable.",
             rating: 5,
             avatar: "https://images.unsplash.com/photo-1620477403960-4188fdd7cee0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyMHx8RCVDMyVBOXZlbG9wcGV1cnxlbnwwfHx8fDE3NTY1NjM1MDd8MA&ixlib=rb-4.1.0&q=80&w=1080",
             "data-ai-hint": "man avatar"
@@ -166,6 +166,10 @@ export default function DesktopLandingPage() {
 
     const faqs = [
         {
+            question: "Est-ce que la comptabilité est conforme au plan SYSCOHADA ?",
+            answer: "Oui, notre module de comptabilité est basé sur le plan comptable SYSCOHADA révisé, ce qui le rend parfaitement adapté pour les entreprises en Afrique de l'Ouest et Centrale."
+        },
+        {
             question: t('faq1_q'),
             answer: t('faq1_a')
         },
@@ -174,12 +178,8 @@ export default function DesktopLandingPage() {
             answer: t('faq2_a')
         },
         {
-            question: t('faq3_q'),
-            answer: t('faq3_a')
-        },
-        {
-            question: t('faq4_q'),
-            answer: t('faq4_a')
+            question: "Puis-je utiliser Wisebil pour mon activité de freelance ?",
+            answer: "Absolument ! Wisebil est l'outil parfait pour les freelances. Vous pouvez suivre vos finances personnelles, et en même temps gérer la facturation et la comptabilité de votre activité professionnelle, le tout au même endroit."
         },
         {
             question: t('faq5_q'),
