@@ -119,23 +119,23 @@ export default function AboutPage() {
          {/* The Professional Vision */}
         <section className="mt-24">
            <div className="text-center">
-                <h2 className="text-3xl md:text-4xl font-bold font-headline">Notre Vision pour les Professionnels</h2>
+                <h2 className="text-3xl md:text-4xl font-bold font-headline">{t('about_pro_vision_title')}</h2>
                 <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-                    Wisebil n'est pas seulement pour les finances personnelles. C'est une suite d'outils intégrés conçue pour les freelances, les TPE et les PME qui exigent clarté et efficacité.
+                    {t('about_pro_vision_subtitle')}
                 </p>
            </div>
            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
                 <motion.div initial="offscreen" whileInView="onscreen" viewport={{ once: true, amount: 0.5 }} variants={cardVariants} className="bg-card p-8 rounded-2xl shadow-2xl border border-border">
-                    <h3 className="text-2xl font-bold font-headline text-primary flex items-center gap-2"><Scale /> Comptabilité Conforme</h3>
-                    <p className="mt-4 text-muted-foreground">Gérez votre plan comptable (SYSCOHADA), enregistrez vos écritures de journal, et générez votre grand livre et votre compte de résultat en toute simplicité. Fini les tableurs complexes, bonjour la clarté.</p>
+                    <h3 className="text-2xl font-bold font-headline text-primary flex items-center gap-2"><Scale /> {t('about_pro_vision_item1_title')}</h3>
+                    <p className="mt-4 text-muted-foreground">{t('about_pro_vision_item1_desc')}</p>
                 </motion.div>
                  <motion.div initial="offscreen" whileInView="onscreen" viewport={{ once: true, amount: 0.5, delay: 0.2 }} variants={cardVariants} className="bg-card p-8 rounded-2xl shadow-2xl border border-border">
-                    <h3 className="text-2xl font-bold font-headline text-primary flex items-center gap-2"><FileText /> Facturation Intuitive</h3>
-                    <p className="mt-4 text-muted-foreground">Créez des factures professionnelles, personnalisez-les avec votre logo, et suivez leur statut (brouillon, payée, en retard) sans effort. Automatisez vos rappels et soyez payé plus rapidement.</p>
+                    <h3 className="text-2xl font-bold font-headline text-primary flex items-center gap-2"><FileText /> {t('about_pro_vision_item2_title')}</h3>
+                    <p className="mt-4 text-muted-foreground">{t('about_pro_vision_item2_desc')}</p>
                 </motion.div>
                 <motion.div initial="offscreen" whileInView="onscreen" viewport={{ once: true, amount: 0.5, delay: 0.4 }} variants={cardVariants} className="bg-card p-8 rounded-2xl shadow-2xl border border-border lg:col-span-3">
-                    <h3 className="text-2xl font-bold font-headline text-primary flex items-center gap-2"><Globe /> Vision à 360°</h3>
-                    <p className="mt-4 text-muted-foreground">Le vrai pouvoir de Wisebil réside dans l'intégration. Chaque facture payée met à jour votre trésorerie. Chaque dépense enregistrée impacte votre résultat. Obtenez une vue en temps réel de la santé financière de votre entreprise, sans effort de rapprochement.</p>
+                    <h3 className="text-2xl font-bold font-headline text-primary flex items-center gap-2"><Globe /> {t('about_pro_vision_item3_title')}</h3>
+                    <p className="mt-4 text-muted-foreground">{t('about_pro_vision_item3_desc')}</p>
                 </motion.div>
            </div>
         </section>
