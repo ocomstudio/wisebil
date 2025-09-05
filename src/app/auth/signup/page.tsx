@@ -71,7 +71,6 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
     email: z.string().email(t('signup_email_error')),
     password: z.string().min(8, t('signup_password_error')),
     confirmPassword: z.string(),
-    currency: z.string().min(3, "Please select a currency").max(3, "Please select a currency"),
     terms: z.boolean().refine(val => val === true, {
       message: t('signup_terms_error'),
     })
@@ -91,19 +90,9 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
       email: "",
       password: "",
       confirmPassword: "",
-      currency: currency,
       terms: false,
     },
   });
-
-  // Watch for currency changes and update context
-  const watchedCurrency = form.watch('currency');
-  useEffect(() => {
-    if (watchedCurrency) {
-        setCurrency(watchedCurrency as Currency);
-    }
-  }, [watchedCurrency, setCurrency]);
-
 
   const handleAuthError = (error: any) => {
     let description = t('An unknown error occurred.');
@@ -136,7 +125,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
       await signupWithEmail(data.email, data.password, {
         fullName: data.fullName,
         phone: data.phone,
-        currency: data.currency as Currency,
+        currency: currency, // Use currency from context
       });
       
       toast({
@@ -188,29 +177,6 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
               </FormItem>
             )}
           />
-           <FormField
-            control={form.control}
-            name="currency"
-            render={({ field }) => (
-                <FormItem>
-                    <FormLabel>{t('currency_label')}</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder={t('currency')} />
-                            </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                            <SelectItem value="USD">{t('currency_usd')} (USD)</SelectItem>
-                            <SelectItem value="EUR">{t('currency_eur')} (EUR)</SelectItem>
-                            <SelectItem value="XOF">{t('currency_xof')} (XOF)</SelectItem>
-                            <SelectItem value="VND">{t('currency_vnd')} (VND)</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <FormMessage />
-                </FormItem>
-            )}
-            />
           <FormField
             control={form.control}
             name="phone"
