@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck, Languages, Wallet, Trash2, Download, HelpCircle, RefreshCw, MailWarning, Send } from "lucide-react";
+import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck, Languages, Wallet, Trash2, Download, HelpCircle, RefreshCw, MailWarning, Send, Building } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useSettings } from "@/context/settings-context";
 import { useToast } from "@/hooks/use-toast";
@@ -33,7 +33,7 @@ import { useBudgets } from "@/context/budget-context";
 import { useSavings } from "@/context/savings-context";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import { doc, updateDoc } from 'firebase/firestore';
 import { ExportDataDialog } from "@/components/dashboard/export-data-dialog";
@@ -41,6 +41,7 @@ import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { useTutorial } from "@/context/tutorial-context";
 import { FirebaseError } from "firebase/app";
+import { AvatarUploadDialog } from "@/components/dashboard/settings/avatar-upload-dialog";
 
 
 export default function SettingsPage() {
@@ -48,11 +49,11 @@ export default function SettingsPage() {
   const { user, updateUser, logout, sendVerificationEmail, updateUserEmail, updateUserPassword } = useAuth();
   const { toast } = useToast();
   const { t, locale, setLocale, currency, setCurrency } = useLocale();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { setShowTutorial } = useTutorial();
   const [isSendingVerification, setIsSendingVerification] = useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
 
   const { resetTransactions } = useTransactions();
   const { resetBudgets } = useBudgets();
@@ -265,22 +266,12 @@ export default function SettingsPage() {
       });
     }
   };
-
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
+  
+  const handleAvatarSave = (base64String: string) => {
+    updateUser({ avatar: base64String });
+    toast({ title: "Photo de profil mise à jour !" });
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        updateUser({ avatar: base64String });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
@@ -363,16 +354,14 @@ export default function SettingsPage() {
                     <AvatarImage src={user?.avatar || undefined} alt="User avatar" data-ai-hint="man avatar"/>
                     <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
                   </Avatar>
-                  <Button size="icon" className="absolute bottom-0 right-0 rounded-full h-7 w-7" type="button" onClick={handleAvatarClick}>
+                  <Button size="icon" className="absolute bottom-0 right-0 rounded-full h-7 w-7" type="button" onClick={() => setIsAvatarDialogOpen(true)}>
                     <Camera className="h-4 w-4" />
                   </Button>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    className="hidden"
-                    accept="image/png, image/jpeg, image/gif"
-                  />
+                   <AvatarUploadDialog
+                      isOpen={isAvatarDialogOpen}
+                      onOpenChange={setIsAvatarDialogOpen}
+                      onAvatarSave={handleAvatarSave}
+                    />
                 </div>
                 <div className="flex-1">
                   <FormField
