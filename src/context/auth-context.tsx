@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             uid: fbUser.uid,
             email: fbUser.email,
             displayName: fbUser.displayName,
-            avatar: fbUser.photoURL,
+            avatar: profileData?.avatar || fbUser.photoURL, // Prioritize Firestore avatar
             emailVerified: fbUser.emailVerified,
             ...profileData
           };
@@ -149,7 +149,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (docSnap.exists() && docSnap.data().profile?.profileComplete) {
       return { isNewUser: false, user: result.user };
     } else {
-      const profileData: Omit<User, 'uid'> = {
+      const profileData: Partial<User> = {
         email: result.user.email,
         displayName: result.user.displayName,
         avatar: result.user.photoURL,
@@ -168,15 +168,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateUser = async (newUserData: Partial<Omit<User, 'uid'>>) => {
     if(user && firebaseUser) {
-        if((newUserData.displayName && newUserData.displayName !== user.displayName) || (newUserData.avatar && newUserData.avatar !== user.avatar)) {
+        // Update display name in Firebase Auth if it's changed
+        if(newUserData.displayName && newUserData.displayName !== user.displayName) {
             await updateProfile(firebaseUser, {
                 displayName: newUserData.displayName,
-                photoURL: newUserData.avatar
             });
         }
         
+        // Update user data in Firestore
         const userDocRef = doc(db, 'users', user.uid);
-        await updateDoc(userDocRef, { [`profile`]: newUserData });
+        // We need to merge the new data with the existing profile data
+        const docSnap = await getDoc(userDocRef);
+        const existingProfile = docSnap.data()?.profile || {};
+        const updatedProfile = { ...existingProfile, ...newUserData };
+        
+        await updateDoc(userDocRef, { profile: updatedProfile });
     }
   };
 
