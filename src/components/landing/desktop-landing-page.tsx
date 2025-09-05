@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/common/logo';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Check, Eye, BarChart, Bot, Shield, Star, Twitter, Facebook, Instagram, HeartHandshake, Zap, Rocket, Info, Briefcase, FileText } from 'lucide-react';
+import { Check, Eye, BarChart, Bot, Shield, Star, Twitter, Facebook, Instagram, HeartHandshake, Zap, Rocket, Info, Briefcase, FileText, PiggyBank, Target, Scale, Globe } from 'lucide-react';
 import { GooglePlayLogo } from './logos/google-play-logo';
 import { AppStoreLogo } from './logos/app-store-logo';
 import { LanguageSelector } from '../common/language-selector';
@@ -107,8 +107,13 @@ export default function DesktopLandingPage() {
     const features = [
         {
             icon: <Bot className="h-8 w-8 text-primary" />,
-            title: t('feature1_title'),
-            description: t('feature1_desc'),
+            title: "Conseiller Financier IA",
+            description: "Recevez des analyses, des prévisions et des conseils personnalisés pour optimiser vos finances comme jamais auparavant.",
+        },
+        {
+            icon: <Zap className="h-8 w-8 text-primary" />,
+            title: "Saisie Automatisée 'Agent W'",
+            description: "Dictez vos opérations ou scannez un reçu. Notre IA extrait, classe et enregistre toutes les informations pour vous en quelques secondes.",
         },
         {
             icon: <FileText className="h-8 w-8 text-primary" />,
@@ -116,24 +121,34 @@ export default function DesktopLandingPage() {
             description: "Créez, personnalisez et suivez des factures pour vos clients. Simplifiez votre flux de travail et soyez payé plus rapidement.",
         },
         {
-            icon: <Briefcase className="h-8 w-8 text-primary" />,
-            title: "Comptabilité Complète",
-            description: "Gérez votre plan comptable (SYSCOHADA), enregistrez vos écritures et générez vos états financiers sans effort.",
+            icon: <Scale className="h-8 w-8 text-primary" />,
+            title: "Comptabilité Conforme (SYSCOHADA)",
+            description: "Gérez votre plan comptable, enregistrez vos écritures et générez vos états financiers sans effort, idéal pour les freelances et PME.",
+        },
+        {
+            icon: <Target className="h-8 w-8 text-primary" />,
+            title: "Budgets Flexibles",
+            description: "Définissez des limites de dépenses par catégorie et suivez votre progression en temps réel pour ne jamais dépasser vos prévisions.",
+        },
+        {
+            icon: <PiggyBank className="h-8 w-8 text-primary" />,
+            title: "Objectifs d'Épargne Intelligents",
+            description: "Planifiez vos projets futurs, suivez vos progrès et restez motivé pour atteindre vos rêves, qu'il s'agisse d'un voyage ou d'un apport.",
         },
         {
             icon: <BarChart className="h-8 w-8 text-primary" />,
-            title: t('feature3_title'),
-            description: t('feature3_desc'),
-        },
-        {
-            icon: <Zap className="h-8 w-8 text-primary" />,
-            title: t('feature5_title'),
-            description: t('feature5_desc'),
+            title: "Rapports Visuels Clairs",
+            description: "Visualisez où va votre argent grâce à des graphiques simples et des rapports détaillés. Prenez des décisions basées sur des données, pas sur des suppositions.",
         },
         {
             icon: <Shield className="h-8 w-8 text-primary" />,
-            title: t('feature2_title'),
-            description: t('feature2_desc'),
+            title: "Sécurité de Niveau Bancaire",
+            description: "Vos données sont protégées par un cryptage AES-256. Votre vie privée est notre priorité absolue et ne sera jamais compromise.",
+        },
+        {
+            icon: <Globe className="h-8 w-8 text-primary" />,
+            title: "Vision Multi-Devises",
+            description: "Gérez vos finances dans la devise de votre choix (XOF, EUR, USD, etc.). Idéal pour ceux qui travaillent à l'international ou voyagent.",
         }
     ];
 
@@ -290,7 +305,7 @@ export default function DesktopLandingPage() {
                         </p>
                     </div>
                     </div>
-                    <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 lg:grid-cols-3 mt-12">
+                    <div className="mx-auto grid max-w-6xl items-start gap-8 sm:grid-cols-2 lg:grid-cols-3 mt-12">
                     {features.map((feature, i) => (
                         <div
                             key={feature.title}
