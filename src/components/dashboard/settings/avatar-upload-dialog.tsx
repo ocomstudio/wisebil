@@ -32,7 +32,8 @@ const MAX_FILE_SIZE_MB = 1;
 function getCroppedImg(
   image: HTMLImageElement,
   crop: Crop,
-  scale = 1
+  scale = 1,
+  rotate = 0
 ): Promise<string> {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -44,20 +45,39 @@ function getCroppedImg(
   const scaleX = image.naturalWidth / image.width;
   const scaleY = image.naturalHeight / image.height;
   
-  canvas.width = Math.floor(crop.width * scaleX);
-  canvas.height = Math.floor(crop.height * scaleY);
+  const cropX = crop.x * scaleX;
+  const cropY = crop.y * scaleY;
+  
+  const cropWidth = crop.width * scaleX;
+  const cropHeight = crop.height * scaleY;
+  
+  canvas.width = cropWidth;
+  canvas.height = cropHeight;
+  
+  ctx.translate(cropWidth / 2, cropHeight / 2);
+  ctx.rotate((rotate * Math.PI) / 180);
+  ctx.translate(-image.naturalWidth/2, -image.naturalHeight/2);
 
   ctx.drawImage(
     image,
-    crop.x * scaleX,
-    crop.y * scaleY,
-    crop.width * scaleX,
-    crop.height * scaleY,
     0,
     0,
-    crop.width * scaleX,
-    crop.height * scaleY
+    image.naturalWidth,
+    image.naturalHeight
   );
+
+  const data = ctx.getImageData(
+    cropX,
+    cropY,
+    cropWidth,
+    cropHeight
+  );
+
+  canvas.width = cropWidth;
+  canvas.height = cropHeight;
+  
+  ctx.putImageData(data,0,0);
+
 
   return new Promise((resolve) => {
     resolve(canvas.toDataURL('image/jpeg', 0.9));
@@ -110,7 +130,7 @@ export function AvatarUploadDialog({ isOpen, onOpenChange, onAvatarSave }: Avata
   
   const handleSaveCrop = async () => {
     if (imgRef.current && crop?.width && crop?.height) {
-      const croppedDataUrl = await getCroppedImg(imgRef.current, crop);
+      const croppedDataUrl = await getCroppedImg(imgRef.current, crop, scale, rotate);
       onAvatarSave(croppedDataUrl);
       resetState();
     }
@@ -126,7 +146,10 @@ export function AvatarUploadDialog({ isOpen, onOpenChange, onAvatarSave }: Avata
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) resetState();
+      else onOpenChange(true);
+    }}>
       <DialogContent onInteractOutside={(e) => e.preventDefault()} className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Mettre à jour la photo de profil</DialogTitle>
@@ -137,11 +160,12 @@ export function AvatarUploadDialog({ isOpen, onOpenChange, onAvatarSave }: Avata
         {error && <p className="text-destructive text-sm">{error}</p>}
         {imgSrc ? (
           <div className="space-y-4">
-             <div className="flex justify-center">
+             <div className="flex justify-center bg-muted/50 p-4 rounded-md">
                 <ReactCrop
                     crop={crop}
                     onChange={(_, percentCrop) => setCrop(percentCrop)}
                     circularCrop
+                    keepSelection
                     aspect={1}
                     minWidth={MIN_DIMENSION}
                 >
@@ -156,11 +180,11 @@ export function AvatarUploadDialog({ isOpen, onOpenChange, onAvatarSave }: Avata
             </div>
             <div className="space-y-2">
                 <Label htmlFor="scale">Zoom</Label>
-                <Slider id="scale" defaultValue={[1]} min={0.5} max={2} step={0.1} onValueChange={(value) => setScale(value[0])} />
+                <Slider id="scale" value={[scale]} min={0.5} max={2} step={0.1} onValueChange={(value) => setScale(value[0])} />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="rotate">Rotation</Label>
-                <Slider id="rotate" defaultValue={[0]} min={-180} max={180} step={1} onValueChange={(value) => setRotate(value[0])} />
+                <Slider id="rotate" value={[rotate]} min={-180} max={180} step={1} onValueChange={(value) => setRotate(value[0])} />
             </div>
           </div>
         ) : (
@@ -176,11 +200,9 @@ export function AvatarUploadDialog({ isOpen, onOpenChange, onAvatarSave }: Avata
           className="hidden"
         />
         <DialogFooter>
-          <DialogClose asChild>
-            <Button type="button" variant="ghost" onClick={resetState}>
-              Annuler
-            </Button>
-          </DialogClose>
+          <Button type="button" variant="ghost" onClick={resetState}>
+            Annuler
+          </Button>
           <Button onClick={handleSaveCrop} disabled={!imgSrc}>
             Enregistrer
           </Button>
