@@ -135,7 +135,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         currency: currency,
         language: 'en' // Default language
       }
-    }, { merge: true });
+    });
 
     return userCredential;
   };
@@ -168,16 +168,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateUser = async (newUserData: Partial<Omit<User, 'uid'>>) => {
     if (user && firebaseUser) {
-      // Update display name in Firebase Auth if it's changed
       if (newUserData.displayName && newUserData.displayName !== user.displayName) {
         await updateProfile(firebaseUser, {
           displayName: newUserData.displayName,
         });
       }
       
-      // Update user data in Firestore using setDoc with merge to avoid conflicts
       const userDocRef = doc(db, 'users', user.uid);
-      await setDoc(userDocRef, { profile: newUserData }, { merge: true });
+      const updatePayload: { [key: string]: any } = {};
+      Object.entries(newUserData).forEach(([key, value]) => {
+        updatePayload[`profile.${key}`] = value;
+      });
+
+      await updateDoc(userDocRef, updatePayload);
     }
   };
 
