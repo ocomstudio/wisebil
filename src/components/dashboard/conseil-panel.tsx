@@ -193,28 +193,65 @@ export function ConseilPanel() {
 }, [isClient, user, t, getUserDocRef]);
 
 
-  // Save conversation to Firestore whenever it changes
-  useEffect(() => {
-    if (!isClient || !user || (!wiseConversation && !agentWConversation)) return;
-    
-    const saveHistory = async () => {
-        const userDocRef = getUserDocRef();
-        if (!userDocRef) return;
-        
-        try {
-            const historyToSave: ConversationHistory = {
-                wise: { current: wiseConversation, history: wiseHistory },
-                agentW: { current: agentWConversation, history: agentWHistory }
-            };
-            
-            await setDoc(userDocRef, { conversations: cleanObjectForFirestore(historyToSave) }, { merge: true });
-        } catch (error) {
-            console.error("Failed to save conversation history to Firestore", error);
+  const saveCurrentConversation = async () => {
+    const userDocRef = getUserDocRef();
+    if (!userDocRef) return;
+  
+    try {
+      const fieldToUpdate = agentMode === 'wise' ? 'conversations.wise' : 'conversations.agentW';
+      await setDoc(userDocRef, {
+        conversations: {
+          [agentMode]: {
+            current: cleanObjectForFirestore(currentConversation),
+            history: cleanObjectForFirestore(conversationHistory)
+          }
         }
+      }, { merge: true });
+    } catch (error) {
+      console.error("Failed to save conversation to Firestore:", error);
     }
-    const timer = setTimeout(saveHistory, 1000);
-    return () => clearTimeout(timer);
-  }, [wiseConversation, wiseHistory, agentWConversation, agentWHistory, isClient, user, getUserDocRef]);
+  };
+  
+  const archiveCurrentConversation = () => {
+    if (currentConversation.length === 0 || (currentConversation.length === 1 && currentConversation[0].role === 'model')) {
+        return; // Don't archive empty or default conversations
+    }
+    const newHistory = { ...conversationHistory };
+    newHistory[new Date().toISOString()] = currentConversation;
+    setConversationHistory(newHistory);
+  };
+  
+  const handleNewConversation = async () => {
+    archiveCurrentConversation();
+
+    if (agentMode === 'wise') {
+        setCurrentConversation([{
+            id: uuidv4(),
+            role: 'model',
+            type: 'text',
+            content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || 'Utilisateur'),
+        }]);
+    } else {
+        setCurrentConversation([]);
+    }
+
+    // Save the new state (archived old convo, new empty current convo)
+     const userDocRef = getUserDocRef();
+     if (!userDocRef) return;
+     try {
+       await setDoc(userDocRef, {
+         conversations: {
+           [agentMode]: {
+             current: agentMode === 'wise' ? [{id: uuidv4(), role: 'model', type: 'text', content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || 'Utilisateur')}] : [],
+             history: cleanObjectForFirestore(conversationHistory) 
+           }
+         }
+       }, { merge: true });
+     } catch (error) {
+       console.error("Failed to start new conversation in Firestore:", error);
+     }
+  };
+
 
   const form = useForm<AssistantFormValues>({
     resolver: zodResolver(assistantSchema),
@@ -345,38 +382,10 @@ export function ConseilPanel() {
     releaseWakeLock();
   }
 
-  const handleNewConversation = () => {
-    if (currentConversation.length > 0) {
-        // Don't add default welcome message to history
-        if(currentConversation.length === 1 && currentConversation[0].role === 'model') {
-            // do nothing
-        } else {
-             setConversationHistory(prev => {
-                const newHistory = { ...prev };
-                newHistory[new Date().toISOString()] = currentConversation;
-                return newHistory;
-            });
-        }
-    }
-    
-    if (agentMode === 'wise') {
-        setCurrentConversation([{
-            id: uuidv4(),
-            role: 'model',
-            type: 'text',
-            content: t('assistant_welcome_message').replace('{{name}}', user?.displayName?.split(' ')[0] || 'Utilisateur'),
-        }]);
-    } else {
-        setCurrentConversation([]);
-    }
-  };
-
   const deleteConversationFromHistory = (timestamp: string) => {
-    setConversationHistory(prev => {
-        const newHistory = { ...prev };
-        delete newHistory[timestamp];
-        return newHistory;
-    });
+    const newHistory = { ...conversationHistory };
+    delete newHistory[timestamp];
+    setConversationHistory(newHistory);
     toast.success(t('history_deleted_success'));
   };
 
@@ -737,15 +746,11 @@ const AgentWReviewCard = ({ message }: { message: Message }) => {
                                 <span
                                 className="truncate cursor-pointer hover:text-primary"
                                 onClick={() => {
-                                    setConversationHistory(prev => {
-                                        const newHistory = { ...prev };
-                                        delete newHistory[timestamp];
-                                        if (currentConversation && currentConversation.length > 0 && !(currentConversation.length === 1 && currentConversation[0].role === 'model')) {
-                                            newHistory[new Date().toISOString()] = currentConversation;
-                                        }
-                                        return newHistory;
-                                    });
+                                    archiveCurrentConversation();
                                     setCurrentConversation(convo);
+                                    const newHistory = { ...conversationHistory };
+                                    delete newHistory[timestamp];
+                                    setConversationHistory(newHistory);
                                 }}
                                 >
                                 {convo.find(m => m.role === 'user')?.content || convo[0]?.content || t('empty_conversation')}
