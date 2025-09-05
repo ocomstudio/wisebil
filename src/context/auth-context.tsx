@@ -167,22 +167,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => signOut(auth);
 
   const updateUser = async (newUserData: Partial<Omit<User, 'uid'>>) => {
-    if(user && firebaseUser) {
-        // Update display name in Firebase Auth if it's changed
-        if(newUserData.displayName && newUserData.displayName !== user.displayName) {
-            await updateProfile(firebaseUser, {
-                displayName: newUserData.displayName,
-            });
-        }
-        
-        // Update user data in Firestore
-        const userDocRef = doc(db, 'users', user.uid);
-        // We need to merge the new data with the existing profile data
-        const docSnap = await getDoc(userDocRef);
-        const existingProfile = docSnap.data()?.profile || {};
-        const updatedProfile = { ...existingProfile, ...newUserData };
-        
-        await updateDoc(userDocRef, { profile: updatedProfile });
+    if (user && firebaseUser) {
+      // Update display name in Firebase Auth if it's changed
+      if (newUserData.displayName && newUserData.displayName !== user.displayName) {
+        await updateProfile(firebaseUser, {
+          displayName: newUserData.displayName,
+        });
+      }
+      
+      // Update user data in Firestore using setDoc with merge to avoid conflicts
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, { profile: newUserData }, { merge: true });
     }
   };
 
