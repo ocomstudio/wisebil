@@ -46,9 +46,13 @@ export function UserProfile() {
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    const nameParts = name.split(' ');
+    if (nameParts.length > 1) {
+        return (nameParts[0].charAt(0) + nameParts[1].charAt(0)).toUpperCase();
+    }
+    return name.charAt(0).toUpperCase();
   }
-
+  
   const isEmailUnverified = user?.email && !user.emailVerified;
 
   return (
@@ -84,7 +88,7 @@ export function UserProfile() {
                   )}
              </Link>
           </DropdownMenuItem>
-           <DropdownMenuItem asChild className="md:hidden">
+           <DropdownMenuItem asChild>
             <Link href="/dashboard/entreprise">
               <Building className="mr-2 h-4 w-4" />
               <span>Entreprise</span>
