@@ -89,7 +89,7 @@ export default function EntrepriseHubPage() {
                   Créer une entreprise
                 </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle>Créer une nouvelle entreprise</DialogTitle>
                     <DialogDescription>
@@ -97,40 +97,62 @@ export default function EntrepriseHubPage() {
                     </DialogDescription>
                 </DialogHeader>
                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleCreateEnterprise)} className="space-y-4">
-                        <FormField control={form.control} name="name" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Nom de l'entreprise</FormLabel>
-                                <FormControl><Input placeholder="Ex: Ocomstudio" {...field} /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-                         <FormField control={form.control} name="description" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Description (facultatif)</FormLabel>
-                                <FormControl><Textarea placeholder="Décrivez brièvement votre entreprise..." {...field} /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-                        <FormField control={form.control} name="ownerRole" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Votre rôle dans l'entreprise</FormLabel>
-                                <FormControl><Input placeholder="Ex: Fondateur, CEO..." {...field} /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-                         <div className="space-y-2">
-                            <FormLabel>Vos informations</FormLabel>
-                            <div className="flex flex-col space-y-2 rounded-md border p-3 bg-muted/50">
-                                <p className="text-sm font-medium">{user?.displayName}</p>
-                                <p className="text-sm text-muted-foreground">{user?.email}</p>
-                            </div>
-                         </div>
+                    <form onSubmit={form.handleSubmit(handleCreateEnterprise)} className="space-y-6">
+                        
+                        <Card className="bg-muted/50">
+                            <CardHeader className="pb-4">
+                               <CardTitle className="text-lg">Informations sur l'entreprise</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <FormField control={form.control} name="name" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Nom de l'entreprise</FormLabel>
+                                        <FormControl><Input placeholder="Ex: Ocomstudio" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+                                <FormField control={form.control} name="description" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Description (facultatif)</FormLabel>
+                                        <FormControl><Textarea placeholder="Décrivez brièvement votre entreprise..." {...field} rows={2} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+                            </CardContent>
+                        </Card>
+                        
+                        <Card className="bg-muted/50">
+                             <CardHeader className="pb-4">
+                               <CardTitle className="text-lg">Vos Informations</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <FormField control={form.control} name="ownerRole" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Votre rôle dans l'entreprise</FormLabel>
+                                        <FormControl><Input placeholder="Ex: Fondateur, CEO..." {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+                                <div className="space-y-1">
+                                    <FormLabel>Créateur</FormLabel>
+                                    <div className="flex items-center gap-3 rounded-md border bg-background p-2">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-sm font-bold">
+                                            {user?.displayName?.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium">{user?.displayName}</p>
+                                            <p className="text-xs text-muted-foreground">{user?.email}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        
                         <DialogFooter>
                             <DialogClose asChild><Button type="button" variant="ghost">Annuler</Button></DialogClose>
                             <Button type="submit" disabled={form.formState.isSubmitting}>
                                 {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Créer
+                                Créer l'entreprise
                             </Button>
                         </DialogFooter>
                     </form>
