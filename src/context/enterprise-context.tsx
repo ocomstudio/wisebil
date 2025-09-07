@@ -9,7 +9,7 @@ import { db } from '@/lib/firebase';
 import { 
     doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, 
     getDoc, getDocs, collection, query, where, writeBatch, 
-    documentId, runTransaction, serverTimestamp
+    documentId
 } from 'firebase/firestore';
 import { useUserData } from './user-context';
 
@@ -30,32 +30,37 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { user } = useAuth();
-  const { userData } = useUserData();
+  const { userData, isLoading: isUserDataLoading } = useUserData();
 
   useEffect(() => {
+    if (isUserDataLoading) {
+      setIsLoading(true);
+      return;
+    }
     if (!user) {
       setEnterprises([]);
+      setPendingInvitations([]);
       setIsLoading(false);
       return;
     }
 
     const enterpriseIds = userData?.enterpriseIds || [];
     
-    if (enterpriseIds.length === 0) {
-      setEnterprises([]);
-      setIsLoading(false);
-      return;
+    let unsubscribeEnterprises = () => {};
+    if (enterpriseIds.length > 0) {
+        const enterprisesQuery = query(collection(db, "enterprises"), where(documentId(), "in", enterpriseIds));
+        unsubscribeEnterprises = onSnapshot(enterprisesQuery, (snapshot) => {
+            const userEnterprises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Enterprise));
+            setEnterprises(userEnterprises);
+            setIsLoading(false);
+        }, (error) => {
+            console.error("Failed to listen to enterprises from Firestore", error);
+            setIsLoading(false);
+        });
+    } else {
+        setEnterprises([]);
+        setIsLoading(false);
     }
-
-    const enterprisesQuery = query(collection(db, "enterprises"), where(documentId(), "in", enterpriseIds));
-    const unsubscribeEnterprises = onSnapshot(enterprisesQuery, (snapshot) => {
-        const userEnterprises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Enterprise));
-        setEnterprises(userEnterprises);
-        setIsLoading(false);
-    }, (error) => {
-        console.error("Failed to listen to enterprises from Firestore", error);
-        setIsLoading(false);
-    });
     
     const invitationsQuery = query(collection(db, "invitations"), where("email", "==", user.email), where("status", "==", "pending"));
     const unsubscribeInvitations = onSnapshot(invitationsQuery, (snapshot) => {
@@ -69,7 +74,7 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
         unsubscribeEnterprises();
         unsubscribeInvitations();
     };
-  }, [user, userData]);
+  }, [user, userData, isUserDataLoading]);
 
   const addEnterprise = useCallback(async (enterpriseData: Omit<Enterprise, 'id'| 'ownerId' | 'members' | 'memberIds' | 'transactions'>, ownerRole: string) => {
     if (!user || !user.email || !user.displayName) {
@@ -80,45 +85,37 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     const newEnterpriseRef = doc(collection(db, "enterprises"));
     const userDocRef = doc(db, 'users', user.uid);
 
+    const newMember: Member = {
+        uid: user.uid,
+        email: user.email,
+        name: user.displayName,
+        role: ownerRole,
+        type: 'owner'
+    };
+
+    const newEnterprise: Enterprise = {
+        ...enterpriseData,
+        id: newEnterpriseRef.id,
+        ownerId: user.uid,
+        members: [newMember],
+        memberIds: [user.uid],
+        transactions: []
+    };
+
     try {
-        await runTransaction(db, async (transaction) => {
-            const userDoc = await transaction.get(userDocRef);
-
-            const newMember: Member = {
-                uid: user.uid,
-                email: user.email as string,
-                name: user.displayName as string,
-                role: ownerRole,
-                type: 'owner'
-            };
-
-            const newEnterprise: Enterprise = {
-                ...enterpriseData,
-                id: newEnterpriseRef.id,
-                ownerId: user.uid,
-                members: [newMember],
-                memberIds: [user.uid],
-                transactions: []
-            };
-
-            // 1. Create the new enterprise document
-            transaction.set(newEnterpriseRef, newEnterprise);
-
-            // 2. Update the user's document
-            if (!userDoc.exists()) {
-                // If user doc doesn't exist, create it with the enterprise ID
-                transaction.set(userDocRef, { enterpriseIds: [newEnterpriseRef.id] });
-            } else {
-                // If user doc exists, update it with the new enterprise ID
-                transaction.update(userDocRef, { enterpriseIds: arrayUnion(newEnterpriseRef.id) });
-            }
-        });
+        // Step 1: Create the new enterprise document
+        await setDoc(newEnterpriseRef, newEnterprise);
+        
+        // Step 2: Update the user's document
+        await setDoc(userDocRef, { 
+            enterpriseIds: arrayUnion(newEnterpriseRef.id) 
+        }, { merge: true });
 
         toast({ title: "Entreprise créée", description: `L'entreprise "${enterpriseData.name}" a été créée.` });
         return newEnterpriseRef.id;
 
     } catch (e: any) {
-        console.error("Échec de la transaction de création d'entreprise :", e);
+        console.error("Échec de la création d'entreprise :", e);
         toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer l'entreprise. Veuillez réessayer." });
         return null;
     }
@@ -142,7 +139,6 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
         throw new Error("Cet utilisateur est déjà membre de l'entreprise.");
     }
     
-    // Check for existing pending invitation
     const invitationQuery = query(collection(db, 'invitations'), 
         where('enterpriseId', '==', enterpriseId),
         where('email', '==', email),
@@ -171,45 +167,43 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     
     const invitationRef = doc(db, 'invitations', invitationId);
     
-    try {
-        await runTransaction(db, async (transaction) => {
-            const invitationDoc = await transaction.get(invitationRef);
-            if (!invitationDoc.exists() || invitationDoc.data().status !== 'pending' || invitationDoc.data().email !== user.email) {
-                throw new Error("Invitation non valide ou déjà traitée.");
-            }
-            
-            const invitationData = invitationDoc.data();
+    const batch = writeBatch(db);
+    
+    const invitationSnap = await getDoc(invitationRef);
+    if (!invitationSnap.exists() || invitationSnap.data().status !== 'pending' || invitationSnap.data().email !== user.email) {
+        throw new Error("Invitation non valide ou déjà traitée.");
+    }
 
-            if (response === 'accepted') {
-                const newMember: Member = {
-                    uid: user.uid,
-                    email: user.email as string,
-                    name: user.displayName as string,
-                    role: invitationData.role,
-                    type: 'member'
-                };
-                
-                const enterpriseRef = doc(db, 'enterprises', invitationData.enterpriseId);
-                const userDocRef = doc(db, 'users', user.uid);
-                
-                transaction.update(enterpriseRef, {
-                    members: arrayUnion(newMember),
-                    memberIds: arrayUnion(user.uid)
-                });
-                transaction.update(userDocRef, {
-                    enterpriseIds: arrayUnion(invitationData.enterpriseId)
-                });
-            }
-
-            // Update invitation status to accepted or declined
-            transaction.update(invitationRef, { status: response });
+    if (response === 'accepted') {
+        const invitationData = invitationSnap.data();
+        const newMember: Member = {
+            uid: user.uid,
+            email: user.email,
+            name: user.displayName,
+            role: invitationData.role,
+            type: 'member'
+        };
+        
+        const enterpriseRef = doc(db, 'enterprises', invitationData.enterpriseId);
+        const userDocRef = doc(db, 'users', user.uid);
+        
+        batch.update(enterpriseRef, {
+            members: arrayUnion(newMember),
+            memberIds: arrayUnion(user.uid)
         });
+        batch.update(userDocRef, {
+            enterpriseIds: arrayUnion(invitationData.enterpriseId)
+        });
+    }
 
+    batch.update(invitationRef, { status: response });
+
+    try {
+        await batch.commit();
         toast({ title: "Invitation traitée", description: `Vous avez ${response === 'accepted' ? 'accepté' : 'refusé'} l'invitation.`});
-
-    } catch (e: any) {
+    } catch(e) {
         console.error("Échec de la réponse à l'invitation :", e);
-        toast({ variant: "destructive", title: "Erreur", description: e.message || "Impossible de traiter l'invitation." });
+        toast({ variant: "destructive", title: "Erreur", description: "Impossible de traiter l'invitation." });
     }
   };
 
