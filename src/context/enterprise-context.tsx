@@ -83,10 +83,10 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const newEnterpriseRef = doc(collection(db, "enterprises"));
+    const userDocRef = doc(db, 'users', user.uid);
     
     try {
         await runTransaction(db, async (transaction) => {
-            const userDocRef = doc(db, 'users', user.uid);
             const userDoc = await transaction.get(userDocRef);
 
             const newMember: Member = {
@@ -109,16 +109,14 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
             transaction.set(newEnterpriseRef, newEnterprise);
 
             if (userDoc.exists()) {
+                 const currentEnterpriseIds = userDoc.data().enterpriseIds || [];
                  transaction.update(userDocRef, { 
-                    enterpriseIds: arrayUnion(newEnterpriseRef.id) 
+                    enterpriseIds: [...currentEnterpriseIds, newEnterpriseRef.id]
                 });
             } else {
-                // This case should ideally not happen if user is logged in, but as a fallback
+                // This case should ideally not happen if user is logged in and has a profile,
+                // but as a fallback, we create the user doc.
                 transaction.set(userDocRef, {
-                    profile: {
-                        displayName: user.displayName,
-                        email: user.email
-                    },
                     enterpriseIds: [newEnterpriseRef.id]
                 }, { merge: true });
             }
