@@ -149,8 +149,8 @@ export default function EntrepriseHubPage() {
                 {pendingInvitations.map(invite => (
                     <div key={invite.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                         <div>
-                            <p className="font-semibold">{invite.name}</p>
-                            <p className="text-sm text-muted-foreground">Vous êtes invité à rejoindre cette entreprise.</p>
+                            <p className="font-semibold">{invite.enterpriseName}</p>
+                            <p className="text-sm text-muted-foreground">Vous êtes invité(e) à rejoindre cette entreprise en tant que {invite.role}.</p>
                         </div>
                         <div className="flex gap-2">
                              <Button size="icon" variant="outline" className="text-green-500 hover:bg-green-500/10 hover:text-green-500" onClick={() => respondToInvitation(invite.id, 'accepted')}>

@@ -2,19 +2,23 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
-import type { Enterprise } from '@/types/enterprise';
+import type { Enterprise, Invitation, Member } from '@/types/enterprise';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDoc, getDocs, collection, query, where, writeBatch, documentId, deleteDoc, runTransaction } from 'firebase/firestore';
+import { 
+    doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, 
+    getDoc, getDocs, collection, query, where, writeBatch, 
+    documentId, runTransaction, serverTimestamp
+} from 'firebase/firestore';
+import { useUserData } from './user-context';
 
 interface EnterpriseContextType {
   enterprises: Enterprise[];
-  pendingInvitations: (Enterprise & {invitationId: string})[];
-  addEnterprise: (enterprise: Omit<Enterprise, 'id' | 'ownerId' | 'members' | 'memberIds' | 'transactions'>, ownerRole: string) => Promise<string | null>;
-  deleteEnterprise: (id: string) => Promise<void>;
+  pendingInvitations: Invitation[];
+  addEnterprise: (enterpriseData: Omit<Enterprise, 'id' | 'ownerId' | 'members' | 'memberIds' | 'transactions'>, ownerRole: string) => Promise<string | null>;
   sendInvitation: (enterpriseId: string, email: string, role: string) => Promise<void>;
-  respondToInvitation: (enterpriseId: string, response: 'accepted' | 'declined') => Promise<void>;
+  respondToInvitation: (invitationId: string, response: 'accepted' | 'declined') => Promise<void>;
   isLoading: boolean;
 }
 
@@ -22,155 +26,110 @@ const EnterpriseContext = createContext<EnterpriseContextType | undefined>(undef
 
 export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
   const [enterprises, setEnterprises] = useState<Enterprise[]>([]);
-  const [pendingInvitations, setPendingInvitations] = useState<(Enterprise & {invitationId: string})[]>([]);
+  const [pendingInvitations, setPendingInvitations] = useState<Invitation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { userData } = useUserData();
 
   useEffect(() => {
     if (!user) {
       setEnterprises([]);
-      setPendingInvitations([]);
       setIsLoading(false);
       return;
     }
 
-    const userDocRef = doc(db, 'users', user.uid);
+    const enterpriseIds = userData?.enterpriseIds || [];
+    
+    if (enterpriseIds.length === 0) {
+      setEnterprises([]);
+      setIsLoading(false);
+      return;
+    }
 
-    const unsubscribeUser = onSnapshot(userDocRef, (userSnap) => {
-        const userData = userSnap.data();
-        const enterpriseIds = userData?.enterpriseIds || [];
-        
-        if (enterpriseIds.length > 0) {
-            const enterprisesQuery = query(collection(db, "enterprises"), where(documentId(), "in", enterpriseIds));
-            const unsubscribeEnterprises = onSnapshot(enterprisesQuery, (snapshot) => {
-                const userEnterprises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Enterprise));
-                setEnterprises(userEnterprises);
-                setIsLoading(false);
-            }, (error) => {
-                console.error("Failed to listen to enterprises from Firestore", error);
-                setIsLoading(false);
-            });
-            return () => unsubscribeEnterprises();
-        } else {
-            setEnterprises([]);
-            setIsLoading(false);
-        }
+    const enterprisesQuery = query(collection(db, "enterprises"), where(documentId(), "in", enterpriseIds));
+    const unsubscribeEnterprises = onSnapshot(enterprisesQuery, (snapshot) => {
+        const userEnterprises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Enterprise));
+        setEnterprises(userEnterprises);
+        setIsLoading(false);
     }, (error) => {
-        console.error("Failed to listen to user document for enterprises:", error);
+        console.error("Failed to listen to enterprises from Firestore", error);
         setIsLoading(false);
     });
-
+    
     const invitationsQuery = query(collection(db, "invitations"), where("email", "==", user.email), where("status", "==", "pending"));
-    const unsubscribeInvitations = onSnapshot(invitationsQuery, async (snapshot) => {
-        const invites = await Promise.all(snapshot.docs.map(async (inviteDoc) => {
-            const inviteData = inviteDoc.data();
-            const enterpriseDoc = await getDoc(doc(db, "enterprises", inviteData.enterpriseId));
-            if (enterpriseDoc.exists()) {
-                return { 
-                    ...(enterpriseDoc.data() as Omit<Enterprise, 'id'>), 
-                    id: enterpriseDoc.id, 
-                    invitationId: inviteDoc.id 
-                };
-            }
-            return null;
-        }));
-        setPendingInvitations(invites.filter(Boolean) as (Enterprise & {invitationId: string})[]);
+    const unsubscribeInvitations = onSnapshot(invitationsQuery, (snapshot) => {
+        const invites = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Invitation));
+        setPendingInvitations(invites);
     }, (error) => {
         console.error("Failed to listen to invitations from Firestore", error);
     });
 
-
     return () => {
-        unsubscribeUser();
+        unsubscribeEnterprises();
         unsubscribeInvitations();
     };
-  }, [user]);
+  }, [user, userData]);
 
   const addEnterprise = useCallback(async (enterpriseData: Omit<Enterprise, 'id'| 'ownerId' | 'members' | 'memberIds' | 'transactions'>, ownerRole: string) => {
-    if (!user || !user.email || !user.displayName) return null;
+    if (!user || !user.email || !user.displayName) {
+        toast({ variant: "destructive", title: "Erreur", description: "Utilisateur non authentifié."});
+        return null;
+    }
 
     const newEnterpriseRef = doc(collection(db, "enterprises"));
     const userDocRef = doc(db, 'users', user.uid);
-    
-    const newEnterprise: Enterprise = {
-        ...enterpriseData,
-        id: newEnterpriseRef.id,
-        ownerId: user.uid,
-        members: [
-            {
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            const userDoc = await transaction.get(userDocRef);
+
+            const newMember: Member = {
                 uid: user.uid,
-                email: user.email,
+                email: user.email as string,
                 name: user.displayName as string,
                 role: ownerRole,
                 type: 'owner'
+            };
+
+            const newEnterprise: Enterprise = {
+                ...enterpriseData,
+                id: newEnterpriseRef.id,
+                ownerId: user.uid,
+                members: [newMember],
+                memberIds: [user.uid],
+                transactions: []
+            };
+
+            // 1. Create the new enterprise document
+            transaction.set(newEnterpriseRef, newEnterprise);
+
+            // 2. Update the user's document
+            if (!userDoc.exists()) {
+                // If user doc doesn't exist, create it with the enterprise ID
+                transaction.set(userDocRef, { enterpriseIds: [newEnterpriseRef.id] });
+            } else {
+                // If user doc exists, update it with the new enterprise ID
+                transaction.update(userDocRef, { enterpriseIds: arrayUnion(newEnterpriseRef.id) });
             }
-        ],
-        memberIds: [user.uid],
-        transactions: []
-    };
-
-    try {
-        // Step 1: Create the enterprise document.
-        await setDoc(newEnterpriseRef, newEnterprise);
-
-        // Step 2: Update the user's document with the new enterprise ID.
-        // setDoc with merge:true will create the document if it doesn't exist, 
-        // or update it if it does, which is safer.
-        await setDoc(userDocRef, { 
-            enterpriseIds: arrayUnion(newEnterprise.id) 
-        }, { merge: true });
+        });
 
         toast({ title: "Entreprise créée", description: `L'entreprise "${enterpriseData.name}" a été créée.` });
         return newEnterpriseRef.id;
 
-    } catch(e) {
-      console.error("Failed to add enterprise", e);
-      toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer l'entreprise. Veuillez réessayer." });
-      return null;
+    } catch (e: any) {
+        console.error("Échec de la transaction de création d'entreprise :", e);
+        toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer l'entreprise. Veuillez réessayer." });
+        return null;
     }
   }, [toast, user]);
-  
-  const deleteEnterprise = useCallback(async (id: string) => {
-    if (!user) return;
-    
-    const enterpriseToDelete = enterprises.find(e => e.id === id);
-    if (!enterpriseToDelete || enterpriseToDelete.ownerId !== user.uid) {
-        toast({ variant: "destructive", title: "Erreur", description: "Vous n'êtes pas autorisé à supprimer cette entreprise." });
-        return;
-    };
-    
-    const enterpriseRef = doc(db, 'enterprises', id);
-    try {
-      const batch = writeBatch(db);
-      
-      // Remove enterpriseId from all members' user docs
-      enterpriseToDelete.memberIds.forEach(memberId => {
-          const userDocRef = doc(db, 'users', memberId);
-          batch.update(userDocRef, { enterpriseIds: arrayRemove(id) });
-      });
 
-      // Delete the enterprise document itself
-      batch.delete(enterpriseRef);
-
-      await batch.commit();
-
-      toast({
-          title: "Entreprise supprimée",
-          description: "L'entreprise a été supprimée avec succès.",
-      });
-    } catch (e) {
-      console.error("Failed to delete enterprise from Firestore", e);
-      toast({ variant: "destructive", title: "Error", description: "Failed to delete enterprise." });
-      throw e;
-    }
-  }, [enterprises, toast, user]);
 
   const sendInvitation = async (enterpriseId: string, email: string, role: string) => {
+    if (!user) throw new Error("Action non autorisée.");
+
     const enterprise = enterprises.find(e => e.id === enterpriseId);
-    if (!enterprise || enterprise.ownerId !== user?.uid) {
-        throw new Error("Action non autorisée.");
-    }
+    if (!enterprise) throw new Error("Entreprise non trouvée.");
 
     const userQuery = query(collection(db, "users"), where("profile.email", "==", email));
     const userSnapshot = await getDocs(userQuery);
@@ -182,10 +141,24 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     if (enterprise.memberIds.includes(invitedUser.id)) {
         throw new Error("Cet utilisateur est déjà membre de l'entreprise.");
     }
+    
+    // Check for existing pending invitation
+    const invitationQuery = query(collection(db, 'invitations'), 
+        where('enterpriseId', '==', enterpriseId),
+        where('email', '==', email),
+        where('status', '==', 'pending')
+    );
+    const existingInvitation = await getDocs(invitationQuery);
+    if (!existingInvitation.empty) {
+        throw new Error("Une invitation est déjà en attente pour cet utilisateur.");
+    }
+
 
     const newInvitationRef = doc(collection(db, "invitations"));
     await setDoc(newInvitationRef, {
+      id: newInvitationRef.id,
       enterpriseId,
+      enterpriseName: enterprise.name,
       email,
       role,
       status: 'pending',
@@ -193,57 +166,55 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const respondToInvitation = async (enterpriseId: string, response: 'accepted' | 'declined') => {
+  const respondToInvitation = async (invitationId: string, response: 'accepted' | 'declined') => {
     if (!user || !user.email || !user.displayName) return;
     
-    const invitationQuery = query(
-      collection(db, 'invitations'),
-      where('enterpriseId', '==', enterpriseId),
-      where('email', '==', user.email),
-      where('status', '==', 'pending')
-    );
-    const snapshot = await getDocs(invitationQuery);
-    if (snapshot.empty) {
-      toast({ variant: "destructive", title: "Erreur", description: "Invitation non trouvée ou déjà traitée."});
-      return;
-    }
+    const invitationRef = doc(db, 'invitations', invitationId);
     
-    const batch = writeBatch(db);
-    const invitationDoc = snapshot.docs[0];
-    const invitationData = invitationDoc.data();
-    
-    // Update invitation status
-    batch.update(invitationDoc.ref, { status: response });
+    try {
+        await runTransaction(db, async (transaction) => {
+            const invitationDoc = await transaction.get(invitationRef);
+            if (!invitationDoc.exists() || invitationDoc.data().status !== 'pending' || invitationDoc.data().email !== user.email) {
+                throw new Error("Invitation non valide ou déjà traitée.");
+            }
+            
+            const invitationData = invitationDoc.data();
 
-    if (response === 'accepted') {
-      const newMember = {
-        uid: user.uid,
-        email: user.email,
-        name: user.displayName,
-        role: invitationData.role,
-        type: 'member' as 'member'
-      };
-      const enterpriseRef = doc(db, 'enterprises', enterpriseId);
-      const userDocRef = doc(db, 'users', user.uid);
-      
-      batch.update(enterpriseRef, {
-        members: arrayUnion(newMember),
-        memberIds: arrayUnion(user.uid)
-      });
-      batch.update(userDocRef, {
-        enterpriseIds: arrayUnion(enterpriseId)
-      });
-    } else {
-        // If declined, just delete the invitation
-        batch.delete(invitationDoc.ref);
+            if (response === 'accepted') {
+                const newMember: Member = {
+                    uid: user.uid,
+                    email: user.email as string,
+                    name: user.displayName as string,
+                    role: invitationData.role,
+                    type: 'member'
+                };
+                
+                const enterpriseRef = doc(db, 'enterprises', invitationData.enterpriseId);
+                const userDocRef = doc(db, 'users', user.uid);
+                
+                transaction.update(enterpriseRef, {
+                    members: arrayUnion(newMember),
+                    memberIds: arrayUnion(user.uid)
+                });
+                transaction.update(userDocRef, {
+                    enterpriseIds: arrayUnion(invitationData.enterpriseId)
+                });
+            }
+
+            // Update invitation status to accepted or declined
+            transaction.update(invitationRef, { status: response });
+        });
+
+        toast({ title: "Invitation traitée", description: `Vous avez ${response === 'accepted' ? 'accepté' : 'refusé'} l'invitation.`});
+
+    } catch (e: any) {
+        console.error("Échec de la réponse à l'invitation :", e);
+        toast({ variant: "destructive", title: "Erreur", description: e.message || "Impossible de traiter l'invitation." });
     }
-
-    await batch.commit();
-    toast({ title: "Invitation traitée", description: `Vous avez ${response === 'accepted' ? 'accepté' : 'refusé'} l'invitation.`});
   };
 
   return (
-    <EnterpriseContext.Provider value={{ enterprises, pendingInvitations, addEnterprise, deleteEnterprise, sendInvitation, respondToInvitation, isLoading }}>
+    <EnterpriseContext.Provider value={{ enterprises, pendingInvitations, addEnterprise, sendInvitation, respondToInvitation, isLoading }}>
       {children}
     </EnterpriseContext.Provider>
   );

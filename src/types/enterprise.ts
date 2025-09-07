@@ -17,3 +17,12 @@ export interface Enterprise {
     memberIds: string[]; // For easier querying
     transactions: Transaction[]; // Transactions specific to the enterprise
 }
+
+export interface Invitation {
+    id: string;
+    enterpriseId: string;
+    enterpriseName: string;
+    email: string; // email of the person being invited
+    role: string;
+    status: 'pending' | 'accepted' | 'declined';
+}
