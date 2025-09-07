@@ -9,7 +9,7 @@ import { db } from '@/lib/firebase';
 import { 
     doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, 
     getDoc, getDocs, collection, query, where, writeBatch, 
-    documentId
+    documentId, runTransaction
 } from 'firebase/firestore';
 import { useUserData } from './user-context';
 
@@ -83,33 +83,46 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const newEnterpriseRef = doc(collection(db, "enterprises"));
-    const userDocRef = doc(db, 'users', user.uid);
-
-    const newMember: Member = {
-        uid: user.uid,
-        email: user.email,
-        name: user.displayName,
-        role: ownerRole,
-        type: 'owner'
-    };
-
-    const newEnterprise: Enterprise = {
-        ...enterpriseData,
-        id: newEnterpriseRef.id,
-        ownerId: user.uid,
-        members: [newMember],
-        memberIds: [user.uid],
-        transactions: []
-    };
-
+    
     try {
-        // Step 1: Create the new enterprise document
-        await setDoc(newEnterpriseRef, newEnterprise);
-        
-        // Step 2: Update the user's document
-        await setDoc(userDocRef, { 
-            enterpriseIds: arrayUnion(newEnterpriseRef.id) 
-        }, { merge: true });
+        await runTransaction(db, async (transaction) => {
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await transaction.get(userDocRef);
+
+            const newMember: Member = {
+                uid: user.uid,
+                email: user.email!,
+                name: user.displayName!,
+                role: ownerRole,
+                type: 'owner'
+            };
+
+            const newEnterprise: Enterprise = {
+                ...enterpriseData,
+                id: newEnterpriseRef.id,
+                ownerId: user.uid,
+                members: [newMember],
+                memberIds: [user.uid],
+                transactions: []
+            };
+
+            transaction.set(newEnterpriseRef, newEnterprise);
+
+            if (userDoc.exists()) {
+                 transaction.update(userDocRef, { 
+                    enterpriseIds: arrayUnion(newEnterpriseRef.id) 
+                });
+            } else {
+                // This case should ideally not happen if user is logged in, but as a fallback
+                transaction.set(userDocRef, {
+                    profile: {
+                        displayName: user.displayName,
+                        email: user.email
+                    },
+                    enterpriseIds: [newEnterpriseRef.id]
+                }, { merge: true });
+            }
+        });
 
         toast({ title: "Entreprise créée", description: `L'entreprise "${enterpriseData.name}" a été créée.` });
         return newEnterpriseRef.id;
