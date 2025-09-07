@@ -24,11 +24,15 @@ export function SidebarNav() {
       label: t('nav_reports'),
       icon: <BarChart />,
     },
+     {
+      href: "/dashboard/accounting",
+      label: t('nav_accounting'),
+      icon: <Briefcase />,
+    },
     {
       href: "/dashboard/entreprise",
-      label: 'Gestion Entreprise',
+      label: 'Entreprise',
       icon: <Building />,
-      className: "hidden md:flex"
     },
     {
       href: "/dashboard/budget",
