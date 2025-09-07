@@ -1,3 +1,4 @@
+
 // src/context/enterprise-context.tsx
 "use client";
 
@@ -99,25 +100,16 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     };
     
     try {
-        await runTransaction(db, async (transaction) => {
-            const userDoc = await transaction.get(userDocRef);
+        // Step 1: Create the enterprise document. This is a single, atomic operation.
+        await setDoc(newEnterpriseRef, newEnterprise);
 
-            // Set the enterprise document
-            transaction.set(newEnterpriseRef, newEnterprise);
-
-            // Now, handle the user document update
-            if (!userDoc.exists()) {
-                // If user document doesn't exist, create it with the new enterprise ID
-                transaction.set(userDocRef, {
-                    enterpriseIds: [newEnterpriseRef.id]
-                });
-            } else {
-                // If user document exists, update it with the new enterprise ID
-                transaction.update(userDocRef, {
-                    enterpriseIds: arrayUnion(newEnterpriseRef.id)
-                });
-            }
-        });
+        // Step 2: Update the user's document to add the new enterprise ID.
+        // setDoc with { merge: true } will create the document if it doesn't exist,
+        // or merge the data if it does. This is safer than updateDoc.
+        // We use arrayUnion to safely add the new ID without duplicates.
+        await setDoc(userDocRef, {
+            enterpriseIds: arrayUnion(newEnterpriseRef.id)
+        }, { merge: true });
 
         toast({ title: "Entreprise créée", description: `L'entreprise "${enterpriseData.name}" a été créée.` });
         return newEnterpriseRef.id;
