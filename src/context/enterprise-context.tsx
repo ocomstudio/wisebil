@@ -83,6 +83,10 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     
     try {
         await runTransaction(db, async (transaction) => {
+            // --- READS FIRST ---
+            const userDoc = await transaction.get(userDocRef);
+
+            // --- WRITES AFTER ---
             const newMember: Member = {
                 uid: user.uid,
                 email: user.email!,
@@ -100,20 +104,18 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
                 transactions: []
             };
 
-            transaction.set(newEnterpriseRef, newEnterprise);
-
-            const userDoc = await transaction.get(userDocRef);
             if (userDoc.exists()) {
-                 const currentEnterpriseIds = userDoc.data().enterpriseIds || [];
+                 const currentEnterpriseIds = userDoc.data()?.enterpriseIds || [];
                  transaction.update(userDocRef, { 
                     enterpriseIds: [...currentEnterpriseIds, newEnterpriseRef.id]
                 });
             } else {
-                // If user doc doesn't exist, create it with the enterprise ID.
                 transaction.set(userDocRef, {
                     enterpriseIds: [newEnterpriseRef.id]
                 }, { merge: true });
             }
+            
+            transaction.set(newEnterpriseRef, newEnterprise);
         });
 
         toast({ title: "Entreprise créée", description: `L'entreprise "${enterpriseData.name}" a été créée.` });
