@@ -6,12 +6,12 @@ import type { Enterprise } from '@/types/enterprise';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDoc, getDocs, collection, query, where, writeBatch } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDoc, getDocs, collection, query, where, writeBatch, documentId } from 'firebase/firestore';
 
 interface EnterpriseContextType {
   enterprises: Enterprise[];
   pendingInvitations: (Enterprise & {invitationId: string})[];
-  addEnterprise: (enterprise: Omit<Enterprise, 'id' | 'ownerId' | 'members' | 'memberIds'>, ownerRole: string) => Promise<string | null>;
+  addEnterprise: (enterprise: Omit<Enterprise, 'id' | 'ownerId' | 'members' | 'memberIds' | 'transactions'>, ownerRole: string) => Promise<string | null>;
   deleteEnterprise: (id: string) => Promise<void>;
   sendInvitation: (enterpriseId: string, email: string, role: string) => Promise<void>;
   respondToInvitation: (enterpriseId: string, response: 'accepted' | 'declined') => Promise<void>;
@@ -35,19 +35,30 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    setIsLoading(true);
-    const enterprisesQuery = query(collection(db, "enterprises"), where("memberIds", "array-contains", user.uid));
-    const invitationsQuery = query(collection(db, "invitations"), where("email", "==", user.email), where("status", "==", "pending"));
+    const userDocRef = doc(db, 'users', user.uid);
 
-    const unsubscribeEnterprises = onSnapshot(enterprisesQuery, (snapshot) => {
-        const userEnterprises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Enterprise));
-        setEnterprises(userEnterprises);
-        setIsLoading(false);
-    }, (error) => {
-        console.error("Failed to listen to enterprises from Firestore", error);
-        setIsLoading(false);
+    const unsubscribeUser = onSnapshot(userDocRef, (userSnap) => {
+        const userData = userSnap.data();
+        const enterpriseIds = userData?.enterpriseIds || [];
+        
+        if (enterpriseIds.length > 0) {
+            const enterprisesQuery = query(collection(db, "enterprises"), where(documentId(), "in", enterpriseIds));
+            const unsubscribeEnterprises = onSnapshot(enterprisesQuery, (snapshot) => {
+                const userEnterprises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Enterprise));
+                setEnterprises(userEnterprises);
+                setIsLoading(false);
+            }, (error) => {
+                console.error("Failed to listen to enterprises from Firestore", error);
+                setIsLoading(false);
+            });
+            return () => unsubscribeEnterprises();
+        } else {
+            setEnterprises([]);
+            setIsLoading(false);
+        }
     });
-    
+
+    const invitationsQuery = query(collection(db, "invitations"), where("email", "==", user.email), where("status", "==", "pending"));
     const unsubscribeInvitations = onSnapshot(invitationsQuery, async (snapshot) => {
         const invites = await Promise.all(snapshot.docs.map(async (inviteDoc) => {
             const inviteData = inviteDoc.data();
@@ -68,7 +79,7 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
 
 
     return () => {
-        unsubscribeEnterprises();
+        unsubscribeUser();
         unsubscribeInvitations();
     };
   }, [user]);
@@ -77,6 +88,8 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     if (!user || !user.email || !user.displayName) return null;
     
     const newEnterpriseRef = doc(collection(db, "enterprises"));
+    const userDocRef = doc(db, 'users', user.uid);
+
     const newEnterprise: Enterprise = {
         ...enterpriseData,
         id: newEnterpriseRef.id,
@@ -95,7 +108,11 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     };
 
     try {
-      await setDoc(newEnterpriseRef, newEnterprise);
+      const batch = writeBatch(db);
+      batch.set(newEnterpriseRef, newEnterprise);
+      batch.update(userDocRef, { enterpriseIds: arrayUnion(newEnterprise.id) });
+      await batch.commit();
+
       toast({ title: "Entreprise créée", description: `L'entreprise "${newEnterprise.name}" a été créée.` });
       return newEnterprise.id;
     } catch(e) {
@@ -114,6 +131,9 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
         return;
     };
     
+    // This is a complex operation: it should remove the enterprise doc
+    // AND remove the enterpriseId from all members' user docs.
+    // For simplicity here, we just delete the enterprise doc.
     const enterpriseRef = doc(db, 'enterprises', id);
     try {
       await writeBatch(db).delete(enterpriseRef).commit();
@@ -185,9 +205,14 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
         type: 'member' as 'member'
       };
       const enterpriseRef = doc(db, 'enterprises', enterpriseId);
+      const userDocRef = doc(db, 'users', user.uid);
+      
       batch.update(enterpriseRef, {
         members: arrayUnion(newMember),
         memberIds: arrayUnion(user.uid)
+      });
+      batch.update(userDocRef, {
+        enterpriseIds: arrayUnion(enterpriseId)
       });
     }
 

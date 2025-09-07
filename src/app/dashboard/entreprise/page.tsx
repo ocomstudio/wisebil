@@ -12,6 +12,7 @@ import { Building, PlusCircle, Loader2, Mail, Check, X } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "@/context/locale-context";
 import { useEnterprise } from "@/context/enterprise-context";
+import { useAuth } from "@/context/auth-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
@@ -42,6 +43,7 @@ const enterpriseSchema = z.object({
 
 export default function EntrepriseHubPage() {
   const { t } = useLocale();
+  const { user } = useAuth();
   const { enterprises, pendingInvitations, addEnterprise, respondToInvitation, isLoading } = useEnterprise();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const router = useRouter();
@@ -107,11 +109,18 @@ export default function EntrepriseHubPage() {
                         )} />
                         <FormField control={form.control} name="ownerRole" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Votre rôle</FormLabel>
+                                <FormLabel>Votre rôle dans l'entreprise</FormLabel>
                                 <FormControl><Input placeholder="Ex: Fondateur, CEO..." {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
+                         <div className="space-y-2">
+                            <FormLabel>Vos informations</FormLabel>
+                            <div className="flex flex-col space-y-2 rounded-md border p-3 bg-muted/50">
+                                <p className="text-sm font-medium">{user?.displayName}</p>
+                                <p className="text-sm text-muted-foreground">{user?.email}</p>
+                            </div>
+                         </div>
                         <DialogFooter>
                             <DialogClose asChild><Button type="button" variant="ghost">Annuler</Button></DialogClose>
                             <Button type="submit" disabled={form.formState.isSubmitting}>
