@@ -1,4 +1,3 @@
-
 // src/context/enterprise-context.tsx
 "use client";
 
@@ -75,47 +74,55 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
 
   const addEnterprise = useCallback(async (enterpriseData: Omit<Enterprise, 'id'| 'ownerId' | 'members' | 'memberIds' | 'transactions'>, ownerRole: string) => {
     if (!user || !user.email || !user.displayName) {
-        toast({ variant: "destructive", title: "Erreur", description: "Utilisateur non authentifié."});
+        toast({ variant: "destructive", title: "Erreur", description: "Utilisateur non authentifié pour cette opération."});
         return null;
     }
-
+    
     const newEnterpriseRef = doc(collection(db, "enterprises"));
     const userDocRef = doc(db, 'users', user.uid);
-    
-    const newMember: Member = {
-        uid: user.uid,
-        email: user.email,
-        name: user.displayName,
-        role: ownerRole,
-        type: 'owner'
-    };
 
-    const newEnterprise: Enterprise = {
-        ...enterpriseData,
-        id: newEnterpriseRef.id,
-        ownerId: user.uid,
-        members: [newMember],
-        memberIds: [user.uid],
-        transactions: []
-    };
-    
     try {
-        // Step 1: Create the enterprise document. This is a single, atomic operation.
-        await setDoc(newEnterpriseRef, newEnterprise);
+        await runTransaction(db, async (transaction) => {
+            const userDoc = await transaction.get(userDocRef);
 
-        // Step 2: Update the user's document to add the new enterprise ID.
-        // setDoc with { merge: true } will create the document if it doesn't exist,
-        // or merge the data if it does. This is safer than updateDoc.
-        // We use arrayUnion to safely add the new ID without duplicates.
-        await setDoc(userDocRef, {
-            enterpriseIds: arrayUnion(newEnterpriseRef.id)
-        }, { merge: true });
+            const newMember: Member = {
+                uid: user.uid,
+                email: user.email!,
+                name: user.displayName!,
+                role: ownerRole,
+                type: 'owner'
+            };
 
-        toast({ title: "Entreprise créée", description: `L'entreprise "${enterpriseData.name}" a été créée.` });
+            const newEnterprise: Enterprise = {
+                ...enterpriseData,
+                id: newEnterpriseRef.id,
+                ownerId: user.uid,
+                members: [newMember],
+                memberIds: [user.uid],
+                transactions: []
+            };
+
+            // 1. Write the new enterprise document
+            transaction.set(newEnterpriseRef, newEnterprise);
+            
+            // 2. Update the user document
+            if (userDoc.exists()) {
+                 transaction.update(userDocRef, {
+                    enterpriseIds: arrayUnion(newEnterpriseRef.id)
+                });
+            } else {
+                // This case should ideally not happen if user is logged in, but as a fallback.
+                transaction.set(userDocRef, {
+                    enterpriseIds: [newEnterpriseRef.id]
+                }, { merge: true });
+            }
+        });
+
+        toast({ title: "Entreprise créée", description: `L'entreprise "${enterpriseData.name}" a été créée avec succès.` });
         return newEnterpriseRef.id;
 
     } catch (e: any) {
-        console.error("Échec de la création d'entreprise :", e);
+        console.error("Transaction de création d'entreprise échouée :", e);
         toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer l'entreprise. Veuillez réessayer." });
         return null;
     }
