@@ -6,7 +6,7 @@ import type { Enterprise } from '@/types/enterprise';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDoc, getDocs, collection, query, where, writeBatch, documentId } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDoc, getDocs, collection, query, where, writeBatch, documentId, deleteDoc } from 'firebase/firestore';
 
 interface EnterpriseContextType {
   enterprises: Enterprise[];
@@ -56,6 +56,9 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
             setEnterprises([]);
             setIsLoading(false);
         }
+    }, (error) => {
+        console.error("Failed to listen to user document for enterprises:", error);
+        setIsLoading(false);
     });
 
     const invitationsQuery = query(collection(db, "invitations"), where("email", "==", user.email), where("status", "==", "pending"));
@@ -108,13 +111,26 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     };
 
     try {
-      const batch = writeBatch(db);
-      batch.set(newEnterpriseRef, newEnterprise);
-      batch.update(userDocRef, { enterpriseIds: arrayUnion(newEnterprise.id) });
-      await batch.commit();
+        await setDoc(newEnterpriseRef, newEnterprise);
+        
+        // Now, update the user's document
+        const userDocSnap = await getDoc(userDocRef);
 
-      toast({ title: "Entreprise créée", description: `L'entreprise "${newEnterprise.name}" a été créée.` });
-      return newEnterprise.id;
+        if (userDocSnap.exists() && userDocSnap.data().enterpriseIds) {
+            // If the user doc and enterpriseIds array exist, update it
+            await updateDoc(userDocRef, { 
+                enterpriseIds: arrayUnion(newEnterprise.id) 
+            });
+        } else {
+            // Otherwise, set the doc, creating the enterpriseIds array
+            await setDoc(userDocRef, { 
+                enterpriseIds: [newEnterprise.id] 
+            }, { merge: true });
+        }
+
+        toast({ title: "Entreprise créée", description: `L'entreprise "${newEnterprise.name}" a été créée.` });
+        return newEnterprise.id;
+
     } catch(e) {
       console.error("Failed to add enterprise to Firestore", e);
       toast({ variant: "destructive", title: "Erreur", description: "Failed to save enterprise." });
@@ -131,12 +147,21 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
         return;
     };
     
-    // This is a complex operation: it should remove the enterprise doc
-    // AND remove the enterpriseId from all members' user docs.
-    // For simplicity here, we just delete the enterprise doc.
     const enterpriseRef = doc(db, 'enterprises', id);
     try {
-      await writeBatch(db).delete(enterpriseRef).commit();
+      const batch = writeBatch(db);
+      
+      // Remove enterpriseId from all members' user docs
+      enterpriseToDelete.memberIds.forEach(memberId => {
+          const userDocRef = doc(db, 'users', memberId);
+          batch.update(userDocRef, { enterpriseIds: arrayRemove(id) });
+      });
+
+      // Delete the enterprise document itself
+      batch.delete(enterpriseRef);
+
+      await batch.commit();
+
       toast({
           title: "Entreprise supprimée",
           description: "L'entreprise a été supprimée avec succès.",
@@ -194,6 +219,7 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     const invitationDoc = snapshot.docs[0];
     const invitationData = invitationDoc.data();
     
+    // Update invitation status
     batch.update(invitationDoc.ref, { status: response });
 
     if (response === 'accepted') {
@@ -214,6 +240,9 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
       batch.update(userDocRef, {
         enterpriseIds: arrayUnion(enterpriseId)
       });
+    } else {
+        // If declined, just delete the invitation
+        batch.delete(invitationDoc.ref);
     }
 
     await batch.commit();
