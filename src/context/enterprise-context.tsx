@@ -83,8 +83,8 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     
     const newMember: Member = {
         uid: user.uid,
-        email: user.email!,
-        name: user.displayName!,
+        email: user.email,
+        name: user.displayName,
         role: ownerRole,
         type: 'owner'
     };
@@ -99,15 +99,25 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     };
     
     try {
-        // Step 1: Create the enterprise document.
-        await setDoc(newEnterpriseRef, newEnterprise);
+        await runTransaction(db, async (transaction) => {
+            const userDoc = await transaction.get(userDocRef);
 
-        // Step 2: Update the user's document with the new enterprise ID.
-        // setDoc with { merge: true } will create the doc if it doesn't exist,
-        // or update it if it does, without overwriting other fields.
-        await setDoc(userDocRef, { 
-            enterpriseIds: arrayUnion(newEnterpriseRef.id) 
-        }, { merge: true });
+            // Set the enterprise document
+            transaction.set(newEnterpriseRef, newEnterprise);
+
+            // Now, handle the user document update
+            if (!userDoc.exists()) {
+                // If user document doesn't exist, create it with the new enterprise ID
+                transaction.set(userDocRef, {
+                    enterpriseIds: [newEnterpriseRef.id]
+                });
+            } else {
+                // If user document exists, update it with the new enterprise ID
+                transaction.update(userDocRef, {
+                    enterpriseIds: arrayUnion(newEnterpriseRef.id)
+                });
+            }
+        });
 
         toast({ title: "Entreprise créée", description: `L'entreprise "${enterpriseData.name}" a été créée.` });
         return newEnterpriseRef.id;
@@ -164,43 +174,43 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     if (!user || !user.email || !user.displayName) return;
     
     const invitationRef = doc(db, 'invitations', invitationId);
-    const batch = writeBatch(db);
     
-    const invitationSnap = await getDoc(invitationRef);
-    if (!invitationSnap.exists() || invitationSnap.data().status !== 'pending' || invitationSnap.data().email !== user.email) {
-        throw new Error("Invitation non valide ou déjà traitée.");
-    }
-
-    if (response === 'accepted') {
-        const invitationData = invitationSnap.data();
-        const newMember: Member = {
-            uid: user.uid,
-            email: user.email,
-            name: user.displayName,
-            role: invitationData.role,
-            type: 'member'
-        };
-        
-        const enterpriseRef = doc(db, 'enterprises', invitationData.enterpriseId);
-        const userDocRef = doc(db, 'users', user.uid);
-        
-        batch.update(enterpriseRef, {
-            members: arrayUnion(newMember),
-            memberIds: arrayUnion(user.uid)
-        });
-        batch.update(userDocRef, {
-            enterpriseIds: arrayUnion(invitationData.enterpriseId)
-        });
-    }
-
-    batch.update(invitationRef, { status: response });
-
     try {
-        await batch.commit();
+        await runTransaction(db, async (transaction) => {
+            const invitationSnap = await transaction.get(invitationRef);
+            if (!invitationSnap.exists() || invitationSnap.data().status !== 'pending' || invitationSnap.data().email !== user.email) {
+                throw new Error("Invitation non valide ou déjà traitée.");
+            }
+
+            if (response === 'accepted') {
+                const invitationData = invitationSnap.data();
+                const newMember: Member = {
+                    uid: user.uid,
+                    email: user.email!,
+                    name: user.displayName!,
+                    role: invitationData.role,
+                    type: 'member'
+                };
+                
+                const enterpriseRef = doc(db, 'enterprises', invitationData.enterpriseId);
+                const userDocRef = doc(db, 'users', user.uid);
+                
+                transaction.update(enterpriseRef, {
+                    members: arrayUnion(newMember),
+                    memberIds: arrayUnion(user.uid)
+                });
+                transaction.update(userDocRef, {
+                    enterpriseIds: arrayUnion(invitationData.enterpriseId)
+                });
+            }
+
+            transaction.update(invitationRef, { status: response });
+        });
+
         toast({ title: "Invitation traitée", description: `Vous avez ${response === 'accepted' ? 'accepté' : 'refusé'} l'invitation.`});
-    } catch(e) {
+    } catch(e: any) {
         console.error("Échec de la réponse à l'invitation :", e);
-        toast({ variant: "destructive", title: "Erreur", description: "Impossible de traiter l'invitation." });
+        toast({ variant: "destructive", title: "Erreur", description: e.message || "Impossible de traiter l'invitation." });
     }
   };
 
