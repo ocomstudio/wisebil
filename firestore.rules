@@ -6,23 +6,23 @@ service cloud.firestore {
 
     // Users can only read and write to their own document.
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, update, delete: if request.auth.uid == userId;
+      allow create: if request.auth.uid != null;
     }
 
-    // Enterprises can be created by any authenticated user.
-    // They can be read/updated only by members of the enterprise.
-    // They can only be deleted by the owner.
+    // Enterprises can only be read or written to by their members.
     match /enterprises/{enterpriseId} {
-      allow read, update: if request.auth != null && request.auth.uid in resource.data.memberIds;
-      allow create: if request.auth != null;
-      allow delete: if request.auth != null && request.auth.uid == resource.data.ownerId;
+      allow read, update, delete: if request.auth.uid in resource.data.memberIds;
+      // Any authenticated user can create an enterprise.
+      allow create: if request.auth.uid != null;
     }
 
-    // Invitations can be created by authenticated users.
-    // They can be read, updated, or deleted only by the invited user.
+    // Invitations
     match /invitations/{invitationId} {
-        allow read, update, delete: if request.auth != null && request.auth.token.email == resource.data.email;
-        allow create: if request.auth != null;
+      // Allow the invited user to read/update (accept/decline) the invitation.
+      allow read, update: if request.auth.token.email == resource.data.email;
+      // Allow members of an enterprise to create invitations for it.
+      allow create: if request.auth.uid in get(/databases/$(database)/documents/enterprises/$(request.resource.data.enterpriseId)).data.memberIds;
     }
   }
 }
