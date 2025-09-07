@@ -11,7 +11,7 @@ import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDoc, ge
 interface EnterpriseContextType {
   enterprises: Enterprise[];
   pendingInvitations: (Enterprise & {invitationId: string})[];
-  addEnterprise: (enterprise: Omit<Enterprise, 'ownerId' | 'members'>, ownerRole: string) => Promise<void>;
+  addEnterprise: (enterprise: Omit<Enterprise, 'id' | 'ownerId' | 'members' | 'memberIds'>, ownerRole: string) => Promise<string | null>;
   deleteEnterprise: (id: string) => Promise<void>;
   sendInvitation: (enterpriseId: string, email: string, role: string) => Promise<void>;
   respondToInvitation: (enterpriseId: string, response: 'accepted' | 'declined') => Promise<void>;
@@ -72,8 +72,8 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [user]);
 
-  const addEnterprise = useCallback(async (enterpriseData: Omit<Enterprise, 'id'| 'ownerId' | 'members' | 'memberIds'>, ownerRole: string) => {
-    if (!user || !user.email || !user.displayName) return;
+  const addEnterprise = useCallback(async (enterpriseData: Omit<Enterprise, 'id'| 'ownerId' | 'members' | 'memberIds' | 'transactions'>, ownerRole: string) => {
+    if (!user || !user.email || !user.displayName) return null;
     
     const newEnterpriseRef = doc(collection(db, "enterprises"));
     const newEnterprise: Enterprise = {
@@ -89,12 +89,14 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
                 type: 'owner'
             }
         ],
-        memberIds: [user.uid]
+        memberIds: [user.uid],
+        transactions: []
     };
 
     try {
       await setDoc(newEnterpriseRef, newEnterprise);
       toast({ title: "Entreprise créée", description: `L'entreprise "${newEnterprise.name}" a été créée.` });
+      return newEnterprise.id;
     } catch(e) {
       console.error("Failed to add enterprise to Firestore", e);
       toast({ variant: "destructive", title: "Erreur", description: "Failed to save enterprise." });

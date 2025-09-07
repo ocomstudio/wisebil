@@ -1,4 +1,5 @@
 // src/types/enterprise.ts
+import type { Transaction } from './transaction';
 
 export interface Member {
     uid: string;
@@ -14,4 +15,5 @@ export interface Enterprise {
     ownerId: string; // UID of the user who created it
     members: Member[];
     memberIds: string[]; // For easier querying
+    transactions: Transaction[];
 }

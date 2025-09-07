@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -43,6 +44,7 @@ export default function EntrepriseHubPage() {
   const { t } = useLocale();
   const { enterprises, pendingInvitations, addEnterprise, respondToInvitation, isLoading } = useEnterprise();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof enterpriseSchema>>({
     resolver: zodResolver(enterpriseSchema),
@@ -51,9 +53,12 @@ export default function EntrepriseHubPage() {
 
   const handleCreateEnterprise = async (values: z.infer<typeof enterpriseSchema>) => {
     const { name, description, ownerRole } = values;
-    await addEnterprise({ name, description: description || "" });
+    const newEnterpriseId = await addEnterprise({ name, description: description || "" }, ownerRole);
     form.reset();
     setIsCreateOpen(false);
+    if (newEnterpriseId) {
+        router.push(`/dashboard/entreprise/management/${newEnterpriseId}`);
+    }
   };
   
   if (isLoading) {
