@@ -86,6 +86,7 @@ export default function TeamManagementPage() {
     }, [id]);
     
     const { income, expenses } = React.useMemo(() => {
+        if (!transactions) return { income: 0, expenses: 0 };
         return transactions.reduce((acc, tx) => {
             if (tx.type === 'income') {
                 acc.income += tx.amount;
@@ -157,13 +158,13 @@ export default function TeamManagementPage() {
         )
     }
 
-    const teamMembers = enterprise.members.map(member => ({
+    const teamMembers = enterprise.members ? enterprise.members.map(member => ({
         id: member.uid,
         name: member.name,
         role: member.role,
         avatar: "", // Placeholder, you might want to store this in Firestore
         'data-ai-hint': "person avatar"
-    }));
+    })) : [];
 
     return (
         <div className="space-y-6">
@@ -324,7 +325,7 @@ export default function TeamManagementPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {transactions.length > 0 ? (
+                                {transactions && transactions.length > 0 ? (
                                     transactions.map(tx => (
                                     <TableRow key={tx.id}>
                                         <TableCell className="font-medium">{tx.member}</TableCell>

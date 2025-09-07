@@ -6,7 +6,7 @@ import type { Enterprise } from '@/types/enterprise';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDoc, getDocs, collection, query, where, writeBatch, documentId, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDoc, getDocs, collection, query, where, writeBatch, documentId, deleteDoc, runTransaction } from 'firebase/firestore';
 
 interface EnterpriseContextType {
   enterprises: Enterprise[];
@@ -89,51 +89,52 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
 
   const addEnterprise = useCallback(async (enterpriseData: Omit<Enterprise, 'id'| 'ownerId' | 'members' | 'memberIds' | 'transactions'>, ownerRole: string) => {
     if (!user || !user.email || !user.displayName) return null;
-    
+
     const newEnterpriseRef = doc(collection(db, "enterprises"));
     const userDocRef = doc(db, 'users', user.uid);
 
-    const newEnterprise: Enterprise = {
-        ...enterpriseData,
-        id: newEnterpriseRef.id,
-        ownerId: user.uid,
-        members: [
-            {
-                uid: user.uid,
-                email: user.email,
-                name: user.displayName,
-                role: ownerRole,
-                type: 'owner'
-            }
-        ],
-        memberIds: [user.uid],
-        transactions: []
-    };
-
     try {
-        await setDoc(newEnterpriseRef, newEnterprise);
-        
-        // Now, update the user's document
-        const userDocSnap = await getDoc(userDocRef);
+        await runTransaction(db, async (transaction) => {
+            const userDoc = await transaction.get(userDocRef);
 
-        if (userDocSnap.exists() && userDocSnap.data().enterpriseIds) {
-            // If the user doc and enterpriseIds array exist, update it
-            await updateDoc(userDocRef, { 
-                enterpriseIds: arrayUnion(newEnterprise.id) 
-            });
-        } else {
-            // Otherwise, set the doc, creating the enterpriseIds array
-            await setDoc(userDocRef, { 
-                enterpriseIds: [newEnterprise.id] 
-            }, { merge: true });
-        }
+            const newEnterprise: Enterprise = {
+                ...enterpriseData,
+                id: newEnterpriseRef.id,
+                ownerId: user.uid,
+                members: [
+                    {
+                        uid: user.uid,
+                        email: user.email,
+                        name: user.displayName as string,
+                        role: ownerRole,
+                        type: 'owner'
+                    }
+                ],
+                memberIds: [user.uid],
+                transactions: []
+            };
 
-        toast({ title: "Entreprise créée", description: `L'entreprise "${newEnterprise.name}" a été créée.` });
-        return newEnterprise.id;
+            // 1. Create the new enterprise document
+            transaction.set(newEnterpriseRef, newEnterprise);
+
+            // 2. Update the user's document
+            if (userDoc.exists() && userDoc.data().enterpriseIds) {
+                transaction.update(userDocRef, { 
+                    enterpriseIds: arrayUnion(newEnterprise.id) 
+                });
+            } else {
+                transaction.set(userDocRef, { 
+                    enterpriseIds: [newEnterprise.id] 
+                }, { merge: true });
+            }
+        });
+
+        toast({ title: "Entreprise créée", description: `L'entreprise "${enterpriseData.name}" a été créée.` });
+        return newEnterpriseRef.id;
 
     } catch(e) {
-      console.error("Failed to add enterprise to Firestore", e);
-      toast({ variant: "destructive", title: "Erreur", description: "Failed to save enterprise." });
+      console.error("Failed to add enterprise in transaction", e);
+      toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer l'entreprise. Veuillez réessayer." });
       throw e;
     }
   }, [toast, user]);
