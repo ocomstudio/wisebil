@@ -5,5 +5,6 @@ export interface Transaction {
     description: string;
     category?: string;
     date: string;
-    member?: string; // Name of the member who added the transaction
+    // Added to track who made the transaction in a company context
+    member?: string; 
 }

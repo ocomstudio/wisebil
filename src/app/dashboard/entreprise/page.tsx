@@ -64,7 +64,6 @@ export default function EntrepriseHubPage() {
             router.push(`/dashboard/entreprise/management/${newEnterpriseId}`);
         }
     } catch (error) {
-        // The error toast is already handled in the context, so we just log it here
         console.error("Enterprise creation failed:", error);
     }
   };

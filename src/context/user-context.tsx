@@ -27,7 +27,7 @@ export interface UserData {
   savingsGoals: SavingsGoal[];
   journalEntries: JournalEntry[];
   invoices: Invoice[];
-  // enterprise-specific data is handled separately
+  enterpriseIds?: string[];
 }
 
 interface UserDataContextType {

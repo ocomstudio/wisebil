@@ -33,14 +33,10 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
   const { userData, isLoading: isUserDataLoading } = useUserData();
 
   useEffect(() => {
-    if (isUserDataLoading) {
-      setIsLoading(true);
-      return;
-    }
-    if (!user) {
+    if (!user || isUserDataLoading) {
       setEnterprises([]);
       setPendingInvitations([]);
-      setIsLoading(false);
+      setIsLoading(isUserDataLoading);
       return;
     }
 
@@ -87,8 +83,6 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     
     try {
         await runTransaction(db, async (transaction) => {
-            const userDoc = await transaction.get(userDocRef);
-
             const newMember: Member = {
                 uid: user.uid,
                 email: user.email!,
@@ -108,14 +102,14 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
 
             transaction.set(newEnterpriseRef, newEnterprise);
 
+            const userDoc = await transaction.get(userDocRef);
             if (userDoc.exists()) {
                  const currentEnterpriseIds = userDoc.data().enterpriseIds || [];
                  transaction.update(userDocRef, { 
                     enterpriseIds: [...currentEnterpriseIds, newEnterpriseRef.id]
                 });
             } else {
-                // This case should ideally not happen if user is logged in and has a profile,
-                // but as a fallback, we create the user doc.
+                // If user doc doesn't exist, create it with the enterprise ID.
                 transaction.set(userDocRef, {
                     enterpriseIds: [newEnterpriseRef.id]
                 }, { merge: true });
@@ -177,7 +171,6 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     if (!user || !user.email || !user.displayName) return;
     
     const invitationRef = doc(db, 'invitations', invitationId);
-    
     const batch = writeBatch(db);
     
     const invitationSnap = await getDoc(invitationRef);

@@ -1,7 +1,7 @@
 // src/app/dashboard/entreprise/management/[id]/page.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from 'next/navigation';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -72,6 +72,7 @@ export default function TeamManagementPage() {
             if (docSnap.exists()) {
                 const enterpriseData = { id: docSnap.id, ...docSnap.data() } as Enterprise;
                 setEnterprise(enterpriseData);
+                // The transactions are now stored inside the enterprise document.
                 setTransactions(enterpriseData.transactions || []);
             } else {
                 setEnterprise(null);
@@ -85,7 +86,7 @@ export default function TeamManagementPage() {
         return () => unsubscribe();
     }, [id]);
     
-    const { income, expenses } = React.useMemo(() => {
+    const { income, expenses } = useMemo(() => {
         if (!transactions) return { income: 0, expenses: 0 };
         return transactions.reduce((acc, tx) => {
             if (tx.type === 'income') {
@@ -183,7 +184,7 @@ export default function TeamManagementPage() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Revenus Totaux (30j)</CardTitle>
+                        <CardTitle className="text-sm font-medium">Revenus Totaux</CardTitle>
                         <TrendingUp className="h-4 w-4 text-green-500" />
                     </CardHeader>
                     <CardContent>
@@ -192,7 +193,7 @@ export default function TeamManagementPage() {
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Dépenses Totales (30j)</CardTitle>
+                        <CardTitle className="text-sm font-medium">Dépenses Totales</CardTitle>
                         <TrendingDown className="h-4 w-4 text-red-500" />
                     </CardHeader>
                     <CardContent>
