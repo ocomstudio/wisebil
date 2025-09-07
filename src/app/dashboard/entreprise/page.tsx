@@ -54,12 +54,18 @@ export default function EntrepriseHubPage() {
   });
 
   const handleCreateEnterprise = async (values: z.infer<typeof enterpriseSchema>) => {
-    const { name, description, ownerRole } = values;
-    const newEnterpriseId = await addEnterprise({ name, description: description || "" }, ownerRole);
-    form.reset();
-    setIsCreateOpen(false);
-    if (newEnterpriseId) {
-        router.push(`/dashboard/entreprise/management/${newEnterpriseId}`);
+    try {
+        const { name, description, ownerRole } = values;
+        const newEnterpriseId = await addEnterprise({ name, description: description || "" }, ownerRole);
+        
+        if (newEnterpriseId) {
+            form.reset();
+            setIsCreateOpen(false);
+            router.push(`/dashboard/entreprise/management/${newEnterpriseId}`);
+        }
+    } catch (error) {
+        // The error toast is already handled in the context, so we just log it here
+        console.error("Enterprise creation failed:", error);
     }
   };
   

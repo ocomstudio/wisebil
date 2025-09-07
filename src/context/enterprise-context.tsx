@@ -113,19 +113,17 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
                 memberIds: [user.uid],
                 transactions: []
             };
-
-            // 1. Create the new enterprise document
+            
             transaction.set(newEnterpriseRef, newEnterprise);
 
-            // 2. Update the user's document
-            if (userDoc.exists() && userDoc.data().enterpriseIds) {
-                transaction.update(userDocRef, { 
+            if (userDoc.exists()) {
+                 transaction.update(userDocRef, { 
                     enterpriseIds: arrayUnion(newEnterprise.id) 
                 });
             } else {
                 transaction.set(userDocRef, { 
                     enterpriseIds: [newEnterprise.id] 
-                }, { merge: true });
+                });
             }
         });
 
@@ -135,7 +133,7 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     } catch(e) {
       console.error("Failed to add enterprise in transaction", e);
       toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer l'entreprise. Veuillez réessayer." });
-      throw e;
+      throw e; // Re-throw the error so the calling component knows it failed
     }
   }, [toast, user]);
   
