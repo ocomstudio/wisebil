@@ -92,48 +92,42 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
 
     const newEnterpriseRef = doc(collection(db, "enterprises"));
     const userDocRef = doc(db, 'users', user.uid);
+    
+    const newEnterprise: Enterprise = {
+        ...enterpriseData,
+        id: newEnterpriseRef.id,
+        ownerId: user.uid,
+        members: [
+            {
+                uid: user.uid,
+                email: user.email,
+                name: user.displayName as string,
+                role: ownerRole,
+                type: 'owner'
+            }
+        ],
+        memberIds: [user.uid],
+        transactions: []
+    };
 
     try {
-        await runTransaction(db, async (transaction) => {
-            const userDoc = await transaction.get(userDocRef);
+        // Step 1: Create the enterprise document.
+        await setDoc(newEnterpriseRef, newEnterprise);
 
-            const newEnterprise: Enterprise = {
-                ...enterpriseData,
-                id: newEnterpriseRef.id,
-                ownerId: user.uid,
-                members: [
-                    {
-                        uid: user.uid,
-                        email: user.email,
-                        name: user.displayName as string,
-                        role: ownerRole,
-                        type: 'owner'
-                    }
-                ],
-                memberIds: [user.uid],
-                transactions: []
-            };
-            
-            transaction.set(newEnterpriseRef, newEnterprise);
-
-            if (userDoc.exists()) {
-                 transaction.update(userDocRef, { 
-                    enterpriseIds: arrayUnion(newEnterprise.id) 
-                });
-            } else {
-                transaction.set(userDocRef, { 
-                    enterpriseIds: [newEnterprise.id] 
-                });
-            }
-        });
+        // Step 2: Update the user's document with the new enterprise ID.
+        // setDoc with merge:true will create the document if it doesn't exist, 
+        // or update it if it does, which is safer.
+        await setDoc(userDocRef, { 
+            enterpriseIds: arrayUnion(newEnterprise.id) 
+        }, { merge: true });
 
         toast({ title: "Entreprise créée", description: `L'entreprise "${enterpriseData.name}" a été créée.` });
         return newEnterpriseRef.id;
 
     } catch(e) {
-      console.error("Failed to add enterprise in transaction", e);
+      console.error("Failed to add enterprise", e);
       toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer l'entreprise. Veuillez réessayer." });
-      throw e; // Re-throw the error so the calling component knows it failed
+      return null;
     }
   }, [toast, user]);
   

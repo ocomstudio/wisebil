@@ -15,5 +15,5 @@ export interface Enterprise {
     ownerId: string; // UID of the user who created it
     members: Member[];
     memberIds: string[]; // For easier querying
-    transactions: Transaction[];
+    transactions: Transaction[]; // Transactions specific to the enterprise
 }
