@@ -35,6 +35,7 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    setIsLoading(true);
     const enterprisesQuery = query(collection(db, "enterprises"), where("memberIds", "array-contains", user.uid));
     const invitationsQuery = query(collection(db, "invitations"), where("email", "==", user.email), where("status", "==", "pending"));
 

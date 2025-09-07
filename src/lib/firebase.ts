@@ -1,7 +1,7 @@
 // src/lib/firebase.ts
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, initializeAuth, browserLocalPersistence } from "firebase/auth";
-import { initializeFirestore, CACHE_SIZE_UNLIMITED, enableIndexedDbPersistence } from "firebase/firestore";
+import { initializeFirestore, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAwsld5_98H5kslXgwtIOgOv3uDgVRJeYY",
@@ -19,26 +19,10 @@ const auth = initializeAuth(app, {
     persistence: browserLocalPersistence
 });
 
-// Initialize Firestore with offline persistence
+// Initialize Firestore without offline persistence for stability
 const db = initializeFirestore(app, {
   cacheSizeBytes: CACHE_SIZE_UNLIMITED,
 });
-
-try {
-  enableIndexedDbPersistence(db)
-    .then(() => console.log("Firestore offline persistence enabled."))
-    .catch((err) => {
-        if (err.code === 'failed-precondition') {
-            console.warn('Firestore offline persistence failed: Multiple tabs open. Persistence will only be enabled in one tab at a time.');
-        } else if (err.code === 'unimplemented') {
-            console.warn('Firestore offline persistence is not available in this browser.');
-        } else {
-            console.error("Firestore offline persistence error:", err);
-        }
-    });
-} catch (error) {
-    console.error("An error occurred during Firestore persistence setup:", error);
-}
 
 
 export { app, auth, db };
