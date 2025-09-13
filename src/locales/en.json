@@ -357,8 +357,8 @@
     "currency_label": "Currency",
     "currency_setting_desc": "Choose your main currency for the app.",
     "currency": "Currency",
-    "security_title": "Security",
-    "security_desc": "Manage your security settings.",
+    "security_title": "Security & Notifications",
+    "security_desc": "Manage your security settings and alerts.",
     "pin_lock_label": "PIN Lock",
     "pin_lock_desc": "Secure your app with a 4-digit PIN code.",
     "hide_balance_label": "Hide Balance",
@@ -644,5 +644,15 @@
     "about_pro_vision_item2_title": "Intuitive Invoicing",
     "about_pro_vision_item2_desc": "Create professional invoices, customize them with your logo, and track their status (draft, paid, overdue) effortlessly. Automate your reminders and get paid faster.",
     "about_pro_vision_item3_title": "360° Vision",
-    "about_pro_vision_item3_desc": "The true power of Wisebil lies in integration. Every paid invoice updates your cash flow. Every recorded expense impacts your bottom line. Get a real-time view of your company's financial health, with no reconciliation effort."
+    "about_pro_vision_item3_desc": "The true power of Wisebil lies in integration. Every paid invoice updates your cash flow. Every recorded expense impacts your bottom line. Get a real-time view of your company's financial health, with no reconciliation effort.",
+    "notification_reminder_label": "Entry Reminders",
+    "notification_reminder_desc": "Receive a sound reminder every 2 hours to remember to add your transactions.",
+    "notification_reminder_enabled_title": "Reminders enabled",
+    "notification_reminder_disabled_title": "Reminders disabled",
+    "notification_disable_warning_title": "Disable reminders?",
+    "notification_disable_warning_desc": "To help us improve, why do you want to disable notifications?",
+    "notification_reason_too_frequent": "Notifications are too frequent.",
+    "notification_reason_sound_disturbing": "The sound disturbs me.",
+    "notification_reason_not_useful": "Notifications are not useful to me.",
+    "notification_disable_confirm_button": "Confirm deactivation"
 }

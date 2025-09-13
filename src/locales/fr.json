@@ -357,8 +357,8 @@
     "currency_label": "Devise",
     "currency_setting_desc": "Choisissez votre devise principale pour l'application.",
     "currency": "Devise",
-    "security_title": "Sécurité",
-    "security_desc": "Gérez vos paramètres de sécurité.",
+    "security_title": "Sécurité & Notifications",
+    "security_desc": "Gérez vos paramètres de sécurité et d'alertes.",
     "pin_lock_label": "Verrouillage par PIN",
     "pin_lock_desc": "Sécurisez votre application avec un code PIN à 4 chiffres.",
     "hide_balance_label": "Masquer le solde",
@@ -642,5 +642,15 @@
     "about_pro_vision_item2_title": "Facturation Intuitive",
     "about_pro_vision_item2_desc": "Créez des factures professionnelles, personnalisez-les avec votre logo, et suivez leur statut (brouillon, payée, en retard) sans effort. Automatisez vos rappels et soyez payé plus rapidement.",
     "about_pro_vision_item3_title": "Vision à 360°",
-    "about_pro_vision_item3_desc": "Le vrai pouvoir de Wisebil réside dans l'intégration. Chaque facture payée met à jour votre trésorerie. Chaque dépense enregistrée impacte votre résultat. Obtenez une vue en temps réel de la santé financière de votre entreprise, sans effort de rapprochement."
+    "about_pro_vision_item3_desc": "Le vrai pouvoir de Wisebil réside dans l'intégration. Chaque facture payée met à jour votre trésorerie. Chaque dépense enregistrée impacte votre résultat. Obtenez une vue en temps réel de la santé financière de votre entreprise, sans effort de rapprochement.",
+    "notification_reminder_label": "Rappels de saisie",
+    "notification_reminder_desc": "Recevez un rappel sonore toutes les 2h pour penser à ajouter vos transactions.",
+    "notification_reminder_enabled_title": "Rappels activés",
+    "notification_reminder_disabled_title": "Rappels désactivés",
+    "notification_disable_warning_title": "Désactiver les rappels ?",
+    "notification_disable_warning_desc": "Pour nous aider à nous améliorer, pourquoi souhaitez-vous désactiver les notifications ?",
+    "notification_reason_too_frequent": "Les notifications sont trop fréquentes.",
+    "notification_reason_sound_disturbing": "Le son me dérange.",
+    "notification_reason_not_useful": "Les notifications ne me sont pas utiles.",
+    "notification_disable_confirm_button": "Confirmer la désactivation"
 }

@@ -621,7 +621,7 @@ export default function SettingsPage() {
                           <DialogTitle>{t('notification_disable_warning_title')}</DialogTitle>
                           <DialogDescription>{t('notification_disable_warning_desc')}</DialogDescription>
                       </DialogHeader>
-                      <RadioGroup onValueChange={setNotificationDisableReason}>
+                      <RadioGroup onValueChange={setNotificationDisableReason} className="space-y-2 py-4">
                           <div className="flex items-center space-x-2">
                               <RadioGroupItem value="too_frequent" id="r1" />
                               <Label htmlFor="r1">{t('notification_reason_too_frequent')}</Label>
