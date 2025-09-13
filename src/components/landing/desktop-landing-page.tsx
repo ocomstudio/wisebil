@@ -246,7 +246,7 @@ export default function DesktopLandingPage() {
                             <div className="flex flex-col justify-center space-y-6">
                                 <div className="space-y-4">
                                     <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-foreground">
-                                        Wisebil. <span className="text-primary">Pensez autrement votre argent.</span>
+                                        {t('hero_title_slogan_main')} <span className="text-primary">{t('hero_title_slogan_primary')}</span>
                                     </h1>
                                     <p className="max-w-[600px] text-muted-foreground md:text-xl">
                                         {t('hero_subtitle')}
