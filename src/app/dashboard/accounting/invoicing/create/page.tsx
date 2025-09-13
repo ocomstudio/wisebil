@@ -1,7 +1,7 @@
 // src/app/dashboard/accounting/invoicing/create/page.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -19,11 +19,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { useLocale } from '@/context/locale-context';
-import { ArrowLeft, PlusCircle, Trash2, CalendarIcon, Loader2, Upload } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Trash2, CalendarIcon, Loader2, Upload, Palette } from 'lucide-react';
 import { Invoice } from '@/types/invoice';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useInvoicing } from '@/context/invoicing-context';
+import { useCompanyProfile } from '@/context/company-profile-context';
 
 const lineItemSchema = z.object({
   id: z.string(),
@@ -37,6 +38,7 @@ const invoiceSchema = z.object({
   companyLogoUrl: z.string().optional(),
   signatureUrl: z.string().optional(),
   stampUrl: z.string().optional(),
+  brandColor: z.string().optional(),
   customerName: z.string().min(2, "Le nom du client est requis."),
   customerEmail: z.string().email("L'e-mail du client est invalide.").optional().or(z.literal('')),
   customerAddress: z.string().min(5, "L'adresse du client est requise."),
@@ -49,6 +51,10 @@ type InvoiceFormValues = z.infer<typeof invoiceSchema>;
 
 const ImageUpload = ({ field, label }: { field: any, label: string }) => {
     const [preview, setPreview] = useState(field.value || null);
+
+    useEffect(() => {
+        setPreview(field.value || null);
+    }, [field.value]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -90,6 +96,7 @@ export default function CreateInvoicePage() {
   const { toast } = useToast();
   const { t, formatCurrency } = useLocale();
   const { addInvoice, isLoading } = useInvoicing();
+  const { companyProfile, updateCompanyProfile } = useCompanyProfile();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<InvoiceFormValues>({
@@ -99,11 +106,25 @@ export default function CreateInvoicePage() {
       customerName: "",
       customerEmail: "",
       customerAddress: "",
+      brandColor: '#50C878', // default to primary green
       issueDate: new Date(),
       dueDate: new Date(new Date().setDate(new Date().getDate() + 30)),
       lineItems: [{ id: uuidv4(), description: "", quantity: 1, unitPrice: 0 }],
     },
   });
+  
+  useEffect(() => {
+    if (companyProfile) {
+        form.reset({
+            ...form.getValues(),
+            companyAddress: companyProfile.address || "",
+            companyLogoUrl: companyProfile.logoUrl || "",
+            signatureUrl: companyProfile.signatureUrl || "",
+            stampUrl: companyProfile.stampUrl || "",
+            brandColor: companyProfile.brandColor || '#50C878',
+        })
+    }
+  }, [companyProfile, form]);
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -118,7 +139,7 @@ export default function CreateInvoicePage() {
   const onSubmit = async (data: InvoiceFormValues) => {
     setIsSubmitting(true);
     
-    const newInvoice: Omit<Invoice, 'id' | 'invoiceNumber' | 'status'> = {
+    const newInvoiceData = {
         ...data,
         issueDate: data.issueDate.toISOString(),
         dueDate: data.dueDate.toISOString(),
@@ -130,9 +151,20 @@ export default function CreateInvoicePage() {
         tax,
         total,
     }
+    
+    const companyProfileData = {
+        address: data.companyAddress,
+        logoUrl: data.companyLogoUrl,
+        signatureUrl: data.signatureUrl,
+        stampUrl: data.stampUrl,
+        brandColor: data.brandColor,
+    };
 
     try {
-        await addInvoice(newInvoice);
+        // Save the company profile first
+        await updateCompanyProfile(companyProfileData);
+        // Then add the invoice
+        await addInvoice(newInvoiceData);
         toast({
             title: "Facture créée",
             description: "La nouvelle facture a été enregistrée et l'écriture comptable a été générée.",
@@ -166,12 +198,28 @@ export default function CreateInvoicePage() {
              <Card>
                 <CardHeader>
                     <CardTitle>Informations de votre Entreprise</CardTitle>
-                    <CardDescription>Personnalisez la facture avec vos informations.</CardDescription>
+                    <CardDescription>Personnalisez la facture avec vos informations. Elles seront sauvegardées pour les prochaines fois.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <FormField control={form.control} name="companyAddress" render={({ field }) => (
-                         <FormItem><FormLabel>Votre adresse</FormLabel><FormControl><Textarea placeholder="123 Rue Principale, Dakar, Sénégal" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <FormField control={form.control} name="companyAddress" render={({ field }) => (
+                            <FormItem className="md:col-span-2"><FormLabel>Votre adresse</FormLabel><FormControl><Textarea placeholder="123 Rue Principale, Dakar, Sénégal" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        
+                        <FormField control={form.control} name="brandColor" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Couleur de la marque</FormLabel>
+                                <FormControl>
+                                    <label className="flex items-center gap-2 border rounded-md p-2 cursor-pointer">
+                                        <Palette className="h-5 w-5 text-muted-foreground" />
+                                        <span>Choisir une couleur</span>
+                                        <Input type="color" {...field} className="w-8 h-8 p-0 border-0 cursor-pointer ml-auto"/>
+                                    </label>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                    </div>
                     <div className="grid md:grid-cols-3 gap-6">
                         <FormField control={form.control} name="companyLogoUrl" render={({ field }) => (
                              <ImageUpload field={field} label="Votre Logo" />

@@ -14,6 +14,7 @@ export interface Invoice {
   companyLogoUrl?: string | null;
   signatureUrl?: string | null;
   stampUrl?: string | null;
+  brandColor?: string;
   customerName: string;
   customerEmail: string;
   customerAddress: string;

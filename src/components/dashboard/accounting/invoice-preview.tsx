@@ -15,23 +15,31 @@ interface InvoicePreviewProps {
 
 export const InvoicePreview = React.forwardRef<HTMLDivElement, InvoicePreviewProps>(({ invoice }, ref) => {
     const { formatCurrency, formatDate } = useLocale();
+    const brandColor = invoice.brandColor || 'hsl(var(--primary))';
+
+    const brandStyle = {
+        color: brandColor,
+    };
+    const brandBgStyle = {
+        backgroundColor: brandColor,
+    }
 
   return (
     <Card className="max-w-4xl mx-auto my-8 shadow-2xl" ref={ref}>
-      <CardHeader className="p-8 bg-muted/30">
+      <CardHeader className="p-8" style={{ backgroundColor: `${brandColor}1A` }}>
         <div className="flex justify-between items-start">
           <div>
             {invoice.companyLogoUrl ? (
                  <Image src={invoice.companyLogoUrl} alt="Company Logo" width={120} height={60} className="object-contain" data-ai-hint="company logo"/>
             ) : (
-                <h1 className="text-2xl font-bold font-headline text-primary">Votre Entreprise</h1>
+                <h1 className="text-2xl font-bold font-headline" style={brandStyle}>Votre Entreprise</h1>
             )}
             <p className="text-muted-foreground whitespace-pre-line mt-2 text-sm">{invoice.companyAddress}</p>
           </div>
           <div className="text-right">
-            <h1 className="text-3xl font-bold font-headline text-primary">FACTURE</h1>
+            <h1 className="text-3xl font-bold font-headline" style={brandStyle}>FACTURE</h1>
             <p className="text-muted-foreground"># {invoice.invoiceNumber}</p>
-             <Separator className="my-2"/>
+             <Separator className="my-2" style={{ backgroundColor: brandColor, opacity: 0.5 }}/>
             <p><span className="font-semibold">Date d'émission:</span> {formatDate(invoice.issueDate)}</p>
             <p><span className="font-semibold">Date d'échéance:</span> {formatDate(invoice.dueDate)}</p>
           </div>
@@ -49,19 +57,19 @@ export const InvoicePreview = React.forwardRef<HTMLDivElement, InvoicePreviewPro
 
         <Table>
             <TableHeader>
-                <TableRow>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="text-center">Quantité</TableHead>
-                    <TableHead className="text-right">Prix Unitaire</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
+                <TableRow style={brandBgStyle} className="hover:bg-primary/90">
+                    <TableHead className="text-primary-foreground font-bold rounded-tl-lg">Description</TableHead>
+                    <TableHead className="text-center text-primary-foreground font-bold">Quantité</TableHead>
+                    <TableHead className="text-right text-primary-foreground font-bold">Prix Unitaire</TableHead>
+                    <TableHead className="text-right text-primary-foreground font-bold rounded-tr-lg">Total</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
                 {invoice.lineItems.map((item) => (
-                    <TableRow key={item.id}>
-                        <TableCell className="font-medium">{item.description}</TableCell>
-                        <TableCell className="text-center">{item.quantity}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.unitPrice)}</TableCell>
+                    <TableRow key={item.id} className="border-x">
+                        <TableCell className="font-medium border-r">{item.description}</TableCell>
+                        <TableCell className="text-center border-r">{item.quantity}</TableCell>
+                        <TableCell className="text-right border-r">{formatCurrency(item.unitPrice)}</TableCell>
                         <TableCell className="text-right">{formatCurrency(item.total)}</TableCell>
                     </TableRow>
                 ))}
@@ -79,7 +87,7 @@ export const InvoicePreview = React.forwardRef<HTMLDivElement, InvoicePreviewPro
                     <span>{formatCurrency(invoice.tax)}</span>
                 </div>
                 <Separator />
-                 <div className="flex justify-between font-bold text-lg text-primary">
+                 <div className="flex justify-between font-bold text-lg" style={brandStyle}>
                     <span>Total</span>
                     <span>{formatCurrency(invoice.total)}</span>
                 </div>

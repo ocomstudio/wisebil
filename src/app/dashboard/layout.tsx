@@ -31,6 +31,7 @@ import { TeamChatProvider } from "@/context/team-chat-context";
 import { TeamChat } from "@/components/dashboard/team/team-chat";
 import { EnterpriseProvider } from "@/context/enterprise-context";
 import { UserDataProvider } from "@/context/user-context";
+import { CompanyProfileProvider } from "@/context/company-profile-context";
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
@@ -113,15 +114,17 @@ export default function DashboardLayout({
                   <BudgetProvider>
                     <SavingsProvider>
                       <NotificationsProvider>
-                        <AccountingProvider>
-                          <InvoicingProvider>
-                            <TutorialProvider>
-                              <TeamChatProvider>
-                                <DashboardLayoutContent>{children}</DashboardLayoutContent>
-                              </TeamChatProvider>
-                            </TutorialProvider>
-                          </InvoicingProvider>
-                        </AccountingProvider>
+                        <CompanyProfileProvider>
+                          <AccountingProvider>
+                            <InvoicingProvider>
+                              <TutorialProvider>
+                                <TeamChatProvider>
+                                  <DashboardLayoutContent>{children}</DashboardLayoutContent>
+                                </TeamChatProvider>
+                              </TutorialProvider>
+                            </InvoicingProvider>
+                          </AccountingProvider>
+                        </CompanyProfileProvider>
                       </NotificationsProvider>
                       <HotToaster
                         position="top-center"

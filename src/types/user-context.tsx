@@ -9,6 +9,7 @@ import type { SavingsGoal } from '@/types/savings-goal';
 import type { JournalEntry } from '@/components/dashboard/accounting/journal-entries';
 import type { Invoice } from '@/types/invoice';
 import type { Language, Currency } from './locale-context';
+import type { CompanyProfile } from '@/types/company';
 
 
 export interface UserData {
@@ -22,13 +23,14 @@ export interface UserData {
     isPinLockEnabled: boolean;
     pin: string | null;
   };
+  companyProfile?: CompanyProfile;
   transactions: Transaction[];
   budgets: Budget[];
   savingsGoals: SavingsGoal[];
   journalEntries: JournalEntry[];
   invoices: Invoice[];
   enterpriseIds?: string[];
-  // enterprise-specific data is handled separately
+  customCategories?: { name: string; emoji: string; }[];
 }
 
 interface UserDataContextType {
