@@ -92,6 +92,7 @@ export function UserProfile() {
             <Link href="/dashboard/entreprise">
               <Building className="mr-2 h-4 w-4" />
               <span>Entreprise</span>
+               <Badge variant="secondary" className="ml-auto md:hidden">Bientôt</Badge>
             </Link>
           </DropdownMenuItem>
            <DropdownMenuItem asChild>
