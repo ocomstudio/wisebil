@@ -44,6 +44,7 @@ import { FirebaseError } from "firebase/app";
 import { AvatarUploadDialog } from "@/components/dashboard/settings/avatar-upload-dialog";
 import { useNotifications } from "@/context/notifications-context";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from '@/components/ui/label';
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function SettingsPage() {
