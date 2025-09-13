@@ -4,6 +4,9 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { Lightbulb, TrendingUp, Bell } from "lucide-react";
 import { useLocale } from './locale-context';
+import { useSettings } from './settings-context';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from './auth-context';
 
 interface Notification {
   id: number;
@@ -19,12 +22,28 @@ interface NotificationsContextType {
   unreadCount: number;
   removeNotification: (id: number) => void;
   markAllAsRead: () => void;
+  isReminderEnabled: boolean;
+  setIsReminderEnabled: (enabled: boolean) => void;
+  lastReminderTimestamp: number | null;
+  setLastReminderTimestamp: (timestamp: number | null) => void;
 }
 
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
 
+const playNotificationSound = () => {
+  const audio = new Audio('/notification.mp3');
+  audio.play().catch(error => console.error("Error playing sound:", error));
+};
+
+
 export const NotificationsProvider = ({ children }: { children: ReactNode }) => {
   const { t } = useLocale();
+  const { user } = useAuth();
+  const isMobile = useIsMobile();
+  const { settings, updateSettings } = useSettings();
+  
+  const [isReminderEnabled, setIsReminderEnabledState] = useState(settings.isReminderEnabled ?? true);
+  const [lastReminderTimestamp, setLastReminderTimestamp] = useState<number | null>(null);
 
   const initialNotifications: Notification[] = [
     {
@@ -65,6 +84,41 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
+    setIsReminderEnabledState(settings.isReminderEnabled ?? true);
+  }, [settings.isReminderEnabled]);
+
+
+  useEffect(() => {
+    if (!isMobile || !isReminderEnabled || !user) return;
+
+    const REMINDER_INTERVAL = 2 * 60 * 60 * 1000; // 2 hours
+
+    const intervalId = setInterval(() => {
+      playNotificationSound();
+      // You could also use the Web Notifications API here if permission is granted
+      console.log("Playing reminder sound.");
+      setLastReminderTimestamp(Date.now());
+    }, REMINDER_INTERVAL);
+
+    // Check if it's the first of the month and re-enable if needed
+    const today = new Date();
+    if (today.getDate() === 1) {
+        if (!settings.isReminderEnabled) {
+            updateSettings({ isReminderEnabled: true });
+        }
+    }
+
+
+    return () => clearInterval(intervalId);
+  }, [isMobile, isReminderEnabled, user, settings.isReminderEnabled, updateSettings]);
+
+
+  const setIsReminderEnabled = (enabled: boolean) => {
+    setIsReminderEnabledState(enabled);
+    updateSettings({ isReminderEnabled: enabled });
+  };
+
+  useEffect(() => {
     setUnreadCount(notifications.filter(n => n.isNew).length);
   }, [notifications]);
 
@@ -77,7 +131,16 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
   }, []);
 
   return (
-    <NotificationsContext.Provider value={{ notifications, unreadCount, removeNotification, markAllAsRead }}>
+    <NotificationsContext.Provider value={{ 
+        notifications, 
+        unreadCount, 
+        removeNotification, 
+        markAllAsRead,
+        isReminderEnabled,
+        setIsReminderEnabled,
+        lastReminderTimestamp,
+        setLastReminderTimestamp
+    }}>
       {children}
     </NotificationsContext.Provider>
   );

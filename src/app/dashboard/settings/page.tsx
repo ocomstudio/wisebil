@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck, Languages, Wallet, Trash2, Download, HelpCircle, RefreshCw, MailWarning, Send, Building } from "lucide-react";
+import { Camera, EyeOff, FileText, Info, Lock, ShieldCheck, Languages, Wallet, Trash2, Download, HelpCircle, RefreshCw, MailWarning, Send, Building, Bell } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useSettings } from "@/context/settings-context";
 import { useToast } from "@/hooks/use-toast";
@@ -42,10 +42,13 @@ import 'react-phone-number-input/style.css';
 import { useTutorial } from "@/context/tutorial-context";
 import { FirebaseError } from "firebase/app";
 import { AvatarUploadDialog } from "@/components/dashboard/settings/avatar-upload-dialog";
-
+import { useNotifications } from "@/context/notifications-context";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function SettingsPage() {
   const { settings, updateSettings, checkPin } = useSettings();
+  const { isReminderEnabled, setIsReminderEnabled } = useNotifications();
   const { user, updateUser, logout, sendVerificationEmail, updateUserEmail, updateUserPassword } = useAuth();
   const { toast } = useToast();
   const { t, locale, setLocale, currency, setCurrency } = useLocale();
@@ -54,6 +57,9 @@ export default function SettingsPage() {
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
+  const [isNotificationsDialogOpen, setIsNotificationsDialogOpen] = useState(false);
+  const [notificationDisableReason, setNotificationDisableReason] = useState("");
+  const isMobile = useIsMobile();
 
   const { resetTransactions } = useTransactions();
   const { resetBudgets } = useBudgets();
@@ -198,6 +204,23 @@ export default function SettingsPage() {
         toast({ variant: "destructive", title: t('incorrect_pin') });
     }
   };
+
+  const handleToggleReminderNotifications = (isChecked: boolean) => {
+    if (!isChecked) {
+      setIsNotificationsDialogOpen(true);
+    } else {
+      setIsReminderEnabled(true);
+      toast({ title: t('notification_reminder_enabled_title') });
+    }
+  };
+
+  const handleConfirmDisableNotifications = () => {
+    console.log("Raison de la désactivation :", notificationDisableReason);
+    setIsReminderEnabled(false);
+    setIsNotificationsDialogOpen(false);
+    toast({ title: t('notification_reminder_disabled_title') });
+  };
+
 
   const handleResetData = async () => {
     try {
@@ -509,29 +532,6 @@ export default function SettingsPage() {
             </div>
         </CardContent>
       </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('data_export_title')}</CardTitle>
-          <CardDescription>{t('data_export_desc')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <ExportDataDialog />
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('help_and_support_title')}</CardTitle>
-          <CardDescription>{t('help_and_support_desc')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-             <Button onClick={handleReviewTutorial}>
-                <HelpCircle className="mr-2 h-4 w-4" />
-                {t('review_tutorial_button')}
-             </Button>
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>
@@ -577,7 +577,6 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-
       <Card>
         <CardHeader>
           <CardTitle>{t('security_title')}</CardTitle>
@@ -605,6 +604,67 @@ export default function SettingsPage() {
               disabled={!settings.isPinLockEnabled}
             />
           </div>
+          {isMobile && (
+            <div className="flex items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                    <h3 className="font-medium flex items-center gap-2"><Bell className="h-4 w-4" /> {t('notification_reminder_label')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('notification_reminder_desc')}</p>
+                </div>
+                <Dialog open={isNotificationsDialogOpen} onOpenChange={setIsNotificationsDialogOpen}>
+                  <Switch
+                      checked={isReminderEnabled}
+                      onCheckedChange={handleToggleReminderNotifications}
+                  />
+                  <DialogContent>
+                      <DialogHeader>
+                          <DialogTitle>{t('notification_disable_warning_title')}</DialogTitle>
+                          <DialogDescription>{t('notification_disable_warning_desc')}</DialogDescription>
+                      </DialogHeader>
+                      <RadioGroup onValueChange={setNotificationDisableReason}>
+                          <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="too_frequent" id="r1" />
+                              <Label htmlFor="r1">{t('notification_reason_too_frequent')}</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="sound_disturbing" id="r2" />
+                              <Label htmlFor="r2">{t('notification_reason_sound_disturbing')}</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="not_useful" id="r3" />
+                              <Label htmlFor="r3">{t('notification_reason_not_useful')}</Label>
+                          </div>
+                      </RadioGroup>
+                      <DialogFooter>
+                          <Button variant="ghost" onClick={() => setIsNotificationsDialogOpen(false)}>{t('cancel')}</Button>
+                          <Button onClick={handleConfirmDisableNotifications}>{t('notification_disable_confirm_button')}</Button>
+                      </DialogFooter>
+                  </DialogContent>
+              </Dialog>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('data_export_title')}</CardTitle>
+          <CardDescription>{t('data_export_desc')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <ExportDataDialog />
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('help_and_support_title')}</CardTitle>
+          <CardDescription>{t('help_and_support_desc')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+             <Button onClick={handleReviewTutorial}>
+                <HelpCircle className="mr-2 h-4 w-4" />
+                {t('review_tutorial_button')}
+             </Button>
         </CardContent>
       </Card>
 

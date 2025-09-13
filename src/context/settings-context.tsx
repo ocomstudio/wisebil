@@ -12,6 +12,7 @@ interface Settings {
   isBalanceHidden: boolean;
   isPinLockEnabled: boolean;
   pin: string | null;
+  isReminderEnabled?: boolean;
 }
 
 interface SettingsContextType {
@@ -26,6 +27,7 @@ const defaultSettings: Settings = {
   isBalanceHidden: false,
   isPinLockEnabled: false,
   pin: null,
+  isReminderEnabled: true,
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -35,7 +37,10 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [isTemporarilyVisible, setIsTemporarilyVisible] = useState(false);
   const { user } = useAuth();
 
-  const settings = useMemo(() => userData?.settings || defaultSettings, [userData]);
+  const settings = useMemo(() => {
+    const loadedSettings = userData?.settings || {};
+    return { ...defaultSettings, ...loadedSettings };
+  }, [userData]);
 
   const getUserDocRef = useCallback(() => {
     if (!user) return null;
