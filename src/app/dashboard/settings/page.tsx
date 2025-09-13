@@ -1,5 +1,4 @@
 
-
 // src/app/dashboard/settings/page.tsx
 "use client";
 
@@ -207,12 +206,21 @@ export default function SettingsPage() {
     }
   };
 
-  const handleToggleReminderNotifications = (isChecked: boolean) => {
+  const handleToggleReminderNotifications = async (isChecked: boolean) => {
     if (!isChecked) {
       setIsNotificationsDialogOpen(true);
     } else {
-      setIsReminderEnabled(true);
-      toast({ title: t('notification_reminder_enabled_title') });
+      if ('Notification' in window && 'serviceWorker' in navigator) {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          setIsReminderEnabled(true);
+          toast({ title: t('notification_reminder_enabled_title') });
+        } else {
+          toast({ variant: 'destructive', title: 'Permission refusée', description: 'Impossible d\'activer les notifications.' });
+        }
+      } else {
+        toast({ variant: 'destructive', title: 'Non supporté', description: 'Votre navigateur ne supporte pas les notifications.' });
+      }
     }
   };
 
@@ -476,10 +484,10 @@ export default function SettingsPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <div className="flex justify-end gap-2">
+                                <DialogFooter>
                                      <DialogClose asChild><Button type="button" variant="ghost">{t('cancel')}</Button></DialogClose>
                                      <Button type="submit" disabled={emailForm.formState.isSubmitting}>{t('save_changes_button')}</Button>
-                                </div>
+                                </DialogFooter>
                             </form>
                         </Form>
                     </DialogContent>
@@ -523,10 +531,10 @@ export default function SettingsPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <div className="flex justify-end gap-2">
+                                <DialogFooter>
                                      <DialogClose asChild><Button type="button" variant="ghost">{t('cancel')}</Button></DialogClose>
                                      <Button type="submit" disabled={passwordForm.formState.isSubmitting}>{t('change_password_button')}</Button>
-                                </div>
+                                </DialogFooter>
                             </form>
                         </Form>
                     </DialogContent>
