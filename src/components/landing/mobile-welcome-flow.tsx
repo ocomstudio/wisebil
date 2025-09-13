@@ -11,6 +11,9 @@ import type { Currency, Language } from '@/context/locale-context';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import LoginPage from '@/app/auth/login/page';
 import SignupPage from '@/app/auth/signup/page';
+import { useIosPwa } from '@/hooks/use-ios-pwa';
+import { IosInstallPrompt } from '../pwa/ios-install-prompt';
+
 
 const languages = [
     { code: 'fr' as Language, name: 'Français', flag: '🇫🇷' },
@@ -33,6 +36,7 @@ export function MobileWelcomeFlow() {
   const [signupOpen, setSignupOpen] = useState(false);
 
   const { setLocale, setCurrency, t } = useLocale();
+  const { showInstallPrompt } = useIosPwa();
 
   const handleSelectLanguage = (lang: Language) => {
     setLocale(lang);
@@ -165,6 +169,8 @@ export function MobileWelcomeFlow() {
             </Button>
           </footer>
         )}
+
+        {showInstallPrompt && <IosInstallPrompt />}
      </div>
   );
 }
