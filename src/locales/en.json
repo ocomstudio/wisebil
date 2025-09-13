@@ -365,7 +365,7 @@
     "hide_balance_desc": "Hide your balance on the home screen for more privacy.",
     "about_title": "About",
     "about_desc": "Information about the application.",
-    "app_info": "Wisebil - Version 1.0 - by Ocomstudio",
+    "app_info": "Wisebil - Version 1.2 - by Ocomstudio",
     "terms_of_service": "Terms of Service",
     "transaction_deleted_title": "Transaction deleted",
     "budget_name_error": "Budget name must be at least 3 characters.",
@@ -646,7 +646,7 @@
     "about_pro_vision_item3_title": "360° Vision",
     "about_pro_vision_item3_desc": "The true power of Wisebil lies in integration. Every paid invoice updates your cash flow. Every recorded expense impacts your bottom line. Get a real-time view of your company's financial health, with no reconciliation effort.",
     "notification_reminder_label": "Entry Reminders",
-    "notification_reminder_desc": "Receive a sound reminder every 2 hours to remember to add your transactions.",
+    "notification_reminder_desc": "Receive a periodic reminder to remember to add your transactions.",
     "notification_reminder_enabled_title": "Reminders enabled",
     "notification_reminder_disabled_title": "Reminders disabled",
     "notification_disable_warning_title": "Disable reminders?",
@@ -654,5 +654,9 @@
     "notification_reason_too_frequent": "Notifications are too frequent.",
     "notification_reason_sound_disturbing": "The sound disturbs me.",
     "notification_reason_not_useful": "Notifications are not useful to me.",
-    "notification_disable_confirm_button": "Confirm deactivation"
+    "notification_disable_confirm_button": "Confirm deactivation",
+    "permission_denied_title": "Permission denied",
+    "permission_denied_desc": "You have denied permission to show notifications.",
+    "notifications_not_supported_title": "Notifications not supported",
+    "notifications_not_supported_desc": "Your browser does not support push notifications."
 }

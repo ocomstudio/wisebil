@@ -24,17 +24,9 @@ interface NotificationsContextType {
   markAllAsRead: () => void;
   isReminderEnabled: boolean;
   setIsReminderEnabled: (enabled: boolean) => void;
-  lastReminderTimestamp: number | null;
-  setLastReminderTimestamp: (timestamp: number | null) => void;
 }
 
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
-
-const playNotificationSound = () => {
-  const audio = new Audio('/notification.mp3');
-  audio.play().catch(error => console.error("Error playing sound:", error));
-};
-
 
 export const NotificationsProvider = ({ children }: { children: ReactNode }) => {
   const { t } = useLocale();
@@ -43,7 +35,6 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
   const { settings, updateSettings } = useSettings();
   
   const [isReminderEnabled, setIsReminderEnabledState] = useState(settings.isReminderEnabled ?? true);
-  const [lastReminderTimestamp, setLastReminderTimestamp] = useState<number | null>(null);
 
   const initialNotifications: Notification[] = [
     {
@@ -87,31 +78,18 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
     setIsReminderEnabledState(settings.isReminderEnabled ?? true);
   }, [settings.isReminderEnabled]);
 
-
   useEffect(() => {
-    if (!isMobile || !isReminderEnabled || !user) return;
-
-    const REMINDER_INTERVAL = 1 * 60 * 1000; // 1 minute for testing
-
-    const intervalId = setInterval(() => {
-      // Logic to trigger a push notification would go here
-      // For now, we'll simulate by playing a sound if the app is in the foreground
-      // The actual push is handled by the service worker
-      console.log("Push notification interval triggered.");
-      setLastReminderTimestamp(Date.now());
-    }, REMINDER_INTERVAL);
-
-    // Check if it's the first of the month and re-enable if needed
+    // Re-enable notifications on the 1st of the month
     const today = new Date();
-    if (today.getDate() === 1) {
-        if (!settings.isReminderEnabled) {
-            updateSettings({ isReminderEnabled: true });
+    if (today.getDate() === 1 && !settings.isReminderEnabled) {
+        if ('Notification' in window && Notification.permission === 'granted') {
+             navigator.serviceWorker.ready.then(registration => {
+                registration.active?.postMessage({ action: 'schedule-reminders' });
+                updateSettings({ isReminderEnabled: true });
+            });
         }
     }
-
-
-    return () => clearInterval(intervalId);
-  }, [isMobile, isReminderEnabled, user, settings.isReminderEnabled, updateSettings]);
+  }, [settings.isReminderEnabled, updateSettings]);
 
 
   const setIsReminderEnabled = (enabled: boolean) => {
@@ -139,8 +117,6 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
         markAllAsRead,
         isReminderEnabled,
         setIsReminderEnabled,
-        lastReminderTimestamp,
-        setLastReminderTimestamp
     }}>
       {children}
     </NotificationsContext.Provider>

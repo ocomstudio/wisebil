@@ -644,7 +644,7 @@
     "about_pro_vision_item3_title": "Visión de 360°",
     "about_pro_vision_item3_desc": "El verdadero poder de Wisebil reside en la integración. Cada factura pagada actualiza su flujo de caja. Cada gasto registrado afecta a su resultado final. Obtenga una visión en tiempo real de la salud financiera de su empresa, sin esfuerzo de conciliación.",
     "notification_reminder_label": "Recordatorios de entrada",
-    "notification_reminder_desc": "Recibe un recordatorio sonoro cada 2 horas para recordar añadir tus transacciones.",
+    "notification_reminder_desc": "Reciba un recordatorio periódico para recordar agregar sus transacciones.",
     "notification_reminder_enabled_title": "Recordatorios activados",
     "notification_reminder_disabled_title": "Recordatorios desactivados",
     "notification_disable_warning_title": "¿Desactivar recordatorios?",
@@ -652,5 +652,9 @@
     "notification_reason_too_frequent": "Las notificaciones son demasiado frecuentes.",
     "notification_reason_sound_disturbing": "El sonido me molesta.",
     "notification_reason_not_useful": "Las notificaciones no me son útiles.",
-    "notification_disable_confirm_button": "Confirmar desactivación"
+    "notification_disable_confirm_button": "Confirmar desactivación",
+    "permission_denied_title": "Permiso denegado",
+    "permission_denied_desc": "Ha denegado el permiso para mostrar notificaciones.",
+    "notifications_not_supported_title": "Notificaciones no compatibles",
+    "notifications_not_supported_desc": "Su navegador no admite notificaciones push."
 }

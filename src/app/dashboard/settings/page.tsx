@@ -208,27 +208,36 @@ export default function SettingsPage() {
 
   const handleToggleReminderNotifications = async (isChecked: boolean) => {
     if (!isChecked) {
-      setIsNotificationsDialogOpen(true);
+      setIsNotificationsDialogOpen(true); // Open dialog to ask why
     } else {
+      // Logic to enable notifications
       if ('Notification' in window && 'serviceWorker' in navigator) {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
-          setIsReminderEnabled(true);
-          toast({ title: t('notification_reminder_enabled_title') });
+          navigator.serviceWorker.ready.then(registration => {
+            registration.active?.postMessage({ action: 'schedule-reminders' });
+            setIsReminderEnabled(true);
+            toast({ title: t('notification_reminder_enabled_title') });
+          });
         } else {
-          toast({ variant: 'destructive', title: 'Permission refusée', description: 'Impossible d\'activer les notifications.' });
+          toast({ variant: 'destructive', title: t('permission_denied_title'), description: t('permission_denied_desc') });
         }
       } else {
-        toast({ variant: 'destructive', title: 'Non supporté', description: 'Votre navigateur ne supporte pas les notifications.' });
+        toast({ variant: 'destructive', title: t('notifications_not_supported_title'), description: t('notifications_not_supported_desc') });
       }
     }
   };
-
+  
   const handleConfirmDisableNotifications = () => {
-    console.log("Raison de la désactivation :", notificationDisableReason);
-    setIsReminderEnabled(false);
-    setIsNotificationsDialogOpen(false);
-    toast({ title: t('notification_reminder_disabled_title') });
+    // Logic to disable notifications
+    navigator.serviceWorker.ready.then(registration => {
+      registration.active?.postMessage({ action: 'cancel-reminders' });
+      setIsReminderEnabled(false);
+      setIsNotificationsDialogOpen(false);
+      toast({ title: t('notification_reminder_disabled_title') });
+    });
+    // You can optionally save `notificationDisableReason` to your analytics
+    console.log("Reason for disabling notifications:", notificationDisableReason);
   };
 
 
