@@ -652,5 +652,8 @@
     "notification_reason_too_frequent": "Erinnerungen sind zu häufig.",
     "notification_reason_sound_disturbing": "Der Ton stört mich.",
     "notification_reason_not_useful": "Erinnerungen sind für mich nicht nützlich.",
-    "notification_disable_confirm_button": "Deaktivierung bestätigen"
+    "notification_disable_confirm_button": "Deaktivierung bestätigen",
+    "ios_install_prompt_title": "Installieren Sie Wisebil für eine bessere Erfahrung!",
+    "ios_install_prompt_step1": "Tippen Sie auf das Teilen-Symbol",
+    "ios_install_prompt_step2": "und dann auf \"Zum Startbildschirm hinzufügen\"."
 }

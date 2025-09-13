@@ -113,7 +113,7 @@
     "ai_categorization_failed": "La categorización por IA ha fallado",
     "ai_categorization_failed_desc": "No se ha podido sugerir una categoría.",
     "ai_temporarily_disabled_title": "Función de IA desactivada",
-    "ai_temporarily_disabled_desc": "Esta función está temporalmente no disponible. Por favor, categoriza manually.",
+    "ai_temporarily_disabled_desc": "Esta función está temporalmente no disponible. Por favor, categoriza manualmente.",
     "assistant_welcome_message": "¡Hola {{name}}! ¿Cómo puedo ayudarte hoy con tus finanzas?",
     "description_label": "Descripción",
     "description_placeholder": "p. ej., Café con un amigo",
@@ -652,5 +652,8 @@
     "notification_reason_too_frequent": "Los recordatorios son demasiado frecuentes.",
     "notification_reason_sound_disturbing": "El sonido me molesta.",
     "notification_reason_not_useful": "Los recordatorios no me son útiles.",
-    "notification_disable_confirm_button": "Confirmar desactivación"
+    "notification_disable_confirm_button": "Confirmar desactivación",
+    "ios_install_prompt_title": "¡Instala Wisebil para una mejor experiencia!",
+    "ios_install_prompt_step1": "Toca el icono de Compartir",
+    "ios_install_prompt_step2": "y luego \"Añadir a la pantalla de inicio\"."
 }

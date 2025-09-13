@@ -654,5 +654,8 @@
     "notification_reason_too_frequent": "Reminders are too frequent.",
     "notification_reason_sound_disturbing": "The sound disturbs me.",
     "notification_reason_not_useful": "Reminders are not useful to me.",
-    "notification_disable_confirm_button": "Confirm deactivation"
+    "notification_disable_confirm_button": "Confirm deactivation",
+    "ios_install_prompt_title": "Install Wisebil for a better experience!",
+    "ios_install_prompt_step1": "Tap the Share icon",
+    "ios_install_prompt_step2": "then 'Add to Home Screen'."
 }

@@ -652,5 +652,8 @@
     "notification_reason_too_frequent": "Lời nhắc quá thường xuyên.",
     "notification_reason_sound_disturbing": "Âm thanh làm phiền tôi.",
     "notification_reason_not_useful": "Lời nhắc không hữu ích với tôi.",
-    "notification_disable_confirm_button": "Xác nhận tắt"
+    "notification_disable_confirm_button": "Xác nhận tắt",
+    "ios_install_prompt_title": "Cài đặt Wisebil để có trải nghiệm tốt hơn!",
+    "ios_install_prompt_step1": "Nhấn vào biểu tượng Chia sẻ",
+    "ios_install_prompt_step2": "sau đó \"Thêm vào màn hình chính\"."
 }

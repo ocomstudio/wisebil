@@ -652,5 +652,8 @@
     "notification_reason_too_frequent": "Les rappels sont trop fréquents.",
     "notification_reason_sound_disturbing": "Le son me dérange.",
     "notification_reason_not_useful": "Les rappels ne me sont pas utiles.",
-    "notification_disable_confirm_button": "Confirmer la désactivation"
+    "notification_disable_confirm_button": "Confirmer la désactivation",
+    "ios_install_prompt_title": "Installez Wisebil pour une meilleure expérience !",
+    "ios_install_prompt_step1": "Appuyez sur l'icône de Partage",
+    "ios_install_prompt_step2": "puis sur \"Ajouter à l'écran d'accueil\"."
 }
