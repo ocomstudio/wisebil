@@ -53,7 +53,6 @@ export function DashboardHeader() {
                         <Link href="/dashboard/accounts">
                             <Landmark className="mr-2 h-4 w-4" />
                             <span>{t('nav_accounts')}</span>
-                            <Badge variant="secondary" className="ml-auto">Bientôt</Badge>
                         </Link>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
