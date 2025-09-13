@@ -1,7 +1,7 @@
 // src/context/notifications-context.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
 import { Lightbulb, TrendingUp, Bell } from "lucide-react";
 import { useLocale } from './locale-context';
 import { useSettings } from './settings-context';
@@ -28,13 +28,16 @@ interface NotificationsContextType {
 
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
 
+// Interval de rappel (5 secondes pour le test)
+const REMINDER_INTERVAL = 5 * 1000;
+
 export const NotificationsProvider = ({ children }: { children: ReactNode }) => {
   const { t } = useLocale();
   const { user } = useAuth();
-  const isMobile = useIsMobile();
   const { settings, updateSettings } = useSettings();
   
   const [isReminderEnabled, setIsReminderEnabledState] = useState(settings.isReminderEnabled ?? true);
+  const reminderIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const initialNotifications: Notification[] = [
     {
@@ -73,24 +76,47 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
   
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const [unreadCount, setUnreadCount] = useState(0);
+  
+  const playNotificationSound = useCallback(() => {
+    const audio = new Audio('/notification.mp3');
+    // Simuler une vibration si l'API est disponible
+    if ('vibrate' in navigator) {
+      navigator.vibrate(200); // Vibre pendant 200ms
+    }
+    audio.play().catch(error => console.error("Error playing sound:", error));
+  }, []);
+
+  const stopReminders = useCallback(() => {
+    if (reminderIntervalRef.current) {
+      clearInterval(reminderIntervalRef.current);
+      reminderIntervalRef.current = null;
+    }
+  }, []);
+
+  const startReminders = useCallback(() => {
+    stopReminders(); // Assure qu'il n'y a pas de doublons
+    if (isReminderEnabled && user) {
+      reminderIntervalRef.current = setInterval(() => {
+        playNotificationSound();
+      }, REMINDER_INTERVAL);
+    }
+  }, [isReminderEnabled, user, playNotificationSound, stopReminders]);
 
   useEffect(() => {
+    // Synchroniser l'état local avec les paramètres globaux
     setIsReminderEnabledState(settings.isReminderEnabled ?? true);
   }, [settings.isReminderEnabled]);
 
   useEffect(() => {
-    // Re-enable notifications on the 1st of the month
-    const today = new Date();
-    if (today.getDate() === 1 && !settings.isReminderEnabled) {
-        if ('Notification' in window && Notification.permission === 'granted') {
-             navigator.serviceWorker.ready.then(registration => {
-                registration.active?.postMessage({ action: 'schedule-reminders' });
-                updateSettings({ isReminderEnabled: true });
-            });
-        }
+    if (isReminderEnabled) {
+      startReminders();
+    } else {
+      stopReminders();
     }
-  }, [settings.isReminderEnabled, updateSettings]);
-
+    
+    // Nettoyer l'intervalle lorsque le composant est démonté
+    return () => stopReminders();
+  }, [isReminderEnabled, startReminders, stopReminders]);
 
   const setIsReminderEnabled = (enabled: boolean) => {
     setIsReminderEnabledState(enabled);

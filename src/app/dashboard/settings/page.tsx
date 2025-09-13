@@ -1,4 +1,3 @@
-
 // src/app/dashboard/settings/page.tsx
 "use client";
 
@@ -207,34 +206,22 @@ export default function SettingsPage() {
   };
 
   const handleToggleReminderNotifications = async (isChecked: boolean) => {
-    if (!isChecked) {
-      setIsNotificationsDialogOpen(true); // Open dialog to ask why
+    if (!isMobile) return;
+
+    if (isChecked) {
+        setIsReminderEnabled(true);
+        toast({ title: t('notification_reminder_enabled_title') });
     } else {
-      // Logic to enable notifications
-      if ('Notification' in window && 'serviceWorker' in navigator) {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          navigator.serviceWorker.ready.then(registration => {
-            registration.active?.postMessage({ action: 'schedule-reminders' });
-            setIsReminderEnabled(true);
-            toast({ title: t('notification_reminder_enabled_title') });
-          });
-        } else {
-          toast({ variant: 'destructive', title: t('permission_denied_title'), description: t('permission_denied_desc') });
-        }
-      } else {
-        toast({ variant: 'destructive', title: t('notifications_not_supported_title'), description: t('notifications_not_supported_desc') });
-      }
+        // Open the dialog to ask for a reason before disabling
+        setIsNotificationsDialogOpen(true);
     }
   };
   
   const handleConfirmDisableNotifications = () => {
-    navigator.serviceWorker.ready.then(registration => {
-      registration.active?.postMessage({ action: 'cancel-reminders' });
-      setIsReminderEnabled(false);
-      setIsNotificationsDialogOpen(false);
-      toast({ title: t('notification_reminder_disabled_title') });
-    });
+    setIsReminderEnabled(false);
+    setIsNotificationsDialogOpen(false);
+    toast({ title: t('notification_reminder_disabled_title') });
+    // You can also send the `notificationDisableReason` to your analytics here
     console.log("Reason for disabling notifications:", notificationDisableReason);
   };
 
@@ -747,12 +734,9 @@ export default function SettingsPage() {
        <Card>
         <CardHeader>
           <CardTitle>{t('about_title')}</CardTitle>
-          <CardDescription>{t('about_desc')}</CardDescription>
+          <CardDescription>{t('app_version')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <p>{t('app_info')}</p>
-            </div>
              <Separator />
             <div className="space-y-2">
                  <Button variant="ghost" className="w-full justify-start p-0 h-auto" asChild>
