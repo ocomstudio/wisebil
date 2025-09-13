@@ -1,114 +1,77 @@
+// public/sw.js
+
 const CACHE_NAME = 'wisebil-v1';
-const urlsToCache = [
-  '/',
-  '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
-  '/notification.mp3'
-];
-const ALARM_NAME = 'wisebil-reminder-alarm';
+let reminderTimeoutId = null;
 
-// Install a service worker
-self.addEventListener('install', event => {
+// Install event: cache the notification sound
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.add('/notification.mp3');
+    })
   );
 });
 
-// Cache and return requests
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      })
-  );
-});
-
-// Update a service worker
-self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
+// Activate event: clean up old caches
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
+        cacheNames.filter(name => name !== CACHE_NAME).map(name => caches.delete(name))
       );
     })
   );
 });
 
-// Listen for the alarm
-self.addEventListener('alarm', (event) => {
-  if (event.name === ALARM_NAME) {
-    showNotification();
-  }
-});
-
-self.addEventListener('message', (event) => {
-    if (event.data && event.data.action === 'schedule-reminders') {
-        createAlarm();
-    } else if (event.data && event.data.action === 'cancel-reminders') {
-        cancelAlarm();
-    }
-});
-
-function createAlarm() {
-    if (self.alarms) {
-        self.alarms.create(ALARM_NAME, {
-            periodInMinutes: 1, // Changed to 1 minute for testing
-        });
-        console.log('Wisebil reminder alarm created to fire every 1 minute.');
-    } else {
-        console.warn('Alarms API not supported in this service worker context.');
-    }
-}
-
-function cancelAlarm() {
-    if (self.alarms) {
-        self.alarms.delete(ALARM_NAME);
-        console.log('Wisebil reminder alarm cancelled.');
-    }
-}
-
-
-function showNotification() {
-  const notificationMessages = [
-    { title: "Rappel Financier", body: "N'oubliez pas d'enregistrer vos dépenses et revenus du jour !" },
-    { title: "Astuce Wisebil", body: "Saviez-vous que suivre même les petites dépenses peut révéler de grandes opportunités d'épargne ?" },
-    { title: "Votre bilan financier", body: "Prenez un moment pour vérifier votre budget. Chaque saisie compte !" },
-    { title: "Hello !", body: "C'est votre assistant Wisebil. Pensez à mettre à jour vos finances." }
+// Function to show the notification
+const showNotification = () => {
+  const messages = [
+    { title: "Rappel d'activité", body: "N'oubliez pas d'enregistrer vos transactions du jour !" },
+    { title: "Astuce financière", body: "Pensez à revoir vos abonnements. En avez-vous toujours besoin ?" },
+    { title: "Objectif en vue !", body: "Chaque petite dépense compte pour atteindre vos objectifs." },
   ];
+  const randomMessage = messages[Math.floor(Math.random() * messages.length)];
 
-  const randomMessage = notificationMessages[Math.floor(Math.random() * notificationMessages.length)];
-
-  const notificationOptions = {
+  self.registration.showNotification(randomMessage.title, {
     body: randomMessage.body,
     icon: '/icons/icon-192x192.png',
     badge: '/icons/icon-192x192.png',
     sound: '/notification.mp3',
-    vibrate: [200, 100, 200], // Vibration pattern
-    actions: [
-        { action: 'open_app', title: 'Ouvrir Wisebil' }
-    ]
+    vibrate: [200, 100, 200], // Vibrate for 200ms, pause for 100ms, then vibrate for 200ms
+  });
+};
+
+// Main logic to handle the reminder loop
+const handleReminders = () => {
+  // Clear any existing timeout to avoid duplicates
+  if (reminderTimeoutId) {
+    clearTimeout(reminderTimeoutId);
+  }
+  
+  // The loop function
+  const scheduleNext = () => {
+    reminderTimeoutId = setTimeout(() => {
+      showNotification();
+      scheduleNext(); // Re-schedule itself
+    }, 5 * 1000); // 5 seconds for testing
   };
 
-  self.registration.showNotification(randomMessage.title, notificationOptions);
-}
+  scheduleNext(); // Start the loop
+};
 
-self.addEventListener('notificationclick', function(event) {
-  event.notification.close();
-  if (event.action === 'open_app') {
-    clients.openWindow('/');
+// Function to stop reminders
+const cancelReminders = () => {
+  if (reminderTimeoutId) {
+    clearTimeout(reminderTimeoutId);
+    reminderTimeoutId = null;
   }
-}, false);
+};
+
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.action === 'schedule-reminders') {
+    handleReminders();
+  } else if (event.data && event.data.action === 'cancel-reminders') {
+    cancelReminders();
+  }
+});

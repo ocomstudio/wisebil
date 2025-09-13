@@ -229,14 +229,12 @@ export default function SettingsPage() {
   };
   
   const handleConfirmDisableNotifications = () => {
-    // Logic to disable notifications
     navigator.serviceWorker.ready.then(registration => {
       registration.active?.postMessage({ action: 'cancel-reminders' });
       setIsReminderEnabled(false);
       setIsNotificationsDialogOpen(false);
       toast({ title: t('notification_reminder_disabled_title') });
     });
-    // You can optionally save `notificationDisableReason` to your analytics
     console.log("Reason for disabling notifications:", notificationDisableReason);
   };
 
