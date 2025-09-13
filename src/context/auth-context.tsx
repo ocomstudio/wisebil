@@ -6,7 +6,7 @@ import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, c
 import { auth, db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc, getDoc, setDoc, onSnapshot, updateDoc } from 'firebase/firestore';
-import type { Currency } from './locale-context';
+import type { Currency, Language } from './locale-context';
 import type { UserData } from './user-context';
 
 
@@ -26,7 +26,7 @@ export interface User {
 type SignupFunction = (
   email: string,
   password: string,
-  profileData: { fullName: string; phone: string, currency: Currency }
+  profileData: { fullName: string; phone: string, currency: Currency, language: Language }
 ) => Promise<UserCredential>;
 
 interface AuthContextType {
@@ -110,7 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribeAuth(); // Unsubscribe from auth listener on cleanup
   }, []);
   
-  const signupWithEmail: SignupFunction = async (email, password, { fullName, phone, currency }) => {
+  const signupWithEmail: SignupFunction = async (email, password, { fullName, phone, currency, language }) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const { user: fbUser } = userCredential;
 
@@ -133,7 +133,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       },
       preferences: {
         currency: currency,
-        language: 'en' // Default language
+        language: language
       }
     });
 

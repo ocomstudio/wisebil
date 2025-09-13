@@ -12,6 +12,7 @@ import { useUserData } from './user-context';
 interface BudgetContextType {
   budgets: Budget[];
   addBudget: (budget: Budget) => Promise<void>;
+  updateBudget: (id: string, updatedBudget: Omit<Budget, 'id'>) => Promise<void>;
   deleteBudget: (id: string) => Promise<void>;
   resetBudgets: () => Promise<void>;
   isLoading: boolean;
@@ -44,6 +45,30 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [getUserDocRef, toast]);
   
+  const updateBudget = useCallback(async (id: string, updatedBudgetData: Omit<Budget, 'id'>) => {
+    const userDocRef = getUserDocRef();
+    if (!userDocRef) return;
+    
+    const currentBudgets = [...budgets];
+    const budgetIndex = currentBudgets.findIndex(b => b.id === id);
+
+    if (budgetIndex === -1) {
+      toast({ variant: "destructive", title: "Erreur", description: "Budget non trouvé." });
+      return;
+    }
+    
+    const updatedBudget = { ...currentBudgets[budgetIndex], ...updatedBudgetData };
+    currentBudgets[budgetIndex] = updatedBudget;
+    
+    try {
+      await updateDoc(userDocRef, { budgets: currentBudgets });
+    } catch (e) {
+      console.error("Failed to update budget in Firestore", e);
+      toast({ variant: "destructive", title: "Error", description: "Failed to update budget." });
+      throw e;
+    }
+  }, [budgets, getUserDocRef, toast]);
+
   const deleteBudget = useCallback(async (id: string) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) return;
@@ -76,7 +101,7 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <BudgetContext.Provider value={{ budgets, addBudget, deleteBudget, resetBudgets, isLoading: isUserDataLoading }}>
+    <BudgetContext.Provider value={{ budgets, addBudget, updateBudget, deleteBudget, resetBudgets, isLoading: isUserDataLoading }}>
       {children}
     </BudgetContext.Provider>
   );

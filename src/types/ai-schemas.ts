@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { Budget } from './budget';
 import type { SavingsGoal } from './savings-goal';
 import type { Transaction } from './transaction';
+import { allCategories } from '@/config/categories';
 
 
 // Schema for categorize-expense.ts
@@ -14,7 +15,7 @@ export const CategorizeExpenseInputSchema = z.object({
 export type CategorizeExpenseInput = z.infer<typeof CategorizeExpenseInputSchema>;
 
 export const CategorizeExpenseOutputSchema = z.object({
-  category: z.string().describe('The predicted category of the expense.'),
+  category: z.string().describe(`The predicted category of the expense. Must be one of the following: ${allCategories.map(c => c.name).join(', ')}`),
 });
 export type CategorizeExpenseOutput = z.infer<typeof CategorizeExpenseOutputSchema>;
 

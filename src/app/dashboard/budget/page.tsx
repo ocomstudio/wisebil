@@ -1,6 +1,7 @@
 // src/app/dashboard/budget/page.tsx
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FilePlus, PlusCircle } from "lucide-react";
@@ -9,11 +10,13 @@ import { useBudgets } from "@/context/budget-context";
 import { BudgetCard } from "@/components/dashboard/budget-card";
 import { useTransactions } from "@/context/transactions-context";
 import { useLocale } from "@/context/locale-context";
+import { BudgetFormDialog } from "@/components/dashboard/budget/budget-form-dialog";
 
 export default function BudgetPage() {
   const { budgets, deleteBudget } = useBudgets();
   const { transactions } = useTransactions();
   const { t } = useLocale();
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const getSpentAmount = (category: string) => {
     return transactions
@@ -22,14 +25,13 @@ export default function BudgetPage() {
   };
 
   return (
+    <>
     <div className="space-y-6 bg-background">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold font-headline">{t('nav_budgets')}</h1>
-        <Button asChild>
-          <Link href="/dashboard/budget/create">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            {t('create_budget_button')}
-          </Link>
+        <Button onClick={() => setIsCreateDialogOpen(true)}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          {t('create_budget_button')}
         </Button>
       </div>
 
@@ -45,11 +47,9 @@ export default function BudgetPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <Button asChild>
-                  <Link href="/dashboard/budget/create">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    {t('create_first_budget_button')}
-                  </Link>
+                <Button onClick={() => setIsCreateDialogOpen(true)}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  {t('create_first_budget_button')}
                 </Button>
             </CardContent>
         </Card>
@@ -66,5 +66,7 @@ export default function BudgetPage() {
         </div>
       )}
     </div>
+    <BudgetFormDialog isOpen={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen} />
+    </>
   );
 }

@@ -2,6 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo } from 'react';
+import { v4 as uuidv4 } from "uuid";
 import { SavingsGoal } from '@/types/savings-goal';
 import { useToast } from '@/hooks/use-toast';
 import { useLocale } from './locale-context';
@@ -9,6 +10,8 @@ import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField, onSnapshot } from 'firebase/firestore';
 import { useUserData } from './user-context';
+import { useTransactions } from './transactions-context';
+
 
 interface SavingsContextType {
   savingsGoals: SavingsGoal[];
@@ -26,6 +29,7 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
   const { t, formatCurrency } = useLocale();
   const { user } = useAuth();
+  const { addTransaction } = useTransactions();
   
   const savingsGoals = useMemo(() => userData?.savingsGoals || [], [userData]);
 
@@ -87,17 +91,29 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     currentGoals[goalIndex] = updatedGoal;
     
     try {
+      // First, update the savings goal in Firestore
       await updateDoc(userDocRef, { savingsGoals: currentGoals });
+
+      // Then, create a corresponding expense transaction
+      await addTransaction({
+        id: uuidv4(),
+        type: 'expense',
+        amount,
+        description: t('funds_added_desc', { amount: formatCurrency(amount, 'XOF'), goalName: updatedGoal.name }),
+        category: 'Épargne',
+        date: new Date().toISOString()
+      });
+
       toast({
         title: t('funds_added_title'),
-        description: t('funds_added_desc', { amount: formatCurrency(amount), goalName: updatedGoal.name }),
+        description: t('funds_added_desc', { amount: formatCurrency(amount, 'XOF'), goalName: updatedGoal.name }),
       });
     } catch(e) {
       console.error("Failed to add funds in Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to add funds." });
       throw e;
     }
-  }, [savingsGoals, getUserDocRef, toast, t, formatCurrency]);
+  }, [savingsGoals, getUserDocRef, toast, t, formatCurrency, addTransaction]);
 
   const resetSavings = async () => {
     const userDocRef = getUserDocRef();

@@ -1,4 +1,5 @@
 // src/components/dashboard/budget-card.tsx
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,9 +23,11 @@ import { expenseCategories } from "@/config/categories";
 import { Budget } from "@/types/budget";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
-import { MoreVertical, Trash2 } from "lucide-react";
+import { MoreVertical, Trash2, Pencil } from "lucide-react";
 import { useSettings } from "@/context/settings-context";
 import { useLocale } from "@/context/locale-context";
+import { BudgetFormDialog } from "./budget/budget-form-dialog";
+import { useUserData } from "@/context/user-context";
 
 interface BudgetCardProps {
   budget: Budget;
@@ -33,16 +36,20 @@ interface BudgetCardProps {
 }
 
 export function BudgetCard({ budget, spent, onDelete }: BudgetCardProps) {
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const { id, name, amount, category } = budget;
   const { settings, isTemporarilyVisible } = useSettings();
   const { t, formatCurrency } = useLocale();
+  const { userData } = useUserData();
   const isVisible = !settings.isBalanceHidden || isTemporarilyVisible;
+
+  const allExpenseCategories = [...expenseCategories, ...(userData?.customCategories || [])];
 
   const remaining = amount - spent;
   const progress = amount > 0 ? (spent / amount) * 100 : 0;
 
   const getCategoryEmoji = (categoryName: string) => {
-    const cat = expenseCategories.find(c => c.name === categoryName);
+    const cat = allExpenseCategories.find(c => c.name === categoryName);
     return cat ? cat.emoji : '💰';
   };
 
@@ -60,6 +67,7 @@ export function BudgetCard({ budget, spent, onDelete }: BudgetCardProps) {
   }
 
   return (
+    <>
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
@@ -75,6 +83,10 @@ export function BudgetCard({ budget, spent, onDelete }: BudgetCardProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => setIsFormOpen(true)}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    {t('edit')}
+                </DropdownMenuItem>
                 <AlertDialogTrigger asChild>
                   <DropdownMenuItem className="text-destructive">
                     <Trash2 className="mr-2 h-4 w-4" />
@@ -124,5 +136,11 @@ export function BudgetCard({ budget, spent, onDelete }: BudgetCardProps) {
         </div>
       </CardContent>
     </Card>
+     <BudgetFormDialog 
+        isOpen={isFormOpen} 
+        onOpenChange={setIsFormOpen} 
+        existingBudget={budget} 
+      />
+    </>
   );
 }

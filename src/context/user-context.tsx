@@ -28,6 +28,7 @@ export interface UserData {
   journalEntries: JournalEntry[];
   invoices: Invoice[];
   enterpriseIds?: string[];
+  customCategories?: { name: string; emoji: string; }[];
 }
 
 interface UserDataContextType {

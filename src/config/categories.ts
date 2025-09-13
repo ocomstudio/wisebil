@@ -12,6 +12,7 @@ export const expenseCategories = [
     { name: "Famille", emoji: "👨‍👩‍👧‍👦" },
     { name: "Animaux", emoji: "🐾" },
     { name: "Dons", emoji: "❤️" },
+    { name: "Épargne", emoji: "🐖" },
     { name: "Autre", emoji: "➕" },
 ];
 

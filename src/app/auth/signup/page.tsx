@@ -40,7 +40,7 @@ interface SignupPageProps {
 }
 
 export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
-  const { t, currency, setCurrency, setLocale } = useLocale();
+  const { t, locale, currency, setCurrency, setLocale } = useLocale();
   const { toast } = useToast();
   const router = useRouter();
   const { signupWithEmail, loginWithGoogle } = useAuth();
@@ -121,11 +121,11 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   const onSubmit = async (data: SignupFormValues) => {
     setIsLoading(true);
     try {
-      // Pass all necessary data to the context function
       await signupWithEmail(data.email, data.password, {
         fullName: data.fullName,
         phone: data.phone,
-        currency: currency, // Use currency from context
+        currency: currency,
+        language: locale,
       });
       
       toast({
