@@ -82,34 +82,44 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     const userDocRef = doc(db, 'users', user.uid);
 
     try {
+      await runTransaction(db, async (transaction) => {
+        const userDoc = await transaction.get(userDocRef);
+
         const newMember: Member = {
-            uid: user.uid,
-            email: user.email!,
-            name: user.displayName!,
-            role: ownerRole,
-            type: 'owner'
+          uid: user.uid,
+          email: user.email!,
+          name: user.displayName!,
+          role: ownerRole,
+          type: 'owner'
         };
 
         const newEnterprise: Enterprise = {
-            ...enterpriseData,
-            id: newEnterpriseRef.id,
-            ownerId: user.uid,
-            members: [newMember],
-            memberIds: [user.uid],
-            transactions: []
+          ...enterpriseData,
+          id: newEnterpriseRef.id,
+          ownerId: user.uid,
+          members: [newMember],
+          memberIds: [user.uid],
+          transactions: []
         };
-
-        // Étape 1: Créer le document de l'entreprise
-        await setDoc(newEnterpriseRef, newEnterprise);
-
-        // Étape 2: Mettre à jour (ou créer) le document utilisateur avec l'ID de la nouvelle entreprise
-        // `setDoc` avec `merge: true` est la méthode la plus sûre ici.
-        await setDoc(userDocRef, {
-            enterpriseIds: arrayUnion(newEnterpriseRef.id)
-        }, { merge: true });
-
-        toast({ title: "Entreprise créée", description: `L'entreprise "${enterpriseData.name}" a été créée avec succès.` });
-        return newEnterpriseRef.id;
+        
+        // 1. Create the new enterprise document
+        transaction.set(newEnterpriseRef, newEnterprise);
+        
+        // 2. Update the user document with the new enterprise ID
+        if (userDoc.exists()) {
+            transaction.update(userDocRef, {
+                enterpriseIds: arrayUnion(newEnterpriseRef.id)
+            });
+        } else {
+            // This case is unlikely if the user is authenticated, but good to handle
+            transaction.set(userDocRef, {
+                enterpriseIds: [newEnterpriseRef.id]
+            }, { merge: true });
+        }
+      });
+      
+      toast({ title: "Entreprise créée", description: `L'entreprise "${enterpriseData.name}" a été créée avec succès.` });
+      return newEnterpriseRef.id;
 
     } catch (e: any) {
         console.error("La création d'entreprise a échoué :", e);
