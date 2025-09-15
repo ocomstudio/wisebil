@@ -100,14 +100,15 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       await runTransaction(db, async (transaction) => {
-        // Step 1: Create the new enterprise document.
-        transaction.set(newEnterpriseRef, newEnterpriseData);
-
-        // Step 2: Update the user's document.
+        // 1. ALL READS FIRST
         const userDoc = await transaction.get(userDocRef);
+
+        // 2. ALL WRITES SECOND
+        transaction.set(newEnterpriseRef, newEnterpriseData);
+        
         if (!userDoc.exists()) {
           // If the user document doesn't exist, create it with the enterprise ID.
-          transaction.set(userDocRef, { enterpriseIds: [newEnterpriseRef.id] });
+          transaction.set(userDocRef, { enterpriseIds: [newEnterpriseRef.id] }, { merge: true });
         } else {
           // If it exists, update the array.
           transaction.update(userDocRef, { enterpriseIds: arrayUnion(newEnterpriseRef.id) });
@@ -119,7 +120,7 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
 
     } catch (e: any) {
         console.error("La création d'entreprise a échoué :", e);
-        toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer l'entreprise. Veuillez réessayer." });
+        toast({ variant: "destructive", title: "Erreur", description: e.message || "Impossible d'enregistrer l'entreprise. Veuillez réessayer." });
         return null;
     }
   }, [toast, user]);
