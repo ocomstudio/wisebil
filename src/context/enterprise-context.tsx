@@ -73,8 +73,8 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
   }, [user, userData, isUserDataLoading]);
 
   const addEnterprise = useCallback(async (enterpriseData: Omit<Enterprise, 'id'| 'ownerId' | 'members' | 'memberIds' | 'transactions'>, ownerRole: string) => {
-    if (!user || !user.email || !user.displayName) {
-        toast({ variant: "destructive", title: "Erreur", description: "Utilisateur non authentifié pour cette opération."});
+    if (!user || !user.uid || !user.email || !user.displayName) {
+        toast({ variant: "destructive", title: "Erreur", description: "Informations utilisateur incomplètes. Impossible de créer l'entreprise."});
         return null;
     }
 
@@ -89,7 +89,7 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
       type: 'owner'
     };
 
-    const newEnterprise: Enterprise = {
+    const newEnterpriseData: Enterprise = {
       ...enterpriseData,
       id: newEnterpriseRef.id,
       ownerId: user.uid,
@@ -99,21 +99,27 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     };
 
     try {
-        // Step 1: Create the new enterprise document. This is a single, atomic operation.
-        await setDoc(newEnterpriseRef, newEnterprise);
-        
-        // Step 2: Update the user's document. `set` with `merge: true` is crucial.
-        // It will create the document if it doesn't exist, create the `enterpriseIds` field if it doesn't exist,
-        // or update it by adding the new ID if it already exists, without overwriting other user data.
-        await setDoc(userDocRef, { enterpriseIds: arrayUnion(newEnterpriseRef.id) }, { merge: true });
+      await runTransaction(db, async (transaction) => {
+        // Step 1: Create the new enterprise document.
+        transaction.set(newEnterpriseRef, newEnterpriseData);
 
-        toast({ title: "Entreprise créée", description: `L'entreprise "${enterpriseData.name}" a été créée avec succès.` });
-        return newEnterpriseRef.id;
+        // Step 2: Update the user's document.
+        const userDoc = await transaction.get(userDocRef);
+        if (!userDoc.exists()) {
+          // If the user document doesn't exist, create it with the enterprise ID.
+          transaction.set(userDocRef, { enterpriseIds: [newEnterpriseRef.id] });
+        } else {
+          // If it exists, update the array.
+          transaction.update(userDocRef, { enterpriseIds: arrayUnion(newEnterpriseRef.id) });
+        }
+      });
+      
+      toast({ title: "Entreprise créée", description: `L'entreprise "${enterpriseData.name}" a été créée avec succès.` });
+      return newEnterpriseRef.id;
 
     } catch (e: any) {
         console.error("La création d'entreprise a échoué :", e);
         toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer l'entreprise. Veuillez réessayer." });
-        // Optional: Add logic here to delete the enterprise document if the user update fails, although it's very unlikely with this new approach.
         return null;
     }
   }, [toast, user]);
