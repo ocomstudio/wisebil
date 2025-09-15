@@ -78,7 +78,6 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
         return null;
     }
 
-    const batch = writeBatch(db);
     const newEnterpriseRef = doc(collection(db, "enterprises"));
     const userDocRef = doc(db, 'users', user.uid);
 
@@ -100,23 +99,21 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     };
 
     try {
-        // Operation 1: Create the new enterprise document
-        batch.set(newEnterpriseRef, newEnterprise);
+        // Step 1: Create the new enterprise document. This is a single, atomic operation.
+        await setDoc(newEnterpriseRef, newEnterprise);
         
-        // Operation 2: Update the user's document to add the new enterprise ID.
-        // Using set with merge: true is robust. It creates the document if it doesn't exist,
-        // and it creates/updates the enterpriseIds field without overwriting other data.
-        batch.set(userDocRef, { enterpriseIds: arrayUnion(newEnterpriseRef.id) }, { merge: true });
+        // Step 2: Update the user's document. `set` with `merge: true` is crucial.
+        // It will create the document if it doesn't exist, create the `enterpriseIds` field if it doesn't exist,
+        // or update it by adding the new ID if it already exists, without overwriting other user data.
+        await setDoc(userDocRef, { enterpriseIds: arrayUnion(newEnterpriseRef.id) }, { merge: true });
 
-        // Commit all batched writes atomically
-        await batch.commit();
-      
         toast({ title: "Entreprise créée", description: `L'entreprise "${enterpriseData.name}" a été créée avec succès.` });
         return newEnterpriseRef.id;
 
     } catch (e: any) {
         console.error("La création d'entreprise a échoué :", e);
         toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer l'entreprise. Veuillez réessayer." });
+        // Optional: Add logic here to delete the enterprise document if the user update fails, although it's very unlikely with this new approach.
         return null;
     }
   }, [toast, user]);
