@@ -1,3 +1,4 @@
+
 // src/context/enterprise-context.tsx
 "use client";
 
@@ -107,10 +108,8 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
         transaction.set(newEnterpriseRef, newEnterpriseData);
         
         if (!userDoc.exists()) {
-          // If the user document doesn't exist, create it with the enterprise ID.
           transaction.set(userDocRef, { enterpriseIds: [newEnterpriseRef.id] }, { merge: true });
         } else {
-          // If it exists, update the array.
           transaction.update(userDocRef, { enterpriseIds: arrayUnion(newEnterpriseRef.id) });
         }
       });
@@ -173,11 +172,15 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
     
     try {
         await runTransaction(db, async (transaction) => {
+            // 1. ALL READS
             const invitationSnap = await transaction.get(invitationRef);
+            
+            // 2. VALIDATION
             if (!invitationSnap.exists() || invitationSnap.data().status !== 'pending' || invitationSnap.data().email !== user.email) {
                 throw new Error("Invitation non valide ou déjà traitée.");
             }
 
+            // 3. ALL WRITES
             if (response === 'accepted') {
                 const invitationData = invitationSnap.data();
                 const newMember: Member = {
