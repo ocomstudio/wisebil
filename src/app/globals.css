@@ -16,20 +16,20 @@ body {
     --card-foreground: 210 40% 98%;
     --popover: 222 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 151 83% 58%; /* Emerald Green */
-    --primary-foreground: 222 84% 4.9%;
+    --primary: 112 100% 31%; /* New Green #179C00 */
+    --primary-foreground: 210 40% 98%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 128 84% 48%; /* Forest Green */
+    --accent: 112 100% 25%; /* Darker shade of new green */
     --accent-foreground: 210 40% 98%;
     --destructive: 0 72% 51%; /* Red */
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 151 83% 58%; /* Emerald Green */
-    --chart-1: 151 70% 50%;
+    --ring: 112 100% 31%; /* New Green #179C00 */
+    --chart-1: 112 70% 50%;
     --chart-2: 25 80% 55%;
     --chart-3: 300 80% 55%;
     --chart-4: 200 65% 60%;
@@ -37,12 +37,12 @@ body {
     --radius: 1rem;
     --sidebar-background: 222 84% 4.9%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 151 83% 58%;
+    --sidebar-primary: 112 100% 31%;
     --sidebar-primary-foreground: 210 40% 98%;
     --sidebar-accent: 217.2 32.6% 17.5%;
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 151 83% 58%;
+    --sidebar-ring: 112 100% 31%;
   }
 }
 
