@@ -78,48 +78,41 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
         return null;
     }
 
+    const batch = writeBatch(db);
     const newEnterpriseRef = doc(collection(db, "enterprises"));
     const userDocRef = doc(db, 'users', user.uid);
 
+    const newMember: Member = {
+      uid: user.uid,
+      email: user.email,
+      name: user.displayName,
+      role: ownerRole,
+      type: 'owner'
+    };
+
+    const newEnterprise: Enterprise = {
+      ...enterpriseData,
+      id: newEnterpriseRef.id,
+      ownerId: user.uid,
+      members: [newMember],
+      memberIds: [user.uid],
+      transactions: []
+    };
+
     try {
-      await runTransaction(db, async (transaction) => {
-        const userDoc = await transaction.get(userDocRef);
-
-        const newMember: Member = {
-          uid: user.uid,
-          email: user.email!,
-          name: user.displayName!,
-          role: ownerRole,
-          type: 'owner'
-        };
-
-        const newEnterprise: Enterprise = {
-          ...enterpriseData,
-          id: newEnterpriseRef.id,
-          ownerId: user.uid,
-          members: [newMember],
-          memberIds: [user.uid],
-          transactions: []
-        };
+        // Operation 1: Create the new enterprise document
+        batch.set(newEnterpriseRef, newEnterprise);
         
-        // 1. Create the new enterprise document
-        transaction.set(newEnterpriseRef, newEnterprise);
-        
-        // 2. Update the user document with the new enterprise ID
-        if (userDoc.exists()) {
-            transaction.update(userDocRef, {
-                enterpriseIds: arrayUnion(newEnterpriseRef.id)
-            });
-        } else {
-            // This case is unlikely if the user is authenticated, but good to handle
-            transaction.set(userDocRef, {
-                enterpriseIds: [newEnterpriseRef.id]
-            }, { merge: true });
-        }
-      });
+        // Operation 2: Update the user's document to add the new enterprise ID.
+        // Using set with merge: true is robust. It creates the document if it doesn't exist,
+        // and it creates/updates the enterpriseIds field without overwriting other data.
+        batch.set(userDocRef, { enterpriseIds: arrayUnion(newEnterpriseRef.id) }, { merge: true });
+
+        // Commit all batched writes atomically
+        await batch.commit();
       
-      toast({ title: "Entreprise créée", description: `L'entreprise "${enterpriseData.name}" a été créée avec succès.` });
-      return newEnterpriseRef.id;
+        toast({ title: "Entreprise créée", description: `L'entreprise "${enterpriseData.name}" a été créée avec succès.` });
+        return newEnterpriseRef.id;
 
     } catch (e: any) {
         console.error("La création d'entreprise a échoué :", e);
