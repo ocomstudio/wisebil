@@ -72,7 +72,6 @@ export default function TeamManagementPage() {
             if (docSnap.exists()) {
                 const enterpriseData = { id: docSnap.id, ...docSnap.data() } as Enterprise;
                 setEnterprise(enterpriseData);
-                // The transactions are now stored inside the enterprise document.
                 setTransactions(enterpriseData.transactions || []);
             } else {
                 setEnterprise(null);
