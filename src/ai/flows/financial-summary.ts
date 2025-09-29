@@ -65,7 +65,7 @@ async function getFinancialSummaryFlow(input: FinancialSummaryInput): Promise<Fi
     Based on the provided data, generate a summary, advice, and prediction in language code '${language}'.`;
 
     const { output } = await ai.generate({
-        model: 'googleai/gemini-1.5-flash',
+        model: 'googleai/gemini-pro',
         prompt: `${systemPrompt}\n\n${userPrompt}`,
         output: {
             schema: FinancialSummaryOutputSchema,

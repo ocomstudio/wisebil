@@ -38,7 +38,7 @@ async function scanDocumentFlow(input: ScanDocumentInput): Promise<AgentWOutput>
 7.  **STRICT JSON-ONLY OUTPUT:** You MUST respond ONLY with a JSON object conforming to the output schema. Do not include apologies, explanations, or ANY text outside of the JSON brackets. If no actions of a certain type are found, its corresponding array MUST be empty, for example: "transactions": []. NEVER return a list with an empty object like "transactions": [{}]. The 'date' field for transactions is REQUIRED, and it MUST be in YYYY-MM-DD format. The primary list of financial events should be in the 'transactions' field.`;
 
   const { output } = await ai.generate({
-    model: 'googleai/gemini-1.5-flash',
+    model: 'googleai/gemini-pro-vision',
     prompt: [
         { text: systemPrompt },
         { media: { url: input.photoDataUri } }

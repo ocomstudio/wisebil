@@ -20,7 +20,7 @@ Here are the available categories: ${expenseCategories.map((c) => c.name).join('
 The user's preferred language is French (fr). You must respond in this language.`;
 
   const { output } = await ai.generate({
-    model: 'googleai/gemini-1.5-flash',
+    model: 'googleai/gemini-pro',
     prompt: `${systemPrompt}\n\nExpense description: ${input.description}`,
     output: {
         schema: CategorizeExpenseOutputSchema,

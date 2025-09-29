@@ -82,7 +82,7 @@ Contexte financier de l'utilisateur (Devise: ${currency}):
   ];
 
   const {text} = await ai.generate({
-      model: 'googleai/gemini-1.5-flash',
+      model: 'googleai/gemini-pro',
       messages,
   });
 
