@@ -753,6 +753,18 @@
     "reset_enterprise_confirm_button": "Yes, Reset Enterprise",
     "reset_enterprise_success_title": "Enterprise Data Reset",
     "reset_enterprise_success_desc": "All your products and sales data have been deleted.",
-    "reset_enterprise_error_desc": "Could not reset enterprise data."
+    "reset_enterprise_error_desc": "Could not reset enterprise data.",
+    "nav_products": "Products",
+    "nav_sales": "Sales",
+    "nav_purchases": "Purchases",
+    "feature_under_construction": "This feature is under construction.",
+    "back_to_enterprise_dashboard": "Back to Enterprise Dashboard",
+    "feature_sale_returns_desc": "Manage customer returns and create credit notes.",
+    "feature_sale_payments_desc": "Track payments received from your customers.",
+    "feature_sale_reports_desc": "Analyze your sales performance with detailed reports.",
+    "feature_purchase_invoices_desc": "Record and manage your supplier invoices.",
+    "feature_purchase_returns_desc": "Manage returns to your suppliers.",
+    "feature_purchase_payments_desc": "Track payments made to your suppliers.",
+    "feature_purchase_reports_desc": "Analyze your purchases and optimize your spending."
 }
   

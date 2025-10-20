@@ -751,6 +751,18 @@
     "reset_enterprise_confirm_button": "Oui, réinitialiser l'entreprise",
     "reset_enterprise_success_title": "Données d'entreprise réinitialisées",
     "reset_enterprise_success_desc": "Toutes vos données de produits et de ventes ont été supprimées.",
-    "reset_enterprise_error_desc": "Impossible de réinitialiser les données de l'entreprise."
+    "reset_enterprise_error_desc": "Impossible de réinitialiser les données de l'entreprise.",
+    "nav_products": "Produits",
+    "nav_sales": "Ventes",
+    "nav_purchases": "Achats",
+    "feature_under_construction": "Cette fonctionnalité est en cours de construction.",
+    "back_to_enterprise_dashboard": "Retour au tableau de bord de l'entreprise",
+    "feature_sale_returns_desc": "Gérez les retours de vos clients et créez des avoirs.",
+    "feature_sale_payments_desc": "Suivez les paiements reçus de vos clients.",
+    "feature_sale_reports_desc": "Analysez vos performances de vente avec des rapports détaillés.",
+    "feature_purchase_invoices_desc": "Enregistrez et gérez vos factures fournisseurs.",
+    "feature_purchase_returns_desc": "Gérez les retours à vos fournisseurs.",
+    "feature_purchase_payments_desc": "Suivez les paiements effectués à vos fournisseurs.",
+    "feature_purchase_reports_desc": "Analysez vos achats et optimisez vos dépenses."
 }
   

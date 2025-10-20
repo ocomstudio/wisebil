@@ -110,5 +110,3 @@ export function UserProfile() {
     </DropdownMenu>
   )
 }
-
-  

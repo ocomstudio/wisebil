@@ -751,6 +751,18 @@
     "reset_enterprise_confirm_button": "Có, đặt lại doanh nghiệp",
     "reset_enterprise_success_title": "Đã đặt lại dữ liệu doanh nghiệp",
     "reset_enterprise_success_desc": "Tất cả dữ liệu sản phẩm và doanh số của bạn đã bị xóa.",
-    "reset_enterprise_error_desc": "Không thể đặt lại dữ liệu doanh nghiệp."
+    "reset_enterprise_error_desc": "Không thể đặt lại dữ liệu doanh nghiệp.",
+    "nav_products": "Sản phẩm",
+    "nav_sales": "Bán hàng",
+    "nav_purchases": "Mua hàng",
+    "feature_under_construction": "Tính năng này đang được xây dựng.",
+    "back_to_enterprise_dashboard": "Quay lại bảng điều khiển doanh nghiệp",
+    "feature_sale_returns_desc": "Quản lý trả hàng của khách hàng và tạo ghi chú tín dụng.",
+    "feature_sale_payments_desc": "Theo dõi các khoản thanh toán nhận được từ khách hàng của bạn.",
+    "feature_sale_reports_desc": "Phân tích hiệu suất bán hàng của bạn với các báo cáo chi tiết.",
+    "feature_purchase_invoices_desc": "Ghi lại và quản lý hóa đơn nhà cung cấp của bạn.",
+    "feature_purchase_returns_desc": "Quản lý trả hàng cho nhà cung cấp của bạn.",
+    "feature_purchase_payments_desc": "Theo dõi các khoản thanh toán được thực hiện cho nhà cung cấp của bạn.",
+    "feature_purchase_reports_desc": "Phân tích các giao dịch mua của bạn và tối ưu hóa chi tiêu của bạn."
 }
   

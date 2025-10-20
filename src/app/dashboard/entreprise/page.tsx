@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle, ShoppingCart, Package, DollarSign, ArrowUpRight, Leaf, Settings } from "lucide-react";
 import Link from "next/link";
-import { useSales } from "@/context/sale-context";
+import { useSales } from "@/context/sales-context";
 import { useProducts } from "@/context/product-context";
 import { useLocale } from "@/context/locale-context";
 

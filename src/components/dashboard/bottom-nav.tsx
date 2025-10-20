@@ -23,7 +23,7 @@ export function BottomNav() {
     { href: '/dashboard', label: t('nav_home'), icon: Home },
     { href: '/dashboard/reports', label: t('nav_reports'), icon: BarChart },
     { href: '/dashboard/scan-receipt', label: t('nav_scan'), icon: ScanLine },
-    { href: '/dashboard/budget', label: t('nav_budgets'), icon: Target },
+    { href: '/dashboard/entreprise', label: t('nav_enterprise'), icon: Building },
     { href: '/dashboard/conseil', label: t('nav_advice'), icon: Lightbulb },
   ];
 
@@ -32,7 +32,8 @@ export function BottomNav() {
       <Dialog open={isScanOpen} onOpenChange={setIsScanOpen}>
         <nav className="flex items-center justify-around h-16">
           {navItems.map((item) => {
-            const isActive = item.href && pathname === item.href;
+            const isActive = item.href && pathname.startsWith(item.href) && (item.href !== '/dashboard' || pathname === '/dashboard');
+            
             if (item.label === t('nav_scan')) {
               return (
                 <DialogTrigger asChild key={item.label}>
@@ -67,5 +68,3 @@ export function BottomNav() {
     </footer>
   );
 }
-
-  

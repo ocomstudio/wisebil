@@ -1,21 +1,19 @@
-// src/context/sale-context.tsx
+// src/context/sales-context.tsx
 "use client";
 
 import React, { createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
 import type { Sale } from '@/types/sale';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from './auth-context';
 import { useUserData } from './user-context';
 
-interface SaleContextType {
+interface SalesContextType {
   sales: Sale[];
   getSaleById: (id: string) => Sale | undefined;
   isLoading: boolean;
 }
 
-const SaleContext = createContext<SaleContextType | undefined>(undefined);
+const SalesContext = createContext<SalesContextType | undefined>(undefined);
 
-export const SaleProvider = ({ children }: { children: ReactNode }) => {
+export const SalesProvider = ({ children }: { children: ReactNode }) => {
   const { userData, isLoading: isUserDataLoading } = useUserData();
   
   const sales = useMemo(() => {
@@ -29,16 +27,16 @@ export const SaleProvider = ({ children }: { children: ReactNode }) => {
 
 
   return (
-    <SaleContext.Provider value={{ sales, getSaleById, isLoading: isUserDataLoading }}>
+    <SalesContext.Provider value={{ sales, getSaleById, isLoading: isUserDataLoading }}>
       {children}
-    </SaleContext.Provider>
+    </SalesContext.Provider>
   );
 };
 
 export const useSales = () => {
-  const context = useContext(SaleContext);
+  const context = useContext(SalesContext);
   if (context === undefined) {
-    throw new Error('useSales must be used within a SaleProvider');
+    throw new Error('useSales must be used within a SalesProvider');
   }
   return context;
 };

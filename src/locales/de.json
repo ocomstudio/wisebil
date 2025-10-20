@@ -751,6 +751,18 @@
     "reset_enterprise_confirm_button": "Ja, Unternehmen zurücksetzen",
     "reset_enterprise_success_title": "Unternehmensdaten zurückgesetzt",
     "reset_enterprise_success_desc": "Alle Ihre Produkt- und Verkaufsdaten wurden gelöscht.",
-    "reset_enterprise_error_desc": "Unternehmensdaten konnten nicht zurückgesetzt werden."
+    "reset_enterprise_error_desc": "Unternehmensdaten konnten nicht zurückgesetzt werden.",
+    "nav_products": "Produkte",
+    "nav_sales": "Verkäufe",
+    "nav_purchases": "Einkäufe",
+    "feature_under_construction": "Diese Funktion befindet sich im Aufbau.",
+    "back_to_enterprise_dashboard": "Zurück zum Unternehmens-Dashboard",
+    "feature_sale_returns_desc": "Verwalten Sie Kundenretouren und erstellen Sie Gutschriften.",
+    "feature_sale_payments_desc": "Verfolgen Sie die von Ihren Kunden erhaltenen Zahlungen.",
+    "feature_sale_reports_desc": "Analysieren Sie Ihre Verkaufsleistung mit detaillierten Berichten.",
+    "feature_purchase_invoices_desc": "Erfassen und verwalten Sie Ihre Lieferantenrechnungen.",
+    "feature_purchase_returns_desc": "Verwalten Sie Rücksendungen an Ihre Lieferanten.",
+    "feature_purchase_payments_desc": "Verfolgen Sie die an Ihre Lieferanten geleisteten Zahlungen.",
+    "feature_purchase_reports_desc": "Analysieren Sie Ihre Einkäufe und optimieren Sie Ihre Ausgaben."
 }
   
