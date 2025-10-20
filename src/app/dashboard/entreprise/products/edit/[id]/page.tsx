@@ -58,7 +58,7 @@ export default function EditProductPage() {
                 name: foundProduct.name,
                 description: foundProduct.description || "",
                 price: foundProduct.price,
-                promoPrice: foundProduct.promoPrice,
+                promoPrice: foundProduct.promoPrice || undefined,
                 quantity: foundProduct.quantity,
                 imageUrl: foundProduct.imageUrl || "",
             });
