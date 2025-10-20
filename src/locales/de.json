@@ -74,7 +74,7 @@
     "nav_notifications": "Benachrichtigungen",
     "nav_settings": "Einstellungen",
     "nav_scan": "Scannen",
-    "nav_accounting": "Buchhaltung",
+    "nav_enterprise": "Unternehmen",
     "total_balance": "Gesamtsaldo",
     "income": "Einkommen",
     "expenses": "Ausgaben",
@@ -657,3 +657,5 @@
     "ios_install_prompt_step1": "Tippen Sie auf das Teilen-Symbol",
     "ios_install_prompt_step2": "und dann auf \"Zum Startbildschirm hinzufügen\"."
 }
+
+  
