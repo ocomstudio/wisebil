@@ -15,12 +15,11 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Loader2, PlusCircle, Trash2 } from 'lucide-react';
 import { useProducts } from '@/context/product-context';
-import { useSales } from '@/context/sale-context';
 import { useLocale } from '@/context/locale-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Product } from '@/types/product';
 import 'react-phone-number-input/style.css';
 import PhoneInput from 'react-phone-number-input';
+import { useUserData } from '@/context/user-context';
 
 const saleItemSchema = z.object({
   productId: z.string().min(1, "Veuillez sélectionner un produit."),
@@ -40,7 +39,7 @@ export default function CreateSalePage() {
   const router = useRouter();
   const { toast } = useToast();
   const { products, isLoading: isLoadingProducts } = useProducts();
-  const { addSale, isLoading: isLoadingSales } = useSales();
+  const { addUserSale, isLoading: isLoadingSales } = useUserData();
   const { formatCurrency } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -83,7 +82,7 @@ export default function CreateSalePage() {
             total,
         };
 
-      const newSale = await addSale(saleData);
+      const newSale = await addUserSale(saleData);
       toast({
         title: "Vente enregistrée",
         description: `La vente pour ${data.customerName} a été enregistrée.`,
@@ -93,7 +92,7 @@ export default function CreateSalePage() {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible d'enregistrer la vente. " + error,
+        description: "Impossible d'enregistrer la vente. " + (error instanceof Error ? error.message : "Une erreur inconnue est survenue."),
       });
     } finally {
       setIsSubmitting(false);

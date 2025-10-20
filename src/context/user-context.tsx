@@ -13,7 +13,8 @@ import type { CompanyProfile } from '@/types/company';
 import type { Product } from '@/types/product';
 import type { Sale } from '@/types/sale';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, runTransaction } from 'firebase/firestore';
+import { v4 as uuidv4 } from "uuid";
 
 
 export interface UserData {
@@ -47,6 +48,7 @@ interface UserDataContextType {
   userData: UserData | null;
   isLoading: boolean;
   updateUserData: (data: Partial<UserData>) => Promise<void>;
+  addUserSale: (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber'>) => Promise<Sale>;
 }
 
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
@@ -65,40 +67,79 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     if (!userDocRef) throw new Error("User not authenticated.");
 
     try {
-      const docSnap = await getDoc(userDocRef);
-      const currentData = docSnap.exists() ? docSnap.data() as UserData : {};
-
-      const newData = { ...currentData };
-
-      // Loop through the data to update and merge arrays correctly
-      for (const key in dataToUpdate) {
-        if (Array.isArray(newData[key as keyof UserData]) && Array.isArray(dataToUpdate[key as keyof UserData])) {
-           // This logic is for overwriting the whole array, useful for product/sale updates
-           (newData as any)[key] = dataToUpdate[key as keyof UserData];
-        } else if (typeof dataToUpdate[key as keyof UserData] === 'object' && !Array.isArray(dataToUpdate[key as keyof UserData]) && dataToUpdate[key as keyof UserData] !== null) {
-          // Deep merge for nested objects like profile, settings, preferences
-          (newData as any)[key] = { ...(newData as any)[key], ...dataToUpdate[key as keyof UserData] };
-        }
-        else {
-          // Simple overwrite for other types
-          (newData as any)[key] = dataToUpdate[key as keyof UserData];
-        }
-      }
-      
-      await setDoc(userDocRef, newData, { merge: true });
-
+        await setDoc(userDocRef, dataToUpdate, { merge: true });
     } catch (error) {
       console.error("Error updating user data:", error);
       throw error;
     }
   }, [getUserDocRef]);
 
+   const addUserSale = useCallback(async (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber'>): Promise<Sale> => {
+    const userDocRef = getUserDocRef();
+    if (!userDocRef) throw new Error("Utilisateur non authentifié");
+
+    const newSaleId = uuidv4();
+    let newSale: Sale | null = null;
+    
+    try {
+        await runTransaction(db, async (transaction) => {
+            const userDoc = await transaction.get(userDocRef);
+            if (!userDoc.exists()) {
+                throw "Document does not exist!";
+            }
+            
+            const currentData = userDoc.data() as UserData;
+
+            // Generate invoice number
+            const currentCounter = currentData.saleInvoiceCounter || 0;
+            const newCount = currentCounter + 1;
+            const invoiceNumber = `SALE-${String(newCount).padStart(4, '0')}`;
+
+            newSale = {
+                id: newSaleId,
+                invoiceNumber,
+                date: new Date().toISOString(),
+                ...saleData,
+            };
+
+            const currentSales = currentData.sales || [];
+            const updatedSales = [...currentSales, newSale];
+            
+            // Update product stock
+            const currentProducts = currentData.products || [];
+            const updatedProducts = [...currentProducts];
+
+            for (const item of newSale.items) {
+                const productIndex = updatedProducts.findIndex(p => p.id === item.productId);
+                if (productIndex !== -1) {
+                    const newQuantity = updatedProducts[productIndex].quantity - item.quantity;
+                    updatedProducts[productIndex] = { ...updatedProducts[productIndex], quantity: newQuantity >= 0 ? newQuantity : 0 };
+                }
+            }
+            
+            transaction.update(userDocRef, { 
+                sales: updatedSales,
+                products: updatedProducts,
+                saleInvoiceCounter: newCount,
+            });
+        });
+        if (newSale) {
+            return newSale;
+        } else {
+            throw new Error("La création de la vente a échoué après la transaction.");
+        }
+    } catch (e) {
+      console.error("Failed to add sale and update stock", e);
+      throw e;
+    }
+  }, [getUserDocRef]);
 
   const value = useMemo(() => ({
     userData: fullUserData,
     isLoading,
     updateUserData,
-  }), [fullUserData, isLoading, updateUserData]);
+    addUserSale,
+  }), [fullUserData, isLoading, updateUserData, addUserSale]);
 
   return (
     <UserDataContext.Provider value={value}>
