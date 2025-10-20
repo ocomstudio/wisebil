@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSales } from "@/context/sale-context";
+import { useSales } from "@/context/sales-context";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SaleInvoicesPage() {

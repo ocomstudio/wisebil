@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-import { useSales } from '@/context/sale-context';
+import { useSales } from '@/context/sales-context';
 import { Sale } from '@/types/sale';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, Download, Share2 } from 'lucide-react';
