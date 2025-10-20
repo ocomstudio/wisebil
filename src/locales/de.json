@@ -567,7 +567,7 @@
     "no_invoices_title": "Noch keine Rechnungen",
     "no_invoices_desc": "Beginnen Sie damit, Ihre erste Rechnung für Ihre Kunden zu erstellen.",
     "create_first_invoice_button": "Erste Rechnung erstellen",
-    "invoice_number_header": "Rechnungs-Nr.",
+    "invoice_number_header": "Bestellnummer",
     "customer_header": "Kunde",
     "issue_date_header": "Ausstellungsdatum",
     "total_amount_header": "Gesamtbetrag",
@@ -589,7 +589,6 @@
     "customer_email_label": "Kunden-E-Mail (optional)",
     "customer_address_label": "Kundenadresse",
     "invoice_dates_title": "Rechnungsdaten",
-    "issue_date_label": "Ausstellungsdatum",
     "due_date_label": "Fälligkeitsdatum",
     "choose_a_date_placeholder": "Wählen Sie ein Datum",
     "invoice_items_title": "Rechnungspositionen",
@@ -763,6 +762,28 @@
     "feature_purchase_invoices_desc": "Erfassen und verwalten Sie Ihre Lieferantenrechnungen.",
     "feature_purchase_returns_desc": "Verwalten Sie Rücksendungen an Ihre Lieferanten.",
     "feature_purchase_payments_desc": "Verfolgen Sie die an Ihre Lieferanten geleisteten Zahlungen.",
-    "feature_purchase_reports_desc": "Analysieren Sie Ihre Einkäufe und optimieren Sie Ihre Ausgaben."
+    "feature_purchase_reports_desc": "Analysieren Sie Ihre Einkäufe und optimieren Sie Ihre Ausgaben.",
+    "record_new_purchase_title": "Neuen Kauf erfassen",
+    "supplier_info_title": "Lieferanteninformationen",
+    "supplier_name_label": "Lieferantenname",
+    "supplier_name_required": "Lieferantenname ist erforderlich.",
+    "products_purchased_title": "Gekaufte Produkte",
+    "save_purchase_button": "Kauf speichern",
+    "purchase_recorded_title": "Kauf erfasst",
+    "purchase_recorded_desc": "Der Kauf von {{supplierName}} wurde erfolgreich erfasst.",
+    "purchase_record_error": "Fehler beim Erfassen des Kaufs: {{message}}",
+    "purchase_order_title_capital": "BESTELLUNG",
+    "supplier_label": "Lieferant",
+    "download_success_desc_purchase": "Bestellung {{invoiceNumber}} wurde heruntergeladen.",
+    "purchase_invoice_not_found_title": "Bestellung nicht gefunden",
+    "purchase_invoices_title": "Bestellungen",
+    "purchase_invoices_desc": "Liste aller aufgegebenen Bestellungen.",
+    "create_purchase_button": "Kauf erstellen",
+    "no_purchase_invoices_title": "Keine Bestellungen",
+    "no_purchase_invoices_desc": "Beginnen Sie mit der Erstellung Ihrer ersten Bestellung.",
+    "create_first_purchase_button": "Ersten Kauf erstellen",
+    "supplier_header": "Lieferant"
 }
   
+
+    

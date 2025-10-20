@@ -567,7 +567,7 @@
     "no_invoices_title": "Chưa có hóa đơn nào",
     "no_invoices_desc": "Bắt đầu bằng cách tạo hóa đơn đầu tiên cho khách hàng của bạn.",
     "create_first_invoice_button": "Tạo hóa đơn đầu tiên",
-    "invoice_number_header": "Số hóa đơn",
+    "invoice_number_header": "Số đơn hàng",
     "customer_header": "Khách hàng",
     "issue_date_header": "Ngày phát hành",
     "total_amount_header": "Tổng số tiền",
@@ -589,7 +589,6 @@
     "customer_email_label": "Email khách hàng (tùy chọn)",
     "customer_address_label": "Địa chỉ khách hàng",
     "invoice_dates_title": "Ngày hóa đơn",
-    "issue_date_label": "Ngày phát hành",
     "due_date_label": "Ngày đến hạn",
     "choose_a_date_placeholder": "Chọn một ngày",
     "invoice_items_title": "Các mục trên hóa đơn",
@@ -763,6 +762,28 @@
     "feature_purchase_invoices_desc": "Ghi lại và quản lý hóa đơn nhà cung cấp của bạn.",
     "feature_purchase_returns_desc": "Quản lý trả hàng cho nhà cung cấp của bạn.",
     "feature_purchase_payments_desc": "Theo dõi các khoản thanh toán được thực hiện cho nhà cung cấp của bạn.",
-    "feature_purchase_reports_desc": "Phân tích các giao dịch mua của bạn và tối ưu hóa chi tiêu của bạn."
+    "feature_purchase_reports_desc": "Phân tích các giao dịch mua của bạn và tối ưu hóa chi tiêu của bạn.",
+    "record_new_purchase_title": "Ghi lại giao dịch mua mới",
+    "supplier_info_title": "Thông tin nhà cung cấp",
+    "supplier_name_label": "Tên nhà cung cấp",
+    "supplier_name_required": "Yêu cầu tên nhà cung cấp.",
+    "products_purchased_title": "Sản phẩm đã mua",
+    "save_purchase_button": "Lưu giao dịch mua",
+    "purchase_recorded_title": "Giao dịch mua đã được ghi lại",
+    "purchase_recorded_desc": "Giao dịch mua từ {{supplierName}} đã được ghi lại thành công.",
+    "purchase_record_error": "Lỗi khi ghi lại giao dịch mua: {{message}}",
+    "purchase_order_title_capital": "ĐƠN ĐẶT HÀNG",
+    "supplier_label": "Nhà cung cấp",
+    "download_success_desc_purchase": "Đã tải xuống đơn đặt hàng {{invoiceNumber}}.",
+    "purchase_invoice_not_found_title": "Không tìm thấy đơn đặt hàng",
+    "purchase_invoices_title": "Đơn đặt hàng",
+    "purchase_invoices_desc": "Danh sách tất cả các đơn đặt hàng đã phát hành.",
+    "create_purchase_button": "Tạo giao dịch mua",
+    "no_purchase_invoices_title": "Không có đơn đặt hàng",
+    "no_purchase_invoices_desc": "Bắt đầu bằng cách tạo đơn đặt hàng đầu tiên của bạn.",
+    "create_first_purchase_button": "Tạo giao dịch mua đầu tiên",
+    "supplier_header": "Nhà cung cấp"
 }
   
+
+    

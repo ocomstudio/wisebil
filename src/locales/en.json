@@ -591,7 +591,6 @@
     "customer_email_label": "Customer Email (optional)",
     "customer_address_label": "Customer Address",
     "invoice_dates_title": "Invoice Dates",
-    "issue_date_label": "Issue Date",
     "due_date_label": "Due Date",
     "choose_a_date_placeholder": "Choose a date",
     "invoice_items_title": "Invoice Items",
@@ -765,6 +764,29 @@
     "feature_purchase_invoices_desc": "Record and manage your supplier invoices.",
     "feature_purchase_returns_desc": "Manage returns to your suppliers.",
     "feature_purchase_payments_desc": "Track payments made to your suppliers.",
-    "feature_purchase_reports_desc": "Analyze your purchases and optimize your spending."
+    "feature_purchase_reports_desc": "Analyze your purchases and optimize your spending.",
+    "record_new_purchase_title": "Record New Purchase",
+    "supplier_info_title": "Supplier Information",
+    "supplier_name_label": "Supplier Name",
+    "supplier_name_required": "Supplier name is required.",
+    "products_purchased_title": "Products Purchased",
+    "save_purchase_button": "Save Purchase",
+    "purchase_recorded_title": "Purchase Recorded",
+    "purchase_recorded_desc": "The purchase from {{supplierName}} has been successfully recorded.",
+    "purchase_record_error": "Error recording purchase: {{message}}",
+    "purchase_order_title_capital": "PURCHASE ORDER",
+    "supplier_label": "Supplier",
+    "download_success_desc_purchase": "Purchase order {{invoiceNumber}} has been downloaded.",
+    "purchase_invoice_not_found_title": "Purchase Order Not Found",
+    "purchase_invoices_title": "Purchase Orders",
+    "purchase_invoices_desc": "List of all issued purchase orders.",
+    "create_purchase_button": "Create Purchase",
+    "no_purchase_invoices_title": "No Purchase Orders",
+    "no_purchase_invoices_desc": "Start by creating your first purchase order.",
+    "create_first_purchase_button": "Create First Purchase",
+    "invoice_number_header": "Order #",
+    "supplier_header": "Supplier"
 }
   
+
+    

@@ -603,7 +603,7 @@
     "save_invoice_button": "Enregistrer la facture",
     "line_item_desc_required": "La description est requise.",
     "line_item_qty_required": "La quantité doit être d'au moins 1.",
-    "line_item_price_required": "Le prix ne peut être négatif.",
+    "line_item_price_required": "Le prix ne peut pas être négatif.",
     "company_address_required": "L'adresse de votre entreprise est requise.",
     "customer_name_required": "Le nom du client est requis.",
     "customer_email_invalid": "L'e-mail du client est invalide.",
@@ -763,6 +763,30 @@
     "feature_purchase_invoices_desc": "Enregistrez et gérez vos factures fournisseurs.",
     "feature_purchase_returns_desc": "Gérez les retours à vos fournisseurs.",
     "feature_purchase_payments_desc": "Suivez les paiements effectués à vos fournisseurs.",
-    "feature_purchase_reports_desc": "Analysez vos achats et optimisez vos dépenses."
+    "feature_purchase_reports_desc": "Analysez vos achats et optimisez vos dépenses.",
+    "record_new_purchase_title": "Enregistrer un nouvel achat",
+    "supplier_info_title": "Informations du fournisseur",
+    "supplier_name_label": "Nom du fournisseur",
+    "supplier_name_required": "Le nom du fournisseur est requis.",
+    "products_purchased_title": "Produits achetés",
+    "save_purchase_button": "Enregistrer l'achat",
+    "purchase_recorded_title": "Achat enregistré",
+    "purchase_recorded_desc": "L'achat auprès de {{supplierName}} a été enregistré avec succès.",
+    "purchase_record_error": "Erreur lors de l'enregistrement de l'achat : {{message}}",
+    "purchase_order_title_capital": "BON DE COMMANDE",
+    "supplier_label": "Fournisseur",
+    "download_success_desc_purchase": "Le bon de commande {{invoiceNumber}} a été téléchargé.",
+    "purchase_invoice_not_found_title": "Bon de commande non trouvé",
+    "purchase_invoices_title": "Bons de Commande",
+    "purchase_invoices_desc": "Liste de tous les bons de commande émis.",
+    "create_purchase_button": "Créer un achat",
+    "no_purchase_invoices_title": "Aucun bon de commande",
+    "no_purchase_invoices_desc": "Commencez par créer votre premier bon de commande.",
+    "create_first_purchase_button": "Créer le premier achat",
+    "invoice_number_header": "N° de Commande",
+    "supplier_header": "Fournisseur",
+    "issue_date_header": "Date d'émission"
 }
   
+
+    
