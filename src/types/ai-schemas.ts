@@ -45,7 +45,7 @@ export const FinancialSummaryOutputSchema = z.object({
 export type FinancialSummaryOutput = z.infer<typeof FinancialSummaryOutputSchema>;
 
 
-// Schema for wise-agent.ts
+// Schema for wise-agent.ts and scan-document-flow.ts
 export const AgentWTransactionSchema = z.object({
   description: z.string().describe('The detailed description of the transaction.'),
   amount: z.number().describe('The numeric amount of the transaction. Use a negative sign for expenses (e.g., -5000) and a positive sign for incomes (e.g., 10000).'),
@@ -133,6 +133,16 @@ export const ProcessReceiptOutputSchema = z.object({
     category: z.string().describe("A suggested expense category based on the merchant name or items."),
 });
 export type ProcessReceiptOutput = z.infer<typeof ProcessReceiptOutputSchema>;
+
+// Schema for scan-document-flow.ts
+export const ScanDocumentInputSchema = z.object({
+  photoDataUri: z
+    .string()
+    .describe(
+      "A photo of a document, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'"
+    ),
+});
+export type ScanDocumentInput = z.infer<typeof ScanDocumentInputSchema>;
 
 
 // Schema for transcribe-audio.ts
