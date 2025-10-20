@@ -37,6 +37,10 @@ export interface UserData {
   invoices: Invoice[];
   enterpriseIds?: string[];
   customCategories?: { name: string; emoji: string; }[];
+  conversations?: any;
+  invoiceCounter?: number;
+  saleInvoiceCounter?: number;
+  hasCompletedTutorial?: boolean;
 }
 
 interface UserDataContextType {
@@ -64,21 +68,22 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
       const docSnap = await getDoc(userDocRef);
       const currentData = docSnap.exists() ? docSnap.data() as UserData : {};
 
-      // Deep merge logic for nested objects like products, sales, etc.
-      const newData = {
-        ...currentData,
-        ...dataToUpdate,
-        products: [...(currentData.products || []), ...(dataToUpdate.products || [])],
-        sales: [...(currentData.sales || []), ...(dataToUpdate.sales || [])],
-        transactions: [...(currentData.transactions || []), ...(dataToUpdate.transactions || [])],
-        budgets: [...(currentData.budgets || []), ...(dataToUpdate.budgets || [])],
-        savingsGoals: [...(currentData.savingsGoals || []), ...(dataToUpdate.savingsGoals || [])],
-        invoices: [...(currentData.invoices || []), ...(dataToUpdate.invoices || [])],
-      };
-      
-      // Ensure no duplicate products/sales if they have IDs
-      if (dataToUpdate.products) newData.products = Array.from(new Map(newData.products.map(p => [p.id, p])).values());
-      if (dataToUpdate.sales) newData.sales = Array.from(new Map(newData.sales.map(s => [s.id, s])).values());
+      const newData = { ...currentData };
+
+      // Loop through the data to update and merge arrays correctly
+      for (const key in dataToUpdate) {
+        if (Array.isArray(newData[key as keyof UserData]) && Array.isArray(dataToUpdate[key as keyof UserData])) {
+           // This logic is for overwriting the whole array, useful for product/sale updates
+           (newData as any)[key] = dataToUpdate[key as keyof UserData];
+        } else if (typeof dataToUpdate[key as keyof UserData] === 'object' && !Array.isArray(dataToUpdate[key as keyof UserData]) && dataToUpdate[key as keyof UserData] !== null) {
+          // Deep merge for nested objects like profile, settings, preferences
+          (newData as any)[key] = { ...(newData as any)[key], ...dataToUpdate[key as keyof UserData] };
+        }
+        else {
+          // Simple overwrite for other types
+          (newData as any)[key] = dataToUpdate[key as keyof UserData];
+        }
+      }
       
       await setDoc(userDocRef, newData, { merge: true });
 

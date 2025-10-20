@@ -8,7 +8,7 @@ import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { storage } from '@/lib/firebase-storage';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, updateDoc, arrayUnion, arrayRemove, onSnapshot, setDoc } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, arrayRemove, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from "uuid";
 import { useUserData } from './user-context';
 
@@ -23,11 +23,25 @@ interface ProductContextType {
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
+// Helper function to remove undefined values from an object before Firestore write
+const cleanUndefined = (obj: any) => {
+    const newObj: any = {};
+    Object.keys(obj).forEach((key) => {
+        if (obj[key] !== undefined) {
+            newObj[key] = obj[key];
+        } else {
+            newObj[key] = null; // Replace undefined with null
+        }
+    });
+    return newObj;
+};
+
+
 export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const { userData, isLoading: isUserDataLoading, updateUserData } = useUserData();
   const { toast } = useToast();
   const { user } = useAuth();
-
+  
   const products = useMemo(() => userData?.products || [], [userData]);
 
   const getUserDocRef = useCallback(() => {
@@ -36,16 +50,28 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const addProduct = useCallback(async (productData: Omit<Product, 'id'>) => {
-    const newProduct: Product = { id: uuidv4(), ...productData };
+    const userDocRef = getUserDocRef();
+    if (!userDocRef) return;
+      
+    const newProduct: Product = { 
+        id: uuidv4(), 
+        ...productData 
+    };
 
+    const cleanedProduct = cleanUndefined(newProduct);
+    
     try {
-      await updateUserData({ products: [newProduct] });
+        const docSnap = await getDoc(userDocRef);
+        const currentProducts = docSnap.exists() ? docSnap.data().products || [] : [];
+        const updatedProducts = [...currentProducts, cleanedProduct];
+        await updateUserData({ products: updatedProducts });
+
     } catch (e) {
       console.error("Failed to add product to Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to save product." });
       throw e;
     }
-  }, [updateUserData, toast]);
+  }, [getUserDocRef, toast, updateUserData]);
 
   const updateProduct = useCallback(async (id: string, updatedProductData: Partial<Omit<Product, 'id'>>) => {
     const currentProducts = [...products];
@@ -57,7 +83,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     }
     
     const updatedProduct = { ...currentProducts[productIndex], ...updatedProductData };
-    currentProducts[productIndex] = updatedProduct;
+    currentProducts[productIndex] = cleanUndefined(updatedProduct);
 
     try {
       await updateUserData({ products: currentProducts });
