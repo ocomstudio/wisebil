@@ -32,6 +32,8 @@ import { TeamChat } from "@/components/dashboard/team/team-chat";
 import { EnterpriseProvider } from "@/context/enterprise-context";
 import { UserDataProvider } from "@/context/user-context";
 import { CompanyProfileProvider } from "@/context/company-profile-context";
+import { ProductProvider } from "@/context/product-context";
+import { SaleProvider } from "@/context/sale-context";
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
@@ -115,15 +117,19 @@ export default function DashboardLayout({
                     <SavingsProvider>
                       <NotificationsProvider>
                         <CompanyProfileProvider>
-                          <AccountingProvider>
-                            <InvoicingProvider>
-                              <TutorialProvider>
-                                <TeamChatProvider>
-                                  <DashboardLayoutContent>{children}</DashboardLayoutContent>
-                                </TeamChatProvider>
-                              </TutorialProvider>
-                            </InvoicingProvider>
-                          </AccountingProvider>
+                           <ProductProvider>
+                             <SaleProvider>
+                                <AccountingProvider>
+                                    <InvoicingProvider>
+                                    <TutorialProvider>
+                                        <TeamChatProvider>
+                                        <DashboardLayoutContent>{children}</DashboardLayoutContent>
+                                        </TeamChatProvider>
+                                    </TutorialProvider>
+                                    </InvoicingProvider>
+                                </AccountingProvider>
+                              </SaleProvider>
+                            </ProductProvider>
                         </CompanyProfileProvider>
                       </NotificationsProvider>
                       <HotToaster

@@ -1,229 +1,148 @@
 // src/app/dashboard/entreprise/page.tsx
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building, PlusCircle, Loader2, Mail, Check, X } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlusCircle, ShoppingCart, Package, DollarSign, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import { useSales } from "@/context/sale-context";
+import { useProducts } from "@/context/product-context";
 import { useLocale } from "@/context/locale-context";
-import { useEnterprise } from "@/context/enterprise-context";
-import { useAuth } from "@/context/auth-context";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 
-const enterpriseSchema = z.object({
-  name: z.string().min(3, "Le nom doit contenir au moins 3 caractères."),
-  description: z.string().optional(),
-  ownerRole: z.string().min(2, "Votre rôle est requis.").default("Administrateur"),
-});
+export default function EnterprisePage() {
+  const { sales } = useSales();
+  const { products } = useProducts();
+  const { formatCurrency } = useLocale();
 
-export default function EntrepriseHubPage() {
-  const { t } = useLocale();
-  const { user } = useAuth();
-  const { enterprises, pendingInvitations, addEnterprise, respondToInvitation, isLoading } = useEnterprise();
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const router = useRouter();
-
-  const form = useForm<z.infer<typeof enterpriseSchema>>({
-    resolver: zodResolver(enterpriseSchema),
-    defaultValues: { name: "", description: "", ownerRole: "Administrateur" },
-  });
-
-  const handleCreateEnterprise = async (values: z.infer<typeof enterpriseSchema>) => {
-    try {
-        const { name, description, ownerRole } = values;
-        const newEnterpriseId = await addEnterprise({ name, description: description || "" }, ownerRole);
-        
-        if (newEnterpriseId) {
-            form.reset();
-            setIsCreateOpen(false);
-            router.push(`/dashboard/entreprise/management/${newEnterpriseId}`);
-        }
-    } catch (error) {
-        console.error("Enterprise creation failed:", error);
-    }
-  };
-  
-  if (isLoading) {
-    return (
-        <div className="space-y-6">
-            <Skeleton className="h-10 w-1/3" />
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-32 w-full" />
-        </div>
-    )
-  }
+  const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
+  const totalProductsSold = sales.reduce((sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold font-headline">Gestion d'Entreprise</h1>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-                <Button>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Créer une entreprise
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-lg">
-                <DialogHeader>
-                    <DialogTitle>Créer une nouvelle entreprise</DialogTitle>
-                    <DialogDescription>
-                        Remplissez les informations ci-dessous pour démarrer votre espace collaboratif.
-                    </DialogDescription>
-                </DialogHeader>
-                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleCreateEnterprise)} className="space-y-6">
-                        
-                        <Card className="bg-muted/50">
-                            <CardHeader className="pb-4">
-                               <CardTitle className="text-lg">Informations sur l'entreprise</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <FormField control={form.control} name="name" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Nom de l'entreprise</FormLabel>
-                                        <FormControl><Input placeholder="Ex: Ocomstudio" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
-                                <FormField control={form.control} name="description" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Description (facultatif)</FormLabel>
-                                        <FormControl><Textarea placeholder="Décrivez brièvement votre entreprise..." {...field} rows={2} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
-                            </CardContent>
-                        </Card>
-                        
-                        <Card className="bg-muted/50">
-                             <CardHeader className="pb-4">
-                               <CardTitle className="text-lg">Vos Informations</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <FormField control={form.control} name="ownerRole" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Votre rôle dans l'entreprise</FormLabel>
-                                        <FormControl><Input placeholder="Ex: Fondateur, CEO..." {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
-                                <div className="space-y-1">
-                                    <FormLabel>Créateur</FormLabel>
-                                    <div className="flex items-center gap-3 rounded-md border bg-background p-2">
-                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-sm font-bold">
-                                            {user?.displayName?.charAt(0)}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium">{user?.displayName}</p>
-                                            <p className="text-xs text-muted-foreground">{user?.email}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        
-                        <DialogFooter>
-                            <DialogClose asChild><Button type="button" variant="ghost">Annuler</Button></DialogClose>
-                            <Button type="submit" disabled={form.formState.isSubmitting}>
-                                {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Créer l'entreprise
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
-            </DialogContent>
-        </Dialog>
+      <div className="flex flex-wrap justify-between items-center gap-4">
+        <h1 className="text-3xl font-bold font-headline">Gestion de la Boutique</h1>
+        <div className="flex gap-2">
+           <Button asChild>
+            <Link href="/dashboard/entreprise/products/create">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Ajouter un produit
+            </Link>
+          </Button>
+           <Button asChild variant="secondary">
+            <Link href="/dashboard/entreprise/sales/create">
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              Créer une vente
+            </Link>
+          </Button>
+        </div>
       </div>
 
-       {pendingInvitations.length > 0 && (
-         <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Mail className="text-primary"/> Invitations en attente</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-                {pendingInvitations.map(invite => (
-                    <div key={invite.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                        <div>
-                            <p className="font-semibold">{invite.enterpriseName}</p>
-                            <p className="text-sm text-muted-foreground">Vous êtes invité(e) à rejoindre cette entreprise en tant que {invite.role}.</p>
-                        </div>
-                        <div className="flex gap-2">
-                             <Button size="icon" variant="outline" className="text-green-500 hover:bg-green-500/10 hover:text-green-500" onClick={() => respondToInvitation(invite.id, 'accepted')}>
-                                <Check className="h-4 w-4" />
-                            </Button>
-                             <Button size="icon" variant="outline" className="text-red-500 hover:bg-red-500/10 hover:text-red-500" onClick={() => respondToInvitation(invite.id, 'declined')}>
-                                <X className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
-                ))}
-            </CardContent>
-         </Card>
-       )}
+       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Chiffre d'affaires total</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
+            <p className="text-xs text-muted-foreground">Basé sur {sales.length} ventes</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Ventes</CardTitle>
+            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">+{sales.length}</div>
+            <p className="text-xs text-muted-foreground">{totalProductsSold} produits vendus au total</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Nombre de Produits</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{products.length}</div>
+            <p className="text-xs text-muted-foreground">Produits uniques dans l'inventaire</p>
+          </CardContent>
+        </Card>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Vos Entreprises</CardTitle>
-          <CardDescription>
-            Accédez aux espaces de travail de vos entreprises pour gérer leurs finances en équipe.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-           {enterprises.length === 0 ? (
-             <div className="flex flex-col items-center justify-center text-center p-12 border-dashed border-2 rounded-lg">
-                <Building className="h-16 w-16 text-muted-foreground mb-4" />
-                <h3 className="text-xl font-semibold">Aucune entreprise pour le moment</h3>
-                <p className="text-muted-foreground mt-2 mb-4">Créez votre première entreprise pour collaborer avec votre équipe.</p>
-                <Button onClick={() => setIsCreateOpen(true)}>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Créer la première entreprise
-                </Button>
-            </div>
-           ) : (
-             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {enterprises.map((enterprise) => (
-                    <Link key={enterprise.id} href={`/dashboard/entreprise/management/${enterprise.id}`}>
-                        <Card className="hover:shadow-primary/20 hover:border-primary/50 transition-all transform-gpu hover:-translate-y-1">
-                            <CardHeader>
-                                <CardTitle>{enterprise.name}</CardTitle>
-                                <CardDescription>{enterprise.description}</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-muted-foreground">{enterprise.members.length} membre(s)</p>
-                            </CardContent>
-                        </Card>
+      <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+                <CardTitle>Ventes Récentes</CardTitle>
+                <CardDescription>Aperçu des dernières transactions enregistrées.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {sales.length > 0 ? (
+                    <div className="space-y-4">
+                        {sales.slice(0, 5).map(sale => (
+                             <div key={sale.id} className="flex items-center">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-lg">
+                                    🛒
+                                </div>
+                                <div className="ml-4 space-y-1">
+                                <p className="text-sm font-medium leading-none">Vente à {sale.customerName}</p>
+                                <p className="text-sm text-muted-foreground">{sale.items.length} produit(s)</p>
+                                </div>
+                                <div className="ml-auto font-medium">{formatCurrency(sale.total)}</div>
+                                <Button variant="ghost" size="icon" className="ml-2" asChild>
+                                    <Link href={`/dashboard/entreprise/sales/invoice/${sale.id}`}>
+                                        <ArrowUpRight className="h-4 w-4" />
+                                    </Link>
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                ): (
+                     <div className="text-center text-muted-foreground py-8">
+                        <p>Aucune vente enregistrée pour le moment.</p>
+                     </div>
+                )}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+                <CardTitle>Inventaire des Produits</CardTitle>
+                <CardDescription>Aperçu rapide de votre stock.</CardDescription>
+                 <Button variant="outline" size="sm" className="mt-2" asChild>
+                    <Link href="/dashboard/entreprise/products">
+                        Gérer les produits
                     </Link>
-                ))}
-             </div>
-           )}
-        </CardContent>
-      </Card>
+                </Button>
+            </CardHeader>
+            <CardContent>
+                {products.length > 0 ? (
+                     <div className="space-y-4">
+                        {products.slice(0, 5).map(product => (
+                            <div key={product.id} className="flex items-center">
+                                <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center overflow-hidden">
+                                     {product.imageUrl ? (
+                                        <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover"/>
+                                     ) : (
+                                        <Package />
+                                     )}
+                                </div>
+                                <div className="ml-4 space-y-1">
+                                    <p className="text-sm font-medium leading-none">{product.name}</p>
+                                    <p className="text-sm text-muted-foreground">{formatCurrency(product.price)}</p>
+                                </div>
+                                <div className="ml-auto font-medium">{product.quantity} en stock</div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center text-muted-foreground py-8">
+                        <p>Aucun produit dans votre inventaire.</p>
+                    </div>
+                )}
+            </CardContent>
+          </Card>
+      </div>
+
     </div>
   );
 }

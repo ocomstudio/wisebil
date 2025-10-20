@@ -10,6 +10,8 @@ import type { JournalEntry } from '@/components/dashboard/accounting/journal-ent
 import type { Invoice } from '@/types/invoice';
 import type { Language, Currency } from './locale-context';
 import type { CompanyProfile } from '@/types/company';
+import type { Product } from '@/types/product';
+import type { Sale } from '@/types/sale';
 
 
 export interface UserData {
@@ -24,6 +26,8 @@ export interface UserData {
     pin: string | null;
   };
   companyProfile?: CompanyProfile;
+  products?: Product[];
+  sales?: Sale[];
   transactions: Transaction[];
   budgets: Budget[];
   savingsGoals: SavingsGoal[];
