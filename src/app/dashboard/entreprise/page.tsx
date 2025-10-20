@@ -19,7 +19,7 @@ export default function EnterprisePage() {
 
   return (
     <div className="space-y-6 pb-24 md:pb-8">
-      <div className="flex flex-wrap justify-between items-center gap-4">
+      <div className="flex justify-between items-center gap-4">
         <h1 className="text-3xl font-bold font-headline">{t('nav_enterprise')}</h1>
         <Button asChild variant="outline" size="sm">
             <Link href="/dashboard/settings/company-profile">
