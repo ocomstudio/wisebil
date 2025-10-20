@@ -1,7 +1,7 @@
 // src/app/dashboard/entreprise/sales/invoice/[id]/page.tsx
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
