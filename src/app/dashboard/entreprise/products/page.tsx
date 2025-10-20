@@ -113,8 +113,10 @@ export default function ProductsPage() {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
-                                    <DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                       <Link href={`/dashboard/entreprise/products/edit/${product.id}`}>
                                         <Edit className="mr-2 h-4 w-4" /> Modifier
+                                       </Link>
                                     </DropdownMenuItem>
                                      <AlertDialogTrigger asChild>
                                         <DropdownMenuItem className="text-destructive">

@@ -8,32 +8,31 @@ import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { storage } from '@/lib/firebase-storage';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, updateDoc, arrayUnion, arrayRemove, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { v4 as uuidv4 } from "uuid";
 import { useUserData } from './user-context';
 
 interface ProductContextType {
   products: Product[];
   addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
-  updateProduct: (id: string, updatedProduct: Partial<Product>) => Promise<void>;
+  updateProduct: (id: string, updatedProduct: Partial<Omit<Product, 'id'>>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
+  getProductById: (id: string) => Product | undefined;
   uploadImage: (file: File, path: string) => Promise<string>;
   isLoading: boolean;
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-// Helper function to remove undefined values from an object before Firestore write
 const cleanUndefined = (obj: any) => {
-    const newObj: any = {};
-    Object.keys(obj).forEach((key) => {
-        if (obj[key] !== undefined && obj[key] !== null && obj[key] !== '') {
-            newObj[key] = obj[key];
-        }
-    });
-    return newObj;
+  const newObj: any = {};
+  Object.keys(obj).forEach((key) => {
+    if (obj[key] !== undefined) {
+      newObj[key] = obj[key];
+    }
+  });
+  return newObj;
 };
-
 
 export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const { userData, isLoading: isUserDataLoading, updateUserData } = useUserData();
@@ -56,7 +55,6 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     
     try {
         await updateUserData({ products: updatedProducts });
-
     } catch (e) {
       console.error("Failed to add product to Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to save product." });
@@ -96,6 +94,10 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
       throw e;
     }
   }, [products, updateUserData, toast]);
+
+  const getProductById = useCallback((id: string) => {
+    return products.find(p => p.id === id);
+  }, [products]);
   
   const uploadImage = async (file: File, path: string): Promise<string> => {
     if (!user) throw new Error("User not authenticated for image upload.");
@@ -112,7 +114,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
 
 
   return (
-    <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct, uploadImage, isLoading: isUserDataLoading }}>
+    <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct, getProductById, uploadImage, isLoading: isUserDataLoading }}>
       {children}
     </ProductContext.Provider>
   );
