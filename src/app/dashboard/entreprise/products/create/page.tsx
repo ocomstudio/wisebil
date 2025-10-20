@@ -67,11 +67,14 @@ export default function CreateProductPage() {
     setIsSubmitting(true);
     try {
       let imageUrl = '';
+      // Step 1: Upload image if it exists
       if (imageFile) {
         imageUrl = await uploadImage(imageFile, `${Date.now()}-${imageFile.name}`);
       }
 
+      // Step 2: Add product data (with or without imageUrl) to Firestore
       await addProduct({ ...data, imageUrl });
+
       toast({
         title: "Produit ajouté",
         description: `Le produit "${data.name}" a été ajouté à votre inventaire.`,
@@ -85,6 +88,7 @@ export default function CreateProductPage() {
         description: "Impossible d'ajouter le produit. " + (error instanceof Error ? error.message : "Erreur inconnue."),
       });
     } finally {
+      // This will now always be called, even if an error occurs
       setIsSubmitting(false);
     }
   };

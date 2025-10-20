@@ -27,10 +27,8 @@ const ProductContext = createContext<ProductContextType | undefined>(undefined);
 const cleanUndefined = (obj: any) => {
     const newObj: any = {};
     Object.keys(obj).forEach((key) => {
-        if (obj[key] !== undefined) {
+        if (obj[key] !== undefined && obj[key] !== null && obj[key] !== '') {
             newObj[key] = obj[key];
-        } else {
-            newObj[key] = null; // Replace undefined with null
         }
     });
     return newObj;
@@ -44,14 +42,8 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   
   const products = useMemo(() => userData?.products || [], [userData]);
 
-  const getUserDocRef = useCallback(() => {
-    if (!user) return null;
-    return doc(db, 'users', user.uid);
-  }, [user]);
-
   const addProduct = useCallback(async (productData: Omit<Product, 'id'>) => {
-    const userDocRef = getUserDocRef();
-    if (!userDocRef) return;
+    if (!user) throw new Error("User not authenticated.");
       
     const newProduct: Product = { 
         id: uuidv4(), 
@@ -59,11 +51,10 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const cleanedProduct = cleanUndefined(newProduct);
+    const currentProducts = userData?.products || [];
+    const updatedProducts = [...currentProducts, cleanedProduct];
     
     try {
-        const docSnap = await getDoc(userDocRef);
-        const currentProducts = docSnap.exists() ? docSnap.data().products || [] : [];
-        const updatedProducts = [...currentProducts, cleanedProduct];
         await updateUserData({ products: updatedProducts });
 
     } catch (e) {
@@ -71,7 +62,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
       toast({ variant: "destructive", title: "Error", description: "Failed to save product." });
       throw e;
     }
-  }, [getUserDocRef, toast, updateUserData]);
+  }, [user, userData, updateUserData, toast]);
 
   const updateProduct = useCallback(async (id: string, updatedProductData: Partial<Omit<Product, 'id'>>) => {
     const currentProducts = [...products];
@@ -108,10 +99,15 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   
   const uploadImage = async (file: File, path: string): Promise<string> => {
     if (!user) throw new Error("User not authenticated for image upload.");
-    const storageRef = ref(storage, `users/${user.uid}/products/${path}`);
-    await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(storageRef);
-    return downloadURL;
+    try {
+        const storageRef = ref(storage, `users/${user.uid}/products/${path}`);
+        await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(storageRef);
+        return downloadURL;
+    } catch (error) {
+        console.error("Image upload failed:", error);
+        throw new Error("L'envoi de l'image a échoué. Veuillez réessayer.");
+    }
   };
 
 
