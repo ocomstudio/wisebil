@@ -710,8 +710,26 @@
     "select_category_placeholder": "Seleccionar una categoría...",
     "create_new_category_button": "Crear nueva categoría",
     "new_category_name_placeholder": "Nombre de la nueva categoría",
-    "add_category_button": "Añadir"
+    "add_category_button": "Añadir",
+    "total_revenue_label": "Ingresos totales",
+    "based_on_sales_label": "Basado en {{count}} ventas.",
+    "create_sale_button": "Crear venta",
+    "add_product_button": "Añadir producto",
+    "sales_label": "Ventas",
+    "products_sold_label": "Productos vendidos",
+    "total_products_label": "Total productos",
+    "recent_sales_title": "Ventas recientes",
+    "recent_sales_desc": "Aquí están las últimas ventas que ha registrado.",
+    "sale_to_customer_label": "Venta a {{customerName}}",
+    "product_count_label": "{{count}} productos",
+    "no_sales_recorded_label": "No se han registrado ventas por el momento.",
+    "product_inventory_title": "Inventario de productos",
+    "product_inventory_desc": "Un vistazo a sus productos en stock.",
+    "manage_products_button": "Gestionar productos",
+    "in_stock_label": "{{count}} en stock",
+    "no_products_in_inventory_label": "No hay productos en el inventario."
 }
   
 
     
+

@@ -704,15 +704,32 @@
     "no_purchase_invoices_title": "Keine Bestellungen",
     "no_purchase_invoices_desc": "Beginnen Sie mit der Erstellung Ihrer ersten Bestellung.",
     "create_first_purchase_button": "Ersten Kauf erstellen",
-    "invoice_number_header": "Bestellnummer",
     "supplier_header": "Lieferant",
     "table_header_category": "Kategorie",
     "product_category_label": "Produktkategorie",
     "select_category_placeholder": "Kategorie auswählen...",
     "create_new_category_button": "Neue Kategorie erstellen",
     "new_category_name_placeholder": "Name der neuen Kategorie",
-    "add_category_button": "Hinzufügen"
+    "add_category_button": "Hinzufügen",
+    "total_revenue_label": "Gesamtumsatz",
+    "based_on_sales_label": "Basierend auf {{count}} Verkäufen.",
+    "create_sale_button": "Verkauf erstellen",
+    "add_product_button": "Produkt hinzufügen",
+    "sales_label": "Verkäufe",
+    "products_sold_label": "Verkaufte Produkte",
+    "total_products_label": "Produkte insgesamt",
+    "recent_sales_title": "Neueste Verkäufe",
+    "recent_sales_desc": "Hier sind die letzten Verkäufe, die Sie erfasst haben.",
+    "sale_to_customer_label": "Verkauf an {{customerName}}",
+    "product_count_label": "{{count}} Produkte",
+    "no_sales_recorded_label": "Momentan keine Verkäufe erfasst.",
+    "product_inventory_title": "Produktinventar",
+    "product_inventory_desc": "Ein Einblick in Ihre vorrätigen Produkte.",
+    "manage_products_button": "Produkte verwalten",
+    "in_stock_label": "{{count}} auf Lager",
+    "no_products_in_inventory_label": "Keine Produkte im Inventar."
 }
   
 
     
+

@@ -280,7 +280,7 @@
     "toast_close_button": "Đóng",
     "tip_of_the_day": "Mẹo trong ngày",
     "loading_tip": "Đang tải mẹo...",
-    "tip1": "Tạo ngân sách cụ thể cho các danh mục như食料品 hoặc giải trí để kiểm soát chi tiêu của bạn tốt hơn.",
+    "tip1": "Tạo ngân sách cụ thể cho các danh mục như thực phẩm hoặc giải trí để kiểm soát chi tiêu của bạn tốt hơn.",
     "tip2": "Thiết lập chuyển khoản tự động vào tài khoản tiết kiệm của bạn mỗi tháng, ngay cả một số tiền nhỏ cũng giúp ích!",
     "tip3": "Xem lại các đăng ký của bạn thường xuyên. Bạn có còn sử dụng tất cả chúng không?",
     "tip4": "Trước khi mua một món đồ lớn, hãy đợi 24 giờ. Điều này có thể giúp tránh mua sắm bốc đồng.",
@@ -710,8 +710,26 @@
     "select_category_placeholder": "Chọn một danh mục...",
     "create_new_category_button": "Tạo danh mục mới",
     "new_category_name_placeholder": "Tên danh mục mới",
-    "add_category_button": "Thêm vào"
+    "add_category_button": "Thêm vào",
+    "total_revenue_label": "Tổng doanh thu",
+    "based_on_sales_label": "Dựa trên {{count}} doanh số.",
+    "create_sale_button": "Tạo doanh số",
+    "add_product_button": "Thêm sản phẩm",
+    "sales_label": "Doanh số",
+    "products_sold_label": "Sản phẩm đã bán",
+    "total_products_label": "Tổng sản phẩm",
+    "recent_sales_title": "Doanh số gần đây",
+    "recent_sales_desc": "Đây là những doanh số cuối cùng bạn đã ghi lại.",
+    "sale_to_customer_label": "Bán cho {{customerName}}",
+    "product_count_label": "{{count}} sản phẩm",
+    "no_sales_recorded_label": "Chưa có doanh số nào được ghi lại.",
+    "product_inventory_title": "Hàng tồn kho",
+    "product_inventory_desc": "Xem nhanh các sản phẩm trong kho của bạn.",
+    "manage_products_button": "Quản lý sản phẩm",
+    "in_stock_label": "{{count}} trong kho",
+    "no_products_in_inventory_label": "Không có sản phẩm nào trong kho."
 }
   
 
     
+

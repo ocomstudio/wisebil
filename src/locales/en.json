@@ -498,8 +498,6 @@
     "tutorial_step5_content": "This is your financial coach. Ask it questions, get advice, or use the 'Agent W' mode to enter your expenses by simply describing them!",
     "tutorial_step6_title": "Easy Navigation",
     "tutorial_step6_content": "Use this navigation bar to access all sections of the application.",
-    "category_dons": "Donations",
-    "category_épargne": "Savings",
     "about_hero_title1": "More than an app.",
     "about_hero_title2": "A financial revolution.",
     "about_hero_subtitle": "Wisebil is not just a tool. It's a movement towards financial freedom accessible to all, powered by technology that understands you.",
@@ -680,7 +678,7 @@
     "nav_purchases": "Purchases",
     "feature_under_construction": "This feature is under construction.",
     "back_to_enterprise_dashboard": "Back to Enterprise Dashboard",
-    "feature_sale_returns_desc": "Manage customer returns and create credit notes.",
+    "feature_sale_returns_desc": "Manage your customer returns and create credit notes.",
     "feature_sale_payments_desc": "Track payments received from your customers.",
     "feature_sale_reports_desc": "Analyze your sales performance with detailed reports.",
     "feature_purchase_invoices_desc": "Record and manage your supplier invoices.",
@@ -712,8 +710,26 @@
     "select_category_placeholder": "Select a category...",
     "create_new_category_button": "Create new category",
     "new_category_name_placeholder": "New category name",
-    "add_category_button": "Add"
+    "add_category_button": "Add",
+    "total_revenue_label": "Total Revenue",
+    "based_on_sales_label": "Based on {{count}} sales.",
+    "create_sale_button": "Create Sale",
+    "add_product_button": "Add Product",
+    "sales_label": "Sales",
+    "products_sold_label": "Products Sold",
+    "total_products_label": "Total Products",
+    "recent_sales_title": "Recent Sales",
+    "recent_sales_desc": "Here are the last sales you have recorded.",
+    "sale_to_customer_label": "Sale to {{customerName}}",
+    "product_count_label": "{{count}} products",
+    "no_sales_recorded_label": "No sales recorded for the moment.",
+    "product_inventory_title": "Product Inventory",
+    "product_inventory_desc": "A glimpse of your products in stock.",
+    "manage_products_button": "Manage products",
+    "in_stock_label": "{{count}} in stock",
+    "no_products_in_inventory_label": "No products in inventory."
 }
   
 
     
+
