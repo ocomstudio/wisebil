@@ -22,7 +22,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, CheckCircle, AlertTriangle, Eye, EyeOff } from "lucide-react";
-import { FirebaseError } from "firebase/app";
 import { Logo } from "@/components/common/logo";
 
 
@@ -71,8 +70,8 @@ function ResetPasswordContent() {
       setIsSuccess(true);
     } catch (err) {
       let description = t('An unknown error occurred.');
-      if (err instanceof FirebaseError) {
-        switch (err.code) {
+      if (err && typeof err === 'object' && 'code' in err) {
+        switch ((err as { code: string }).code) {
           case 'auth/expired-action-code':
             description = t('expired_reset_link_error');
             break;
@@ -86,7 +85,7 @@ function ResetPasswordContent() {
             description = t('signup_password_error');
             break;
           default:
-            description = err.message;
+            description = (err as Error).message;
         }
       }
       setError(description);

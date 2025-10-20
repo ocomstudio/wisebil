@@ -22,7 +22,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Mail, ArrowLeft } from "lucide-react";
-import { FirebaseError } from "firebase/app";
 import { Logo } from "@/components/common/logo";
 
 
@@ -53,11 +52,11 @@ export default function ForgotPasswordPage() {
       setIsSent(true);
     } catch (error) {
       let description = t('An unknown error occurred.');
-      if (error instanceof FirebaseError) {
-        if (error.code === 'auth/user-not-found') {
+      if (error && typeof error === 'object' && 'code' in error) {
+        if ((error as { code: string }).code === 'auth/user-not-found') {
           description = t('No user found with this email.');
         } else {
-          description = error.message;
+          description = (error as Error).message;
         }
       }
       toast({

@@ -39,7 +39,6 @@ import { ExportDataDialog } from "@/components/dashboard/export-data-dialog";
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { useTutorial } from "@/context/tutorial-context";
-import { FirebaseError } from "firebase/app";
 import { AvatarUploadDialog } from "@/components/dashboard/settings/avatar-upload-dialog";
 import { useNotifications } from "@/context/notifications-context";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -137,9 +136,9 @@ export default function SettingsPage() {
       });
       setIsEmailDialogOpen(false);
       emailForm.reset();
-    } catch (error) {
+    } catch (error: any) {
       let description = t('email_update_error');
-      if (error instanceof FirebaseError) {
+      if (error && typeof error === 'object' && 'code' in error) {
         if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
           description = t('incorrect_password_error');
         } else if (error.code === 'auth/email-already-in-use') {
@@ -159,9 +158,9 @@ export default function SettingsPage() {
       });
       setIsPasswordDialogOpen(false);
       passwordForm.reset();
-    } catch (error) {
+    } catch (error: any) {
        let description = t('password_update_error');
-       if (error instanceof FirebaseError) {
+       if (error && typeof error === 'object' && 'code' in error) {
         if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
           description = t('incorrect_password_error');
         }
@@ -322,10 +321,10 @@ export default function SettingsPage() {
             title: t('verification_sent_title'),
             description: t('verification_sent_desc'),
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error(error);
         let description = t('verification_sent_error');
-        if (error instanceof FirebaseError && error.code === 'auth/too-many-requests') {
+        if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/too-many-requests') {
             description = t('Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.');
         }
         toast({

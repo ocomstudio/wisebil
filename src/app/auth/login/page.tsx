@@ -23,7 +23,6 @@ import { Separator } from "@/components/ui/separator";
 import { FcGoogle } from "react-icons/fc";
 import { useAuth } from "@/context/auth-context";
 import { useLocale } from "@/context/locale-context";
-import { FirebaseError } from "firebase/app";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 
 
@@ -56,8 +55,8 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
   
   const handleAuthError = (error: any) => {
     let description = t('An unknown error occurred.');
-    if (error instanceof FirebaseError) {
-        switch (error.code) {
+    if (error && typeof error === 'object' && 'code' in error) {
+        switch ((error as { code: string }).code) {
             case 'auth/user-not-found':
             case 'auth/wrong-password':
             case 'auth/invalid-credential':
@@ -67,7 +66,7 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
                 description = t('too_many_requests_error');
                 break;
             default:
-                description = error.message;
+                description = (error as Error).message;
         }
     }
     toast({

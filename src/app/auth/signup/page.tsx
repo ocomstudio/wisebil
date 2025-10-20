@@ -27,7 +27,6 @@ import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from "@/context/auth-context";
 import { useLocale } from "@/context/locale-context";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-import { FirebaseError } from "firebase/app";
 import Link from "next/link";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -96,8 +95,8 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
 
   const handleAuthError = (error: any) => {
     let description = t('An unknown error occurred.');
-    if (error instanceof FirebaseError) {
-        switch (error.code) {
+    if (error && typeof error === 'object' && 'code' in error) {
+        switch ((error as { code: string }).code) {
             case 'auth/email-already-in-use':
                 description = t('email_already_in_use_error');
                 break;
@@ -108,7 +107,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
                 description = t('too_many_requests_error');
                 break;
             default:
-                description = error.message;
+                description = (error as Error).message;
         }
     }
     toast({
