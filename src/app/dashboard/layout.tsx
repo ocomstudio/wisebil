@@ -31,7 +31,7 @@ import { EnterpriseProvider } from "@/context/enterprise-context";
 import { UserDataProvider } from "@/context/user-context";
 import { CompanyProfileProvider } from "@/context/company-profile-context";
 import { ProductProvider } from "@/context/product-context";
-import { SalesProvider } from "@/context/sales-context";
+import { SalesProvider } from "@/context/sale-context";
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
