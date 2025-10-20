@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, ShoppingCart, Package, DollarSign, ArrowUpRight } from "lucide-react";
+import { PlusCircle, ShoppingCart, Package, DollarSign, ArrowUpRight, Leaf } from "lucide-react";
 import Link from "next/link";
 import { useSales } from "@/context/sale-context";
 import { useProducts } from "@/context/product-context";
@@ -22,6 +22,25 @@ export default function EnterprisePage() {
       <div className="flex flex-wrap justify-between items-center gap-4">
         <h1 className="text-3xl font-bold font-headline">Gestion de la Boutique</h1>
       </div>
+
+       <Card className="bg-card text-card-foreground shadow-xl rounded-2xl overflow-hidden relative border-primary/20 transform-gpu transition-transform hover:scale-[1.02]">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-transparent z-0 opacity-40"></div>
+            <div className="absolute -right-10 -bottom-16 opacity-10">
+                <Leaf className="h-48 w-48 text-primary" />
+            </div>
+            <CardContent className="p-6 relative z-10">
+                 <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-sm text-primary-foreground/80 flex items-center gap-2">
+                            <DollarSign className="h-4 w-4" />
+                            Chiffre d'affaires total
+                        </p>
+                        <p className="text-4xl font-bold mt-1">{formatCurrency(totalRevenue)}</p>
+                    </div>
+                 </div>
+                 <p className="text-xs text-muted-foreground mt-2">Basé sur {sales.length} ventes</p>
+            </CardContent>
+       </Card>
 
        <div className="grid grid-cols-2 gap-4">
             <Link href="/dashboard/entreprise/sales/create" className="col-span-1">
@@ -43,17 +62,7 @@ export default function EnterprisePage() {
        </div>
 
 
-       <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-        <Card className="sm:col-span-3">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Chiffre d'affaires total</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
-            <p className="text-xs text-muted-foreground">Basé sur {sales.length} ventes</p>
-          </CardContent>
-        </Card>
+       <div className="grid gap-4 grid-cols-2 sm:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Ventes</CardTitle>
@@ -72,7 +81,7 @@ export default function EnterprisePage() {
             <div className="text-2xl font-bold">{totalProductsSold}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="col-span-2 sm:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Nb. Produits</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
