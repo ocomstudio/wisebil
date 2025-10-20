@@ -24,8 +24,6 @@ import { TutorialProvider } from "@/context/tutorial-context";
 import { useNotifications } from "@/context/notifications-context";
 import { Badge } from "@/components/ui/badge";
 import { NotificationsProvider } from "@/context/notifications-context";
-import { AccountingProvider } from "@/context/accounting-context";
-import { InvoicingProvider } from "@/context/invoicing-context";
 import { cn } from "@/lib/utils";
 import { TeamChatProvider } from "@/context/team-chat-context";
 import { TeamChat } from "@/components/dashboard/team/team-chat";
@@ -119,15 +117,11 @@ export default function DashboardLayout({
                         <CompanyProfileProvider>
                            <ProductProvider>
                              <SaleProvider>
-                                <AccountingProvider>
-                                    <InvoicingProvider>
-                                    <TutorialProvider>
-                                        <TeamChatProvider>
-                                        <DashboardLayoutContent>{children}</DashboardLayoutContent>
-                                        </TeamChatProvider>
-                                    </TutorialProvider>
-                                    </InvoicingProvider>
-                                </AccountingProvider>
+                                <TutorialProvider>
+                                    <TeamChatProvider>
+                                    <DashboardLayoutContent>{children}</DashboardLayoutContent>
+                                    </TeamChatProvider>
+                                </TutorialProvider>
                               </SaleProvider>
                             </ProductProvider>
                         </CompanyProfileProvider>
