@@ -66,7 +66,7 @@ export default function CreateProductPage() {
   const onSubmit = async (data: ProductFormValues) => {
     setIsSubmitting(true);
     try {
-      let imageUrl = data.imageUrl || '';
+      let imageUrl = '';
       if (imageFile) {
         imageUrl = await uploadImage(imageFile, `${Date.now()}-${imageFile.name}`);
       }
@@ -78,10 +78,11 @@ export default function CreateProductPage() {
       });
       router.push('/dashboard/entreprise/products');
     } catch (error) {
+       console.error("Error creating product:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible d'ajouter le produit. " + error,
+        description: "Impossible d'ajouter le produit. " + (error instanceof Error ? error.message : "Erreur inconnue."),
       });
     } finally {
       setIsSubmitting(false);
@@ -125,7 +126,7 @@ export default function CreateProductPage() {
                         <FormItem><FormLabel>Quantité en stock</FormLabel><FormControl><Input type="number" placeholder="100" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                      <FormItem>
-                        <FormLabel>Image du produit</FormLabel>
+                        <FormLabel>Image du produit (facultatif)</FormLabel>
                          <FormControl>
                             <label className="cursor-pointer border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/50 h-48 w-full">
                                 {imagePreview ? (

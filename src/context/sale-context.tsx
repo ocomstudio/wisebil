@@ -6,7 +6,7 @@ import type { Sale } from '@/types/sale';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, updateDoc, arrayUnion, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from "uuid";
 import { useUserData } from './user-context';
 import { useProducts } from './product-context';
@@ -21,7 +21,7 @@ interface SaleContextType {
 const SaleContext = createContext<SaleContextType | undefined>(undefined);
 
 export const SaleProvider = ({ children }: { children: ReactNode }) => {
-  const { userData, isLoading: isUserDataLoading } = useUserData();
+  const { userData, isLoading: isUserDataLoading, updateUserData } = useUserData();
   const { updateProduct } = useProducts();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -45,6 +45,7 @@ export const SaleProvider = ({ children }: { children: ReactNode }) => {
     const currentCount = docSnap.exists() ? docSnap.data().saleInvoiceCounter || 0 : 0;
     const newCount = currentCount + 1;
 
+    // This update should also be robust, but it's less critical if it fails once.
     await setDoc(userDocRef, { saleInvoiceCounter: newCount }, { merge: true });
     
     return `SALE-${String(newCount).padStart(4, '0')}`;
@@ -52,8 +53,7 @@ export const SaleProvider = ({ children }: { children: ReactNode }) => {
 
 
   const addSale = useCallback(async (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber'>): Promise<Sale> => {
-    const userDocRef = getUserDocRef();
-    if (!userDocRef) throw new Error("Utilisateur non authentifié");
+    if (!user) throw new Error("Utilisateur non authentifié");
 
     const invoiceNumber = await generateInvoiceNumber();
     const newSale: Sale = {
@@ -65,7 +65,7 @@ export const SaleProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       // 1. Save the sale
-      await updateDoc(userDocRef, { sales: arrayUnion(newSale) });
+      await updateUserData({ sales: [newSale] });
       
       // 2. Update product stock
       for (const item of newSale.items) {
@@ -81,7 +81,7 @@ export const SaleProvider = ({ children }: { children: ReactNode }) => {
       toast({ variant: "destructive", title: "Error", description: "Failed to save sale." });
       throw e;
     }
-  }, [getUserDocRef, toast, updateProduct, userData?.products]);
+  }, [user, updateUserData, toast, updateProduct, userData?.products]);
   
   const getSaleById = useCallback((id: string) => {
     return sales.find(s => s.id === id);

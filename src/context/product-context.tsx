@@ -8,7 +8,7 @@ import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { storage } from '@/lib/firebase-storage';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, updateDoc, arrayUnion, arrayRemove, onSnapshot } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, arrayRemove, onSnapshot, setDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from "uuid";
 import { useUserData } from './user-context';
 
@@ -24,7 +24,7 @@ interface ProductContextType {
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
 export const ProductProvider = ({ children }: { children: ReactNode }) => {
-  const { userData, isLoading: isUserDataLoading } = useUserData();
+  const { userData, isLoading: isUserDataLoading, updateUserData } = useUserData();
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -36,24 +36,18 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const addProduct = useCallback(async (productData: Omit<Product, 'id'>) => {
-    const userDocRef = getUserDocRef();
-    if (!userDocRef) return;
-    
     const newProduct: Product = { id: uuidv4(), ...productData };
 
     try {
-      await updateDoc(userDocRef, { products: arrayUnion(newProduct) });
+      await updateUserData({ products: [newProduct] });
     } catch (e) {
       console.error("Failed to add product to Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to save product." });
       throw e;
     }
-  }, [getUserDocRef, toast]);
+  }, [updateUserData, toast]);
 
-  const updateProduct = useCallback(async (id: string, updatedProductData: Partial<Product>) => {
-    const userDocRef = getUserDocRef();
-    if (!userDocRef) return;
-
+  const updateProduct = useCallback(async (id: string, updatedProductData: Partial<Omit<Product, 'id'>>) => {
     const currentProducts = [...products];
     const productIndex = currentProducts.findIndex(p => p.id === id);
 
@@ -66,33 +60,29 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     currentProducts[productIndex] = updatedProduct;
 
     try {
-      await updateDoc(userDocRef, { products: currentProducts });
+      await updateUserData({ products: currentProducts });
     } catch (e) {
       console.error("Failed to update product in Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to update product." });
       throw e;
     }
-  }, [products, getUserDocRef, toast]);
+  }, [products, updateUserData, toast]);
 
   const deleteProduct = useCallback(async (id: string) => {
-    const userDocRef = getUserDocRef();
-    if (!userDocRef) return;
-    
-    const productToDelete = products.find(p => p.id === id);
-    if (!productToDelete) return;
-
+     const updatedProducts = products.filter(p => p.id !== id);
     try {
-      await updateDoc(userDocRef, { products: arrayRemove(productToDelete) });
+      await updateUserData({ products: updatedProducts });
       toast({ title: "Produit supprimé" });
     } catch (e) {
       console.error("Failed to delete product from Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to delete product." });
       throw e;
     }
-  }, [products, getUserDocRef, toast]);
+  }, [products, updateUserData, toast]);
   
   const uploadImage = async (file: File, path: string): Promise<string> => {
-    const storageRef = ref(storage, path);
+    if (!user) throw new Error("User not authenticated for image upload.");
+    const storageRef = ref(storage, `users/${user.uid}/products/${path}`);
     await uploadBytes(storageRef, file);
     const downloadURL = await getDownloadURL(storageRef);
     return downloadURL;
