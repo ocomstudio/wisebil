@@ -23,20 +23,20 @@ export default function EnterprisePage() {
         <h1 className="text-3xl font-bold font-headline">Gestion de la Boutique</h1>
       </div>
 
-       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Link href="/dashboard/entreprise/sales/create">
+       <div className="grid grid-cols-2 gap-4">
+            <Link href="/dashboard/entreprise/sales/create" className="col-span-1">
                 <Card className="h-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-primary/20">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
-                        <CardTitle className="text-xl font-bold">Créer une vente</CardTitle>
-                        <ShoppingCart className="h-8 w-8" />
+                    <CardHeader className="flex flex-col items-center justify-center text-center p-4">
+                        <ShoppingCart className="h-8 w-8 mb-2" />
+                        <CardTitle className="text-base font-bold">Créer une vente</CardTitle>
                     </CardHeader>
                 </Card>
             </Link>
-            <Link href="/dashboard/entreprise/products/create">
+            <Link href="/dashboard/entreprise/products/create" className="col-span-1">
                 <Card className="h-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-secondary/20">
-                     <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
-                        <CardTitle className="text-xl font-bold">Ajouter un produit</CardTitle>
-                        <PlusCircle className="h-8 w-8" />
+                     <CardHeader className="flex flex-col items-center justify-center text-center p-4">
+                        <PlusCircle className="h-8 w-8 mb-2" />
+                        <CardTitle className="text-base font-bold">Ajouter un produit</CardTitle>
                     </CardHeader>
                 </Card>
             </Link>
