@@ -6,8 +6,6 @@ import { useAuth, User } from './auth-context';
 import type { Transaction } from '@/types/transaction';
 import type { Budget } from '@/types/budget';
 import type { SavingsGoal } from '@/types/savings-goal';
-import type { JournalEntry } from '@/components/dashboard/accounting/journal-entries';
-import type { Invoice } from '@/types/invoice';
 import type { Language, Currency } from './locale-context';
 import type { CompanyProfile } from '@/types/company';
 import type { Product } from '@/types/product';
@@ -31,8 +29,6 @@ export interface UserData {
   transactions: Transaction[];
   budgets: Budget[];
   savingsGoals: SavingsGoal[];
-  journalEntries: JournalEntry[];
-  invoices: Invoice[];
   enterpriseIds?: string[];
   customCategories?: { name: string; emoji: string; }[];
 }

@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { BarChart, Lightbulb, Home, Settings, Shield, Target, Wallet, Bell, Briefcase, FileText, Building } from "lucide-react"
+import { BarChart, Lightbulb, Home, Settings, Shield, Target, Wallet, Bell, Building, FileText } from "lucide-react"
 import { useLocale } from "@/context/locale-context";
 import { useAuth } from "@/context/auth-context";
 
@@ -23,11 +23,6 @@ export function SidebarNav() {
       href: "/dashboard/reports",
       label: t('nav_reports'),
       icon: <BarChart />,
-    },
-     {
-      href: "/dashboard/accounting",
-      label: t('nav_accounting'),
-      icon: <Briefcase />,
     },
     {
       href: "/dashboard/entreprise",
