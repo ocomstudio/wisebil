@@ -737,6 +737,7 @@
     "share_not_supported_title": "Share Not Supported",
     "share_not_supported_desc": "Your browser does not support the share feature.",
     "company_settings_title": "Company Settings",
+    "company_details_title": "Company Details",
     "company_details_desc": "Configure your company information for invoicing.",
     "company_name_label": "Your Company Name",
     "your_company_placeholder": "Your Company",

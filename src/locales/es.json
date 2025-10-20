@@ -735,6 +735,7 @@
     "share_not_supported_title": "Compartir no compatible",
     "share_not_supported_desc": "Su navegador no admite la función de compartir.",
     "company_settings_title": "Configuración de la empresa",
+    "company_details_title": "Detalles de la compañía",
     "company_details_desc": "Configure la información de su empresa para la facturación.",
     "company_name_label": "Nombre de su empresa",
     "your_company_placeholder": "Su empresa",
