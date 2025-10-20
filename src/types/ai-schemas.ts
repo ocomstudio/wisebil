@@ -134,16 +134,6 @@ export const ProcessReceiptOutputSchema = z.object({
 });
 export type ProcessReceiptOutput = z.infer<typeof ProcessReceiptOutputSchema>;
 
-// Schema for scan-document-flow.ts
-export const ScanDocumentInputSchema = z.object({
-  photoDataUri: z
-    .string()
-    .describe(
-      "A photo of a document (receipt, note, etc.), as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'"
-    ),
-});
-export type ScanDocumentInput = z.infer<typeof ScanDocumentInputSchema>;
-
 
 // Schema for transcribe-audio.ts
 export const TranscribeAudioInputSchema = z.object({
