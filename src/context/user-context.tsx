@@ -15,6 +15,7 @@ import type { Sale } from '@/types/sale';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, runTransaction } from 'firebase/firestore';
 import { v4 as uuidv4 } from "uuid";
+import type { Purchase } from '@/types/purchase';
 
 
 export interface UserData {
@@ -31,6 +32,7 @@ export interface UserData {
   companyProfile?: CompanyProfile;
   products?: Product[];
   sales?: Sale[];
+  purchases?: Purchase[];
   transactions: Transaction[];
   budgets: Budget[];
   savingsGoals: SavingsGoal[];
@@ -41,6 +43,7 @@ export interface UserData {
   conversations?: any;
   invoiceCounter?: number;
   saleInvoiceCounter?: number;
+  purchaseInvoiceCounter?: number;
   hasCompletedTutorial?: boolean;
 }
 

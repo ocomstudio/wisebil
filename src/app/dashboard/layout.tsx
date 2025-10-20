@@ -31,7 +31,8 @@ import { EnterpriseProvider } from "@/context/enterprise-context";
 import { UserDataProvider } from "@/context/user-context";
 import { CompanyProfileProvider } from "@/context/company-profile-context";
 import { ProductProvider } from "@/context/product-context";
-import { SalesProvider } from "@/context/sale-context";
+import { SalesProvider } from "@/context/sales-context";
+import { PurchasesProvider } from "@/context/purchase-context";
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
@@ -117,11 +118,13 @@ export default function DashboardLayout({
                         <CompanyProfileProvider>
                            <ProductProvider>
                              <SalesProvider>
-                                <TutorialProvider>
-                                    <TeamChatProvider>
-                                    <DashboardLayoutContent>{children}</DashboardLayoutContent>
-                                    </TeamChatProvider>
-                                </TutorialProvider>
+                                <PurchasesProvider>
+                                    <TutorialProvider>
+                                        <TeamChatProvider>
+                                        <DashboardLayoutContent>{children}</DashboardLayoutContent>
+                                        </TeamChatProvider>
+                                    </TutorialProvider>
+                                </PurchasesProvider>
                               </SalesProvider>
                             </ProductProvider>
                         </CompanyProfileProvider>
