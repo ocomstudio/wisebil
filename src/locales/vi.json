@@ -727,9 +727,52 @@
     "product_inventory_desc": "Xem nhanh các sản phẩm trong kho của bạn.",
     "manage_products_button": "Quản lý sản phẩm",
     "in_stock_label": "{{count}} trong kho",
-    "no_products_in_inventory_label": "Không có sản phẩm nào trong kho."
+    "no_products_in_inventory_label": "Không có sản phẩm nào trong kho.",
+    "add_new_product_title": "Thêm một Sản phẩm Mới",
+    "product_details_title": "Chi tiết Sản phẩm",
+    "product_details_desc": "Cung cấp các chi tiết cơ bản về sản phẩm của bạn.",
+    "product_name_label": "Tên sản phẩm",
+    "product_name_placeholder": "vd: Áo thun Cotton",
+    "product_description_label": "Mô tả Sản phẩm",
+    "product_description_placeholder": "Mô tả chi tiết...",
+    "product_price_label": "Giá",
+    "product_promo_price_label": "Giá khuyến mãi (tùy chọn)",
+    "product_quantity_label": "Số lượng trong kho",
+    "product_image_label": "Hình ảnh Sản phẩm",
+    "product_image_upload_cta": "Nhấp để tải lên",
+    "product_image_preview_alt": "Xem trước hình ảnh sản phẩm",
+    "save_product_button": "Lưu Sản phẩm",
+    "product_name_required_error": "Yêu cầu tên sản phẩm.",
+    "product_price_negative_error": "Giá không thể âm.",
+    "product_quantity_negative_error": "Số lượng không thể âm.",
+    "product_added_title": "Sản phẩm đã được thêm",
+    "product_added_desc": "Sản phẩm \"{{productName}}\" đã được thêm vào kho của bạn.",
+    "product_add_error": "Không thể thêm sản phẩm: {{message}}",
+    "edit_product_title": "Chỉnh sửa Sản phẩm",
+    "product_details_update_desc": "Cập nhật chi tiết sản phẩm của bạn bên dưới.",
+    "product_updated_title": "Sản phẩm đã được cập nhật",
+    "product_updated_desc": "Sản phẩm \"{{productName}}\" đã được cập nhật.",
+    "product_update_error": "Không thể cập nhật sản phẩm: {{message}}",
+    "product_not_found_error": "Không tìm thấy sản phẩm.",
+    "your_products_title": "Sản phẩm của bạn",
+    "new_product_button": "Sản phẩm mới",
+    "inventory_title": "Hàng tồn kho",
+    "inventory_desc": "Quản lý kho của tất cả các sản phẩm của bạn.",
+    "no_products_title": "Chưa có sản phẩm nào",
+    "no_products_desc": "Bắt đầu bằng cách thêm sản phẩm đầu tiên của bạn vào kho.",
+    "add_first_product_button": "Thêm sản phẩm đầu tiên",
+    "table_header_image": "Hình ảnh",
+    "table_header_name": "Tên",
+    "table_header_price": "Giá",
+    "table_header_stock": "Kho",
+    "table_header_actions": "Hành động",
+    "product_delete_confirm_title": "Xóa sản phẩm?",
+    "product_delete_confirm_desc": "Thao tác này sẽ xóa vĩnh viễn \"{{productName}}\" khỏi kho của bạn."
 }
   
 
     
 
+
+
+    

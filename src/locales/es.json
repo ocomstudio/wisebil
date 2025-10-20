@@ -727,9 +727,52 @@
     "product_inventory_desc": "Un vistazo a sus productos en stock.",
     "manage_products_button": "Gestionar productos",
     "in_stock_label": "{{count}} en stock",
-    "no_products_in_inventory_label": "No hay productos en el inventario."
+    "no_products_in_inventory_label": "No hay productos en el inventario.",
+    "add_new_product_title": "Añadir un Nuevo Producto",
+    "product_details_title": "Detalles del Producto",
+    "product_details_desc": "Proporcione los detalles básicos de su producto.",
+    "product_name_label": "Nombre del Producto",
+    "product_name_placeholder": "ej: Camiseta de Algodón",
+    "product_description_label": "Descripción del Producto",
+    "product_description_placeholder": "Descripción detallada...",
+    "product_price_label": "Precio",
+    "product_promo_price_label": "Precio Promocional (opcional)",
+    "product_quantity_label": "Cantidad en Stock",
+    "product_image_label": "Imagen del Producto",
+    "product_image_upload_cta": "Haga clic para cargar",
+    "product_image_preview_alt": "Vista previa de la imagen del producto",
+    "save_product_button": "Guardar Producto",
+    "product_name_required_error": "Se requiere el nombre del producto.",
+    "product_price_negative_error": "El precio no puede ser negativo.",
+    "product_quantity_negative_error": "La cantidad no puede ser negativa.",
+    "product_added_title": "Producto Añadido",
+    "product_added_desc": "El producto \"{{productName}}\" ha sido añadido a su inventario.",
+    "product_add_error": "Error al añadir el producto: {{message}}",
+    "edit_product_title": "Editar Producto",
+    "product_details_update_desc": "Actualice los detalles de su producto a continuación.",
+    "product_updated_title": "Producto Actualizado",
+    "product_updated_desc": "El producto \"{{productName}}\" ha sido actualizado.",
+    "product_update_error": "Error al actualizar el producto: {{message}}",
+    "product_not_found_error": "Producto no encontrado.",
+    "your_products_title": "Sus Productos",
+    "new_product_button": "Nuevo Producto",
+    "inventory_title": "Inventario",
+    "inventory_desc": "Gestione el stock de todos sus productos.",
+    "no_products_title": "Aún No Hay Productos",
+    "no_products_desc": "Comience por añadir su primer producto a su inventario.",
+    "add_first_product_button": "Añadir Primer Producto",
+    "table_header_image": "Imagen",
+    "table_header_name": "Nombre",
+    "table_header_price": "Precio",
+    "table_header_stock": "Stock",
+    "table_header_actions": "Acciones",
+    "product_delete_confirm_title": "¿Eliminar Producto?",
+    "product_delete_confirm_desc": "Esto eliminará permanentemente \"{{productName}}\" de su inventario."
 }
   
 
     
 
+
+
+    

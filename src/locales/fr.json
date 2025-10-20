@@ -727,9 +727,52 @@
     "product_inventory_desc": "Un aperçu de vos produits en stock.",
     "manage_products_button": "Gérer les produits",
     "in_stock_label": "{{count}} en stock",
-    "no_products_in_inventory_label": "Aucun produit dans l'inventaire."
+    "no_products_in_inventory_label": "Aucun produit dans l'inventaire.",
+    "add_new_product_title": "Ajouter un Nouveau Produit",
+    "product_details_title": "Détails du Produit",
+    "product_details_desc": "Fournissez les détails de base de votre produit.",
+    "product_name_label": "Nom du Produit",
+    "product_name_placeholder": "ex: T-shirt en Coton",
+    "product_description_label": "Description du Produit",
+    "product_description_placeholder": "Description détaillée...",
+    "product_price_label": "Prix",
+    "product_promo_price_label": "Prix Promotionnel (facultatif)",
+    "product_quantity_label": "Quantité en Stock",
+    "product_image_label": "Image du Produit",
+    "product_image_upload_cta": "Cliquez pour télécharger",
+    "product_image_preview_alt": "Aperçu de l'image du produit",
+    "save_product_button": "Enregistrer le Produit",
+    "product_name_required_error": "Le nom du produit est requis.",
+    "product_price_negative_error": "Le prix ne peut pas être négatif.",
+    "product_quantity_negative_error": "La quantité ne peut pas être négative.",
+    "product_added_title": "Produit Ajouté",
+    "product_added_desc": "Le produit \"{{productName}}\" a été ajouté à votre inventaire.",
+    "product_add_error": "Échec de l'ajout du produit : {{message}}",
+    "edit_product_title": "Modifier le Produit",
+    "product_details_update_desc": "Mettez à jour les détails de votre produit ci-dessous.",
+    "product_updated_title": "Produit Mis à Jour",
+    "product_updated_desc": "Le produit \"{{productName}}\" a été mis à jour.",
+    "product_update_error": "Échec de la mise à jour du produit : {{message}}",
+    "product_not_found_error": "Produit non trouvé.",
+    "your_products_title": "Vos Produits",
+    "new_product_button": "Nouveau produit",
+    "inventory_title": "Inventaire",
+    "inventory_desc": "Gérez le stock de tous vos produits.",
+    "no_products_title": "Aucun Produit",
+    "no_products_desc": "Commencez par ajouter votre premier produit à votre inventaire.",
+    "add_first_product_button": "Ajouter le premier produit",
+    "table_header_image": "Image",
+    "table_header_name": "Nom",
+    "table_header_price": "Prix",
+    "table_header_stock": "Stock",
+    "table_header_actions": "Actions",
+    "product_delete_confirm_title": "Supprimer le Produit ?",
+    "product_delete_confirm_desc": "Ceci supprimera définitivement \"{{productName}}\" de votre inventaire."
 }
   
 
     
 
+
+
+    

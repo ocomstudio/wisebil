@@ -727,9 +727,52 @@
     "product_inventory_desc": "Ein Einblick in Ihre vorrätigen Produkte.",
     "manage_products_button": "Produkte verwalten",
     "in_stock_label": "{{count}} auf Lager",
-    "no_products_in_inventory_label": "Keine Produkte im Inventar."
+    "no_products_in_inventory_label": "Keine Produkte im Inventar.",
+    "add_new_product_title": "Neues Produkt hinzufügen",
+    "product_details_title": "Produktdetails",
+    "product_details_desc": "Geben Sie die grundlegenden Details Ihres Produkts an.",
+    "product_name_label": "Produktname",
+    "product_name_placeholder": "z.B. Baumwoll-T-Shirt",
+    "product_description_label": "Produktbeschreibung",
+    "product_description_placeholder": "Detaillierte Beschreibung...",
+    "product_price_label": "Preis",
+    "product_promo_price_label": "Aktionspreis (optional)",
+    "product_quantity_label": "Menge auf Lager",
+    "product_image_label": "Produktbild",
+    "product_image_upload_cta": "Zum Hochladen klicken",
+    "product_image_preview_alt": "Produktbildvorschau",
+    "save_product_button": "Produkt speichern",
+    "product_name_required_error": "Produktname ist erforderlich.",
+    "product_price_negative_error": "Preis darf nicht negativ sein.",
+    "product_quantity_negative_error": "Menge darf nicht negativ sein.",
+    "product_added_title": "Produkt hinzugefügt",
+    "product_added_desc": "Das Produkt \"{{productName}}\" wurde zu Ihrem Inventar hinzugefügt.",
+    "product_add_error": "Fehler beim Hinzufügen des Produkts: {{message}}",
+    "edit_product_title": "Produkt bearbeiten",
+    "product_details_update_desc": "Aktualisieren Sie Ihre Produktdetails unten.",
+    "product_updated_title": "Produkt aktualisiert",
+    "product_updated_desc": "Das Produkt \"{{productName}}\" wurde aktualisiert.",
+    "product_update_error": "Fehler beim Aktualisieren des Produkts: {{message}}",
+    "product_not_found_error": "Produkt nicht gefunden.",
+    "your_products_title": "Ihre Produkte",
+    "new_product_button": "Neues Produkt",
+    "inventory_title": "Inventar",
+    "inventory_desc": "Verwalten Sie den Lagerbestand all Ihrer Produkte.",
+    "no_products_title": "Noch keine Produkte",
+    "no_products_desc": "Fügen Sie Ihr erstes Produkt zu Ihrem Inventar hinzu.",
+    "add_first_product_button": "Erstes Produkt hinzufügen",
+    "table_header_image": "Bild",
+    "table_header_name": "Name",
+    "table_header_price": "Preis",
+    "table_header_stock": "Lagerbestand",
+    "table_header_actions": "Aktionen",
+    "product_delete_confirm_title": "Produkt löschen?",
+    "product_delete_confirm_desc": "Dadurch wird \"{{productName}}\" dauerhaft aus Ihrem Inventar gelöscht."
 }
   
 
     
 
+
+
+    

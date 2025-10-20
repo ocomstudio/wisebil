@@ -727,9 +727,52 @@
     "product_inventory_desc": "A glimpse of your products in stock.",
     "manage_products_button": "Manage products",
     "in_stock_label": "{{count}} in stock",
-    "no_products_in_inventory_label": "No products in inventory."
+    "no_products_in_inventory_label": "No products in inventory.",
+    "add_new_product_title": "Add a New Product",
+    "product_details_title": "Product Details",
+    "product_details_desc": "Provide the basic details of your product.",
+    "product_name_label": "Product Name",
+    "product_name_placeholder": "e.g. Cotton T-shirt",
+    "product_description_label": "Product Description",
+    "product_description_placeholder": "Detailed description...",
+    "product_price_label": "Price",
+    "product_promo_price_label": "Promotional Price (optional)",
+    "product_quantity_label": "Quantity in Stock",
+    "product_image_label": "Product Image",
+    "product_image_upload_cta": "Click to upload",
+    "product_image_preview_alt": "Product image preview",
+    "save_product_button": "Save Product",
+    "product_name_required_error": "Product name is required.",
+    "product_price_negative_error": "Price cannot be negative.",
+    "product_quantity_negative_error": "Quantity cannot be negative.",
+    "product_added_title": "Product Added",
+    "product_added_desc": "The product \"{{productName}}\" has been added to your inventory.",
+    "product_add_error": "Failed to add product: {{message}}",
+    "edit_product_title": "Edit Product",
+    "product_details_update_desc": "Update your product details below.",
+    "product_updated_title": "Product Updated",
+    "product_updated_desc": "The product \"{{productName}}\" has been updated.",
+    "product_update_error": "Failed to update product: {{message}}",
+    "product_not_found_error": "Product not found.",
+    "your_products_title": "Your Products",
+    "new_product_button": "New Product",
+    "inventory_title": "Inventory",
+    "inventory_desc": "Manage the stock of all your products.",
+    "no_products_title": "No Products Yet",
+    "no_products_desc": "Start by adding your first product to your inventory.",
+    "add_first_product_button": "Add First Product",
+    "table_header_image": "Image",
+    "table_header_name": "Name",
+    "table_header_price": "Price",
+    "table_header_stock": "Stock",
+    "table_header_actions": "Actions",
+    "product_delete_confirm_title": "Delete Product?",
+    "product_delete_confirm_desc": "This will permanently delete \"{{productName}}\" from your inventory."
 }
   
 
     
 
+
+
+    
