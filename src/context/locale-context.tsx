@@ -98,9 +98,19 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
                         if (language) setLocaleState(language);
                         if (currency) setCurrencyState(currency);
                     } else if (!docSnap.exists() || !docSnap.data().preferences) {
-                       // If user exists but has no preferences, set default
-                       setLocaleState('en');
-                       setCurrencyState('USD');
+                       // If user exists but has no preferences, try to autodetect and save
+                        axios.get('https://ipapi.co/json/').then(response => {
+                            const countryCode = response.data?.country_code;
+                            if (countryCode) {
+                                const { lang, curr } = getLocaleFromCountry(countryCode);
+                                setLocale(lang);
+                                setCurrency(curr);
+                            }
+                        }).catch(() => {
+                            // Fallback to defaults if IP detection fails
+                           setLocaleState('en');
+                           setCurrencyState('USD');
+                        });
                     }
                     setIsLoaded(true);
                 }, () => {

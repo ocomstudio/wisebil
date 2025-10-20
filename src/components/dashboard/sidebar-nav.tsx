@@ -26,7 +26,7 @@ export function SidebarNav() {
     },
     {
       href: "/dashboard/entreprise",
-      label: 'Entreprise',
+      label: t('nav_enterprise'),
       icon: <Building />,
     },
     {

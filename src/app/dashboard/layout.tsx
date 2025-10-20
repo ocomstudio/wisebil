@@ -82,7 +82,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         <DashboardHeader />
 
         {/* Main Content */}
-        <main className="flex-1 p-4 md:p-8 bg-background md:bg-muted/40 overflow-y-auto pb-20 md:pb-8">
+        <main className="flex-1 p-4 md:p-8 bg-background md:bg-muted/40 overflow-y-auto pb-24 md:pb-8">
           <div className="max-w-6xl mx-auto h-full">{children}</div>
         </main>
       </div>

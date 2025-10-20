@@ -2,7 +2,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, BrainCircuit, CheckCircle, Heart, ShieldCheck, Zap, Briefcase, FileText, Globe, Target, Scale } from "lucide-react";
+import { ArrowLeft, BrainCircuit, CheckCircle, Heart, ShieldCheck, Zap, Briefcase, FileText, Globe, Target, Scale, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/common/logo";
 import { Button } from "@/components/ui/button";
@@ -126,7 +126,7 @@ export default function AboutPage() {
            </div>
            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
                 <motion.div initial="offscreen" whileInView="onscreen" viewport={{ once: true, amount: 0.5 }} variants={cardVariants} className="bg-card p-8 rounded-2xl shadow-2xl border border-border">
-                    <h3 className="text-2xl font-bold font-headline text-primary flex items-center gap-2"><Scale /> {t('about_pro_vision_item1_title')}</h3>
+                    <h3 className="text-2xl font-bold font-headline text-primary flex items-center gap-2"><ShoppingBag /> {t('about_pro_vision_item1_title')}</h3>
                     <p className="mt-4 text-muted-foreground">{t('about_pro_vision_item1_desc')}</p>
                 </motion.div>
                  <motion.div initial="offscreen" whileInView="onscreen" viewport={{ once: true, amount: 0.5, delay: 0.2 }} variants={cardVariants} className="bg-card p-8 rounded-2xl shadow-2xl border border-border">
@@ -148,9 +148,9 @@ export default function AboutPage() {
             variants={cardVariants}
             className="mt-24 text-center bg-primary/10 p-12 rounded-2xl"
         >
-          <h2 className="text-3xl font-bold font-headline mb-4">{t('about_cta_title')}</h2>
+          <h2 className="text-3xl font-bold font-headline mb-4">{t('cta_title')}</h2>
           <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">
-            {t('about_cta_subtitle')}
+            {t('cta_subtitle')}
           </p>
           <Button asChild size="lg" className="shadow-lg shadow-primary/20 transform-gpu transition-transform hover:scale-105">
             <Link href="/dashboard">{t('about_cta_button')}</Link>
