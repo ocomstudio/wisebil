@@ -19,8 +19,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProductsPage() {
-  const { products, deleteProduct, isLoading } = useProducts();
-  const { t, formatCurrency } = useLocale();
+  const { products, deleteProduct, isLoading, getCategoryById } = useProducts();
+  const { t, formatCurrency, formatDate } = useLocale();
 
   return (
     <div className="space-y-6">
@@ -71,6 +71,7 @@ export default function ProductsPage() {
                     <TableRow>
                     <TableHead className="w-16">{t('table_header_image')}</TableHead>
                     <TableHead>{t('table_header_name')}</TableHead>
+                    <TableHead>{t('table_header_category')}</TableHead>
                     <TableHead>{t('table_header_price')}</TableHead>
                     <TableHead>{t('table_header_stock')}</TableHead>
                     <TableHead className="text-right">{t('table_header_actions')}</TableHead>
@@ -89,6 +90,7 @@ export default function ProductsPage() {
                             </div>
                         </TableCell>
                         <TableCell className="font-medium">{product.name}</TableCell>
+                        <TableCell>{getCategoryById(product.categoryId || '')?.name || '-'}</TableCell>
                         <TableCell>
                             {product.promoPrice ? (
                                 <div className="flex items-baseline gap-2">

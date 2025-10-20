@@ -17,15 +17,18 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Loader2, Upload } from 'lucide-react';
 import { useProducts } from '@/context/product-context';
 import { useLocale } from '@/context/locale-context';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function CreateProductPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { addProduct, isLoading, uploadImage } = useProducts();
+  const { addProduct, isLoading, uploadImage, productCategories, addProductCategory } = useProducts();
   const { t, currency } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
 
   const productSchema = z.object({
     name: z.string().min(2, t('product_name_required_error')),
@@ -34,6 +37,7 @@ export default function CreateProductPage() {
     promoPrice: z.coerce.number().optional(),
     quantity: z.coerce.number().int().min(0, t('product_quantity_negative_error')),
     imageUrl: z.string().optional(),
+    categoryId: z.string().optional(),
   });
 
   type ProductFormValues = z.infer<typeof productSchema>;
@@ -47,6 +51,7 @@ export default function CreateProductPage() {
       promoPrice: undefined,
       quantity: 0,
       imageUrl: "",
+      categoryId: "",
     },
   });
   
@@ -62,6 +67,26 @@ export default function CreateProductPage() {
     }
   };
 
+  const handleCategoryChange = (value: string) => {
+    if (value === 'CREATE_NEW') {
+      setShowNewCategory(true);
+      form.setValue('categoryId', '');
+    } else {
+      setShowNewCategory(false);
+      form.setValue('categoryId', value);
+    }
+  };
+
+  const handleAddNewCategory = async () => {
+    if (newCategoryName.trim()) {
+      const newCategory = await addProductCategory(newCategoryName.trim());
+      if (newCategory) {
+        form.setValue('categoryId', newCategory.id);
+        setNewCategoryName("");
+        setShowNewCategory(false);
+      }
+    }
+  };
 
   const onSubmit = async (data: ProductFormValues) => {
     setIsSubmitting(true);
@@ -94,7 +119,7 @@ export default function CreateProductPage() {
     <div className="space-y-6 pb-24 md:pb-0">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" asChild>
-          <Link href="/dashboard/entreprise">
+          <Link href="/dashboard/entreprise/products">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
@@ -116,6 +141,37 @@ export default function CreateProductPage() {
                         <FormItem><FormLabel>{t('product_description_label')}</FormLabel><FormControl><Textarea placeholder={t('product_description_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <div className="grid md:grid-cols-2 gap-6">
+                       <FormField
+                          control={form.control}
+                          name="categoryId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t('product_category_label')}</FormLabel>
+                              <Select onValueChange={handleCategoryChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder={t('select_category_placeholder')} />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {productCategories.map(cat => <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>)}
+                                  <SelectItem value="CREATE_NEW" className="font-bold text-primary">{t('create_new_category_button')}</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        {showNewCategory && (
+                          <div className="grid grid-cols-[1fr_auto] gap-2 items-end md:col-span-2">
+                            <Input
+                              value={newCategoryName}
+                              onChange={(e) => setNewCategoryName(e.target.value)}
+                              placeholder={t('new_category_name_placeholder')}
+                            />
+                            <Button type="button" onClick={handleAddNewCategory}>{t('add_category_button')}</Button>
+                          </div>
+                        )}
                         <FormField control={form.control} name="price" render={({ field }) => (
                             <FormItem><FormLabel>{t('product_price_label')} ({currency})</FormLabel><FormControl><Input type="number" placeholder="5000" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
