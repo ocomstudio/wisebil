@@ -8,7 +8,7 @@ import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { storage } from '@/lib/firebase-storage';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { doc, updateDoc, onSnapshot, deleteField } from 'firebase/firestore';
 import { v4 as uuidv4 } from "uuid";
 import { useUserData } from './user-context';
 
@@ -17,6 +17,7 @@ interface ProductContextType {
   addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
   updateProduct: (id: string, updatedProduct: Partial<Omit<Product, 'id'>>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
+  resetProducts: () => Promise<void>;
   getProductById: (id: string) => Product | undefined;
   uploadImage: (file: File, path: string) => Promise<string>;
   isLoading: boolean;
@@ -95,6 +96,16 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [products, updateUserData, toast]);
 
+  const resetProducts = useCallback(async () => {
+    if (!user) throw new Error("User not authenticated.");
+    try {
+      await updateUserData({ products: [] });
+    } catch (e) {
+      console.error("Failed to reset products in Firestore", e);
+      throw e;
+    }
+  }, [user, updateUserData]);
+
   const getProductById = useCallback((id: string) => {
     return products.find(p => p.id === id);
   }, [products]);
@@ -114,7 +125,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
 
 
   return (
-    <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct, getProductById, uploadImage, isLoading: isUserDataLoading }}>
+    <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct, resetProducts, getProductById, uploadImage, isLoading: isUserDataLoading }}>
       {children}
     </ProductContext.Provider>
   );

@@ -20,7 +20,7 @@ import { useCompanyProfile } from '@/context/company-profile-context';
 import Image from 'next/image';
 
 const InvoiceTemplate = React.forwardRef<HTMLDivElement, { sale: Sale }>(({ sale }, ref) => {
-    const { formatCurrency, formatDate } = useLocale();
+    const { t, formatCurrency, formatDate } = useLocale();
     const { companyProfile } = useCompanyProfile();
     const brandColor = companyProfile?.brandColor || '#179C00';
 
@@ -35,22 +35,22 @@ const InvoiceTemplate = React.forwardRef<HTMLDivElement, { sale: Sale }>(({ sale
                         {companyProfile?.logoUrl ? (
                             <Image src={companyProfile.logoUrl} alt="Company Logo" width={120} height={60} className="object-contain" />
                         ) : (
-                            <h1 className="text-2xl font-bold font-headline" style={brandStyle}>{companyProfile?.name || 'Votre Entreprise'}</h1>
+                            <h1 className="text-2xl font-bold font-headline" style={brandStyle}>{companyProfile?.name || t('your_company_placeholder')}</h1>
                         )}
                         <p className="text-muted-foreground whitespace-pre-line mt-2 text-sm">{companyProfile?.address}</p>
                     </div>
                     <div className="text-right">
-                        <h1 className="text-3xl font-bold font-headline" style={brandStyle}>FACTURE</h1>
+                        <h1 className="text-3xl font-bold font-headline" style={brandStyle}>{t('invoice_title_capital')}</h1>
                         <p className="text-muted-foreground"># {sale.invoiceNumber}</p>
                         <Separator className="my-2" style={{ backgroundColor: brandColor, opacity: 0.5 }}/>
-                        <p><span className="font-semibold">Date d'émission:</span> {formatDate(sale.date)}</p>
+                        <p><span className="font-semibold">{t('issue_date_label')}:</span> {formatDate(sale.date)}</p>
                     </div>
                 </div>
             </CardHeader>
             <CardContent className="p-8">
                  <div className="grid grid-cols-2 gap-8 mb-8">
                     <div>
-                        <h2 className="font-semibold text-muted-foreground mb-2">FACTURÉ À</h2>
+                        <h2 className="font-semibold text-muted-foreground mb-2">{t('bill_to_label')}</h2>
                         <p className="font-bold text-lg">{sale.customerName}</p>
                         {sale.customerPhone && <p className="text-muted-foreground text-sm">{sale.customerPhone}</p>}
                     </div>
@@ -58,10 +58,10 @@ const InvoiceTemplate = React.forwardRef<HTMLDivElement, { sale: Sale }>(({ sale
                 <Table>
                     <TableHeader>
                         <TableRow style={brandBgStyle} className="hover:bg-primary/90">
-                            <TableHead className="text-primary-foreground font-bold rounded-tl-lg">Produit</TableHead>
-                            <TableHead className="text-center text-primary-foreground font-bold">Quantité</TableHead>
-                            <TableHead className="text-right text-primary-foreground font-bold">Prix Unitaire</TableHead>
-                            <TableHead className="text-right text-primary-foreground font-bold rounded-tr-lg">Total</TableHead>
+                            <TableHead className="text-primary-foreground font-bold rounded-tl-lg">{t('product_header')}</TableHead>
+                            <TableHead className="text-center text-primary-foreground font-bold">{t('quantity_header')}</TableHead>
+                            <TableHead className="text-right text-primary-foreground font-bold">{t('unit_price_header')}</TableHead>
+                            <TableHead className="text-right text-primary-foreground font-bold rounded-tr-lg">{t('total_header')}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -78,7 +78,7 @@ const InvoiceTemplate = React.forwardRef<HTMLDivElement, { sale: Sale }>(({ sale
                  <div className="flex justify-end mt-8">
                     <div className="w-full max-w-xs space-y-2">
                         <div className="flex justify-between font-bold text-lg" style={brandStyle}>
-                            <span>Total</span>
+                            <span>{t('total_label')}</span>
                             <span>{formatCurrency(sale.total)}</span>
                         </div>
                     </div>
@@ -95,7 +95,7 @@ const InvoiceTemplate = React.forwardRef<HTMLDivElement, { sale: Sale }>(({ sale
                         {companyProfile?.signatureUrl && (
                             <>
                                 <Image src={companyProfile.signatureUrl} alt="Signature" width={150} height={60} className="object-contain" />
-                                <p className="text-center border-t mt-2 pt-1 text-sm text-muted-foreground">Signature</p>
+                                <p className="text-center border-t mt-2 pt-1 text-sm text-muted-foreground">{t('signature_label')}</p>
                             </>
                         )}
                     </div>
@@ -114,6 +114,7 @@ export default function ViewSaleInvoicePage() {
   const [sale, setSale] = useState<Sale | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const { toast } = useToast();
+  const { t } = useLocale();
   
   const invoiceRef = useRef<HTMLDivElement>(null);
   const id = params.id as string;
@@ -154,10 +155,10 @@ export default function ViewSaleInvoicePage() {
         pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
         pdf.save(`Facture-${sale.invoiceNumber}.pdf`);
 
-        toast({ title: "Téléchargement réussi", description: `La facture ${sale.invoiceNumber} a été téléchargée.` });
+        toast({ title: t('download_success_title'), description: t('download_success_desc', { invoiceNumber: sale.invoiceNumber}) });
     } catch (error) {
         console.error("Erreur PDF: ", error);
-        toast({ variant: "destructive", title: "Erreur de téléchargement", description: "Impossible de générer le PDF." });
+        toast({ variant: "destructive", title: t('download_error_title'), description: t('download_error_desc') });
     } finally {
         setIsDownloading(false);
     }
@@ -169,14 +170,12 @@ export default function ViewSaleInvoicePage() {
         await navigator.share({
           title: `Facture ${sale.invoiceNumber}`,
           text: `Voici la facture pour ${sale.customerName}.`,
-          // Files can be shared if they are available as Blobs
-          // For now, we share text. You could generate the PDF and share it as a file.
         });
       } catch (error) {
         console.error("Share error:", error);
       }
     } else {
-      toast({ title: "Partage non supporté", description: "Votre navigateur ne supporte pas le partage natif."})
+      toast({ title: t('share_not_supported_title'), description: t('share_not_supported_desc')})
     }
   }
 
@@ -193,8 +192,8 @@ export default function ViewSaleInvoicePage() {
   if (!sale) {
     return (
       <div className="p-4 md:p-8 text-center">
-        <h2 className="text-2xl font-bold">Vente non trouvée</h2>
-        <Button onClick={() => router.back()} className="mt-4"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
+        <h2 className="text-2xl font-bold">{t('invoice_not_found_title')}</h2>
+        <Button onClick={() => router.back()} className="mt-4"><ArrowLeft className="mr-2 h-4 w-4" /> {t('back_button')}</Button>
       </div>
     );
   }
@@ -204,16 +203,16 @@ export default function ViewSaleInvoicePage() {
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <Button variant="outline" onClick={() => router.back()}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Retour
+                {t('back_button')}
             </Button>
             <div className="flex items-center gap-2">
                  <Button onClick={handleShare} size="sm" variant="outline">
                     <Share2 className="mr-2 h-4 w-4" />
-                    Partager
+                    {t('share_button')}
                  </Button>
                  <Button onClick={handleDownload} disabled={isDownloading} size="sm">
                     {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                    Télécharger en PDF
+                    {t('download_pdf_button')}
                 </Button>
             </div>
         </div>

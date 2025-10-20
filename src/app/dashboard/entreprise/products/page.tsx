@@ -20,7 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProductsPage() {
   const { products, deleteProduct, isLoading } = useProducts();
-  const { formatCurrency } = useLocale();
+  const { t, formatCurrency } = useLocale();
 
   return (
     <div className="space-y-6">
@@ -31,20 +31,20 @@ export default function ProductsPage() {
                     <ArrowLeft className="h-4 w-4" />
                 </Link>
             </Button>
-            <h1 className="text-3xl font-bold font-headline">Vos Produits</h1>
+            <h1 className="text-3xl font-bold font-headline">{t('your_products_title')}</h1>
         </div>
         <Button asChild>
           <Link href="/dashboard/entreprise/products/create">
             <PlusCircle className="mr-2 h-4 w-4" />
-            Nouveau produit
+            {t('new_product_button')}
           </Link>
         </Button>
       </div>
       
       <Card>
         <CardHeader>
-          <CardTitle>Inventaire</CardTitle>
-          <CardDescription>Liste de tous les produits de votre boutique.</CardDescription>
+          <CardTitle>{t('inventory_title')}</CardTitle>
+          <CardDescription>{t('inventory_desc')}</CardDescription>
         </CardHeader>
         <CardContent>
            {isLoading ? (
@@ -56,12 +56,12 @@ export default function ProductsPage() {
            ) : products.length === 0 ? (
              <div className="flex flex-col items-center justify-center text-center p-12 border-dashed border-2 rounded-lg">
                 <Package className="h-16 w-16 text-muted-foreground mb-4" />
-                <h3 className="text-xl font-semibold">Aucun produit dans l'inventaire</h3>
-                <p className="text-muted-foreground mt-2 mb-4">Commencez par ajouter votre premier produit.</p>
+                <h3 className="text-xl font-semibold">{t('no_products_title')}</h3>
+                <p className="text-muted-foreground mt-2 mb-4">{t('no_products_desc')}</p>
                 <Button asChild>
                   <Link href="/dashboard/entreprise/products/create">
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    Ajouter un produit
+                    {t('add_first_product_button')}
                   </Link>
                 </Button>
             </div>
@@ -69,11 +69,11 @@ export default function ProductsPage() {
              <Table>
                 <TableHeader>
                     <TableRow>
-                    <TableHead className="w-16">Image</TableHead>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Prix</TableHead>
-                    <TableHead>Stock</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="w-16">{t('table_header_image')}</TableHead>
+                    <TableHead>{t('table_header_name')}</TableHead>
+                    <TableHead>{t('table_header_price')}</TableHead>
+                    <TableHead>{t('table_header_stock')}</TableHead>
+                    <TableHead className="text-right">{t('table_header_actions')}</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -101,7 +101,7 @@ export default function ProductsPage() {
                         </TableCell>
                         <TableCell>
                             <Badge variant={product.quantity > 10 ? 'default' : product.quantity > 0 ? 'secondary' : 'destructive'}>
-                                {product.quantity} en stock
+                                {t('in_stock_label', { count: product.quantity })}
                             </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -115,27 +115,27 @@ export default function ProductsPage() {
                                 <DropdownMenuContent>
                                     <DropdownMenuItem asChild>
                                        <Link href={`/dashboard/entreprise/products/edit/${product.id}`}>
-                                        <Edit className="mr-2 h-4 w-4" /> Modifier
+                                        <Edit className="mr-2 h-4 w-4" /> {t('edit')}
                                        </Link>
                                     </DropdownMenuItem>
                                      <AlertDialogTrigger asChild>
                                         <DropdownMenuItem className="text-destructive">
-                                            <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                            <Trash2 className="mr-2 h-4 w-4" /> {t('delete')}
                                         </DropdownMenuItem>
                                     </AlertDialogTrigger>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                              <AlertDialogContent>
                                 <AlertDialogHeader>
-                                    <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce produit ?</AlertDialogTitle>
+                                    <AlertDialogTitle>{t('product_delete_confirm_title')}</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        Cette action est irréversible. Le produit "{product.name}" sera définitivement supprimé.
+                                        {t('product_delete_confirm_desc', { productName: product.name })}
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                                     <AlertDialogAction onClick={() => deleteProduct(product.id)} className="bg-destructive hover:bg-destructive/90">
-                                        Supprimer
+                                        {t('delete')}
                                     </AlertDialogAction>
                                 </AlertDialogFooter>
                                 </AlertDialogContent>

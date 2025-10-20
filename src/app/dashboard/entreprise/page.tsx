@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, ShoppingCart, Package, DollarSign, ArrowUpRight, Leaf } from "lucide-react";
+import { PlusCircle, ShoppingCart, Package, DollarSign, ArrowUpRight, Leaf, Settings } from "lucide-react";
 import Link from "next/link";
 import { useSales } from "@/context/sale-context";
 import { useProducts } from "@/context/product-context";
@@ -12,7 +12,7 @@ import { useLocale } from "@/context/locale-context";
 export default function EnterprisePage() {
   const { sales } = useSales();
   const { products } = useProducts();
-  const { formatCurrency } = useLocale();
+  const { t, formatCurrency } = useLocale();
 
   const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
   const totalProductsSold = sales.reduce((sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
@@ -20,7 +20,13 @@ export default function EnterprisePage() {
   return (
     <div className="space-y-6 pb-24 md:pb-8">
       <div className="flex flex-wrap justify-between items-center gap-4">
-        <h1 className="text-3xl font-bold font-headline">Gestion de la Boutique</h1>
+        <h1 className="text-3xl font-bold font-headline">{t('nav_enterprise')}</h1>
+        <Button asChild variant="outline" size="sm">
+            <Link href="/dashboard/settings/company-profile">
+                <Settings className="mr-2 h-4 w-4" />
+                {t('company_settings_button')}
+            </Link>
+        </Button>
       </div>
 
        <Card className="bg-card text-card-foreground shadow-xl rounded-2xl overflow-hidden relative border-primary/20 transform-gpu transition-transform hover:scale-[1.02]">
@@ -33,12 +39,12 @@ export default function EnterprisePage() {
                     <div>
                         <p className="text-sm text-primary-foreground/80 flex items-center gap-2">
                             <DollarSign className="h-4 w-4" />
-                            Chiffre d'affaires total
+                            {t('total_revenue_label')}
                         </p>
                         <p className="text-4xl font-bold mt-1">{formatCurrency(totalRevenue)}</p>
                     </div>
                  </div>
-                 <p className="text-xs text-muted-foreground mt-2">Basé sur {sales.length} ventes</p>
+                 <p className="text-xs text-muted-foreground mt-2">{t('based_on_sales_label', { count: sales.length })}</p>
             </CardContent>
        </Card>
 
@@ -47,7 +53,7 @@ export default function EnterprisePage() {
                 <Card className="h-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-primary/20">
                     <CardHeader className="flex flex-col items-center justify-center text-center p-4">
                         <ShoppingCart className="h-8 w-8 mb-2" />
-                        <CardTitle className="text-base font-bold">Créer une vente</CardTitle>
+                        <CardTitle className="text-base font-bold">{t('create_sale_button')}</CardTitle>
                     </CardHeader>
                 </Card>
             </Link>
@@ -55,7 +61,7 @@ export default function EnterprisePage() {
                 <Card className="h-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-secondary/20">
                      <CardHeader className="flex flex-col items-center justify-center text-center p-4">
                         <PlusCircle className="h-8 w-8 mb-2" />
-                        <CardTitle className="text-base font-bold">Ajouter un produit</CardTitle>
+                        <CardTitle className="text-base font-bold">{t('add_product_button')}</CardTitle>
                     </CardHeader>
                 </Card>
             </Link>
@@ -65,7 +71,7 @@ export default function EnterprisePage() {
        <div className="grid gap-4 grid-cols-2 sm:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ventes</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('sales_label')}</CardTitle>
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -74,7 +80,7 @@ export default function EnterprisePage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Produits Vendus</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('products_sold_label')}</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -83,7 +89,7 @@ export default function EnterprisePage() {
         </Card>
         <Card className="col-span-2 sm:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Nb. Produits</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('total_products_label')}</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -95,8 +101,8 @@ export default function EnterprisePage() {
       <div className="grid gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
-                <CardTitle>Ventes Récentes</CardTitle>
-                <CardDescription>Aperçu des dernières transactions enregistrées.</CardDescription>
+                <CardTitle>{t('recent_sales_title')}</CardTitle>
+                <CardDescription>{t('recent_sales_desc')}</CardDescription>
             </CardHeader>
             <CardContent>
                 {sales.length > 0 ? (
@@ -107,8 +113,8 @@ export default function EnterprisePage() {
                                     🛒
                                 </div>
                                 <div className="ml-4 space-y-1">
-                                <p className="text-sm font-medium leading-none">Vente à {sale.customerName}</p>
-                                <p className="text-sm text-muted-foreground">{sale.items.length} produit(s)</p>
+                                <p className="text-sm font-medium leading-none">{t('sale_to_customer_label', { customerName: sale.customerName })}</p>
+                                <p className="text-sm text-muted-foreground">{t('product_count_label', { count: sale.items.length })}</p>
                                 </div>
                                 <div className="ml-auto font-medium">{formatCurrency(sale.total)}</div>
                                 <Button variant="ghost" size="icon" className="ml-2" asChild>
@@ -121,18 +127,18 @@ export default function EnterprisePage() {
                     </div>
                 ): (
                      <div className="text-center text-muted-foreground py-8">
-                        <p>Aucune vente enregistrée pour le moment.</p>
+                        <p>{t('no_sales_recorded_label')}</p>
                      </div>
                 )}
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
-                <CardTitle>Inventaire des Produits</CardTitle>
-                <CardDescription>Aperçu rapide de votre stock.</CardDescription>
+                <CardTitle>{t('product_inventory_title')}</CardTitle>
+                <CardDescription>{t('product_inventory_desc')}</CardDescription>
                  <Button variant="outline" size="sm" className="mt-2" asChild>
                     <Link href="/dashboard/entreprise/products">
-                        Gérer les produits
+                        {t('manage_products_button')}
                     </Link>
                 </Button>
             </CardHeader>
@@ -152,13 +158,13 @@ export default function EnterprisePage() {
                                     <p className="text-sm font-medium leading-none">{product.name}</p>
                                     <p className="text-sm text-muted-foreground">{formatCurrency(product.price)}</p>
                                 </div>
-                                <div className="ml-auto font-medium">{product.quantity} en stock</div>
+                                <div className="ml-auto font-medium">{t('in_stock_label', { count: product.quantity })}</div>
                             </div>
                         ))}
                     </div>
                 ) : (
                     <div className="text-center text-muted-foreground py-8">
-                        <p>Aucun produit dans votre inventaire.</p>
+                        <p>{t('no_products_in_inventory_label')}</p>
                     </div>
                 )}
             </CardContent>

@@ -20,23 +20,12 @@ import { useLocale } from '@/context/locale-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Product } from '@/types/product';
 
-const productSchema = z.object({
-  name: z.string().min(2, "Le nom du produit est requis."),
-  description: z.string().optional(),
-  price: z.coerce.number().min(0, "Le prix ne peut être négatif."),
-  promoPrice: z.coerce.number().optional(),
-  quantity: z.coerce.number().int().min(0, "La quantité ne peut être négative."),
-  imageUrl: z.string().optional(),
-});
-
-type ProductFormValues = z.infer<typeof productSchema>;
-
 export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
   const { getProductById, updateProduct, uploadImage, isLoading } = useProducts();
-  const { currency } = useLocale();
+  const { t, currency } = useLocale();
   
   const [product, setProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,6 +33,17 @@ export default function EditProductPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const id = params.id as string;
+
+  const productSchema = z.object({
+    name: z.string().min(2, t('product_name_required_error')),
+    description: z.string().optional(),
+    price: z.coerce.number().min(0, t('product_price_negative_error')),
+    promoPrice: z.coerce.number().optional(),
+    quantity: z.coerce.number().int().min(0, t('product_quantity_negative_error')),
+    imageUrl: z.string().optional(),
+  });
+
+  type ProductFormValues = z.infer<typeof productSchema>;
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -64,11 +64,11 @@ export default function EditProductPage() {
             });
             setImagePreview(foundProduct.imageUrl || null);
         } else {
-             toast({ variant: 'destructive', title: 'Produit non trouvé' });
+             toast({ variant: 'destructive', title: t('product_not_found_error') });
              router.push('/dashboard/entreprise/products');
         }
     }
-  }, [id, isLoading, getProductById, router, toast, form]);
+  }, [id, isLoading, getProductById, router, toast, form, t]);
   
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -96,16 +96,16 @@ export default function EditProductPage() {
       await updateProduct(product.id, { ...data, imageUrl });
 
       toast({
-        title: "Produit mis à jour",
-        description: `Le produit "${data.name}" a été mis à jour.`,
+        title: t('product_updated_title'),
+        description: t('product_updated_desc', { productName: data.name }),
       });
       router.push('/dashboard/entreprise/products');
     } catch (error) {
        console.error("Error updating product:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de mettre à jour le produit. " + (error instanceof Error ? error.message : "Erreur inconnue."),
+        title: t('error_title'),
+        description: t('product_update_error', { message: error instanceof Error ? error.message : t('An unknown error occurred.') }),
       });
     } finally {
       setIsSubmitting(false);
@@ -139,44 +139,44 @@ export default function EditProductPage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold font-headline">Modifier le produit</h1>
+        <h1 className="text-3xl font-bold font-headline">{t('edit_product_title')}</h1>
       </div>
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <Card>
                 <CardHeader>
-                    <CardTitle>Détails du Produit</CardTitle>
-                    <CardDescription>Mettez à jour les informations ci-dessous.</CardDescription>
+                    <CardTitle>{t('product_details_title')}</CardTitle>
+                    <CardDescription>{t('product_details_update_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <FormField control={form.control} name="name" render={({ field }) => (
-                        <FormItem><FormLabel>Nom du produit</FormLabel><FormControl><Input placeholder="Ex: T-shirt en coton" {...field} /></FormControl><FormMessage /></FormItem>
+                     <FormField control={form.control} name="name" render={({ field }) => (
+                        <FormItem><FormLabel>{t('product_name_label')}</FormLabel><FormControl><Input placeholder={t('product_name_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="description" render={({ field }) => (
-                        <FormItem><FormLabel>Description (facultatif)</FormLabel><FormControl><Textarea placeholder="Décrivez votre produit..." {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>{t('product_description_label')}</FormLabel><FormControl><Textarea placeholder={t('product_description_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <div className="grid md:grid-cols-2 gap-6">
                         <FormField control={form.control} name="price" render={({ field }) => (
-                            <FormItem><FormLabel>Prix ({currency})</FormLabel><FormControl><Input type="number" placeholder="5000" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>{t('product_price_label')} ({currency})</FormLabel><FormControl><Input type="number" placeholder="5000" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                          <FormField control={form.control} name="promoPrice" render={({ field }) => (
-                            <FormItem><FormLabel>Prix Promotionnel ({currency}) (facultatif)</FormLabel><FormControl><Input type="number" placeholder="4500" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>{t('product_promo_price_label')} ({currency})</FormLabel><FormControl><Input type="number" placeholder="4500" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                         )} />
                     </div>
                      <FormField control={form.control} name="quantity" render={({ field }) => (
-                        <FormItem><FormLabel>Quantité en stock</FormLabel><FormControl><Input type="number" placeholder="100" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>{t('product_quantity_label')}</FormLabel><FormControl><Input type="number" placeholder="100" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                      <FormItem>
-                        <FormLabel>Image du produit (facultatif)</FormLabel>
+                        <FormLabel>{t('product_image_label')}</FormLabel>
                          <FormControl>
                             <label className="cursor-pointer border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/50 h-48 w-full">
                                 {imagePreview ? (
-                                    <img src={imagePreview} alt="Aperçu du produit" className="max-h-full w-auto object-contain rounded-md" />
+                                    <img src={imagePreview} alt={t('product_image_preview_alt')} className="max-h-full w-auto object-contain rounded-md" />
                                 ) : (
                                     <>
                                         <Upload className="h-8 w-8 mb-2" />
-                                        <span>Cliquer pour charger une image</span>
+                                        <span>{t('product_image_upload_cta')}</span>
                                     </>
                                 )}
                                 <Input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
@@ -188,10 +188,10 @@ export default function EditProductPage() {
             </Card>
 
             <div className="flex justify-end gap-2">
-                 <Button type="button" variant="outline" onClick={() => router.back()}>Annuler</Button>
+                 <Button type="button" variant="outline" onClick={() => router.back()}>{t('cancel')}</Button>
                  <Button type="submit" disabled={isSubmitting || isLoading}>
                      {(isSubmitting || isLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                     Sauvegarder les modifications
+                     {t('save_changes_button')}
                  </Button>
             </div>
         </form>

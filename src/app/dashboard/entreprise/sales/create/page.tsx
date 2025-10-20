@@ -21,27 +21,27 @@ import 'react-phone-number-input/style.css';
 import PhoneInput from 'react-phone-number-input';
 import { useUserData } from '@/context/user-context';
 
-const saleItemSchema = z.object({
-  productId: z.string().min(1, "Veuillez sélectionner un produit."),
-  quantity: z.coerce.number().min(1, "La quantité doit être d'au moins 1."),
-  price: z.number(),
-});
-
-const saleSchema = z.object({
-  customerName: z.string().min(2, "Le nom du client est requis."),
-  customerPhone: z.string().optional(),
-  items: z.array(saleItemSchema).min(1, "Ajoutez au moins un produit à la vente."),
-});
-
-type SaleFormValues = z.infer<typeof saleSchema>;
-
 export default function CreateSalePage() {
   const router = useRouter();
   const { toast } = useToast();
   const { products, isLoading: isLoadingProducts } = useProducts();
   const { addUserSale, isLoading: isLoadingSales } = useUserData();
-  const { formatCurrency } = useLocale();
+  const { t, formatCurrency } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const saleItemSchema = z.object({
+    productId: z.string().min(1, t('sale_item_product_error')),
+    quantity: z.coerce.number().min(1, t('sale_item_quantity_error')),
+    price: z.number(),
+  });
+
+  const saleSchema = z.object({
+    customerName: z.string().min(2, t('customer_name_required')),
+    customerPhone: z.string().optional(),
+    items: z.array(saleItemSchema).min(1, t('at_least_one_item_required')),
+  });
+
+  type SaleFormValues = z.infer<typeof saleSchema>;
 
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
@@ -84,15 +84,15 @@ export default function CreateSalePage() {
 
       const newSale = await addUserSale(saleData);
       toast({
-        title: "Vente enregistrée",
-        description: `La vente pour ${data.customerName} a été enregistrée.`,
+        title: t('sale_recorded_title'),
+        description: t('sale_recorded_desc', { customerName: data.customerName }),
       });
       router.push(`/dashboard/entreprise/sales/invoice/${newSale.id}`);
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'enregistrer la vente. " + (error instanceof Error ? error.message : "Une erreur inconnue est survenue."),
+        title: t('error_title'),
+        description: t('sale_record_error', { message: error instanceof Error ? error.message : t('An unknown error occurred.') }),
       });
     } finally {
       setIsSubmitting(false);
@@ -107,25 +107,25 @@ export default function CreateSalePage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold font-headline">Enregistrer une nouvelle vente</h1>
+        <h1 className="text-3xl font-bold font-headline">{t('record_new_sale_title')}</h1>
       </div>
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <Card>
                 <CardHeader>
-                    <CardTitle>Informations du Client</CardTitle>
+                    <CardTitle>{t('customer_info_title')}</CardTitle>
                 </CardHeader>
                 <CardContent className="grid md:grid-cols-2 gap-6">
                     <FormField control={form.control} name="customerName" render={({ field }) => (
-                        <FormItem><FormLabel>Nom du client</FormLabel><FormControl><Input placeholder="John Doe" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>{t('customer_name_label')}</FormLabel><FormControl><Input placeholder="John Doe" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                      <FormField
                         control={form.control}
                         name="customerPhone"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Téléphone du client (facultatif)</FormLabel>
+                            <FormLabel>{t('customer_phone_label')}</FormLabel>
                             <FormControl>
                             <PhoneInput
                                 international
@@ -144,7 +144,7 @@ export default function CreateSalePage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Produits Vendus</CardTitle>
+                    <CardTitle>{t('products_sold_title')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
@@ -155,18 +155,18 @@ export default function CreateSalePage() {
                                      <Select onValueChange={(value) => {field.onChange(value); handleProductChange(index, value)}} defaultValue={field.value}>
                                         <FormControl>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Sélectionner un produit" />
+                                            <SelectValue placeholder={t('select_product_placeholder')} />
                                         </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {isLoadingProducts ? <p>Chargement...</p> : products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                            {isLoadingProducts ? <p>{t('loading_tip')}</p> : products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
                                 </FormItem>
                               )} />
                               <FormField control={form.control} name={`items.${index}.quantity`} render={({ field }) => (
-                                <FormItem><FormControl><Input type="number" placeholder="Qté" {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem><FormControl><Input type="number" placeholder={t('quantity_item_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
                               )} />
                               <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
                                 <Trash2 className="h-4 w-4 text-destructive" />
@@ -176,7 +176,7 @@ export default function CreateSalePage() {
                     </div>
                      <Button type="button" variant="outline" size="sm" onClick={() => append({ productId: "", quantity: 1, price: 0 })} className="mt-4">
                         <PlusCircle className="mr-2 h-4 w-4" />
-                        Ajouter un produit
+                        {t('add_item_button')}
                     </Button>
                 </CardContent>
             </Card>
@@ -184,17 +184,17 @@ export default function CreateSalePage() {
             <div className="flex justify-end">
                 <div className="w-full md:w-1/3 space-y-2">
                     <div className="flex justify-between font-bold text-lg border-t pt-2">
-                        <span>Total :</span>
+                        <span>{t('total_label')}</span>
                         <span>{formatCurrency(total)}</span>
                     </div>
                 </div>
             </div>
 
             <div className="flex justify-end gap-2">
-                 <Button type="button" variant="outline" onClick={() => router.back()}>Annuler</Button>
+                 <Button type="button" variant="outline" onClick={() => router.back()}>{t('cancel')}</Button>
                  <Button type="submit" disabled={isSubmitting || isLoadingSales || isLoadingProducts}>
                      {(isSubmitting || isLoadingSales) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                     Enregistrer et générer la facture
+                     {t('save_and_generate_invoice_button')}
                  </Button>
             </div>
         </form>

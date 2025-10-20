@@ -44,6 +44,8 @@ import { useNotifications } from "@/context/notifications-context";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from '@/components/ui/label';
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useProducts } from "@/context/product-context";
+import { useUserData } from "@/context/user-context";
 
 export default function SettingsPage() {
   const { settings, updateSettings, checkPin } = useSettings();
@@ -59,10 +61,12 @@ export default function SettingsPage() {
   const [isNotificationsDialogOpen, setIsNotificationsDialogOpen] = useState(false);
   const [notificationDisableReason, setNotificationDisableReason] = useState("");
   const isMobile = useIsMobile();
+  const { updateUserData } = useUserData();
 
   const { resetTransactions } = useTransactions();
   const { resetBudgets } = useBudgets();
   const { resetSavings } = useSavings();
+  const { resetProducts } = useProducts();
   const router = useRouter();
 
 
@@ -211,7 +215,6 @@ export default function SettingsPage() {
         setIsReminderEnabled(true);
         toast({ title: t('notification_reminder_enabled_title') });
     } else {
-        // Open the dialog to ask for a reason before disabling
         setIsNotificationsDialogOpen(true);
     }
   };
@@ -220,7 +223,6 @@ export default function SettingsPage() {
     setIsReminderEnabled(false);
     setIsNotificationsDialogOpen(false);
     toast({ title: t('notification_reminder_disabled_title') });
-    // You can also send the `notificationDisableReason` to your analytics here
     console.log("Reason for disabling notifications:", notificationDisableReason);
   };
 
@@ -252,6 +254,34 @@ export default function SettingsPage() {
         title: "Error",
         description: "Failed to reset financial data.",
       });
+    }
+  };
+  
+    const handleResetEnterprise = async () => {
+    try {
+        if (!user) {
+            throw new Error("User not authenticated for reset.");
+        }
+        
+        await resetProducts();
+
+        await updateUserData({
+            sales: [],
+            saleInvoiceCounter: 0,
+        });
+
+        toast({
+            title: t('reset_enterprise_success_title'),
+            description: t('reset_enterprise_success_desc')
+        });
+        
+    } catch (error) {
+        console.error("Failed to reset enterprise data:", error);
+        toast({
+            variant: "destructive",
+            title: t('error_title'),
+            description: t('reset_enterprise_error_desc'),
+        });
     }
   };
 
@@ -295,7 +325,7 @@ export default function SettingsPage() {
   
   const handleAvatarSave = (base64String: string) => {
     updateUser({ avatar: base64String });
-    toast({ title: "Photo de profil mise à jour !" });
+    toast({ title: t('avatar_update_success_title') });
   };
 
 
@@ -698,6 +728,31 @@ export default function SettingsPage() {
                   <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                   <AlertDialogAction onClick={handleResetData} className="bg-destructive hover:bg-destructive/90">
                     {t('reset_data_confirm_button')}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive">
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  {t('reset_enterprise_button')}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+                    <RefreshCw className="h-6 w-6 text-red-600" />
+                  </div>
+                  <AlertDialogTitle>{t('reset_enterprise_warning_title')}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t('reset_enterprise_warning_desc')}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleResetEnterprise} className="bg-destructive hover:bg-destructive/90">
+                    {t('reset_enterprise_confirm_button')}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
