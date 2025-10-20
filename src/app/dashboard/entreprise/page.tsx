@@ -18,27 +18,33 @@ export default function EnterprisePage() {
   const totalProductsSold = sales.reduce((sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24 md:pb-8">
       <div className="flex flex-wrap justify-between items-center gap-4">
         <h1 className="text-3xl font-bold font-headline">Gestion de la Boutique</h1>
-        <div className="flex gap-2">
-           <Button asChild>
-            <Link href="/dashboard/entreprise/products/create">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Ajouter un produit
-            </Link>
-          </Button>
-           <Button asChild variant="secondary">
-            <Link href="/dashboard/entreprise/sales/create">
-              <ShoppingCart className="mr-2 h-4 w-4" />
-              Créer une vente
-            </Link>
-          </Button>
-        </div>
       </div>
 
-       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Link href="/dashboard/entreprise/sales/create">
+                <Card className="h-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-primary/20">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
+                        <CardTitle className="text-xl font-bold">Créer une vente</CardTitle>
+                        <ShoppingCart className="h-8 w-8" />
+                    </CardHeader>
+                </Card>
+            </Link>
+            <Link href="/dashboard/entreprise/products/create">
+                <Card className="h-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-secondary/20">
+                     <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
+                        <CardTitle className="text-xl font-bold">Ajouter un produit</CardTitle>
+                        <PlusCircle className="h-8 w-8" />
+                    </CardHeader>
+                </Card>
+            </Link>
+       </div>
+
+
+       <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+        <Card className="sm:col-span-3">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Chiffre d'affaires total</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -55,17 +61,24 @@ export default function EnterprisePage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+{sales.length}</div>
-            <p className="text-xs text-muted-foreground">{totalProductsSold} produits vendus au total</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Nombre de Produits</CardTitle>
+            <CardTitle className="text-sm font-medium">Produits Vendus</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalProductsSold}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Nb. Produits</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{products.length}</div>
-            <p className="text-xs text-muted-foreground">Produits uniques dans l'inventaire</p>
           </CardContent>
         </Card>
       </div>
