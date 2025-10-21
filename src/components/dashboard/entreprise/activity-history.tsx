@@ -42,7 +42,7 @@ const activityIcons: Record<ActivityType, React.ReactNode> = {
 
 export function ActivityHistory({ isOpen, onOpenChange }: ActivityHistoryProps) {
     const { userData, isLoading } = useUserData();
-    const { t, formatDate } = useLocale();
+    const { t, formatDateTime } = useLocale();
 
     const sortedAndFilteredActivities = useMemo(() => {
         if (!userData?.enterpriseActivities) return [];
@@ -90,7 +90,7 @@ export function ActivityHistory({ isOpen, onOpenChange }: ActivityHistoryProps) 
                                             <div className="flex-1">
                                                 <p className="text-sm font-medium">{log.description}</p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    {formatDate(log.timestamp)} - {log.userName}
+                                                    {formatDateTime(log.timestamp)} - {log.userName}
                                                 </p>
                                             </div>
                                         </div>

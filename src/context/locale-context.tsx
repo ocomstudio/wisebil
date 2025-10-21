@@ -33,6 +33,7 @@ interface LocaleContextType {
   formatCurrency: (amount: number, fromCurrency?: Currency) => string;
   getConvertedAmount: (amount: number, fromCurrency?: Currency, toCurrency?: Currency) => number;
   formatDate: (dateString: string) => string;
+  formatDateTime: (dateString: string) => string;
   getCategoryName: (key: string) => string;
 }
 
@@ -216,12 +217,22 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
     });
   }, [locale]);
 
+  const formatDateTime = useCallback((dateString: string) => {
+    return new Date(dateString).toLocaleString(locale, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+    });
+  }, [locale]);
+
   if (!isLoaded) {
     return null; // Or a loading spinner
   }
 
   return (
-    <LocaleContext.Provider value={{ locale, setLocale, currency, setCurrency, t, formatCurrency, formatDate, getCategoryName, getConvertedAmount }}>
+    <LocaleContext.Provider value={{ locale, setLocale, currency, setCurrency, t, formatCurrency, formatDate, formatDateTime, getCategoryName, getConvertedAmount }}>
       {children}
     </LocaleContext.Provider>
   );
