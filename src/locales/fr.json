@@ -1,3 +1,4 @@
+
 {
     "lang_code": "fr",
     "back_to_home": "Retour à l'accueil",
@@ -796,5 +797,4 @@
     "record_new_sale_title": "Enregistrer une nouvelle vente",
     "products_sold_title": "Produits vendus",
     "select_product_placeholder": "Sélectionnez un produit..."
-}
 }
