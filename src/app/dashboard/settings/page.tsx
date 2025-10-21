@@ -258,32 +258,39 @@ export default function SettingsPage() {
   };
   
     const handleResetEnterprise = async () => {
-    try {
         if (!user) {
-            throw new Error("User not authenticated for reset.");
+            toast({
+                variant: "destructive",
+                title: t('error_title'),
+                description: "User not authenticated for reset.",
+            });
+            return;
         }
-        
-        await resetProducts();
 
-        await updateUserData({
-            sales: [],
-            saleInvoiceCounter: 0,
-        });
+        try {
+            await updateUserData({
+                products: [],
+                productCategories: [],
+                sales: [],
+                purchases: [],
+                saleInvoiceCounter: 0,
+                purchaseInvoiceCounter: 0,
+            });
 
-        toast({
-            title: t('reset_enterprise_success_title'),
-            description: t('reset_enterprise_success_desc')
-        });
-        
-    } catch (error) {
-        console.error("Failed to reset enterprise data:", error);
-        toast({
-            variant: "destructive",
-            title: t('error_title'),
-            description: t('reset_enterprise_error_desc'),
-        });
-    }
-  };
+            toast({
+                title: t('reset_enterprise_success_title'),
+                description: t('reset_enterprise_success_desc')
+            });
+            
+        } catch (error) {
+            console.error("Failed to reset enterprise data:", error);
+            toast({
+                variant: "destructive",
+                title: t('error_title'),
+                description: t('reset_enterprise_error_desc'),
+            });
+        }
+    };
 
   const handleResetApp = async () => {
     try {
