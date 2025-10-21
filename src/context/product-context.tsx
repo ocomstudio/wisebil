@@ -11,11 +11,12 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { v4 as uuidv4 } from "uuid";
 import { useUserData } from './user-context';
+import { useLocale } from './locale-context';
 
 interface ProductContextType {
   products: Product[];
   productCategories: ProductCategory[];
-  addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => Promise<void>;
   updateProduct: (id: string, updatedProduct: Partial<Omit<Product, 'id'>>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   resetProducts: () => Promise<void>;
@@ -42,11 +43,12 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const { userData, isLoading: isUserDataLoading, updateUserData } = useUserData();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { t } = useLocale();
   
   const products = useMemo(() => userData?.products || [], [userData]);
   const productCategories = useMemo(() => userData?.productCategories || [], [userData]);
 
-  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => {
     if (!user) throw new Error("User not authenticated.");
       
     const now = new Date().toISOString();
@@ -54,7 +56,8 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         id: uuidv4(), 
         createdAt: now,
         updatedAt: now,
-        ...productData 
+        ...productData,
+        initialQuantity: productData.quantity, // Set initial quantity from form
     };
 
     const cleanedProduct = cleanUndefined(newProduct);
@@ -65,10 +68,10 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         await updateUserData({ products: updatedProducts });
     } catch (e) {
       console.error("Failed to add product to Firestore", e);
-      toast({ variant: "destructive", title: "Error", description: "Failed to save product." });
+      toast({ variant: "destructive", title: t('error_title'), description: t('product_add_error', { message: e instanceof Error ? e.message : 'Unknown error' }) });
       throw e;
     }
-  }, [user, userData, updateUserData, toast]);
+  }, [user, userData, updateUserData, toast, t]);
   
   const addProductCategory = useCallback(async (name: string): Promise<ProductCategory | null> => {
     if (!user) return null;
@@ -76,7 +79,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     const currentCategories = userData?.productCategories || [];
 
     if (currentCategories.some(c => c.name.toLowerCase() === name.toLowerCase())) {
-        toast({ variant: "destructive", title: "Erreur", description: "Cette catégorie existe déjà." });
+        toast({ variant: "destructive", title: t('error_title'), description: "Cette catégorie existe déjà." });
         return null;
     }
 
@@ -87,23 +90,30 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         return newCategory;
     } catch (e) {
         console.error("Failed to add product category", e);
-        toast({ variant: "destructive", title: "Error", description: "Failed to save category." });
+        toast({ variant: "destructive", title: t('error_title'), description: "Failed to save category." });
         return null;
     }
-  }, [user, userData?.productCategories, updateUserData, toast]);
+  }, [user, userData?.productCategories, updateUserData, toast, t]);
 
   const updateProduct = useCallback(async (id: string, updatedProductData: Partial<Omit<Product, 'id'>>) => {
     const currentProducts = [...products];
     const productIndex = currentProducts.findIndex(p => p.id === id);
 
     if (productIndex === -1) {
-      toast({ variant: "destructive", title: "Erreur", description: "Produit non trouvé." });
+      toast({ variant: "destructive", title: t('error_title'), description: t('product_not_found_error') });
       return;
     }
     
+    // Ensure initialQuantity is not changed on update unless explicitly intended
+    const finalUpdateData = { ...updatedProductData };
+    if ('quantity' in finalUpdateData && !('initialQuantity' in finalUpdateData)) {
+      // If only quantity is updated, initialQuantity should persist from the original product
+      finalUpdateData.initialQuantity = currentProducts[productIndex].initialQuantity;
+    }
+
     const updatedProduct = { 
       ...currentProducts[productIndex], 
-      ...updatedProductData,
+      ...finalUpdateData,
       updatedAt: new Date().toISOString(),
     };
     currentProducts[productIndex] = cleanUndefined(updatedProduct);
@@ -112,22 +122,22 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
       await updateUserData({ products: currentProducts });
     } catch (e) {
       console.error("Failed to update product in Firestore", e);
-      toast({ variant: "destructive", title: "Error", description: "Failed to update product." });
+      toast({ variant: "destructive", title: t('error_title'), description: t('product_update_error', { message: e instanceof Error ? e.message : 'Unknown error' }) });
       throw e;
     }
-  }, [products, updateUserData, toast]);
+  }, [products, updateUserData, toast, t]);
 
   const deleteProduct = useCallback(async (id: string) => {
      const updatedProducts = products.filter(p => p.id !== id);
     try {
       await updateUserData({ products: updatedProducts });
-      toast({ title: "Produit supprimé" });
+      toast({ title: t('product_delete_success_title') });
     } catch (e) {
       console.error("Failed to delete product from Firestore", e);
-      toast({ variant: "destructive", title: "Error", description: "Failed to delete product." });
+      toast({ variant: "destructive", title: t('error_title'), description: "Failed to delete product." });
       throw e;
     }
-  }, [products, updateUserData, toast]);
+  }, [products, updateUserData, toast, t]);
 
   const resetProducts = useCallback(async () => {
     if (!user) throw new Error("User not authenticated.");
@@ -156,7 +166,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         return downloadURL;
     } catch (error) {
         console.error("Image upload failed:", error);
-        throw new Error("L'envoi de l'image a échoué. Veuillez réessayer.");
+        throw new Error(t('product_image_upload_error'));
     }
   };
 

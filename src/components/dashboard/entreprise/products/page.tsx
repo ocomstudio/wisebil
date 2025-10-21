@@ -17,6 +17,7 @@ import {
 import { useProducts } from "@/context/product-context";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 export default function ProductsPage() {
   const { products, deleteProduct, isLoading, getCategoryById } = useProducts();
@@ -95,8 +96,8 @@ export default function ProductsPage() {
                         <TableCell>{formatDate(product.purchaseDate)}</TableCell>
                         <TableCell>{product.storageLocation}</TableCell>
                         <TableCell>
-                            <Badge variant={product.quantity > 10 ? 'default' : product.quantity > 0 ? 'secondary' : 'destructive'}>
-                                {t('in_stock_label', { count: product.quantity })}
+                            <Badge variant={product.quantity > (product.initialQuantity * 0.1) ? 'default' : product.quantity > 0 ? 'secondary' : 'destructive'} className={cn(product.quantity <= 0 && "bg-red-600/20 text-red-500 border-red-500/20", product.quantity > 0 && product.quantity <= (product.initialQuantity * 0.25) && "bg-yellow-600/20 text-yellow-500 border-yellow-500/20")}>
+                                {product.quantity} / {product.initialQuantity}
                             </Badge>
                         </TableCell>
                         <TableCell className="text-right">

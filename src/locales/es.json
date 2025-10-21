@@ -1,4 +1,3 @@
-
 {
     "lang_code": "es",
     "back_to_home": "Volver al inicio",
@@ -113,7 +112,7 @@
     "ai_categorization_failed": "La categorización por IA ha fallado",
     "ai_categorization_failed_desc": "No se ha podido sugerir una categoría.",
     "ai_temporarily_disabled_title": "Función de IA desactivada",
-    "ai_temporarily_disabled_desc": "Esta función está temporalmente no disponible. Por favor, categoriza manually.",
+    "ai_temporarily_disabled_desc": "Esta función está temporalmente no disponible. Por favor, categoriza manualmente.",
     "assistant_welcome_message": "¡Hola {{name}}! ¿Cómo puedo ayudarte hoy con tus finanzas?",
     "description_label": "Descripción",
     "description_placeholder": "p. ej., Café con un amigo",
@@ -764,6 +763,8 @@
     "table_header_actions": "Acciones",
     "product_delete_confirm_title": "¿Eliminar Producto?",
     "product_delete_confirm_desc": "Esto eliminará permanentemente \"{{productName}}\" de su inventario.",
+    "product_delete_success_title": "Producto eliminado",
+    "product_image_upload_error": "Error al subir la imagen. Por favor, inténtelo de nuevo.",
     "share_button": "Compartir",
     "share_not_supported_title": "No se admite compartir",
     "share_not_supported_desc": "Su navegador no admite la función de compartir.",
@@ -792,18 +793,7 @@
     "sale_recorded_title": "Venta registrada",
     "sale_recorded_desc": "La venta a {{customerName}} ha sido registrada.",
     "sale_record_error": "Error al registrar la venta: {{message}}",
-    "record_new_sale_title": "Registrar una Nueva Venta"
+    "record_new_sale_title": "Registrar una Nueva Venta",
+    "products_sold_title": "Productos vendidos",
+    "select_product_placeholder": "Seleccione un producto..."
 }
-  
-
-    
-
-
-
-    
-
-    
-
-    
-
-

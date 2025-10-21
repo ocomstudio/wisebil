@@ -107,7 +107,9 @@ export default function CreateProductPage() {
         imageUrl = await uploadImage(imageFile, `${Date.now()}-${imageFile.name}`);
       }
 
-      await addProduct({ ...data, imageUrl, purchaseDate: data.purchaseDate.toISOString() });
+      const productData = { ...data, imageUrl, purchaseDate: data.purchaseDate.toISOString() };
+
+      await addProduct(productData);
 
       toast({
         title: t('product_added_title'),

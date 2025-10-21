@@ -1,4 +1,3 @@
-
 {
     "lang_code": "vi",
     "back_to_home": "Quay lại trang chủ",
@@ -764,6 +763,8 @@
     "table_header_actions": "Hành động",
     "product_delete_confirm_title": "Xóa sản phẩm?",
     "product_delete_confirm_desc": "Thao tác này sẽ xóa vĩnh viễn \"{{productName}}\" khỏi kho của bạn.",
+    "product_delete_success_title": "Đã xóa sản phẩm",
+    "product_image_upload_error": "Tải lên hình ảnh không thành công. Vui lòng thử lại.",
     "share_button": "Chia sẻ",
     "share_not_supported_title": "Không hỗ trợ chia sẻ",
     "share_not_supported_desc": "Trình duyệt của bạn không hỗ trợ tính năng chia sẻ.",
@@ -792,18 +793,7 @@
     "sale_recorded_title": "Đã ghi nhận doanh số",
     "sale_recorded_desc": "Doanh số bán cho {{customerName}} đã được ghi lại.",
     "sale_record_error": "Lỗi khi ghi nhận doanh số: {{message}}",
-    "record_new_sale_title": "Ghi nhận một Doanh số Mới"
+    "record_new_sale_title": "Ghi nhận một Doanh số Mới",
+    "products_sold_title": "Sản phẩm đã bán",
+    "select_product_placeholder": "Chọn một sản phẩm..."
 }
-  
-
-    
-
-
-
-    
-
-    
-
-    
-
-

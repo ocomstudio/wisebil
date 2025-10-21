@@ -1,4 +1,3 @@
-
 {
     "lang_code": "en",
     "back_to_home": "Back to Home",
@@ -764,6 +763,8 @@
     "table_header_actions": "Actions",
     "product_delete_confirm_title": "Delete Product?",
     "product_delete_confirm_desc": "This will permanently delete \"{{productName}}\" from your inventory.",
+    "product_delete_success_title": "Product Deleted",
+    "product_image_upload_error": "Image upload failed. Please try again.",
     "share_button": "Share",
     "share_not_supported_title": "Sharing not supported",
     "share_not_supported_desc": "Your browser does not support the share feature.",
@@ -792,18 +793,7 @@
     "sale_recorded_title": "Sale Recorded",
     "sale_recorded_desc": "The sale to {{customerName}} has been recorded.",
     "sale_record_error": "Error recording sale: {{message}}",
-    "record_new_sale_title": "Record a New Sale"
+    "record_new_sale_title": "Record a New Sale",
+    "products_sold_title": "Products Sold",
+    "select_product_placeholder": "Select a product..."
 }
-  
-
-    
-
-
-
-    
-
-    
-
-    
-
-

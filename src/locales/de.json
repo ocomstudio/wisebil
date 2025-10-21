@@ -1,4 +1,3 @@
-
 {
     "lang_code": "de",
     "back_to_home": "Zurück zur Startseite",
@@ -764,6 +763,8 @@
     "table_header_actions": "Aktionen",
     "product_delete_confirm_title": "Produkt löschen?",
     "product_delete_confirm_desc": "Dadurch wird \"{{productName}}\" dauerhaft aus Ihrem Inventar gelöscht.",
+    "product_delete_success_title": "Produkt gelöscht",
+    "product_image_upload_error": "Bild-Upload fehlgeschlagen. Bitte versuchen Sie es erneut.",
     "share_button": "Teilen",
     "share_not_supported_title": "Teilen nicht unterstützt",
     "share_not_supported_desc": "Ihr Browser unterstützt die Teilen-Funktion nicht.",
@@ -792,18 +793,7 @@
     "sale_recorded_title": "Verkauf erfasst",
     "sale_recorded_desc": "Der Verkauf an {{customerName}} wurde erfasst.",
     "sale_record_error": "Fehler beim Erfassen des Verkaufs: {{message}}",
-    "record_new_sale_title": "Neuen Verkauf erfassen"
+    "record_new_sale_title": "Neuen Verkauf erfassen",
+    "products_sold_title": "Verkaufte Produkte",
+    "select_product_placeholder": "Wählen Sie ein Produkt aus..."
 }
-  
-
-    
-
-
-
-    
-
-    
-
-    
-
-
