@@ -617,6 +617,7 @@
     "back_button": "Retour",
     "download_success_title": "Téléchargement réussi",
     "download_success_desc": "La facture {{invoiceNumber}} a été téléchargée.",
+    "download_success_desc_purchase": "Le bon de commande {{invoiceNumber}} a été téléchargé.",
     "download_error_title": "Erreur de téléchargement",
     "download_error_desc": "Impossible de générer le fichier PDF.",
     "status_updated_title": "Statut mis à jour",
@@ -783,7 +784,15 @@
     "product_storage_location_placeholder": "Ex: Entrepôt A, Allée 3",
     "product_storage_location_required_error": "Le lieu de stockage est requis.",
     "table_header_purchase_date": "Date Achat",
-    "table_header_storage": "Stockage"
+    "table_header_storage": "Stockage",
+    "customer_phone_label": "Téléphone du client (facultatif)",
+    "save_and_generate_invoice_button": "Enregistrer et générer la facture",
+    "sale_item_product_error": "Veuillez sélectionner un produit.",
+    "sale_item_quantity_error": "La quantité doit être d'au moins 1.",
+    "sale_recorded_title": "Vente enregistrée",
+    "sale_recorded_desc": "La vente à {{customerName}} a été enregistrée.",
+    "sale_record_error": "Erreur lors de l'enregistrement de la vente : {{message}}",
+    "record_new_sale_title": "Enregistrer une nouvelle vente"
 }
   
 
@@ -796,3 +805,4 @@
     
 
     
+

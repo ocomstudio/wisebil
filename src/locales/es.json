@@ -617,6 +617,7 @@
     "back_button": "Volver",
     "download_success_title": "Descarga correcta",
     "download_success_desc": "Se ha descargado la factura {{invoiceNumber}}.",
+    "download_success_desc_purchase": "Se ha descargado la orden de compra {{invoiceNumber}}.",
     "download_error_title": "Error de descarga",
     "download_error_desc": "No se pudo generar el archivo PDF.",
     "status_updated_title": "Estado actualizado",
@@ -783,7 +784,15 @@
     "product_storage_location_placeholder": "ej: Almacén A, Pasillo 3",
     "product_storage_location_required_error": "Se requiere la ubicación de almacenamiento.",
     "table_header_purchase_date": "Fecha de Compra",
-    "table_header_storage": "Almacenamiento"
+    "table_header_storage": "Almacenamiento",
+    "customer_phone_label": "Teléfono del cliente (opcional)",
+    "save_and_generate_invoice_button": "Guardar y generar factura",
+    "sale_item_product_error": "Por favor, seleccione un producto.",
+    "sale_item_quantity_error": "La cantidad debe ser de al menos 1.",
+    "sale_recorded_title": "Venta registrada",
+    "sale_recorded_desc": "La venta a {{customerName}} ha sido registrada.",
+    "sale_record_error": "Error al registrar la venta: {{message}}",
+    "record_new_sale_title": "Registrar una Nueva Venta"
 }
   
 
@@ -796,3 +805,4 @@
     
 
     
+

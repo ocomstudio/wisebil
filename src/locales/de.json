@@ -617,6 +617,7 @@
     "back_button": "Zurück",
     "download_success_title": "Download erfolgreich",
     "download_success_desc": "Rechnung {{invoiceNumber}} wurde heruntergeladen.",
+    "download_success_desc_purchase": "Bestellung {{invoiceNumber}} wurde heruntergeladen.",
     "download_error_title": "Download-Fehler",
     "download_error_desc": "PDF-Datei konnte nicht generiert werden.",
     "status_updated_title": "Status aktualisiert",
@@ -783,7 +784,15 @@
     "product_storage_location_placeholder": "z.B. Lager A, Gang 3",
     "product_storage_location_required_error": "Lagerort ist erforderlich.",
     "table_header_purchase_date": "Kaufdatum",
-    "table_header_storage": "Lagerung"
+    "table_header_storage": "Lagerung",
+    "customer_phone_label": "Kundentelefon (optional)",
+    "save_and_generate_invoice_button": "Speichern und Rechnung generieren",
+    "sale_item_product_error": "Bitte wählen Sie ein Produkt aus.",
+    "sale_item_quantity_error": "Die Menge muss mindestens 1 sein.",
+    "sale_recorded_title": "Verkauf erfasst",
+    "sale_recorded_desc": "Der Verkauf an {{customerName}} wurde erfasst.",
+    "sale_record_error": "Fehler beim Erfassen des Verkaufs: {{message}}",
+    "record_new_sale_title": "Neuen Verkauf erfassen"
 }
   
 
@@ -796,3 +805,4 @@
     
 
     
+

@@ -617,6 +617,7 @@
     "back_button": "Quay lại",
     "download_success_title": "Tải xuống thành công",
     "download_success_desc": "Đã tải xuống hóa đơn {{invoiceNumber}}.",
+    "download_success_desc_purchase": "Đã tải xuống đơn đặt hàng {{invoiceNumber}}.",
     "download_error_title": "Lỗi tải xuống",
     "download_error_desc": "Không thể tạo tệp PDF.",
     "status_updated_title": "Đã cập nhật trạng thái",
@@ -783,7 +784,15 @@
     "product_storage_location_placeholder": "ví dụ: Kho A, Lối đi 3",
     "product_storage_location_required_error": "Yêu cầu vị trí lưu trữ.",
     "table_header_purchase_date": "Ngày mua",
-    "table_header_storage": "Lưu trữ"
+    "table_header_storage": "Lưu trữ",
+    "customer_phone_label": "Điện thoại khách hàng (tùy chọn)",
+    "save_and_generate_invoice_button": "Lưu và tạo hóa đơn",
+    "sale_item_product_error": "Vui lòng chọn một sản phẩm.",
+    "sale_item_quantity_error": "Số lượng phải ít nhất là 1.",
+    "sale_recorded_title": "Đã ghi nhận doanh số",
+    "sale_recorded_desc": "Doanh số bán cho {{customerName}} đã được ghi lại.",
+    "sale_record_error": "Lỗi khi ghi nhận doanh số: {{message}}",
+    "record_new_sale_title": "Ghi nhận một Doanh số Mới"
 }
   
 
@@ -796,3 +805,4 @@
     
 
     
+

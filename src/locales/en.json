@@ -617,6 +617,7 @@
     "back_button": "Back",
     "download_success_title": "Download Successful",
     "download_success_desc": "Invoice {{invoiceNumber}} has been downloaded.",
+    "download_success_desc_purchase": "Purchase Order {{invoiceNumber}} has been downloaded.",
     "download_error_title": "Download Error",
     "download_error_desc": "Could not generate the PDF file.",
     "status_updated_title": "Status Updated",
@@ -783,7 +784,15 @@
     "product_storage_location_placeholder": "e.g. Warehouse A, Aisle 3",
     "product_storage_location_required_error": "Storage location is required.",
     "table_header_purchase_date": "Purchase Date",
-    "table_header_storage": "Storage"
+    "table_header_storage": "Storage",
+    "customer_phone_label": "Customer Phone (optional)",
+    "save_and_generate_invoice_button": "Save and Generate Invoice",
+    "sale_item_product_error": "Please select a product.",
+    "sale_item_quantity_error": "Quantity must be at least 1.",
+    "sale_recorded_title": "Sale Recorded",
+    "sale_recorded_desc": "The sale to {{customerName}} has been recorded.",
+    "sale_record_error": "Error recording sale: {{message}}",
+    "record_new_sale_title": "Record a New Sale"
 }
   
 
@@ -796,3 +805,4 @@
     
 
     
+
