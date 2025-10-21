@@ -55,31 +55,31 @@ export default function EditProductPage() {
 
   type ProductFormValues = z.infer<typeof formSchema>;
 
-  const form = useForm<ProductFormValues>({
-    resolver: zodResolver(formSchema),
-  });
-  
   useEffect(() => {
     if (!isLoading && id) {
         const foundProduct = getProductById(id);
         if (foundProduct) {
             setProduct(foundProduct);
-            form.reset({
-                name: foundProduct.name,
-                description: foundProduct.description || "",
-                price: foundProduct.price,
-                promoPrice: foundProduct.promoPrice || undefined,
-                quantity: foundProduct.quantity,
-                categoryId: foundProduct.categoryId || "",
-                purchaseDate: new Date(foundProduct.purchaseDate),
-                storageLocation: foundProduct.storageLocation,
-            });
         } else {
              toast({ variant: 'destructive', title: t('product_not_found_error') });
              router.push('/dashboard/entreprise/products');
         }
     }
-  }, [id, isLoading, getProductById, router, toast, form, t]);
+  }, [id, isLoading, getProductById, router, toast, t]);
+  
+  const form = useForm<ProductFormValues>({
+    resolver: zodResolver(formSchema),
+    values: product ? {
+      name: product.name,
+      description: product.description || "",
+      price: product.price,
+      promoPrice: product.promoPrice || undefined,
+      quantity: product.quantity,
+      categoryId: product.categoryId || "",
+      purchaseDate: new Date(product.purchaseDate),
+      storageLocation: product.storageLocation,
+    } : undefined
+  });
   
   const handleCategoryChange = (value: string) => {
     if (value === 'CREATE_NEW') {
