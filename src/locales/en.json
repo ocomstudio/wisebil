@@ -656,6 +656,7 @@
     "ios_install_prompt_step1": "Tap the Share icon",
     "ios_install_prompt_step2": "then 'Add to Home Screen'.",
     "company_settings_title": "Company Settings",
+    "company_settings_button": "Company Settings",
     "company_details_title": "Company Details",
     "company_details_desc": "Configure your company information for invoicing.",
     "company_name_label": "Your Company Name",
@@ -774,5 +775,7 @@
     
 
 
+
+    
 
     

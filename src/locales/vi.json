@@ -656,6 +656,7 @@
     "ios_install_prompt_step1": "Nhấn vào biểu tượng Chia sẻ",
     "ios_install_prompt_step2": "sau đó \"Thêm vào màn hình chính\".",
     "company_settings_title": "Cài đặt công ty",
+    "company_settings_button": "Cài đặt công ty",
     "company_details_title": "Chi tiết công ty",
     "company_details_desc": "Định cấu hình thông tin công ty của bạn để lập hóa đơn.",
     "company_name_label": "Tên công ty của bạn",
@@ -774,5 +775,7 @@
     
 
 
+
+    
 
     

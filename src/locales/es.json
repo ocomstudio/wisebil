@@ -656,6 +656,7 @@
     "ios_install_prompt_step1": "Toca el icono de Compartir",
     "ios_install_prompt_step2": "y luego \"Añadir a la pantalla de inicio\".",
     "company_settings_title": "Configuración de la empresa",
+    "company_settings_button": "Configuración de la empresa",
     "company_details_title": "Detalles de la compañía",
     "company_details_desc": "Configure la información de su empresa para la facturación.",
     "company_name_label": "Nombre de su empresa",
@@ -774,5 +775,7 @@
     
 
 
+
+    
 
     

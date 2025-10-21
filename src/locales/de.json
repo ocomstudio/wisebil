@@ -656,6 +656,7 @@
     "ios_install_prompt_step1": "Tippen Sie auf das Teilen-Symbol",
     "ios_install_prompt_step2": "und dann auf \"Zum Startbildschirm hinzufügen\".",
     "company_settings_title": "Unternehmenseinstellungen",
+    "company_settings_button": "Unternehmenseinstellungen",
     "company_details_title": "Firmendetails",
     "company_details_desc": "Konfigurieren Sie Ihre Unternehmensinformationen für die Rechnungsstellung.",
     "company_name_label": "Ihr Firmenname",
@@ -774,5 +775,7 @@
     
 
 
+
+    
 
     
