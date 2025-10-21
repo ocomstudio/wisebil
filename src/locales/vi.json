@@ -802,5 +802,13 @@
     "no_purchases_recorded_label": "Chưa có giao dịch mua nào được ghi lại.",
     "product_purchase_price_label": "Giá mua",
     "activity_history_title": "Lịch sử Hoạt động",
-    "no_activity_yet": "Không có hoạt động gần đây để hiển thị."
+    "no_activity_yet": "Không có hoạt động gần đây để hiển thị.",
+    "daily_reports_title": "Báo cáo hàng ngày",
+    "daily_reports_desc": "Định cấu hình báo cáo tự động về các hoạt động kinh doanh của bạn.",
+    "enable_daily_reports_label": "Bật báo cáo hàng ngày",
+    "report_time_label": "Thời gian gửi báo cáo",
+    "report_time_desc": "Thời gian bạn sẽ nhận được báo cáo mỗi ngày.",
+    "report_format_label": "Định dạng báo cáo",
+    "report_settings_saved_title": "Đã lưu cài đặt",
+    "report_settings_saved_desc": "Các tùy chọn báo cáo hàng ngày của bạn đã được cập nhật."
 }

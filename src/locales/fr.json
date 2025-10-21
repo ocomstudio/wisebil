@@ -802,5 +802,13 @@
     "no_purchases_recorded_label": "Aucun achat enregistré pour le moment.",
     "product_purchase_price_label": "Coût d'achat",
     "activity_history_title": "Historique des Activités",
-    "no_activity_yet": "Aucune activité récente à afficher."
+    "no_activity_yet": "Aucune activité récente à afficher.",
+    "daily_reports_title": "Rapports Journaliers",
+    "daily_reports_desc": "Configurez l'envoi automatique de rapports sur vos activités d'entreprise.",
+    "enable_daily_reports_label": "Activer les rapports journaliers",
+    "report_time_label": "Heure d'envoi du rapport",
+    "report_time_desc": "L'heure à laquelle vous recevrez votre rapport chaque jour.",
+    "report_format_label": "Format du rapport",
+    "report_settings_saved_title": "Paramètres enregistrés",
+    "report_settings_saved_desc": "Vos préférences pour les rapports journaliers ont été mises à jour."
 }

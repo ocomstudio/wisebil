@@ -6,4 +6,7 @@ export interface CompanyProfile {
   signatureUrl: string;
   stampUrl: string;
   brandColor: string;
+  dailyReportEnabled?: boolean;
+  dailyReportTime?: string; // e.g., "18:00"
+  dailyReportFormat?: 'excel' | 'pdf';
 }

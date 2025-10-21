@@ -16,11 +16,15 @@ interface CompanyProfileContextType {
 }
 
 const defaultCompanyProfile: CompanyProfile = {
+  name: "",
   address: "",
   logoUrl: "",
   signatureUrl: "",
   stampUrl: "",
   brandColor: "#50C878", // Emerald Green
+  dailyReportEnabled: false,
+  dailyReportTime: "18:00",
+  dailyReportFormat: "excel",
 };
 
 const CompanyProfileContext = createContext<CompanyProfileContextType | undefined>(undefined);

@@ -802,5 +802,13 @@
     "no_purchases_recorded_label": "Momentan keine Einkäufe erfasst.",
     "product_purchase_price_label": "Einkaufskosten",
     "activity_history_title": "Aktivitätsverlauf",
-    "no_activity_yet": "Keine aktuellen Aktivitäten zum Anzeigen."
+    "no_activity_yet": "Keine aktuellen Aktivitäten zum Anzeigen.",
+    "daily_reports_title": "Tägliche Berichte",
+    "daily_reports_desc": "Konfigurieren Sie automatische Berichte über Ihre Geschäftsaktivitäten.",
+    "enable_daily_reports_label": "Tägliche Berichte aktivieren",
+    "report_time_label": "Berichtsendezeit",
+    "report_time_desc": "Die Zeit, zu der Sie Ihren Bericht jeden Tag erhalten.",
+    "report_format_label": "Berichtsformat",
+    "report_settings_saved_title": "Einstellungen gespeichert",
+    "report_settings_saved_desc": "Ihre Einstellungen für tägliche Berichte wurden aktualisiert."
 }

@@ -802,5 +802,13 @@
     "no_purchases_recorded_label": "No se han registrado compras por el momento.",
     "product_purchase_price_label": "Costo de Compra",
     "activity_history_title": "Historial de Actividades",
-    "no_activity_yet": "No hay actividad reciente para mostrar."
+    "no_activity_yet": "No hay actividad reciente para mostrar.",
+    "daily_reports_title": "Informes diarios",
+    "daily_reports_desc": "Configure informes automáticos de sus actividades comerciales.",
+    "enable_daily_reports_label": "Habilitar informes diarios",
+    "report_time_label": "Hora de envío del informe",
+    "report_time_desc": "La hora a la que recibirá su informe cada día.",
+    "report_format_label": "Formato del informe",
+    "report_settings_saved_title": "Configuración guardada",
+    "report_settings_saved_desc": "Sus preferencias de informes diarios han sido actualizadas."
 }

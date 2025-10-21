@@ -25,6 +25,7 @@ import { useEffect, useState } from "react";
 import { useProducts } from "@/context/product-context"; // for uploadImage
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
+import { DailyReportSettings } from "@/components/dashboard/settings/daily-report-settings";
 
 export default function CompanyProfilePage() {
   const { companyProfile, updateCompanyProfile, isLoading: isProfileLoading } = useCompanyProfile();
@@ -133,6 +134,7 @@ export default function CompanyProfilePage() {
           <div className="space-y-6">
             <Skeleton className="h-10 w-1/2" />
             <Skeleton className="h-80 w-full" />
+            <Skeleton className="h-48 w-full" />
           </div>
       )
   }
@@ -225,6 +227,9 @@ export default function CompanyProfilePage() {
             </div>
         </form>
       </Form>
+
+      <DailyReportSettings />
+
     </div>
   );
 }

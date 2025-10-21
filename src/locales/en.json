@@ -802,5 +802,13 @@
     "no_purchases_recorded_label": "No purchases recorded for the moment.",
     "product_purchase_price_label": "Purchase Cost",
     "activity_history_title": "Activity History",
-    "no_activity_yet": "No recent activity to display."
+    "no_activity_yet": "No recent activity to display.",
+    "daily_reports_title": "Daily Reports",
+    "daily_reports_desc": "Configure automatic reports of your business activities.",
+    "enable_daily_reports_label": "Enable daily reports",
+    "report_time_label": "Report sending time",
+    "report_time_desc": "The time you will receive your report each day.",
+    "report_format_label": "Report format",
+    "report_settings_saved_title": "Settings Saved",
+    "report_settings_saved_desc": "Your daily report preferences have been updated."
 }
