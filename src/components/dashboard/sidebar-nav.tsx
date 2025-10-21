@@ -57,7 +57,6 @@ export function SidebarNav() {
             className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-primary/10 relative",
                 (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href) && !pathname.startsWith('/dashboard/entreprise'))) && "bg-primary/10 text-primary",
-                item.className
             )}
             >
             {item.icon}

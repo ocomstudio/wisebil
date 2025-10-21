@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, ShoppingCart, Package, DollarSign, ArrowUpRight, Leaf, Settings } from "lucide-react";
+import { PlusCircle, ShoppingCart, Package, DollarSign, ArrowUpRight, Leaf, Settings, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useSales } from "@/context/sales-context";
 import { useProducts } from "@/context/product-context";
@@ -48,20 +48,28 @@ export default function EnterprisePage() {
             </CardContent>
        </Card>
 
-       <div className="grid grid-cols-2 gap-4">
+       <div className="grid grid-cols-3 gap-2">
             <Link href="/dashboard/entreprise/sales/create" className="col-span-1">
                 <Card className="h-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-primary/20">
-                    <CardHeader className="flex flex-col items-center justify-center text-center p-4">
-                        <ShoppingCart className="h-8 w-8 mb-2" />
-                        <CardTitle className="text-base font-bold">{t('create_sale_button')}</CardTitle>
+                    <CardHeader className="flex flex-col items-center justify-center text-center p-2">
+                        <ShoppingCart className="h-6 w-6 mb-1" />
+                        <CardTitle className="text-xs font-bold">{t('nav_sales')}</CardTitle>
                     </CardHeader>
                 </Card>
             </Link>
             <Link href="/dashboard/entreprise/products/create" className="col-span-1">
                 <Card className="h-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-secondary/20">
-                     <CardHeader className="flex flex-col items-center justify-center text-center p-4">
-                        <PlusCircle className="h-8 w-8 mb-2" />
-                        <CardTitle className="text-base font-bold">{t('add_product_button')}</CardTitle>
+                     <CardHeader className="flex flex-col items-center justify-center text-center p-2">
+                        <PlusCircle className="h-6 w-6 mb-1" />
+                        <CardTitle className="text-xs font-bold">{t('nav_products')}</CardTitle>
+                    </CardHeader>
+                </Card>
+            </Link>
+             <Link href="/dashboard/entreprise/purchases/create" className="col-span-1">
+                <Card className="h-full bg-accent text-accent-foreground hover:bg-accent/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-accent/20">
+                     <CardHeader className="flex flex-col items-center justify-center text-center p-2">
+                        <RefreshCw className="h-6 w-6 mb-1" />
+                        <CardTitle className="text-xs font-bold">{t('nav_purchases')}</CardTitle>
                     </CardHeader>
                 </Card>
             </Link>
