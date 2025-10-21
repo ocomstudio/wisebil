@@ -58,7 +58,7 @@ export function ActivityHistory({ isOpen, onOpenChange }: ActivityHistoryProps) 
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="flex flex-col h-[80vh] max-h-[600px] w-[90vw] max-w-md p-0">
+            <DialogContent className="flex flex-col h-[80vh] max-h-[600px] w-[90vw] max-w-md p-0 rounded-lg">
                 <DialogHeader className="p-6 pb-2">
                     <DialogTitle className="flex items-center gap-2">
                         <Activity className="h-5 w-5" />
