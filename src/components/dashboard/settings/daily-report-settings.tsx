@@ -20,13 +20,13 @@ import { useLocale } from "@/context/locale-context";
 import { useCompanyProfile } from "@/context/company-profile-context";
 import { useEffect, useState } from "react";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const reportSettingsSchema = z.object({
   dailyReportEnabled: z.boolean().default(false),
-  dailyReportTime: z.string().optional(),
+  dailyReportTime: z.string().regex(/^\d{2}:\d{2}$/, "L'heure doit être au format HH:MM.").optional(),
   dailyReportFormat: z.enum(["excel", "pdf"]).optional(),
 });
 
@@ -117,19 +117,9 @@ export function DailyReportSettings() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('report_time_label')}</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t('report_time_label')} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="18:00">18:00</SelectItem>
-                          <SelectItem value="19:00">19:00</SelectItem>
-                          <SelectItem value="20:00">20:00</SelectItem>
-                          <SelectItem value="21:00">21:00</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                         <Input type="time" {...field} className="w-full md:w-48" />
+                      </FormControl>
                       <FormDescription>
                         {t('report_time_desc')}
                       </FormDescription>
