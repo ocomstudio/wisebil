@@ -70,10 +70,9 @@ export default function ProductsPage() {
              <Table>
                 <TableHeader>
                     <TableRow>
+                    <TableHead className="w-16">{t('table_header_image')}</TableHead>
                     <TableHead>{t('table_header_name')}</TableHead>
                     <TableHead>{t('table_header_category')}</TableHead>
-                    <TableHead>{t('table_header_purchase_date')}</TableHead>
-                    <TableHead>{t('table_header_storage')}</TableHead>
                     <TableHead>{t('table_header_price')}</TableHead>
                     <TableHead>{t('table_header_stock')}</TableHead>
                     <TableHead className="text-right">{t('table_header_actions')}</TableHead>
@@ -82,10 +81,17 @@ export default function ProductsPage() {
                 <TableBody>
                     {products.map((product) => (
                     <TableRow key={product.id}>
+                        <TableCell>
+                            <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center overflow-hidden">
+                                {product.imageUrl ? (
+                                <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover"/>
+                                ) : (
+                                <Package />
+                                )}
+                            </div>
+                        </TableCell>
                         <TableCell className="font-medium">{product.name}</TableCell>
                         <TableCell>{getCategoryById(product.categoryId || '')?.name || '-'}</TableCell>
-                        <TableCell>{formatDate(product.purchaseDate)}</TableCell>
-                        <TableCell>{product.storageLocation}</TableCell>
                         <TableCell>
                             {product.promoPrice ? (
                                 <div className="flex items-baseline gap-2">
