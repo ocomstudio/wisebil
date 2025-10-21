@@ -16,14 +16,13 @@ import { useLocale } from './locale-context';
 interface ProductContextType {
   products: Product[];
   productCategories: ProductCategory[];
-  addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => Promise<void>;
+  addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity' | 'imageUrl'>) => Promise<void>;
   updateProduct: (id: string, updatedProduct: Partial<Omit<Product, 'id'>>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   resetProducts: () => Promise<void>;
   getProductById: (id: string) => Product | undefined;
   getCategoryById: (id: string) => ProductCategory | undefined;
   addProductCategory: (name: string) => Promise<ProductCategory | null>;
-  uploadImage: (file: File, path: string) => Promise<string>;
   isLoading: boolean;
 }
 
@@ -48,7 +47,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const products = useMemo(() => userData?.products || [], [userData]);
   const productCategories = useMemo(() => userData?.productCategories || [], [userData]);
 
-  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => {
+  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity' | 'imageUrl'>) => {
     if (!user) throw new Error("User not authenticated.");
       
     const now = new Date().toISOString();
@@ -56,6 +55,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         id: uuidv4(), 
         createdAt: now,
         updatedAt: now,
+        imageUrl: '',
         ...productData,
         initialQuantity: productData.quantity, // Set initial quantity from form
     };
@@ -156,23 +156,10 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const getCategoryById = useCallback((id: string) => {
     return productCategories.find(c => c.id === id);
   }, [productCategories]);
-  
-  const uploadImage = async (file: File, path: string): Promise<string> => {
-    if (!user) throw new Error("User not authenticated for image upload.");
-    try {
-        const storageRef = ref(storage, `users/${user.uid}/products/${path}`);
-        await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(storageRef);
-        return downloadURL;
-    } catch (error) {
-        console.error("Image upload failed:", error);
-        throw new Error(t('product_image_upload_error'));
-    }
-  };
 
 
   return (
-    <ProductContext.Provider value={{ products, productCategories, addProduct, updateProduct, deleteProduct, resetProducts, getProductById, getCategoryById, addProductCategory, uploadImage, isLoading: isUserDataLoading }}>
+    <ProductContext.Provider value={{ products, productCategories, addProduct, updateProduct, deleteProduct, resetProducts, getProductById, getCategoryById, addProductCategory, isLoading: isUserDataLoading }}>
       {children}
     </ProductContext.Provider>
   );

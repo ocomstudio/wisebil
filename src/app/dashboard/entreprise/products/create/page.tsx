@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { format } from "date-fns";
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -14,58 +15,52 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Loader2, Upload } from 'lucide-react';
+import { ArrowLeft, Loader2, CalendarIcon } from 'lucide-react';
 import { useProducts } from '@/context/product-context';
 import { useLocale } from '@/context/locale-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import { fr, enUS, de, es, vi } from 'date-fns/locale';
 
 export default function CreateProductPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { addProduct, isLoading, uploadImage, productCategories, addProductCategory } = useProducts();
-  const { t, currency } = useLocale();
+  const { addProduct, isLoading, productCategories, addProductCategory } = useProducts();
+  const { t, currency, locale } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
 
-  const productSchema = z.object({
+  const formSchema = z.object({
     name: z.string().min(2, t('product_name_required_error')),
     description: z.string().optional(),
     price: z.coerce.number().min(0, t('product_price_negative_error')),
     promoPrice: z.coerce.number().optional(),
     quantity: z.coerce.number().int().min(0, t('product_quantity_negative_error')),
-    imageUrl: z.string().optional(),
     categoryId: z.string().optional(),
+    purchaseDate: z.date({
+      required_error: t('product_purchase_date_required_error'),
+    }),
+    storageLocation: z.string().min(2, t('product_storage_location_required_error')),
   });
 
-  type ProductFormValues = z.infer<typeof productSchema>;
+  type ProductFormValues = z.infer<typeof formSchema>;
 
   const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema),
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       description: "",
       price: 0,
       promoPrice: undefined,
       quantity: 0,
-      imageUrl: "",
       categoryId: "",
+      purchaseDate: new Date(),
+      storageLocation: "",
     },
   });
-  
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleCategoryChange = (value: string) => {
     if (value === 'CREATE_NEW') {
@@ -91,12 +86,8 @@ export default function CreateProductPage() {
   const onSubmit = async (data: ProductFormValues) => {
     setIsSubmitting(true);
     try {
-      let imageUrl = '';
-      if (imageFile) {
-        imageUrl = await uploadImage(imageFile, `${Date.now()}-${imageFile.name}`);
-      }
-
-      await addProduct({ ...data, imageUrl });
+      const productData = { ...data, purchaseDate: data.purchaseDate.toISOString() };
+      await addProduct(productData);
 
       toast({
         title: t('product_added_title'),
@@ -114,6 +105,9 @@ export default function CreateProductPage() {
       setIsSubmitting(false);
     }
   };
+
+  const dateLocales = { fr, en: enUS, de, es, vi };
+  const dateLocale = dateLocales[locale] || enUS;
 
   return (
     <div className="space-y-6 pb-24 md:pb-0">
@@ -140,6 +134,49 @@ export default function CreateProductPage() {
                     <FormField control={form.control} name="description" render={({ field }) => (
                         <FormItem><FormLabel>{t('product_description_label')}</FormLabel><FormControl><Textarea placeholder={t('product_description_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
+                     <div className="grid md:grid-cols-2 gap-6">
+                        <FormField control={form.control} name="purchaseDate" render={({ field }) => (
+                           <FormItem className="flex flex-col">
+                           <FormLabel>{t('product_purchase_date_label')}</FormLabel>
+                           <Popover>
+                             <PopoverTrigger asChild>
+                               <FormControl>
+                                 <Button
+                                   variant={"outline"}
+                                   className={cn(
+                                     "w-full pl-3 text-left font-normal",
+                                     !field.value && "text-muted-foreground"
+                                   )}
+                                 >
+                                   {field.value ? (
+                                     format(field.value, "PPP", { locale: dateLocale })
+                                   ) : (
+                                     <span>{t('pick_a_date')}</span>
+                                   )}
+                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                 </Button>
+                               </FormControl>
+                             </PopoverTrigger>
+                             <PopoverContent className="w-auto p-0" align="start">
+                               <Calendar
+                                 mode="single"
+                                 selected={field.value}
+                                 onSelect={field.onChange}
+                                 disabled={(date) =>
+                                   date > new Date() || date < new Date("1900-01-01")
+                                 }
+                                 initialFocus
+                                 locale={dateLocale}
+                               />
+                             </PopoverContent>
+                           </Popover>
+                           <FormMessage />
+                         </FormItem>
+                        )} />
+                        <FormField control={form.control} name="storageLocation" render={({ field }) => (
+                            <FormItem><FormLabel>{t('product_storage_location_label')}</FormLabel><FormControl><Input placeholder={t('product_storage_location_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                     </div>
                     <div className="grid md:grid-cols-2 gap-6">
                        <FormField
                           control={form.control}
@@ -182,23 +219,6 @@ export default function CreateProductPage() {
                      <FormField control={form.control} name="quantity" render={({ field }) => (
                         <FormItem><FormLabel>{t('product_quantity_label')}</FormLabel><FormControl><Input type="number" placeholder="100" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
-                     <FormItem>
-                        <FormLabel>{t('product_image_label')}</FormLabel>
-                         <FormControl>
-                            <label className="cursor-pointer border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/50 h-48 w-full">
-                                {imagePreview ? (
-                                    <img src={imagePreview} alt={t('product_image_preview_alt')} className="max-h-full w-auto object-contain rounded-md" />
-                                ) : (
-                                    <>
-                                        <Upload className="h-8 w-8 mb-2" />
-                                        <span>{t('product_image_upload_cta')}</span>
-                                    </>
-                                )}
-                                <Input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
-                            </label>
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
                 </CardContent>
             </Card>
 

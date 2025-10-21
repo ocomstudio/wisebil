@@ -17,6 +17,7 @@ import {
 import { useProducts } from "@/context/product-context";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 export default function ProductsPage() {
   const { products, deleteProduct, isLoading, getCategoryById } = useProducts();
@@ -69,9 +70,10 @@ export default function ProductsPage() {
              <Table>
                 <TableHeader>
                     <TableRow>
-                    <TableHead className="w-16">{t('table_header_image')}</TableHead>
                     <TableHead>{t('table_header_name')}</TableHead>
                     <TableHead>{t('table_header_category')}</TableHead>
+                    <TableHead>{t('table_header_purchase_date')}</TableHead>
+                    <TableHead>{t('table_header_storage')}</TableHead>
                     <TableHead>{t('table_header_price')}</TableHead>
                     <TableHead>{t('table_header_stock')}</TableHead>
                     <TableHead className="text-right">{t('table_header_actions')}</TableHead>
@@ -80,17 +82,10 @@ export default function ProductsPage() {
                 <TableBody>
                     {products.map((product) => (
                     <TableRow key={product.id}>
-                        <TableCell>
-                            <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center overflow-hidden">
-                                {product.imageUrl ? (
-                                <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover"/>
-                                ) : (
-                                <Package />
-                                )}
-                            </div>
-                        </TableCell>
                         <TableCell className="font-medium">{product.name}</TableCell>
                         <TableCell>{getCategoryById(product.categoryId || '')?.name || '-'}</TableCell>
+                        <TableCell>{formatDate(product.purchaseDate)}</TableCell>
+                        <TableCell>{product.storageLocation}</TableCell>
                         <TableCell>
                             {product.promoPrice ? (
                                 <div className="flex items-baseline gap-2">
@@ -102,8 +97,8 @@ export default function ProductsPage() {
                             )}
                         </TableCell>
                         <TableCell>
-                            <Badge variant={product.quantity > 10 ? 'default' : product.quantity > 0 ? 'secondary' : 'destructive'}>
-                                {t('in_stock_label', { count: product.quantity })}
+                            <Badge variant={product.quantity > (product.initialQuantity * 0.1) ? 'default' : product.quantity > 0 ? 'secondary' : 'destructive'} className={cn(product.quantity <= 0 && "bg-red-600/20 text-red-500 border-red-500/20", product.quantity > 0 && product.quantity <= (product.initialQuantity * 0.25) && "bg-yellow-600/20 text-yellow-500 border-yellow-500/20")}>
+                                {product.quantity} / {product.initialQuantity}
                             </Badge>
                         </TableCell>
                         <TableCell className="text-right">
