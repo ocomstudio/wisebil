@@ -10,6 +10,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from "uuid";
 import { useUserData } from './user-context';
 import { useLocale } from './locale-context';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface ProductContextType {
   products: Product[];
@@ -21,6 +22,7 @@ interface ProductContextType {
   getProductById: (id: string) => Product | undefined;
   getCategoryById: (id: string) => ProductCategory | undefined;
   addProductCategory: (name: string) => Promise<ProductCategory | null>;
+  uploadImage: (file: File, path: string) => Promise<string>;
   isLoading: boolean;
 }
 
@@ -45,6 +47,14 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const products = useMemo(() => userData?.products || [], [userData]);
   const productCategories = useMemo(() => userData?.productCategories || [], [userData]);
 
+  const uploadImage = async (file: File, path: string): Promise<string> => {
+    if (!user) throw new Error("User not authenticated.");
+    const storage = getStorage();
+    const storageRef = ref(storage, `users/${user.uid}/product_images/${path}`);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+  };
+  
   const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity' | 'imageUrl'>) => {
     if (!user) throw new Error("User not authenticated.");
       
@@ -55,6 +65,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         updatedAt: now,
         ...productData,
         initialQuantity: productData.quantity, // Set initial quantity from form
+        imageUrl: "" // Will be added separately
     };
 
     const cleanedProduct = cleanUndefined(newProduct);
@@ -102,14 +113,11 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     
-    const finalUpdateData = { ...updatedProductData };
-    if (!('initialQuantity' in finalUpdateData)) {
-      finalUpdateData.initialQuantity = currentProducts[productIndex].initialQuantity;
-    }
-
+    const existingProduct = currentProducts[productIndex];
     const updatedProduct = { 
-      ...currentProducts[productIndex], 
-      ...finalUpdateData,
+      ...existingProduct,
+      ...updatedProductData,
+      initialQuantity: existingProduct.initialQuantity, // Explicitly preserve initial quantity
       updatedAt: new Date().toISOString(),
     };
     currentProducts[productIndex] = cleanUndefined(updatedProduct);
@@ -143,7 +151,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const resetProducts = useCallback(async () => {
     if (!user) throw new Error("User not authenticated.");
     try {
-      await updateUserData({ products: [] });
+      await updateUserData({ products: [], productCategories: [] });
     } catch (e) {
       console.error("Failed to reset products in Firestore", e);
       throw e;
@@ -160,7 +168,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
 
 
   return (
-    <ProductContext.Provider value={{ products, productCategories, addProduct, updateProduct, deleteProduct, resetProducts, getProductById, getCategoryById, addProductCategory, isLoading: isUserDataLoading }}>
+    <ProductContext.Provider value={{ products, productCategories, addProduct, updateProduct, deleteProduct, resetProducts, getProductById, getCategoryById, addProductCategory, isLoading: isUserDataLoading, uploadImage }}>
       {children}
     </ProductContext.Provider>
   );

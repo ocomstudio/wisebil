@@ -5,6 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import * as XLSX from "xlsx";
 import {
   Form,
   FormControl,
@@ -21,8 +22,11 @@ import { useCompanyProfile } from "@/context/company-profile-context";
 import { useEffect, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+import { Loader2, Download } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useSales } from "@/context/sales-context";
+import { usePurchases } from "@/context/purchase-context";
+import { format } from "date-fns";
 
 const reportSettingsSchema = z.object({
   dailyReportEnabled: z.boolean().default(false),
@@ -34,7 +38,9 @@ type ReportSettingsFormValues = z.infer<typeof reportSettingsSchema>;
 
 export function DailyReportSettings() {
   const { companyProfile, updateCompanyProfile, isLoading: isProfileLoading } = useCompanyProfile();
-  const { t } = useLocale();
+  const { sales } = useSales();
+  const { purchases } = usePurchases();
+  const { t, formatDate } = useLocale();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -77,6 +83,64 @@ export function DailyReportSettings() {
         setIsSubmitting(false);
     }
   };
+
+  const handleDownloadTodayReport = () => {
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0];
+
+    const dailySales = sales.filter(s => s.date.startsWith(todayString));
+    const dailyPurchases = purchases.filter(p => p.date.startsWith(todayString));
+
+    if (dailySales.length === 0 && dailyPurchases.length === 0) {
+        toast({
+            variant: "default",
+            title: "Aucune donnée",
+            description: "Aucune vente ou achat enregistré pour aujourd'hui.",
+        });
+        return;
+    }
+
+    const wb = XLSX.utils.book_new();
+
+    if (dailySales.length > 0) {
+        const salesData = dailySales.flatMap(sale => 
+            sale.items.map(item => ({
+                'Date': formatDate(sale.date),
+                'Facture': sale.invoiceNumber,
+                'Client': sale.customerName,
+                'Produit': item.productName,
+                'Quantité': item.quantity,
+                'Prix Unitaire': item.price,
+                'Total': item.price * item.quantity
+            }))
+        );
+        const ws = XLSX.utils.json_to_sheet(salesData);
+        XLSX.utils.book_append_sheet(wb, ws, "Ventes du Jour");
+    }
+
+    if (dailyPurchases.length > 0) {
+        const purchasesData = dailyPurchases.flatMap(purchase => 
+            purchase.items.map(item => ({
+                'Date': formatDate(purchase.date),
+                'Bon de Commande': purchase.invoiceNumber,
+                'Fournisseur': purchase.supplierName,
+                'Produit': item.productName,
+                'Quantité': item.quantity,
+                'Coût Unitaire': item.price,
+                'Total': item.price * item.quantity
+            }))
+        );
+        const ws = XLSX.utils.json_to_sheet(purchasesData);
+        XLSX.utils.book_append_sheet(wb, ws, "Achats du Jour");
+    }
+    
+    const fileName = `Rapport_Journalier_${format(today, "yyyy-MM-dd")}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+    toast({
+        title: "Rapport Téléchargé",
+        description: "Votre rapport journalier a été généré avec succès.",
+    });
+  }
 
   const isEnabled = form.watch("dailyReportEnabled");
 
@@ -163,7 +227,11 @@ export function DailyReportSettings() {
                 />
               </div>
             )}
-             <div className="flex justify-end">
+             <div className="flex flex-wrap justify-between items-center gap-4">
+                 <Button type="button" variant="outline" onClick={handleDownloadTodayReport}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Télécharger le rapport du jour
+                 </Button>
                  <Button type="submit" disabled={isSubmitting || isProfileLoading}>
                      {(isSubmitting || isProfileLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                      {t('save_changes_button')}
