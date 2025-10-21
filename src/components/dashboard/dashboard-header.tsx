@@ -1,13 +1,18 @@
-
 // src/components/dashboard/dashboard-header.tsx
 "use client";
 import toast from 'react-hot-toast';
 import { Button } from "@/components/ui/button";
-import { Bell, Lightbulb, Wallet, Shield, Landmark } from "lucide-react";
+import { Bell, Lightbulb, Wallet, Shield, Landmark, Menu } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "../common/logo";
 import { UserProfile } from "./user-profile";
 import { useLocale } from '@/context/locale-context';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { SidebarNav } from "./sidebar-nav";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,14 +31,24 @@ export function DashboardHeader() {
   const { unreadCount } = useNotifications();
   
   const playNotificationSound = () => {
-    // Note for developer: Place your notification sound file (e.g., notification.mp3) in the /public folder.
     const audio = new Audio('/notification.mp3');
     audio.play().catch(error => console.error("Error playing sound:", error));
   };
 
   return (
     <header className="flex items-center justify-between p-4 border-b bg-background md:hidden">
-      <Logo />
+       <Sheet>
+            <SheetTrigger asChild>
+                <Button variant="outline" size="icon">
+                    <Menu className="h-5 w-5" />
+                    <span className="sr-only">Ouvrir le menu</span>
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="flex flex-col p-4">
+                <Logo />
+                <SidebarNav />
+            </SheetContent>
+        </Sheet>
       <div className="flex items-center gap-1">
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
