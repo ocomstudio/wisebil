@@ -59,7 +59,7 @@ export default function EditProductPage() {
   
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {}
+    // defaultValues will be set in useEffect
   });
 
   useEffect(() => {
