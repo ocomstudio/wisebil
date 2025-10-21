@@ -1,20 +1,23 @@
 // src/app/dashboard/entreprise/page.tsx
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, ShoppingCart, Package, DollarSign, ArrowUpRight, Leaf, Settings, RefreshCw } from "lucide-react";
+import { PlusCircle, ShoppingCart, Package, DollarSign, ArrowUpRight, Leaf, Settings, RefreshCw, Activity } from "lucide-react";
 import Link from "next/link";
 import { useSales } from "@/context/sales-context";
 import { useProducts } from "@/context/product-context";
 import { useLocale } from "@/context/locale-context";
 import { usePurchases } from "@/context/purchase-context";
+import { ActivityHistory } from "@/components/dashboard/entreprise/activity-history";
 
 export default function EnterprisePage() {
   const { sales } = useSales();
   const { products } = useProducts();
   const { purchases } = usePurchases();
   const { t, formatCurrency } = useLocale();
+  const [isActivityHistoryOpen, setIsActivityHistoryOpen] = useState(false);
 
   const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
   const totalProductsSold = sales.reduce((sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
@@ -23,12 +26,18 @@ export default function EnterprisePage() {
     <div className="space-y-6 pb-24 md:pb-8">
       <div className="flex justify-between items-center gap-4">
         <h1 className="text-3xl font-bold font-headline">{t('nav_enterprise')}</h1>
-        <Button asChild variant="outline" size="sm">
-            <Link href="/dashboard/settings/company-profile">
-                <Settings className="mr-2 h-4 w-4" />
-                {t('company_settings_button')}
-            </Link>
-        </Button>
+         <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setIsActivityHistoryOpen(true)}>
+                <Activity className="mr-2 h-4 w-4" />
+                {t('history_button')}
+            </Button>
+            <Button asChild variant="outline" size="sm">
+                <Link href="/dashboard/settings/company-profile">
+                    <Settings className="mr-2 h-4 w-4" />
+                    {t('company_settings_button')}
+                </Link>
+            </Button>
+         </div>
       </div>
 
        <Card className="bg-card text-card-foreground shadow-xl rounded-2xl overflow-hidden relative border-primary/20 transform-gpu transition-transform hover:scale-[1.02]">
@@ -213,7 +222,7 @@ export default function EnterprisePage() {
             </CardContent>
           </Card>
       </div>
-
+      <ActivityHistory isOpen={isActivityHistoryOpen} onOpenChange={setIsActivityHistoryOpen} />
     </div>
   );
 }

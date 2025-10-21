@@ -668,10 +668,10 @@
     "company_profile_update_error": "Erreur lors de la mise à jour du profil de l'entreprise.",
     "reset_enterprise_button": "Réinitialiser l'entreprise",
     "reset_enterprise_warning_title": "Réinitialiser toutes les données de l'entreprise ?",
-    "reset_enterprise_warning_desc": "Ceci supprimera définitivement tous vos produits et ventes. Cette action est irréversible.",
+    "reset_enterprise_warning_desc": "Ceci supprimera définitivement tous vos produits, ventes, et achats. Cette action est irréversible.",
     "reset_enterprise_confirm_button": "Oui, réinitialiser l'entreprise",
     "reset_enterprise_success_title": "Données d'entreprise réinitialisées",
-    "reset_enterprise_success_desc": "Toutes vos données de produits et de ventes ont été supprimées.",
+    "reset_enterprise_success_desc": "Toutes vos données d'entreprise ont été supprimées.",
     "reset_enterprise_error_desc": "Impossible de réinitialiser les données de l'entreprise.",
     "nav_products": "Produits",
     "nav_sales": "Ventes",
@@ -800,5 +800,7 @@
     "recent_purchases_desc": "Voici les derniers achats que vous avez effectués.",
     "purchase_from_supplier_label": "Commande chez {{supplierName}}",
     "no_purchases_recorded_label": "Aucun achat enregistré pour le moment.",
-    "product_purchase_price_label": "Coût d'achat"
+    "product_purchase_price_label": "Coût d'achat",
+    "activity_history_title": "Historique des Activités",
+    "no_activity_yet": "Aucune activité récente à afficher."
 }

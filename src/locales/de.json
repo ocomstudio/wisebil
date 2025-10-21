@@ -668,10 +668,10 @@
     "company_profile_update_error": "Fehler beim Aktualisieren des Unternehmensprofils.",
     "reset_enterprise_button": "Unternehmen zurücksetzen",
     "reset_enterprise_warning_title": "Alle Unternehmensdaten zurücksetzen?",
-    "reset_enterprise_warning_desc": "Dadurch werden alle Ihre Produkte und Verkäufe dauerhaft gelöscht. Diese Aktion ist unumkehrbar.",
+    "reset_enterprise_warning_desc": "Dadurch werden alle Ihre Produkte, Verkäufe und Einkäufe dauerhaft gelöscht. Diese Aktion ist unumkehrbar.",
     "reset_enterprise_confirm_button": "Ja, Unternehmen zurücksetzen",
     "reset_enterprise_success_title": "Unternehmensdaten zurückgesetzt",
-    "reset_enterprise_success_desc": "Alle Ihre Produkt- und Verkaufsdaten wurden gelöscht.",
+    "reset_enterprise_success_desc": "Alle Ihre Unternehmensdaten wurden gelöscht.",
     "reset_enterprise_error_desc": "Unternehmensdaten konnten nicht zurückgesetzt werden.",
     "nav_products": "Produkte",
     "nav_sales": "Verkäufe",
@@ -800,5 +800,7 @@
     "recent_purchases_desc": "Hier sind die letzten Einkäufe, die Sie getätigt haben.",
     "purchase_from_supplier_label": "Bestellung bei {{supplierName}}",
     "no_purchases_recorded_label": "Momentan keine Einkäufe erfasst.",
-    "product_purchase_price_label": "Einkaufskosten"
+    "product_purchase_price_label": "Einkaufskosten",
+    "activity_history_title": "Aktivitätsverlauf",
+    "no_activity_yet": "Keine aktuellen Aktivitäten zum Anzeigen."
 }

@@ -668,10 +668,10 @@
     "company_profile_update_error": "Lỗi khi cập nhật hồ sơ công ty.",
     "reset_enterprise_button": "Đặt lại doanh nghiệp",
     "reset_enterprise_warning_title": "Đặt lại tất cả dữ liệu doanh nghiệp?",
-    "reset_enterprise_warning_desc": "Thao tác này sẽ xóa vĩnh viễn tất cả các sản phẩm và doanh số của bạn. Hành động này không thể hoàn tác.",
+    "reset_enterprise_warning_desc": "Thao tác này sẽ xóa vĩnh viễn tất cả các sản phẩm, doanh số và giao dịch mua của bạn. Hành động này không thể hoàn tác.",
     "reset_enterprise_confirm_button": "Có, đặt lại doanh nghiệp",
     "reset_enterprise_success_title": "Đã đặt lại dữ liệu doanh nghiệp",
-    "reset_enterprise_success_desc": "Tất cả dữ liệu sản phẩm và doanh số của bạn đã bị xóa.",
+    "reset_enterprise_success_desc": "Tất cả dữ liệu doanh nghiệp của bạn đã bị xóa.",
     "reset_enterprise_error_desc": "Không thể đặt lại dữ liệu doanh nghiệp.",
     "nav_products": "Sản phẩm",
     "nav_sales": "Bán hàng",
@@ -800,5 +800,7 @@
     "recent_purchases_desc": "Đây là những giao dịch mua cuối cùng bạn đã thực hiện.",
     "purchase_from_supplier_label": "Đặt hàng từ {{supplierName}}",
     "no_purchases_recorded_label": "Chưa có giao dịch mua nào được ghi lại.",
-    "product_purchase_price_label": "Giá mua"
+    "product_purchase_price_label": "Giá mua",
+    "activity_history_title": "Lịch sử Hoạt động",
+    "no_activity_yet": "Không có hoạt động gần đây để hiển thị."
 }

@@ -10,12 +10,13 @@ import type { JournalEntry } from '@/components/dashboard/accounting/journal-ent
 import type { Invoice } from '@/types/invoice';
 import type { Language, Currency } from './locale-context';
 import type { CompanyProfile } from '@/types/company';
-import type { Product } from '@/types/product';
+import type { Product, ProductCategory } from '@/types/product';
 import type { Sale } from '@/types/sale';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, runTransaction } from 'firebase/firestore';
 import { v4 as uuidv4 } from "uuid";
 import type { Purchase } from '@/types/purchase';
+import type { ActivityLog } from '@/types/activity-log';
 
 
 export interface UserData {
@@ -31,8 +32,10 @@ export interface UserData {
   };
   companyProfile?: CompanyProfile;
   products?: Product[];
+  productCategories?: ProductCategory[];
   sales?: Sale[];
   purchases?: Purchase[];
+  enterpriseActivities?: ActivityLog[];
   transactions: Transaction[];
   budgets: Budget[];
   savingsGoals: SavingsGoal[];
@@ -52,6 +55,7 @@ interface UserDataContextType {
   isLoading: boolean;
   updateUserData: (data: Partial<UserData>) => Promise<void>;
   addUserSale: (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber'>) => Promise<Sale>;
+  logActivity: (activity: Omit<ActivityLog, 'id' | 'timestamp' | 'userName' | 'userId'>) => Promise<void>;
 }
 
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
@@ -76,6 +80,20 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
       throw error;
     }
   }, [getUserDocRef]);
+  
+  const logActivity = useCallback(async (activity: Omit<ActivityLog, 'id' | 'timestamp' | 'userName' | 'userId'>) => {
+    if (!user) return;
+    const newLog: ActivityLog = {
+      id: uuidv4(),
+      timestamp: new Date().toISOString(),
+      userName: user.displayName || 'Utilisateur inconnu',
+      userId: user.uid,
+      ...activity,
+    };
+    const currentActivities = fullUserData?.enterpriseActivities || [];
+    await updateUserData({ enterpriseActivities: [newLog, ...currentActivities] });
+  }, [user, fullUserData?.enterpriseActivities, updateUserData]);
+
 
    const addUserSale = useCallback(async (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber'>): Promise<Sale> => {
     const userDocRef = getUserDocRef();
@@ -120,10 +138,21 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
                 }
             }
             
+             const newLog: ActivityLog = {
+              id: uuidv4(),
+              timestamp: new Date().toISOString(),
+              type: 'sale_created',
+              description: `Vente #${invoiceNumber} créée pour ${newSale.customerName}.`,
+              userName: user?.displayName || 'Unknown',
+              userId: user?.uid || 'Unknown',
+            };
+            const currentActivities = currentData.enterpriseActivities || [];
+            
             transaction.update(userDocRef, { 
                 sales: updatedSales,
                 products: updatedProducts,
                 saleInvoiceCounter: newCount,
+                enterpriseActivities: [newLog, ...currentActivities],
             });
         });
         if (newSale) {
@@ -135,14 +164,15 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
       console.error("Failed to add sale and update stock", e);
       throw e;
     }
-  }, [getUserDocRef]);
+  }, [getUserDocRef, user]);
 
   const value = useMemo(() => ({
     userData: fullUserData,
     isLoading,
     updateUserData,
     addUserSale,
-  }), [fullUserData, isLoading, updateUserData, addUserSale]);
+    logActivity
+  }), [fullUserData, isLoading, updateUserData, addUserSale, logActivity]);
 
   return (
     <UserDataContext.Provider value={value}>

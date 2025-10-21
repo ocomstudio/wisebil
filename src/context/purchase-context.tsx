@@ -9,6 +9,7 @@ import { db } from '@/lib/firebase';
 import { doc, runTransaction } from 'firebase/firestore';
 import { useAuth } from './auth-context';
 import type { UserData } from './user-context';
+import type { ActivityLog } from '@/types/activity-log';
 
 interface PurchasesContextType {
   purchases: Purchase[];
@@ -81,10 +82,21 @@ export const PurchasesProvider = ({ children }: { children: ReactNode }) => {
                 }
             }
             
+            const newLog: ActivityLog = {
+              id: uuidv4(),
+              timestamp: new Date().toISOString(),
+              type: 'purchase_created',
+              description: `Achat #${invoiceNumber} créé auprès de ${newPurchase.supplierName}.`,
+              userName: user?.displayName || 'Unknown',
+              userId: user?.uid || 'Unknown',
+            };
+            const currentActivities = currentData.enterpriseActivities || [];
+
             transaction.update(userDocRef, { 
                 purchases: updatedPurchases,
                 products: updatedProducts,
                 purchaseInvoiceCounter: newCount,
+                enterpriseActivities: [newLog, ...currentActivities],
             });
         });
         if (newPurchase) {
@@ -96,7 +108,7 @@ export const PurchasesProvider = ({ children }: { children: ReactNode }) => {
       console.error("Failed to add purchase and update stock", e);
       throw e;
     }
-  }, [getUserDocRef]);
+  }, [getUserDocRef, user]);
 
 
   return (

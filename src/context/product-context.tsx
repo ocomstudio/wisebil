@@ -37,7 +37,7 @@ const cleanUndefined = (obj: any) => {
 };
 
 export const ProductProvider = ({ children }: { children: ReactNode }) => {
-  const { userData, isLoading: isUserDataLoading, updateUserData } = useUserData();
+  const { userData, isLoading: isUserDataLoading, updateUserData, logActivity } = useUserData();
   const { toast } = useToast();
   const { user } = useAuth();
   const { t } = useLocale();
@@ -63,12 +63,13 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     
     try {
         await updateUserData({ products: updatedProducts });
+        await logActivity({ type: 'product_created', description: `Produit "${newProduct.name}" créé.` });
     } catch (e) {
       console.error("Failed to add product to Firestore", e);
       toast({ variant: "destructive", title: t('error_title'), description: t('product_add_error', { message: e instanceof Error ? e.message : 'Unknown error' }) });
       throw e;
     }
-  }, [user, userData, updateUserData, toast, t]);
+  }, [user, userData, updateUserData, toast, t, logActivity]);
   
   const addProductCategory = useCallback(async (name: string): Promise<ProductCategory | null> => {
     if (!user) return null;
@@ -115,24 +116,29 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       await updateUserData({ products: currentProducts });
+      await logActivity({ type: 'product_updated', description: `Produit "${updatedProduct.name}" mis à jour.` });
     } catch (e) {
       console.error("Failed to update product in Firestore", e);
       toast({ variant: "destructive", title: t('error_title'), description: t('product_update_error', { message: e instanceof Error ? e.message : 'Unknown error' }) });
       throw e;
     }
-  }, [products, updateUserData, toast, t]);
+  }, [products, updateUserData, toast, t, logActivity]);
 
   const deleteProduct = useCallback(async (id: string) => {
+     const productToDelete = products.find(p => p.id === id);
+     if (!productToDelete) return;
+     
      const updatedProducts = products.filter(p => p.id !== id);
     try {
       await updateUserData({ products: updatedProducts });
+      await logActivity({ type: 'product_deleted', description: `Produit "${productToDelete.name}" supprimé.` });
       toast({ title: t('product_delete_success_title') });
     } catch (e) {
       console.error("Failed to delete product from Firestore", e);
       toast({ variant: "destructive", title: t('error_title'), description: "Failed to delete product." });
       throw e;
     }
-  }, [products, updateUserData, toast, t]);
+  }, [products, updateUserData, toast, t, logActivity]);
 
   const resetProducts = useCallback(async () => {
     if (!user) throw new Error("User not authenticated.");

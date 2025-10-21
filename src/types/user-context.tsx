@@ -16,6 +16,7 @@ import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, runTransaction } from 'firebase/firestore';
 import { v4 as uuidv4 } from "uuid";
 import type { Purchase } from '@/types/purchase';
+import type { ActivityLog } from './activity-log';
 
 
 export interface UserData {
@@ -34,6 +35,7 @@ export interface UserData {
   productCategories?: ProductCategory[];
   sales?: Sale[];
   purchases?: Purchase[];
+  enterpriseActivities?: ActivityLog[];
   transactions: Transaction[];
   budgets: Budget[];
   savingsGoals: SavingsGoal[];

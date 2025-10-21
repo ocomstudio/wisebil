@@ -668,10 +668,10 @@
     "company_profile_update_error": "Error updating company profile.",
     "reset_enterprise_button": "Reset Enterprise",
     "reset_enterprise_warning_title": "Reset All Enterprise Data?",
-    "reset_enterprise_warning_desc": "This will permanently delete all your products and sales. This action is irreversible.",
+    "reset_enterprise_warning_desc": "This will permanently delete all your products, sales, and purchases. This action is irreversible.",
     "reset_enterprise_confirm_button": "Yes, Reset Enterprise",
     "reset_enterprise_success_title": "Enterprise Data Reset",
-    "reset_enterprise_success_desc": "All your products and sales data have been deleted.",
+    "reset_enterprise_success_desc": "All your enterprise data has been deleted.",
     "reset_enterprise_error_desc": "Could not reset enterprise data.",
     "nav_products": "Products",
     "nav_sales": "Sales",
@@ -794,11 +794,13 @@
     "sale_recorded_desc": "The sale to {{customerName}} has been recorded.",
     "sale_record_error": "Error recording sale: {{message}}",
     "record_new_sale_title": "Record a New Sale",
-    "products_sold_title": "Products Sold",
+    "products_sold_title": "Products sold",
     "select_product_placeholder": "Select a product...",
     "recent_purchases_title": "Recent Purchases",
     "recent_purchases_desc": "Here are the last purchases you have made.",
     "purchase_from_supplier_label": "Order from {{supplierName}}",
     "no_purchases_recorded_label": "No purchases recorded for the moment.",
-    "product_purchase_price_label": "Purchase Cost"
+    "product_purchase_price_label": "Purchase Cost",
+    "activity_history_title": "Activity History",
+    "no_activity_yet": "No recent activity to display."
 }

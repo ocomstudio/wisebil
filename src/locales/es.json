@@ -113,7 +113,7 @@
     "ai_categorization_failed": "La categorización por IA ha fallado",
     "ai_categorization_failed_desc": "No se ha podido sugerir una categoría.",
     "ai_temporarily_disabled_title": "Función de IA desactivada",
-    "ai_temporarily_disabled_desc": "Esta función está temporalmente no disponible. Por favor, categoriza manually.",
+    "ai_temporarily_disabled_desc": "Esta función está temporalmente no disponible. Por favor, categoriza manualmente.",
     "assistant_welcome_message": "¡Hola {{name}}! ¿Cómo puedo ayudarte hoy con tus finanzas?",
     "description_label": "Descripción",
     "description_placeholder": "p. ej., Café con un amigo",
@@ -668,10 +668,10 @@
     "company_profile_update_error": "Error al actualizar el perfil de la empresa.",
     "reset_enterprise_button": "Restablecer empresa",
     "reset_enterprise_warning_title": "¿Restablecer todos los datos de la empresa?",
-    "reset_enterprise_warning_desc": "Esto eliminará permanentemente todos sus productos y ventas. Esta acción es irreversible.",
+    "reset_enterprise_warning_desc": "Esto eliminará permanentemente todos sus productos, ventas y compras. Esta acción es irreversible.",
     "reset_enterprise_confirm_button": "Sí, restablecer empresa",
     "reset_enterprise_success_title": "Datos de la empresa restablecidos",
-    "reset_enterprise_success_desc": "Todos sus datos de productos y ventas han sido eliminados.",
+    "reset_enterprise_success_desc": "Todos sus datos de empresa han sido eliminados.",
     "reset_enterprise_error_desc": "No se pudieron restablecer los datos de la empresa.",
     "nav_products": "Productos",
     "nav_sales": "Ventas",
@@ -800,5 +800,7 @@
     "recent_purchases_desc": "Aquí están las últimas compras que ha realizado.",
     "purchase_from_supplier_label": "Pedido a {{supplierName}}",
     "no_purchases_recorded_label": "No se han registrado compras por el momento.",
-    "product_purchase_price_label": "Costo de Compra"
+    "product_purchase_price_label": "Costo de Compra",
+    "activity_history_title": "Historial de Actividades",
+    "no_activity_yet": "No hay actividad reciente para mostrar."
 }
