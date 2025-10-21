@@ -776,7 +776,14 @@
     "unit_price_header": "Unit Price",
     "total_header": "Total",
     "total_label": "TOTAL",
-    "signature_label": "Signature & Stamp"
+    "signature_label": "Signature & Stamp",
+    "product_purchase_date_label": "Purchase/Add Date",
+    "product_purchase_date_required_error": "Purchase date is required.",
+    "product_storage_location_label": "Storage Location",
+    "product_storage_location_placeholder": "e.g. Warehouse A, Aisle 3",
+    "product_storage_location_required_error": "Storage location is required.",
+    "table_header_purchase_date": "Purchase Date",
+    "table_header_storage": "Storage"
 }
   
 

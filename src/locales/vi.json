@@ -220,7 +220,7 @@
     "footer_legal": "Pháp lý",
     "footer_copyright": "© {{year}} Wisebil bởi Ocomstudio. Mọi quyền được bảo lưu.",
     "choose_language_title": "Chọn ngôn ngữ của bạn",
-    "choose_language_subtitle": "Chọn ngôn ngữ của bạn",
+    "choose_language_subtitle": "Select your language",
     "choose_currency_title": "Chọn loại tiền tệ của bạn",
     "choose_currency_subtitle": "Chọn loại tiền tệ chính của bạn",
     "get_started": "Bắt đầu",
@@ -776,7 +776,14 @@
     "unit_price_header": "Đơn giá",
     "total_header": "Tổng cộng",
     "total_label": "TỔNG CỘNG",
-    "signature_label": "Chữ ký & Dấu"
+    "signature_label": "Chữ ký & Dấu",
+    "product_purchase_date_label": "Ngày mua/thêm",
+    "product_purchase_date_required_error": "Yêu cầu ngày mua.",
+    "product_storage_location_label": "Vị trí lưu trữ",
+    "product_storage_location_placeholder": "ví dụ: Kho A, Lối đi 3",
+    "product_storage_location_required_error": "Yêu cầu vị trí lưu trữ.",
+    "table_header_purchase_date": "Ngày mua",
+    "table_header_storage": "Lưu trữ"
 }
   
 

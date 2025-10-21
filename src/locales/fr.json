@@ -776,7 +776,14 @@
     "unit_price_header": "Prix Unitaire",
     "total_header": "Total",
     "total_label": "TOTAL",
-    "signature_label": "Signature & Cachet"
+    "signature_label": "Signature & Cachet",
+    "product_purchase_date_label": "Date d'achat/ajout",
+    "product_purchase_date_required_error": "La date d'achat est requise.",
+    "product_storage_location_label": "Lieu de stockage",
+    "product_storage_location_placeholder": "Ex: Entrepôt A, Allée 3",
+    "product_storage_location_required_error": "Le lieu de stockage est requis.",
+    "table_header_purchase_date": "Date Achat",
+    "table_header_storage": "Stockage"
 }
   
 

@@ -13,6 +13,8 @@ export interface Product {
   quantity: number;
   imageUrl?: string;
   categoryId?: string;
+  purchaseDate: string; // ISO date string
+  storageLocation: string;
   createdAt: string;
   updatedAt: string;
 }

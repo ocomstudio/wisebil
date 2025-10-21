@@ -220,7 +220,7 @@
     "footer_legal": "Rechtliches",
     "footer_copyright": "© {{year}} Wisebil by Ocomstudio. Alle Rechte vorbehalten.",
     "choose_language_title": "Wähle deine Sprache",
-    "choose_language_subtitle": "Wähle deine Sprache",
+    "choose_language_subtitle": "Select your language",
     "choose_currency_title": "Wähle deine Währung",
     "choose_currency_subtitle": "Wähle deine Hauptwährung",
     "get_started": "Los geht's",
@@ -776,7 +776,14 @@
     "unit_price_header": "Stückpreis",
     "total_header": "Gesamt",
     "total_label": "GESAMT",
-    "signature_label": "Unterschrift & Stempel"
+    "signature_label": "Unterschrift & Stempel",
+    "product_purchase_date_label": "Kauf-/Hinzufügungsdatum",
+    "product_purchase_date_required_error": "Kaufdatum ist erforderlich.",
+    "product_storage_location_label": "Lagerort",
+    "product_storage_location_placeholder": "z.B. Lager A, Gang 3",
+    "product_storage_location_required_error": "Lagerort ist erforderlich.",
+    "table_header_purchase_date": "Kaufdatum",
+    "table_header_storage": "Lagerung"
 }
   
 
