@@ -22,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { fr, enUS } from 'date-fns/locale';
+import { fr, enUS, de, es, vi } from 'date-fns/locale';
 
 export default function CreateProductPage() {
   const router = useRouter();
@@ -35,7 +35,7 @@ export default function CreateProductPage() {
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
 
-  const productSchema = z.object({
+  const formSchema = z.object({
     name: z.string().min(2, t('product_name_required_error')),
     description: z.string().optional(),
     price: z.coerce.number().min(0, t('product_price_negative_error')),
@@ -49,10 +49,10 @@ export default function CreateProductPage() {
     storageLocation: z.string().min(2, t('product_storage_location_required_error')),
   });
 
-  type ProductFormValues = z.infer<typeof productSchema>;
+  type ProductFormValues = z.infer<typeof formSchema>;
 
   const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema),
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       description: "",
@@ -126,7 +126,8 @@ export default function CreateProductPage() {
     }
   };
 
-  const dateLocale = locale === 'fr' ? fr : enUS;
+  const dateLocales = { fr, en: enUS, de, es, vi };
+  const dateLocale = dateLocales[locale] || enUS;
 
   return (
     <div className="space-y-6 pb-24 md:pb-0">
