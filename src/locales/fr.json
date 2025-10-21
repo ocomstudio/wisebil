@@ -569,7 +569,6 @@
     "create_first_invoice_button": "Créer la première facture",
     "invoice_number_header": "N° Facture",
     "customer_header": "Client",
-    "issue_date_header": "Date d'émission",
     "total_amount_header": "Montant Total",
     "status_header": "Statut",
     "actions_header": "Actions",
@@ -598,7 +597,6 @@
     "add_item_button": "Ajouter un article",
     "subtotal_label": "Sous-total :",
     "tax_label": "Taxe (0%) :",
-    "total_label": "Total :",
     "save_invoice_button": "Enregistrer la facture",
     "line_item_desc_required": "La description est requise.",
     "line_item_qty_required": "La quantité doit être d'au moins 1.",
@@ -695,10 +693,6 @@
     "purchase_recorded_title": "Achat enregistré",
     "purchase_recorded_desc": "L'achat auprès de {{supplierName}} a été enregistré avec succès.",
     "purchase_record_error": "Erreur lors de l'enregistrement de l'achat : {{message}}",
-    "purchase_order_title_capital": "BON DE COMMANDE",
-    "supplier_label": "Fournisseur",
-    "download_success_desc_purchase": "Le bon de commande {{invoiceNumber}} a été téléchargé.",
-    "purchase_invoice_not_found_title": "Bon de commande non trouvé",
     "purchase_invoices_title": "Bons de Commande",
     "purchase_invoices_desc": "Liste de tous les bons de commande émis.",
     "create_purchase_button": "Créer un achat",
@@ -768,13 +762,29 @@
     "table_header_stock": "Stock",
     "table_header_actions": "Actions",
     "product_delete_confirm_title": "Supprimer le Produit ?",
-    "product_delete_confirm_desc": "Ceci supprimera définitivement \"{{productName}}\" de votre inventaire."
+    "product_delete_confirm_desc": "Ceci supprimera définitivement \"{{productName}}\" de votre inventaire.",
+    "share_button": "Partager",
+    "share_not_supported_title": "Partage non supporté",
+    "share_not_supported_desc": "Votre navigateur ne supporte pas la fonctionnalité de partage.",
+    "invoice_title_capital": "FACTURE",
+    "purchase_order_title_capital": "BON DE COMMANDE",
+    "issue_date_label": "Date d'émission",
+    "bill_to_label": "Facturé à",
+    "supplier_label": "Fournisseur",
+    "product_header": "Produit",
+    "quantity_header": "Quantité",
+    "unit_price_header": "Prix Unitaire",
+    "total_header": "Total",
+    "total_label": "TOTAL",
+    "signature_label": "Signature & Cachet"
 }
   
 
     
 
 
+
+    
 
     
 

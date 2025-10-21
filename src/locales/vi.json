@@ -569,7 +569,6 @@
     "create_first_invoice_button": "Tạo hóa đơn đầu tiên",
     "invoice_number_header": "Số đơn hàng",
     "customer_header": "Khách hàng",
-    "issue_date_header": "Ngày phát hành",
     "total_amount_header": "Tổng số tiền",
     "status_header": "Trạng thái",
     "actions_header": "Hành động",
@@ -598,7 +597,6 @@
     "add_item_button": "Thêm mục",
     "subtotal_label": "Tổng phụ:",
     "tax_label": "Thuế (0%):",
-    "total_label": "Tổng cộng:",
     "save_invoice_button": "Lưu hóa đơn",
     "line_item_desc_required": "Yêu cầu mô tả.",
     "line_item_qty_required": "Số lượng phải ít nhất là 1.",
@@ -695,10 +693,6 @@
     "purchase_recorded_title": "Giao dịch mua đã được ghi lại",
     "purchase_recorded_desc": "Giao dịch mua từ {{supplierName}} đã được ghi lại thành công.",
     "purchase_record_error": "Lỗi khi ghi lại giao dịch mua: {{message}}",
-    "purchase_order_title_capital": "ĐƠN ĐẶT HÀNG",
-    "supplier_label": "Nhà cung cấp",
-    "download_success_desc_purchase": "Đã tải xuống đơn đặt hàng {{invoiceNumber}}.",
-    "purchase_invoice_not_found_title": "Không tìm thấy đơn đặt hàng",
     "purchase_invoices_title": "Đơn đặt hàng",
     "purchase_invoices_desc": "Danh sách tất cả các đơn đặt hàng đã phát hành.",
     "create_purchase_button": "Tạo giao dịch mua",
@@ -768,13 +762,29 @@
     "table_header_stock": "Kho",
     "table_header_actions": "Hành động",
     "product_delete_confirm_title": "Xóa sản phẩm?",
-    "product_delete_confirm_desc": "Thao tác này sẽ xóa vĩnh viễn \"{{productName}}\" khỏi kho của bạn."
+    "product_delete_confirm_desc": "Thao tác này sẽ xóa vĩnh viễn \"{{productName}}\" khỏi kho của bạn.",
+    "share_button": "Chia sẻ",
+    "share_not_supported_title": "Không hỗ trợ chia sẻ",
+    "share_not_supported_desc": "Trình duyệt của bạn không hỗ trợ tính năng chia sẻ.",
+    "invoice_title_capital": "HÓA ĐƠN",
+    "purchase_order_title_capital": "ĐƠN ĐẶT HÀNG",
+    "issue_date_label": "Ngày phát hành",
+    "bill_to_label": "Thanh toán cho",
+    "supplier_label": "Nhà cung cấp",
+    "product_header": "Sản phẩm",
+    "quantity_header": "Số lượng",
+    "unit_price_header": "Đơn giá",
+    "total_header": "Tổng cộng",
+    "total_label": "TỔNG CỘNG",
+    "signature_label": "Chữ ký & Dấu"
 }
   
 
     
 
 
+
+    
 
     
 

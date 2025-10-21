@@ -569,7 +569,6 @@
     "create_first_invoice_button": "Create first invoice",
     "invoice_number_header": "Order #",
     "customer_header": "Customer",
-    "issue_date_header": "Issue Date",
     "total_amount_header": "Total Amount",
     "status_header": "Status",
     "actions_header": "Actions",
@@ -598,7 +597,6 @@
     "add_item_button": "Add Item",
     "subtotal_label": "Subtotal:",
     "tax_label": "Tax (0%):",
-    "total_label": "Total:",
     "save_invoice_button": "Save Invoice",
     "line_item_desc_required": "Description is required.",
     "line_item_qty_required": "Quantity must be at least 1.",
@@ -695,10 +693,6 @@
     "purchase_recorded_title": "Purchase Recorded",
     "purchase_recorded_desc": "The purchase from {{supplierName}} has been successfully recorded.",
     "purchase_record_error": "Error recording purchase: {{message}}",
-    "purchase_order_title_capital": "PURCHASE ORDER",
-    "supplier_label": "Supplier",
-    "download_success_desc_purchase": "Purchase order {{invoiceNumber}} has been downloaded.",
-    "purchase_invoice_not_found_title": "Purchase Order Not Found",
     "purchase_invoices_title": "Purchase Orders",
     "purchase_invoices_desc": "List of all issued purchase orders.",
     "create_purchase_button": "Create Purchase",
@@ -768,13 +762,29 @@
     "table_header_stock": "Stock",
     "table_header_actions": "Actions",
     "product_delete_confirm_title": "Delete Product?",
-    "product_delete_confirm_desc": "This will permanently delete \"{{productName}}\" from your inventory."
+    "product_delete_confirm_desc": "This will permanently delete \"{{productName}}\" from your inventory.",
+    "share_button": "Share",
+    "share_not_supported_title": "Sharing not supported",
+    "share_not_supported_desc": "Your browser does not support the share feature.",
+    "invoice_title_capital": "INVOICE",
+    "purchase_order_title_capital": "PURCHASE ORDER",
+    "issue_date_label": "Issue Date",
+    "bill_to_label": "Bill To",
+    "supplier_label": "Supplier",
+    "product_header": "Product",
+    "quantity_header": "Quantity",
+    "unit_price_header": "Unit Price",
+    "total_header": "Total",
+    "total_label": "TOTAL",
+    "signature_label": "Signature & Stamp"
 }
   
 
     
 
 
+
+    
 
     
 

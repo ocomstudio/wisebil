@@ -569,7 +569,6 @@
     "create_first_invoice_button": "Erste Rechnung erstellen",
     "invoice_number_header": "Bestellnummer",
     "customer_header": "Kunde",
-    "issue_date_header": "Ausstellungsdatum",
     "total_amount_header": "Gesamtbetrag",
     "status_header": "Status",
     "actions_header": "Aktionen",
@@ -598,7 +597,6 @@
     "add_item_button": "Position hinzufügen",
     "subtotal_label": "Zwischensumme:",
     "tax_label": "Steuer (0%):",
-    "total_label": "Gesamt:",
     "save_invoice_button": "Rechnung speichern",
     "line_item_desc_required": "Beschreibung ist erforderlich.",
     "line_item_qty_required": "Menge muss mindestens 1 sein.",
@@ -695,10 +693,6 @@
     "purchase_recorded_title": "Kauf erfasst",
     "purchase_recorded_desc": "Der Kauf von {{supplierName}} wurde erfolgreich erfasst.",
     "purchase_record_error": "Fehler beim Erfassen des Kaufs: {{message}}",
-    "purchase_order_title_capital": "BESTELLUNG",
-    "supplier_label": "Lieferant",
-    "download_success_desc_purchase": "Bestellung {{invoiceNumber}} wurde heruntergeladen.",
-    "purchase_invoice_not_found_title": "Bestellung nicht gefunden",
     "purchase_invoices_title": "Bestellungen",
     "purchase_invoices_desc": "Liste aller aufgegebenen Bestellungen.",
     "create_purchase_button": "Kauf erstellen",
@@ -768,13 +762,29 @@
     "table_header_stock": "Lagerbestand",
     "table_header_actions": "Aktionen",
     "product_delete_confirm_title": "Produkt löschen?",
-    "product_delete_confirm_desc": "Dadurch wird \"{{productName}}\" dauerhaft aus Ihrem Inventar gelöscht."
+    "product_delete_confirm_desc": "Dadurch wird \"{{productName}}\" dauerhaft aus Ihrem Inventar gelöscht.",
+    "share_button": "Teilen",
+    "share_not_supported_title": "Teilen nicht unterstützt",
+    "share_not_supported_desc": "Ihr Browser unterstützt die Teilen-Funktion nicht.",
+    "invoice_title_capital": "RECHNUNG",
+    "purchase_order_title_capital": "BESTELLUNG",
+    "issue_date_label": "Ausstellungsdatum",
+    "bill_to_label": "Rechnung an",
+    "supplier_label": "Lieferant",
+    "product_header": "Produkt",
+    "quantity_header": "Menge",
+    "unit_price_header": "Stückpreis",
+    "total_header": "Gesamt",
+    "total_label": "GESAMT",
+    "signature_label": "Unterschrift & Stempel"
 }
   
 
     
 
 
+
+    
 
     
 

@@ -569,7 +569,6 @@
     "create_first_invoice_button": "Crear primera factura",
     "invoice_number_header": "N.º de pedido",
     "customer_header": "Cliente",
-    "issue_date_header": "Fecha de emisión",
     "total_amount_header": "Importe total",
     "status_header": "Estado",
     "actions_header": "Acciones",
@@ -598,7 +597,6 @@
     "add_item_button": "Añadir artículo",
     "subtotal_label": "Subtotal:",
     "tax_label": "Impuesto (0%):",
-    "total_label": "Total:",
     "save_invoice_button": "Guardar factura",
     "line_item_desc_required": "Se requiere descripción.",
     "line_item_qty_required": "La cantidad debe ser de al menos 1.",
@@ -695,10 +693,6 @@
     "purchase_recorded_title": "Compra registrada",
     "purchase_recorded_desc": "La compra de {{supplierName}} se ha registrado correctamente.",
     "purchase_record_error": "Error al registrar la compra: {{message}}",
-    "purchase_order_title_capital": "ORDEN DE COMPRA",
-    "supplier_label": "Proveedor",
-    "download_success_desc_purchase": "Se ha descargado la orden de compra {{invoiceNumber}}.",
-    "purchase_invoice_not_found_title": "Orden de compra no encontrada",
     "purchase_invoices_title": "Órdenes de compra",
     "purchase_invoices_desc": "Lista de todas las órdenes de compra emitidas.",
     "create_purchase_button": "Crear compra",
@@ -768,13 +762,29 @@
     "table_header_stock": "Stock",
     "table_header_actions": "Acciones",
     "product_delete_confirm_title": "¿Eliminar Producto?",
-    "product_delete_confirm_desc": "Esto eliminará permanentemente \"{{productName}}\" de su inventario."
+    "product_delete_confirm_desc": "Esto eliminará permanentemente \"{{productName}}\" de su inventario.",
+    "share_button": "Compartir",
+    "share_not_supported_title": "No se admite compartir",
+    "share_not_supported_desc": "Su navegador no admite la función de compartir.",
+    "invoice_title_capital": "FACTURA",
+    "purchase_order_title_capital": "ORDEN DE COMPRA",
+    "issue_date_label": "Fecha de emisión",
+    "bill_to_label": "Facturar a",
+    "supplier_label": "Proveedor",
+    "product_header": "Producto",
+    "quantity_header": "Cantidad",
+    "unit_price_header": "Precio Unitario",
+    "total_header": "Total",
+    "total_label": "TOTAL",
+    "signature_label": "Firma y Sello"
 }
   
 
     
 
 
+
+    
 
     
 
