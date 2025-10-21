@@ -6,9 +6,7 @@ import type { Product, ProductCategory } from '@/types/product';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { storage } from '@/lib/firebase-storage';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from "uuid";
 import { useUserData } from './user-context';
 import { useLocale } from './locale-context';
@@ -16,7 +14,7 @@ import { useLocale } from './locale-context';
 interface ProductContextType {
   products: Product[];
   productCategories: ProductCategory[];
-  addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => Promise<void>;
+  addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity' | 'imageUrl'>) => Promise<void>;
   updateProduct: (id: string, updatedProduct: Partial<Omit<Product, 'id'>>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   resetProducts: () => Promise<void>;
@@ -47,7 +45,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const products = useMemo(() => userData?.products || [], [userData]);
   const productCategories = useMemo(() => userData?.productCategories || [], [userData]);
 
-  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => {
+  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity' | 'imageUrl'>) => {
     if (!user) throw new Error("User not authenticated.");
       
     const now = new Date().toISOString();
@@ -104,7 +102,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     }
     
     const finalUpdateData = { ...updatedProductData };
-    if ('quantity' in finalUpdateData && !('initialQuantity' in finalUpdateData)) {
+    if (!('initialQuantity' in finalUpdateData)) {
       finalUpdateData.initialQuantity = currentProducts[productIndex].initialQuantity;
     }
 
