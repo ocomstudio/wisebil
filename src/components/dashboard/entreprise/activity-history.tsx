@@ -1,6 +1,7 @@
 // src/components/dashboard/entreprise/activity-history.tsx
 "use client";
 
+import { useMemo } from "react";
 import { useUserData } from "@/context/user-context";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,7 +14,6 @@ import {
     RefreshCw
 } from "lucide-react";
 import { useLocale } from "@/context/locale-context";
-import { cn } from "@/lib/utils";
 import type { ActivityLog, ActivityType } from "@/types/activity-log";
 
 interface ActivityHistoryProps {
@@ -37,7 +37,17 @@ export function ActivityHistory({ isOpen, onOpenChange }: ActivityHistoryProps) 
     const { userData, isLoading } = useUserData();
     const { t, formatDate } = useLocale();
 
-    const sortedActivities = userData?.enterpriseActivities?.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) || [];
+    const sortedAndFilteredActivities = useMemo(() => {
+        if (!userData?.enterpriseActivities) return [];
+
+        const fiveDaysAgo = new Date();
+        fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+
+        return userData.enterpriseActivities
+            .filter(log => new Date(log.timestamp) > fiveDaysAgo)
+            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+            
+    }, [userData?.enterpriseActivities]);
 
     return (
         <Sheet open={isOpen} onOpenChange={onOpenChange}>
@@ -51,13 +61,13 @@ export function ActivityHistory({ isOpen, onOpenChange }: ActivityHistoryProps) 
                 <ScrollArea className="flex-1 -mx-6 px-6">
                     {isLoading ? (
                         <p>{t('loading_tip')}</p>
-                    ) : sortedActivities.length === 0 ? (
+                    ) : sortedAndFilteredActivities.length === 0 ? (
                         <div className="text-center text-muted-foreground pt-10">
                             <p>{t('no_activity_yet')}</p>
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {sortedActivities.map((log: ActivityLog) => (
+                            {sortedAndFilteredActivities.map((log: ActivityLog) => (
                                 <div key={log.id} className="flex items-start gap-3">
                                     <div className="bg-muted p-2 rounded-full mt-1">
                                         {activityIcons[log.type] || <Activity className="h-5 w-5" />}
