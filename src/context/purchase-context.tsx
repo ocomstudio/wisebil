@@ -76,8 +76,10 @@ export const PurchasesProvider = ({ children }: { children: ReactNode }) => {
             for (const item of newPurchase.items) {
                 const productIndex = updatedProducts.findIndex(p => p.id === item.productId);
                 if (productIndex !== -1) {
-                    // Only increase current quantity, do not touch initialQuantity
-                    updatedProducts[productIndex].quantity += item.quantity;
+                    const newQuantity = updatedProducts[productIndex].quantity + item.quantity;
+                    // Update both current quantity and initial quantity as a new reference point
+                    updatedProducts[productIndex].quantity = newQuantity;
+                    updatedProducts[productIndex].initialQuantity = newQuantity; 
                     updatedProducts[productIndex].purchasePrice = item.price;
                 }
             }

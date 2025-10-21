@@ -113,9 +113,11 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     }
     
     const existingProduct = currentProducts[productIndex];
+    // Preserve initialQuantity unless explicitly changed
     const updatedProduct = { 
       ...existingProduct,
       ...updatedProductData,
+      initialQuantity: updatedProductData.initialQuantity ?? existingProduct.initialQuantity,
       updatedAt: new Date().toISOString(),
     };
     currentProducts[productIndex] = cleanUndefined(updatedProduct);
