@@ -1,5 +1,5 @@
 // src/app/dashboard/entreprise/sales/invoices/page.tsx
-"use client";
+"use-client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
