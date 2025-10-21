@@ -68,7 +68,7 @@ export const PurchasesProvider = ({ children }: { children: ReactNode }) => {
             const currentPurchases = currentData.purchases || [];
             const updatedPurchases = [...currentPurchases, newPurchase];
             
-            // Update product stock
+            // Update product stock and purchase price
             const currentProducts = currentData.products || [];
             const updatedProducts = [...currentProducts];
 
@@ -76,6 +76,8 @@ export const PurchasesProvider = ({ children }: { children: ReactNode }) => {
                 const productIndex = updatedProducts.findIndex(p => p.id === item.productId);
                 if (productIndex !== -1) {
                     updatedProducts[productIndex].quantity += item.quantity;
+                    // Automatically update the product's default purchase price
+                    updatedProducts[productIndex].purchasePrice = item.price;
                 }
             }
             
