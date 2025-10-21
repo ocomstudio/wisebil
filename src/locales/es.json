@@ -1,3 +1,4 @@
+
 {
     "lang_code": "es",
     "back_to_home": "Volver al inicio",
@@ -687,6 +688,7 @@
     "record_new_purchase_title": "Registrar nueva compra",
     "supplier_info_title": "Información del proveedor",
     "supplier_name_label": "Nombre del proveedor",
+    "supplier_name_placeholder": "Nombre del proveedor",
     "supplier_name_required": "Se requiere el nombre del proveedor.",
     "products_purchased_title": "Productos comprados",
     "save_purchase_button": "Guardar compra",
@@ -730,14 +732,11 @@
     "product_name_placeholder": "ej: Camiseta de Algodón",
     "product_description_label": "Descripción del Producto",
     "product_description_placeholder": "Descripción detallada...",
-    "product_price_label": "Precio",
+    "product_price_label": "Precio de venta",
     "promo_price_label": "Precio Promocional (opcional)",
     "product_promo_price_label": "Precio Promocional (opcional)",
     "product_quantity_label": "Cantidad en Stock",
     "initial_stock_label": "Stock inicial",
-    "product_image_label": "Imagen del Producto",
-    "product_image_upload_cta": "Haga clic para cargar",
-    "product_image_preview_alt": "Vista previa de la imagen del producto",
     "save_product_button": "Guardar Producto",
     "product_name_required_error": "Se requiere el nombre del producto.",
     "product_price_negative_error": "El precio no puede ser negativo.",
@@ -766,7 +765,6 @@
     "product_delete_confirm_title": "¿Eliminar Producto?",
     "product_delete_confirm_desc": "Esto eliminará permanentemente \"{{productName}}\" de su inventario.",
     "product_delete_success_title": "Producto eliminado",
-    "product_image_upload_error": "Error al subir la imagen. Por favor, inténtelo de nuevo.",
     "share_button": "Compartir",
     "share_not_supported_title": "No se admite compartir",
     "share_not_supported_desc": "Su navegador no admite la función de compartir.",
@@ -801,5 +799,6 @@
     "recent_purchases_title": "Compras Recientes",
     "recent_purchases_desc": "Aquí están las últimas compras que ha realizado.",
     "purchase_from_supplier_label": "Pedido a {{supplierName}}",
-    "no_purchases_recorded_label": "No se han registrado compras por el momento."
+    "no_purchases_recorded_label": "No se han registrado compras por el momento.",
+    "product_purchase_price_label": "Costo de Compra"
 }

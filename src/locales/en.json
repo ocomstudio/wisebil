@@ -1,3 +1,4 @@
+
 {
     "lang_code": "en",
     "back_to_home": "Back to Home",
@@ -687,6 +688,7 @@
     "record_new_purchase_title": "Record New Purchase",
     "supplier_info_title": "Supplier Information",
     "supplier_name_label": "Supplier Name",
+    "supplier_name_placeholder": "Supplier's Name",
     "supplier_name_required": "Supplier name is required.",
     "products_purchased_title": "Products Purchased",
     "save_purchase_button": "Save Purchase",
@@ -730,14 +732,11 @@
     "product_name_placeholder": "e.g. Cotton T-shirt",
     "product_description_label": "Product Description",
     "product_description_placeholder": "Detailed description...",
-    "product_price_label": "Price",
+    "product_price_label": "Selling price",
     "promo_price_label": "Promotional Price (optional)",
     "product_promo_price_label": "Promotional Price (optional)",
     "product_quantity_label": "Quantity in Stock",
     "initial_stock_label": "Initial stock",
-    "product_image_label": "Product Image",
-    "product_image_upload_cta": "Click to upload",
-    "product_image_preview_alt": "Product image preview",
     "save_product_button": "Save Product",
     "product_name_required_error": "Product name is required.",
     "product_price_negative_error": "Price cannot be negative.",
@@ -766,7 +765,6 @@
     "product_delete_confirm_title": "Delete Product?",
     "product_delete_confirm_desc": "This will permanently delete \"{{productName}}\" from your inventory.",
     "product_delete_success_title": "Product Deleted",
-    "product_image_upload_error": "Image upload failed. Please try again.",
     "share_button": "Share",
     "share_not_supported_title": "Sharing not supported",
     "share_not_supported_desc": "Your browser does not support the share feature.",
@@ -801,5 +799,6 @@
     "recent_purchases_title": "Recent Purchases",
     "recent_purchases_desc": "Here are the last purchases you have made.",
     "purchase_from_supplier_label": "Order from {{supplierName}}",
-    "no_purchases_recorded_label": "No purchases recorded for the moment."
+    "no_purchases_recorded_label": "No purchases recorded for the moment.",
+    "product_purchase_price_label": "Purchase Cost"
 }

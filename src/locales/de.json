@@ -1,3 +1,4 @@
+
 {
     "lang_code": "de",
     "back_to_home": "Zurück zur Startseite",
@@ -687,6 +688,7 @@
     "record_new_purchase_title": "Neuen Kauf erfassen",
     "supplier_info_title": "Lieferanteninformationen",
     "supplier_name_label": "Lieferantenname",
+    "supplier_name_placeholder": "Name des Lieferanten",
     "supplier_name_required": "Lieferantenname ist erforderlich.",
     "products_purchased_title": "Gekaufte Produkte",
     "save_purchase_button": "Kauf speichern",
@@ -730,14 +732,11 @@
     "product_name_placeholder": "z.B. Baumwoll-T-Shirt",
     "product_description_label": "Produktbeschreibung",
     "product_description_placeholder": "Detaillierte Beschreibung...",
-    "product_price_label": "Preis",
+    "product_price_label": "Verkaufspreis",
     "promo_price_label": "Aktionspreis (optional)",
     "product_promo_price_label": "Aktionspreis (optional)",
     "product_quantity_label": "Menge auf Lager",
     "initial_stock_label": "Anfangsbestand",
-    "product_image_label": "Produktbild",
-    "product_image_upload_cta": "Zum Hochladen klicken",
-    "product_image_preview_alt": "Produktbildvorschau",
     "save_product_button": "Produkt speichern",
     "product_name_required_error": "Produktname ist erforderlich.",
     "product_price_negative_error": "Preis darf nicht negativ sein.",
@@ -766,7 +765,6 @@
     "product_delete_confirm_title": "Produkt löschen?",
     "product_delete_confirm_desc": "Dadurch wird \"{{productName}}\" dauerhaft aus Ihrem Inventar gelöscht.",
     "product_delete_success_title": "Produkt gelöscht",
-    "product_image_upload_error": "Bild-Upload fehlgeschlagen. Bitte versuchen Sie es erneut.",
     "share_button": "Teilen",
     "share_not_supported_title": "Teilen nicht unterstützt",
     "share_not_supported_desc": "Ihr Browser unterstützt die Teilen-Funktion nicht.",
@@ -801,5 +799,6 @@
     "recent_purchases_title": "Neueste Einkäufe",
     "recent_purchases_desc": "Hier sind die letzten Einkäufe, die Sie getätigt haben.",
     "purchase_from_supplier_label": "Bestellung bei {{supplierName}}",
-    "no_purchases_recorded_label": "Momentan keine Einkäufe erfasst."
+    "no_purchases_recorded_label": "Momentan keine Einkäufe erfasst.",
+    "product_purchase_price_label": "Einkaufskosten"
 }

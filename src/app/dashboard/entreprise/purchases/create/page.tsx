@@ -24,13 +24,13 @@ export default function CreatePurchasePage() {
   const { toast } = useToast();
   const { products, isLoading: isLoadingProducts } = useProducts();
   const { addPurchase, isLoading: isLoadingPurchases } = usePurchases();
-  const { t, formatCurrency } = useLocale();
+  const { t, formatCurrency, currency } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const purchaseItemSchema = z.object({
     productId: z.string().min(1, t('sale_item_product_error')),
     quantity: z.coerce.number().min(1, t('sale_item_quantity_error')),
-    price: z.number(),
+    price: z.coerce.number().min(0, t('product_price_negative_error')),
   });
 
   const purchaseSchema = z.object({
@@ -56,7 +56,8 @@ export default function CreatePurchasePage() {
   const handleProductChange = (index: number, productId: string) => {
     const product = products.find(p => p.id === productId);
     if (product) {
-      form.setValue(`items.${index}.price`, product.price); // Use purchase price, not promo
+      // Pre-fill with the default purchase price, but allow override
+      form.setValue(`items.${index}.price`, product.purchasePrice);
     }
   };
   
@@ -114,7 +115,7 @@ export default function CreatePurchasePage() {
                 </CardHeader>
                 <CardContent>
                     <FormField control={form.control} name="supplierName" render={({ field }) => (
-                        <FormItem><FormLabel>{t('supplier_name_label')}</FormLabel><FormControl><Input placeholder="Nom du Fournisseur" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>{t('supplier_name_label')}</FormLabel><FormControl><Input placeholder={t('supplier_name_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </CardContent>
             </Card>
@@ -126,9 +127,10 @@ export default function CreatePurchasePage() {
                 <CardContent>
                     <div className="space-y-4">
                         {fields.map((field, index) => (
-                           <div key={field.id} className="grid grid-cols-[1fr_80px_auto] gap-2 items-start">
+                           <div key={field.id} className="grid grid-cols-1 md:grid-cols-[1fr_120px_120px_auto] gap-2 items-start">
                               <FormField control={form.control} name={`items.${index}.productId`} render={({ field }) => (
                                 <FormItem>
+                                     <FormLabel className="md:hidden">Produit</FormLabel>
                                      <Select onValueChange={(value) => {field.onChange(value); handleProductChange(index, value)}} defaultValue={field.value}>
                                         <FormControl>
                                         <SelectTrigger>
@@ -143,9 +145,16 @@ export default function CreatePurchasePage() {
                                 </FormItem>
                               )} />
                               <FormField control={form.control} name={`items.${index}.quantity`} render={({ field }) => (
-                                <FormItem><FormControl><Input type="number" placeholder={t('quantity_item_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                <FormLabel className="md:hidden">{t('quantity_item_placeholder')}</FormLabel>
+                                <FormControl><Input type="number" placeholder={t('quantity_item_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
                               )} />
-                              <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                              <FormField control={form.control} name={`items.${index}.price`} render={({ field }) => (
+                                <FormItem>
+                                <FormLabel className="md:hidden">{t('product_purchase_price_label')} ({currency})</FormLabel>
+                                <FormControl><Input type="number" step="any" placeholder={t('product_purchase_price_label')} {...field} /></FormControl><FormMessage /></FormItem>
+                              )} />
+                              <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="self-end">
                                 <Trash2 className="h-4 w-4 text-destructive" />
                               </Button>
                            </div>

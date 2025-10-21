@@ -1,3 +1,4 @@
+
 {
     "lang_code": "vi",
     "back_to_home": "Quay lại trang chủ",
@@ -687,6 +688,7 @@
     "record_new_purchase_title": "Ghi lại giao dịch mua mới",
     "supplier_info_title": "Thông tin nhà cung cấp",
     "supplier_name_label": "Tên nhà cung cấp",
+    "supplier_name_placeholder": "Tên nhà cung cấp",
     "supplier_name_required": "Yêu cầu tên nhà cung cấp.",
     "products_purchased_title": "Sản phẩm đã mua",
     "save_purchase_button": "Lưu giao dịch mua",
@@ -730,14 +732,11 @@
     "product_name_placeholder": "vd: Áo thun Cotton",
     "product_description_label": "Mô tả Sản phẩm",
     "product_description_placeholder": "Mô tả chi tiết...",
-    "product_price_label": "Giá",
+    "product_price_label": "Giá bán",
     "promo_price_label": "Giá khuyến mãi (tùy chọn)",
     "product_promo_price_label": "Giá khuyến mãi (tùy chọn)",
     "product_quantity_label": "Số lượng trong kho",
     "initial_stock_label": "Kho ban đầu",
-    "product_image_label": "Hình ảnh Sản phẩm",
-    "product_image_upload_cta": "Nhấp để tải lên",
-    "product_image_preview_alt": "Xem trước hình ảnh sản phẩm",
     "save_product_button": "Lưu Sản phẩm",
     "product_name_required_error": "Yêu cầu tên sản phẩm.",
     "product_price_negative_error": "Giá không thể âm.",
@@ -766,7 +765,6 @@
     "product_delete_confirm_title": "Xóa sản phẩm?",
     "product_delete_confirm_desc": "Thao tác này sẽ xóa vĩnh viễn \"{{productName}}\" khỏi kho của bạn.",
     "product_delete_success_title": "Đã xóa sản phẩm",
-    "product_image_upload_error": "Tải lên hình ảnh không thành công. Vui lòng thử lại.",
     "share_button": "Chia sẻ",
     "share_not_supported_title": "Không hỗ trợ chia sẻ",
     "share_not_supported_desc": "Trình duyệt của bạn không hỗ trợ tính năng chia sẻ.",
@@ -801,5 +799,6 @@
     "recent_purchases_title": "Giao dịch mua gần đây",
     "recent_purchases_desc": "Đây là những giao dịch mua cuối cùng bạn đã thực hiện.",
     "purchase_from_supplier_label": "Đặt hàng từ {{supplierName}}",
-    "no_purchases_recorded_label": "Chưa có giao dịch mua nào được ghi lại."
+    "no_purchases_recorded_label": "Chưa có giao dịch mua nào được ghi lại.",
+    "product_purchase_price_label": "Giá mua"
 }

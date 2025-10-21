@@ -44,6 +44,7 @@ export default function EditProductPage() {
   const formSchema = z.object({
     name: z.string().min(2, t('product_name_required_error')),
     description: z.string().optional(),
+    purchasePrice: z.coerce.number().min(0, t('product_price_negative_error')),
     price: z.coerce.number().min(0, t('product_price_negative_error')),
     promoPrice: z.coerce.number().optional(),
     quantity: z.coerce.number().int().min(0, t('product_quantity_negative_error')),
@@ -69,6 +70,7 @@ export default function EditProductPage() {
             form.reset({
                 name: foundProduct.name,
                 description: foundProduct.description || "",
+                purchasePrice: foundProduct.purchasePrice,
                 price: foundProduct.price,
                 promoPrice: foundProduct.promoPrice || undefined,
                 quantity: foundProduct.quantity,
@@ -250,6 +252,9 @@ export default function EditProductPage() {
                             <Button type="button" onClick={handleAddNewCategory}>{t('add_category_button')}</Button>
                           </div>
                         )}
+                        <FormField control={form.control} name="purchasePrice" render={({ field }) => (
+                            <FormItem><FormLabel>{t('product_purchase_price_label')} ({currency})</FormLabel><FormControl><Input type="number" placeholder="3500" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
                         <FormField control={form.control} name="price" render={({ field }) => (
                             <FormItem><FormLabel>{t('product_price_label')} ({currency})</FormLabel><FormControl><Input type="number" placeholder="5000" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />

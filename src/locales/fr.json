@@ -1,3 +1,4 @@
+
 {
     "lang_code": "fr",
     "back_to_home": "Retour à l'accueil",
@@ -687,6 +688,7 @@
     "record_new_purchase_title": "Enregistrer un nouvel achat",
     "supplier_info_title": "Informations du fournisseur",
     "supplier_name_label": "Nom du fournisseur",
+    "supplier_name_placeholder": "Nom du Fournisseur",
     "supplier_name_required": "Le nom du fournisseur est requis.",
     "products_purchased_title": "Produits achetés",
     "save_purchase_button": "Enregistrer l'achat",
@@ -730,14 +732,11 @@
     "product_name_placeholder": "ex: T-shirt en Coton",
     "product_description_label": "Description du Produit",
     "product_description_placeholder": "Description détaillée...",
-    "product_price_label": "Prix",
+    "product_price_label": "Prix de vente",
     "promo_price_label": "Prix Promotionnel (facultatif)",
     "product_promo_price_label": "Prix Promotionnel (facultatif)",
     "product_quantity_label": "Quantité en Stock",
     "initial_stock_label": "Stock initial",
-    "product_image_label": "Image du Produit",
-    "product_image_upload_cta": "Cliquez pour télécharger",
-    "product_image_preview_alt": "Aperçu de l'image du produit",
     "save_product_button": "Enregistrer le Produit",
     "product_name_required_error": "Le nom du produit est requis.",
     "product_price_negative_error": "Le prix ne peut pas être négatif.",
@@ -766,7 +765,6 @@
     "product_delete_confirm_title": "Supprimer le Produit ?",
     "product_delete_confirm_desc": "Ceci supprimera définitivement \"{{productName}}\" de votre inventaire.",
     "product_delete_success_title": "Produit Supprimé",
-    "product_image_upload_error": "L'envoi de l'image a échoué. Veuillez réessayer.",
     "share_button": "Partager",
     "share_not_supported_title": "Partage non supporté",
     "share_not_supported_desc": "Votre navigateur ne supporte pas la fonctionnalité de partage.",
@@ -801,5 +799,6 @@
     "recent_purchases_title": "Achats Récents",
     "recent_purchases_desc": "Voici les derniers achats que vous avez effectués.",
     "purchase_from_supplier_label": "Commande chez {{supplierName}}",
-    "no_purchases_recorded_label": "Aucun achat enregistré pour le moment."
+    "no_purchases_recorded_label": "Aucun achat enregistré pour le moment.",
+    "product_purchase_price_label": "Coût d'achat"
 }

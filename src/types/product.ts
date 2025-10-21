@@ -8,7 +8,8 @@ export interface Product {
   id: string;
   name: string;
   description?: string;
-  price: number;
+  purchasePrice: number; // Cost of buying the product
+  price: number; // Selling price
   promoPrice?: number;
   imageUrl?: string;
   initialQuantity: number;
