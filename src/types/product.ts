@@ -10,6 +10,7 @@ export interface Product {
   description?: string;
   price: number;
   promoPrice?: number;
+  imageUrl?: string;
   initialQuantity: number;
   quantity: number;
   categoryId?: string;
