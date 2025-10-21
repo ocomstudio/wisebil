@@ -67,8 +67,10 @@ export function SidebarNav() {
         <Accordion type="multiple" defaultValue={isEnterpriseActive ? ['enterprise-menu'] : []} className="w-full">
             <AccordionItem value="enterprise-menu" className="border-b-0">
             <AccordionTrigger className={cn("flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-primary/10 hover:no-underline", isEnterpriseActive && "bg-primary/10 text-primary")}>
-                <Building />
-                {t('nav_enterprise')}
+                <Link href="/dashboard/entreprise" className="flex items-center gap-3 w-full">
+                  <Building />
+                  {t('nav_enterprise')}
+                </Link>
             </AccordionTrigger>
             <AccordionContent className="pl-6 pt-2 space-y-1">
                 <Link href="/dashboard/entreprise/products" className={cn("flex items-center gap-2 rounded-md p-2 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5", pathname.startsWith('/dashboard/entreprise/products') && 'text-primary bg-primary/5')}>
