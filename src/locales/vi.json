@@ -1,4 +1,3 @@
-
 {
     "lang_code": "vi",
     "back_to_home": "Quay lại trang chủ",
@@ -732,8 +731,10 @@
     "product_description_label": "Mô tả Sản phẩm",
     "product_description_placeholder": "Mô tả chi tiết...",
     "product_price_label": "Giá",
+    "promo_price_label": "Giá khuyến mãi (tùy chọn)",
     "product_promo_price_label": "Giá khuyến mãi (tùy chọn)",
     "product_quantity_label": "Số lượng trong kho",
+    "initial_stock_label": "Kho ban đầu",
     "product_image_label": "Hình ảnh Sản phẩm",
     "product_image_upload_cta": "Nhấp để tải lên",
     "product_image_preview_alt": "Xem trước hình ảnh sản phẩm",
@@ -796,5 +797,9 @@
     "sale_record_error": "Lỗi khi ghi nhận doanh số: {{message}}",
     "record_new_sale_title": "Ghi nhận một Doanh số Mới",
     "products_sold_title": "Sản phẩm đã bán",
-    "select_product_placeholder": "Chọn một sản phẩm..."
+    "select_product_placeholder": "Chọn một sản phẩm...",
+    "recent_purchases_title": "Giao dịch mua gần đây",
+    "recent_purchases_desc": "Đây là những giao dịch mua cuối cùng bạn đã thực hiện.",
+    "purchase_from_supplier_label": "Đặt hàng từ {{supplierName}}",
+    "no_purchases_recorded_label": "Chưa có giao dịch mua nào được ghi lại."
 }

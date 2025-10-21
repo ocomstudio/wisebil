@@ -1,4 +1,3 @@
-
 {
     "lang_code": "en",
     "back_to_home": "Back to Home",
@@ -732,8 +731,10 @@
     "product_description_label": "Product Description",
     "product_description_placeholder": "Detailed description...",
     "product_price_label": "Price",
+    "promo_price_label": "Promotional Price (optional)",
     "product_promo_price_label": "Promotional Price (optional)",
     "product_quantity_label": "Quantity in Stock",
+    "initial_stock_label": "Initial stock",
     "product_image_label": "Product Image",
     "product_image_upload_cta": "Click to upload",
     "product_image_preview_alt": "Product image preview",
@@ -796,5 +797,9 @@
     "sale_record_error": "Error recording sale: {{message}}",
     "record_new_sale_title": "Record a New Sale",
     "products_sold_title": "Products Sold",
-    "select_product_placeholder": "Select a product..."
+    "select_product_placeholder": "Select a product...",
+    "recent_purchases_title": "Recent Purchases",
+    "recent_purchases_desc": "Here are the last purchases you have made.",
+    "purchase_from_supplier_label": "Order from {{supplierName}}",
+    "no_purchases_recorded_label": "No purchases recorded for the moment."
 }

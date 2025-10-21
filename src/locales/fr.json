@@ -1,4 +1,3 @@
-
 {
     "lang_code": "fr",
     "back_to_home": "Retour à l'accueil",
@@ -732,8 +731,10 @@
     "product_description_label": "Description du Produit",
     "product_description_placeholder": "Description détaillée...",
     "product_price_label": "Prix",
+    "promo_price_label": "Prix Promotionnel (facultatif)",
     "product_promo_price_label": "Prix Promotionnel (facultatif)",
     "product_quantity_label": "Quantité en Stock",
+    "initial_stock_label": "Stock initial",
     "product_image_label": "Image du Produit",
     "product_image_upload_cta": "Cliquez pour télécharger",
     "product_image_preview_alt": "Aperçu de l'image du produit",
@@ -796,5 +797,9 @@
     "sale_record_error": "Erreur lors de l'enregistrement de la vente : {{message}}",
     "record_new_sale_title": "Enregistrer une nouvelle vente",
     "products_sold_title": "Produits vendus",
-    "select_product_placeholder": "Sélectionnez un produit..."
+    "select_product_placeholder": "Sélectionnez un produit...",
+    "recent_purchases_title": "Achats Récents",
+    "recent_purchases_desc": "Voici les derniers achats que vous avez effectués.",
+    "purchase_from_supplier_label": "Commande chez {{supplierName}}",
+    "no_purchases_recorded_label": "Aucun achat enregistré pour le moment."
 }

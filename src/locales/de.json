@@ -1,4 +1,3 @@
-
 {
     "lang_code": "de",
     "back_to_home": "Zurück zur Startseite",
@@ -732,8 +731,10 @@
     "product_description_label": "Produktbeschreibung",
     "product_description_placeholder": "Detaillierte Beschreibung...",
     "product_price_label": "Preis",
+    "promo_price_label": "Aktionspreis (optional)",
     "product_promo_price_label": "Aktionspreis (optional)",
     "product_quantity_label": "Menge auf Lager",
+    "initial_stock_label": "Anfangsbestand",
     "product_image_label": "Produktbild",
     "product_image_upload_cta": "Zum Hochladen klicken",
     "product_image_preview_alt": "Produktbildvorschau",
@@ -796,5 +797,9 @@
     "sale_record_error": "Fehler beim Erfassen des Verkaufs: {{message}}",
     "record_new_sale_title": "Neuen Verkauf erfassen",
     "products_sold_title": "Verkaufte Produkte",
-    "select_product_placeholder": "Wählen Sie ein Produkt aus..."
+    "select_product_placeholder": "Wählen Sie ein Produkt aus...",
+    "recent_purchases_title": "Neueste Einkäufe",
+    "recent_purchases_desc": "Hier sind die letzten Einkäufe, die Sie getätigt haben.",
+    "purchase_from_supplier_label": "Bestellung bei {{supplierName}}",
+    "no_purchases_recorded_label": "Momentan keine Einkäufe erfasst."
 }

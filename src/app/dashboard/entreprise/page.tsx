@@ -8,10 +8,12 @@ import Link from "next/link";
 import { useSales } from "@/context/sales-context";
 import { useProducts } from "@/context/product-context";
 import { useLocale } from "@/context/locale-context";
+import { usePurchases } from "@/context/purchase-context";
 
 export default function EnterprisePage() {
   const { sales } = useSales();
   const { products } = useProducts();
+  const { purchases } = usePurchases();
   const { t, formatCurrency } = useLocale();
 
   const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
@@ -174,6 +176,39 @@ export default function EnterprisePage() {
                     <div className="text-center text-muted-foreground py-8">
                         <p>{t('no_products_in_inventory_label')}</p>
                     </div>
+                )}
+            </CardContent>
+          </Card>
+           <Card className="lg:col-span-2">
+            <CardHeader>
+                <CardTitle>{t('recent_purchases_title')}</CardTitle>
+                <CardDescription>{t('recent_purchases_desc')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {purchases.length > 0 ? (
+                    <div className="space-y-4">
+                        {purchases.slice(0, 5).map(purchase => (
+                             <div key={purchase.id} className="flex items-center">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-lg">
+                                    <RefreshCw />
+                                </div>
+                                <div className="ml-4 space-y-1">
+                                <p className="text-sm font-medium leading-none">{t('purchase_from_supplier_label', { supplierName: purchase.supplierName })}</p>
+                                <p className="text-sm text-muted-foreground">{t('product_count_label', { count: purchase.items.length })}</p>
+                                </div>
+                                <div className="ml-auto font-medium">{formatCurrency(purchase.total)}</div>
+                                <Button variant="ghost" size="icon" className="ml-2" asChild>
+                                    <Link href={`/dashboard/entreprise/purchases/invoice/${purchase.id}`}>
+                                        <ArrowUpRight className="h-4 w-4" />
+                                    </Link>
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                ): (
+                     <div className="text-center text-muted-foreground py-8">
+                        <p>{t('no_purchases_recorded_label')}</p>
+                     </div>
                 )}
             </CardContent>
           </Card>
