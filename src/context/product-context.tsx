@@ -15,7 +15,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 interface ProductContextType {
   products: Product[];
   productCategories: ProductCategory[];
-  addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity' | 'imageUrl'>) => Promise<void>;
+  addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => Promise<void>;
   updateProduct: (id: string, updatedProduct: Partial<Omit<Product, 'id'>>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   resetProducts: () => Promise<void>;
@@ -55,7 +55,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     return await getDownloadURL(storageRef);
   };
   
-  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity' | 'imageUrl'>) => {
+  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => {
     if (!user) throw new Error("User not authenticated.");
       
     const now = new Date().toISOString();
@@ -65,7 +65,6 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         updatedAt: now,
         ...productData,
         initialQuantity: productData.quantity, // Set initial quantity from form
-        imageUrl: "" // Will be added separately
     };
 
     const cleanedProduct = cleanUndefined(newProduct);
