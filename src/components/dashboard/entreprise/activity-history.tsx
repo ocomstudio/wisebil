@@ -58,45 +58,47 @@ export function ActivityHistory({ isOpen, onOpenChange }: ActivityHistoryProps) 
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="flex flex-col h-[80vh] max-w-md">
-                <DialogHeader>
+            <DialogContent className="flex flex-col h-[80vh] max-h-[600px] w-[90vw] max-w-md p-0">
+                <DialogHeader className="p-6 pb-2">
                     <DialogTitle className="flex items-center gap-2">
                         <Activity className="h-5 w-5" />
                         {t('activity_history_title')}
                     </DialogTitle>
                 </DialogHeader>
-                <ScrollArea className="flex-1 -mx-6 px-2">
-                    {isLoading ? (
-                         <div className="space-y-4 px-4">
-                            <Skeleton className="h-16 w-full" />
-                            <Skeleton className="h-16 w-full" />
-                            <Skeleton className="h-16 w-full" />
-                        </div>
-                    ) : sortedAndFilteredActivities.length === 0 ? (
-                        <div className="text-center text-muted-foreground pt-10 px-4">
-                             <Activity className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50"/>
-                            <p className="font-semibold">{t('no_activity_yet')}</p>
-                            <p className="text-sm">Les actions sur les produits, ventes et achats apparaîtront ici.</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-2 px-4">
-                            {sortedAndFilteredActivities.map((log: ActivityLog) => (
-                                <Card key={log.id} className="p-3">
-                                    <div className="flex items-start gap-3">
-                                        <div className="bg-secondary p-2 rounded-full mt-1">
-                                            {activityIcons[log.type] || <Activity className="h-5 w-5" />}
+                <ScrollArea className="flex-1">
+                    <div className="px-6 pb-6">
+                        {isLoading ? (
+                            <div className="space-y-4">
+                                <Skeleton className="h-16 w-full" />
+                                <Skeleton className="h-16 w-full" />
+                                <Skeleton className="h-16 w-full" />
+                            </div>
+                        ) : sortedAndFilteredActivities.length === 0 ? (
+                            <div className="text-center text-muted-foreground pt-10 px-4">
+                                <Activity className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50"/>
+                                <p className="font-semibold">{t('no_activity_yet')}</p>
+                                <p className="text-sm">Les actions sur les produits, ventes et achats apparaîtront ici.</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {sortedAndFilteredActivities.map((log: ActivityLog) => (
+                                    <Card key={log.id} className="p-3">
+                                        <div className="flex items-start gap-3">
+                                            <div className="bg-secondary p-2 rounded-full mt-1">
+                                                {activityIcons[log.type] || <Activity className="h-5 w-5" />}
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-sm font-medium">{log.description}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {formatDate(log.timestamp)} - {log.userName}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-medium">{log.description}</p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {formatDate(log.timestamp)} - {log.userName}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </Card>
-                            ))}
-                        </div>
-                    )}
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </ScrollArea>
             </DialogContent>
         </Dialog>
