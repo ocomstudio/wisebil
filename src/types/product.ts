@@ -17,5 +17,4 @@ export interface Product {
   storageLocation: string;
   createdAt: string;
   updatedAt: string;
-  imageUrl?: string;
 }

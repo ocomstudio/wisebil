@@ -16,7 +16,7 @@ import { useLocale } from './locale-context';
 interface ProductContextType {
   products: Product[];
   productCategories: ProductCategory[];
-  addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity' | 'imageUrl'>) => Promise<void>;
+  addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => Promise<void>;
   updateProduct: (id: string, updatedProduct: Partial<Omit<Product, 'id'>>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   resetProducts: () => Promise<void>;
@@ -47,7 +47,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const products = useMemo(() => userData?.products || [], [userData]);
   const productCategories = useMemo(() => userData?.productCategories || [], [userData]);
 
-  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity' | 'imageUrl'>) => {
+  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => {
     if (!user) throw new Error("User not authenticated.");
       
     const now = new Date().toISOString();
@@ -55,7 +55,6 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         id: uuidv4(), 
         createdAt: now,
         updatedAt: now,
-        imageUrl: '',
         ...productData,
         initialQuantity: productData.quantity, // Set initial quantity from form
     };
@@ -104,10 +103,8 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     
-    // Ensure initialQuantity is not changed on update unless explicitly intended
     const finalUpdateData = { ...updatedProductData };
     if ('quantity' in finalUpdateData && !('initialQuantity' in finalUpdateData)) {
-      // If only quantity is updated, initialQuantity should persist from the original product
       finalUpdateData.initialQuantity = currentProducts[productIndex].initialQuantity;
     }
 
