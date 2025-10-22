@@ -26,6 +26,7 @@ import { Loader2, Download } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useSales } from "@/context/sales-context";
 import { usePurchases } from "@/context/purchase-context";
+import { useProducts } from "@/context/product-context";
 import { format } from "date-fns";
 
 const reportSettingsSchema = z.object({
@@ -40,6 +41,7 @@ export function DailyReportSettings() {
   const { companyProfile, updateCompanyProfile, isLoading: isProfileLoading } = useCompanyProfile();
   const { sales } = useSales();
   const { purchases } = usePurchases();
+  const { products } = useProducts();
   const { t, formatDate } = useLocale();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -91,17 +93,18 @@ export function DailyReportSettings() {
     const dailySales = sales.filter(s => s.date.startsWith(todayString));
     const dailyPurchases = purchases.filter(p => p.date.startsWith(todayString));
 
-    if (dailySales.length === 0 && dailyPurchases.length === 0) {
+    if (dailySales.length === 0 && dailyPurchases.length === 0 && products.length === 0) {
         toast({
             variant: "default",
             title: "Aucune donnée",
-            description: "Aucune vente ou achat enregistré pour aujourd'hui.",
+            description: "Aucune activité (vente, achat, produit) enregistrée pour aujourd'hui.",
         });
         return;
     }
 
     const wb = XLSX.utils.book_new();
 
+    // 1. Ventes du Jour
     if (dailySales.length > 0) {
         const salesData = dailySales.flatMap(sale => 
             sale.items.map(item => ({
@@ -118,6 +121,7 @@ export function DailyReportSettings() {
         XLSX.utils.book_append_sheet(wb, ws, "Ventes du Jour");
     }
 
+    // 2. Achats du Jour
     if (dailyPurchases.length > 0) {
         const purchasesData = dailyPurchases.flatMap(purchase => 
             purchase.items.map(item => ({
@@ -132,6 +136,37 @@ export function DailyReportSettings() {
         );
         const ws = XLSX.utils.json_to_sheet(purchasesData);
         XLSX.utils.book_append_sheet(wb, ws, "Achats du Jour");
+    }
+
+    // 3. Mouvements de Stock
+    const salesByProduct = dailySales.flatMap(s => s.items).reduce((acc, item) => {
+        acc[item.productId] = (acc[item.productId] || 0) + item.quantity;
+        return acc;
+    }, {} as Record<string, number>);
+
+    const purchasesByProduct = dailyPurchases.flatMap(p => p.items).reduce((acc, item) => {
+        acc[item.productId] = (acc[item.productId] || 0) + item.quantity;
+        return acc;
+    }, {} as Record<string, number>);
+    
+    const inventoryData = products.map(product => {
+        const soldToday = salesByProduct[product.id] || 0;
+        const purchasedToday = purchasesByProduct[product.id] || 0;
+        const endOfDayStock = product.quantity;
+        const startOfDayStock = endOfDayStock - purchasedToday + soldToday;
+
+        return {
+            'Produit': product.name,
+            'Stock Début de Journée': startOfDayStock,
+            'Quantité Achetée': purchasedToday,
+            'Quantité Vendue': soldToday,
+            'Stock Fin de Journée': endOfDayStock
+        };
+    });
+
+    if (inventoryData.length > 0) {
+        const ws = XLSX.utils.json_to_sheet(inventoryData);
+        XLSX.utils.book_append_sheet(wb, ws, "Mouvements de Stock");
     }
     
     const fileName = `Rapport_Journalier_${format(today, "yyyy-MM-dd")}.xlsx`;
