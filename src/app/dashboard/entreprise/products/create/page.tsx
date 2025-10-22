@@ -38,13 +38,13 @@ export default function CreateProductPage() {
     description: z.string().optional(),
     purchasePrice: z.coerce.number().min(0, t('product_price_negative_error')),
     price: z.coerce.number().min(0, t('product_price_negative_error')),
-    promoPrice: z.coerce.number().optional(),
+    promoPrice: z.coerce.number().min(0, t('product_price_negative_error')).optional(),
     quantity: z.coerce.number().int().min(0, t('product_quantity_negative_error')),
     categoryId: z.string().optional(),
     purchaseDate: z.date({
       required_error: t('product_purchase_date_required_error'),
     }),
-    storageLocation: z.string().min(2, t('product_storage_location_required_error')),
+    storageLocation: z.string().optional(),
   });
 
   type ProductFormValues = z.infer<typeof formSchema>;
@@ -131,7 +131,7 @@ export default function CreateProductPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <FormField control={form.control} name="name" render={({ field }) => (
-                        <FormItem><FormLabel>{t('product_name_label')}</FormLabel><FormControl><Input placeholder={t('product_name_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>{t('product_name_label')}<span className="text-red-500">*</span></FormLabel><FormControl><Input placeholder={t('product_name_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="description" render={({ field }) => (
                         <FormItem><FormLabel>{t('product_description_label')}</FormLabel><FormControl><Textarea placeholder={t('product_description_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
@@ -139,7 +139,7 @@ export default function CreateProductPage() {
                      <div className="grid md:grid-cols-2 gap-6">
                         <FormField control={form.control} name="purchaseDate" render={({ field }) => (
                            <FormItem className="flex flex-col">
-                           <FormLabel>{t('product_purchase_date_label')}</FormLabel>
+                           <FormLabel>{t('product_purchase_date_label')}<span className="text-red-500">*</span></FormLabel>
                            <Popover>
                              <PopoverTrigger asChild>
                                <FormControl>

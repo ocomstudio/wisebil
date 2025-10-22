@@ -29,7 +29,7 @@ export default function CreatePurchasePage() {
 
   const purchaseItemSchema = z.object({
     productId: z.string().min(1, t('sale_item_product_error')),
-    quantity: z.coerce.number().min(1, t('sale_item_quantity_error')),
+    quantity: z.coerce.number().int().min(1, t('sale_item_quantity_error')),
     price: z.coerce.number().min(0, t('product_price_negative_error')),
   });
 
@@ -115,7 +115,7 @@ export default function CreatePurchasePage() {
                 </CardHeader>
                 <CardContent>
                     <FormField control={form.control} name="supplierName" render={({ field }) => (
-                        <FormItem><FormLabel>{t('supplier_name_label')}</FormLabel><FormControl><Input placeholder={t('supplier_name_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>{t('supplier_name_label')}<span className="text-red-500">*</span></FormLabel><FormControl><Input placeholder={t('supplier_name_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </CardContent>
             </Card>

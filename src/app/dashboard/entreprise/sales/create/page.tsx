@@ -1,7 +1,7 @@
 // src/app/dashboard/entreprise/sales/create/page.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -18,8 +18,9 @@ import { useProducts } from '@/context/product-context';
 import { useLocale } from '@/context/locale-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import 'react-phone-number-input/style.css';
-import PhoneInput from 'react-phone-number-input';
+import PhoneInput, { isValidPhoneNumber, type Country } from 'react-phone-number-input';
 import { useUserData } from '@/context/user-context';
+import axios from "axios";
 
 export default function CreateSalePage() {
   const router = useRouter();
@@ -28,16 +29,35 @@ export default function CreateSalePage() {
   const { addUserSale, isLoading: isLoadingSales } = useUserData();
   const { t, formatCurrency } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [detectedCountry, setDetectedCountry] = useState<Country>('SN');
+
+  useEffect(() => {
+    const fetchCountry = async () => {
+        try {
+            const response = await axios.get('https://ipapi.co/json/');
+            const countryCode = response.data?.country_code as Country | undefined;
+            if (countryCode) {
+                setDetectedCountry(countryCode);
+            }
+        } catch (error) {
+            console.warn("Could not detect user country, defaulting to SN.", error);
+        }
+    };
+
+    fetchCountry();
+  }, []);
 
   const saleItemSchema = z.object({
     productId: z.string().min(1, t('sale_item_product_error')),
-    quantity: z.coerce.number().min(1, t('sale_item_quantity_error')),
+    quantity: z.coerce.number().int().min(1, t('sale_item_quantity_error')),
     price: z.number(),
   });
 
   const saleSchema = z.object({
     customerName: z.string().min(2, t('customer_name_required')),
-    customerPhone: z.string().optional(),
+    customerPhone: z.string().optional().refine(val => !val || isValidPhoneNumber(val), {
+      message: t('signup_phone_error'),
+    }),
     items: z.array(saleItemSchema).min(1, t('at_least_one_item_required')),
   });
 
@@ -118,7 +138,7 @@ export default function CreateSalePage() {
                 </CardHeader>
                 <CardContent className="grid md:grid-cols-2 gap-6">
                     <FormField control={form.control} name="customerName" render={({ field }) => (
-                        <FormItem><FormLabel>{t('customer_name_label')}</FormLabel><FormControl><Input placeholder="John Doe" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>{t('customer_name_label')}<span className="text-red-500">*</span></FormLabel><FormControl><Input placeholder="John Doe" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                      <FormField
                         control={form.control}
@@ -129,7 +149,7 @@ export default function CreateSalePage() {
                             <FormControl>
                             <PhoneInput
                                 international
-                                defaultCountry="SN"
+                                defaultCountry={detectedCountry}
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                                 value={field.value}
                                 onChange={field.onChange}
@@ -159,7 +179,7 @@ export default function CreateSalePage() {
                                         </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {isLoadingProducts ? <p>{t('loading_tip')}</p> : products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                            {isLoadingProducts ? <p>{t('loading_tip')}</p> : products.map(p => <SelectItem key={p.id} value={p.id} disabled={p.quantity <= 0}>{p.name} ({p.quantity} en stock)</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />

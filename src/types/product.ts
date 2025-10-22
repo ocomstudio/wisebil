@@ -16,7 +16,7 @@ export interface Product {
   quantity: number;
   categoryId?: string;
   purchaseDate: string; // ISO date string
-  storageLocation: string;
+  storageLocation?: string;
   createdAt: string;
   updatedAt: string;
 }
