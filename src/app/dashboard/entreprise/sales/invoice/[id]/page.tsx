@@ -20,7 +20,7 @@ import { useCompanyProfile } from '@/context/company-profile-context';
 import Image from 'next/image';
 
 const InvoiceTemplate = React.forwardRef<HTMLDivElement, { sale: Sale }>(({ sale }, ref) => {
-    const { t, formatCurrency, formatDate } = useLocale();
+    const { t, formatCurrency, formatDateTime } = useLocale();
     const { companyProfile } = useCompanyProfile();
     const brandColor = companyProfile?.brandColor || '#179C00';
 
@@ -43,7 +43,7 @@ const InvoiceTemplate = React.forwardRef<HTMLDivElement, { sale: Sale }>(({ sale
                         <h1 className="text-3xl font-bold font-headline" style={brandStyle}>{t('invoice_title_capital')}</h1>
                         <p className="text-muted-foreground"># {sale.invoiceNumber}</p>
                         <Separator className="my-2" style={{ backgroundColor: brandColor, opacity: 0.5 }}/>
-                        <p><span className="font-semibold">{t('issue_date_label')}:</span> {formatDate(sale.date)}</p>
+                        <p><span className="font-semibold">{t('issue_date_label')}:</span> {formatDateTime(sale.date)}</p>
                     </div>
                 </div>
             </CardHeader>
