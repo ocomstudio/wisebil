@@ -810,5 +810,6 @@
     "report_time_desc": "L'heure à laquelle vous recevrez votre rapport chaque jour.",
     "report_format_label": "Format du rapport",
     "report_settings_saved_title": "Paramètres enregistrés",
-    "report_settings_saved_desc": "Vos préférences pour les rapports journaliers ont été mises à jour."
+    "report_settings_saved_desc": "Vos préférences pour les rapports journaliers ont été mises à jour.",
+    "activity_history_retention_notice": "Cet historique ne peut être ni modifié, ni supprimé. Il est automatiquement purgé tous les 5 jours."
 }

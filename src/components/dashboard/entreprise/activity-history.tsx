@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
@@ -59,11 +60,14 @@ export function ActivityHistory({ isOpen, onOpenChange }: ActivityHistoryProps) 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="flex flex-col h-[80vh] max-h-[600px] w-[90vw] max-w-md p-0 rounded-lg">
-                <DialogHeader className="p-6 pb-2">
+                <DialogHeader className="p-6 pb-4">
                     <DialogTitle className="flex items-center gap-2">
                         <Activity className="h-5 w-5" />
                         {t('activity_history_title')}
                     </DialogTitle>
+                    <DialogDescription>
+                        {t('activity_history_retention_notice')}
+                    </DialogDescription>
                 </DialogHeader>
                 <ScrollArea className="flex-1">
                     <div className="px-6 pb-6">

@@ -810,5 +810,6 @@
     "report_time_desc": "The time you will receive your report each day.",
     "report_format_label": "Report format",
     "report_settings_saved_title": "Settings Saved",
-    "report_settings_saved_desc": "Your daily report preferences have been updated."
+    "report_settings_saved_desc": "Your daily report preferences have been updated.",
+    "activity_history_retention_notice": "This history cannot be modified or deleted. It is automatically purged every 5 days."
 }

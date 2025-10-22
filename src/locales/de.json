@@ -810,5 +810,6 @@
     "report_time_desc": "Die Zeit, zu der Sie Ihren Bericht jeden Tag erhalten.",
     "report_format_label": "Berichtsformat",
     "report_settings_saved_title": "Einstellungen gespeichert",
-    "report_settings_saved_desc": "Ihre Einstellungen für tägliche Berichte wurden aktualisiert."
+    "report_settings_saved_desc": "Ihre Einstellungen für tägliche Berichte wurden aktualisiert.",
+    "activity_history_retention_notice": "Dieser Verlauf kann nicht geändert oder gelöscht werden. Er wird alle 5 Tage automatisch gelöscht."
 }

@@ -810,5 +810,6 @@
     "report_time_desc": "La hora a la que recibirá su informe cada día.",
     "report_format_label": "Formato del informe",
     "report_settings_saved_title": "Configuración guardada",
-    "report_settings_saved_desc": "Sus preferencias de informes diarios han sido actualizadas."
+    "report_settings_saved_desc": "Sus preferencias de informes diarios han sido actualizadas.",
+    "activity_history_retention_notice": "Este historial no puede ser modificado ni eliminado. Se purga automáticamente cada 5 días."
 }
