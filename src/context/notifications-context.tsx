@@ -80,9 +80,9 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
   const playNotificationSound = useCallback(() => {
     const audio = new Audio('/notification.mp3');
     // Simuler une vibration si l'API est disponible
-    if ('vibrate' in navigator) {
-      navigator.vibrate(200); // Vibre pendant 200ms
-    }
+    // if ('vibrate' in navigator) {
+    //   navigator.vibrate(200); // Vibre pendant 200ms
+    // }
     audio.play().catch(error => console.error("Error playing sound:", error));
   }, []);
 
@@ -108,11 +108,12 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
   }, [settings.isReminderEnabled]);
 
   useEffect(() => {
-    if (isReminderEnabled) {
-      startReminders();
-    } else {
-      stopReminders();
-    }
+    // Désactivé temporairement pour corriger le bug de vibration
+    // if (isReminderEnabled) {
+    //   startReminders();
+    // } else {
+    //   stopReminders();
+    // }
     
     // Nettoyer l'intervalle lorsque le composant est démonté
     return () => stopReminders();

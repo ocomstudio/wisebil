@@ -644,44 +644,6 @@ export default function SettingsPage() {
               disabled={!settings.isPinLockEnabled}
             />
           </div>
-          {isMobile && (
-            <div className="flex items-center justify-between rounded-lg border p-4">
-                <div className="space-y-0.5">
-                    <h3 className="font-medium flex items-center gap-2"><Bell className="h-4 w-4" /> {t('notification_reminder_label')}</h3>
-                    <p className="text-sm text-muted-foreground">{t('notification_reminder_desc')}</p>
-                </div>
-                <Dialog open={isNotificationsDialogOpen} onOpenChange={setIsNotificationsDialogOpen}>
-                  <Switch
-                      checked={isReminderEnabled}
-                      onCheckedChange={handleToggleReminderNotifications}
-                  />
-                  <DialogContent>
-                      <DialogHeader>
-                          <DialogTitle>{t('notification_disable_warning_title')}</DialogTitle>
-                          <DialogDescription>{t('notification_disable_warning_desc')}</DialogDescription>
-                      </DialogHeader>
-                      <RadioGroup onValueChange={setNotificationDisableReason} className="space-y-2 py-4">
-                          <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="too_frequent" id="r1" />
-                              <Label htmlFor="r1">{t('notification_reason_too_frequent')}</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="sound_disturbing" id="r2" />
-                              <Label htmlFor="r2">{t('notification_reason_sound_disturbing')}</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="not_useful" id="r3" />
-                              <Label htmlFor="r3">{t('notification_reason_not_useful')}</Label>
-                          </div>
-                      </RadioGroup>
-                      <DialogFooter>
-                          <Button variant="ghost" onClick={() => setIsNotificationsDialogOpen(false)}>{t('cancel')}</Button>
-                          <Button onClick={handleConfirmDisableNotifications}>{t('notification_disable_confirm_button')}</Button>
-                      </DialogFooter>
-                  </DialogContent>
-              </Dialog>
-            </div>
-          )}
         </CardContent>
       </Card>
       
