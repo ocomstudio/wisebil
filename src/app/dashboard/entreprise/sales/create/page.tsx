@@ -80,6 +80,16 @@ export default function CreateSalePage() {
   const handleProductChange = (index: number, productId: string) => {
     const product = products.find(p => p.id === productId);
     if (product) {
+        if (product.quantity <= 0) {
+            toast({
+                variant: 'destructive',
+                title: 'Stock épuisé',
+                description: `Le produit "${product.name}" n'est plus en stock.`,
+            });
+            // Reset the selection or handle as needed
+            form.setValue(`items.${index}.productId`, '');
+            return;
+        }
       form.setValue(`items.${index}.price`, product.promoPrice || product.price);
     }
   };
@@ -120,7 +130,7 @@ export default function CreateSalePage() {
   };
 
   return (
-    <div className="space-y-6 pb-24 md:pb-0">
+    <div className="space-y-6 pb-24 md:pb-8">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" asChild>
           <Link href="/dashboard/entreprise">

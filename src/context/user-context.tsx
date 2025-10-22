@@ -17,6 +17,7 @@ import { doc, getDoc, setDoc, runTransaction } from 'firebase/firestore';
 import { v4 as uuidv4 } from "uuid";
 import type { Purchase } from '@/types/purchase';
 import type { ActivityLog } from '@/types/activity-log';
+import { useToast } from '@/hooks/use-toast';
 
 
 export interface UserData {
@@ -63,6 +64,7 @@ const UserDataContext = createContext<UserDataContextType | undefined>(undefined
 export const UserDataProvider = ({ children }: { children: ReactNode }) => {
   const { fullUserData, isLoading } = useAuth();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const getUserDocRef = useCallback(() => {
     if (!user) return null;
@@ -133,8 +135,17 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
             for (const item of newSale.items) {
                 const productIndex = updatedProducts.findIndex(p => p.id === item.productId);
                 if (productIndex !== -1) {
-                    const newQuantity = updatedProducts[productIndex].quantity - item.quantity;
-                    updatedProducts[productIndex] = { ...updatedProducts[productIndex], quantity: newQuantity >= 0 ? newQuantity : 0 };
+                    const product = updatedProducts[productIndex];
+                    const newQuantity = product.quantity - item.quantity;
+                    updatedProducts[productIndex] = { ...product, quantity: newQuantity >= 0 ? newQuantity : 0 };
+
+                    // Low stock notification
+                    if (newQuantity > 0 && newQuantity <= (product.initialQuantity * 0.25)) {
+                        toast({
+                            title: 'Stock Faible',
+                            description: `Le stock pour "${product.name}" est bas. Pensez à réapprovisionner.`,
+                        });
+                    }
                 }
             }
             
@@ -164,7 +175,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
       console.error("Failed to add sale and update stock", e);
       throw e;
     }
-  }, [getUserDocRef, user]);
+  }, [getUserDocRef, user, toast]);
 
   const value = useMemo(() => ({
     userData: fullUserData,

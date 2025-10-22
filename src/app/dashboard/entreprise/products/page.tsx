@@ -103,7 +103,13 @@ export default function ProductsPage() {
                             )}
                         </TableCell>
                         <TableCell>
-                            <Badge variant={product.quantity > (product.initialQuantity * 0.1) ? 'default' : product.quantity > 0 ? 'secondary' : 'destructive'} className={cn(product.quantity <= 0 && "bg-red-600/20 text-red-500 border-red-500/20", product.quantity > 0 && product.quantity <= (product.initialQuantity * 0.25) && "bg-yellow-600/20 text-yellow-500 border-yellow-500/20")}>
+                            <Badge variant={product.quantity > (product.initialQuantity * 0.25) ? 'default' : product.quantity > 0 ? 'secondary' : 'destructive'} 
+                                   className={cn(
+                                       product.quantity > (product.initialQuantity * 0.25) && "bg-green-600/20 text-green-500 border-green-500/20",
+                                       product.quantity > 0 && product.quantity <= (product.initialQuantity * 0.25) && "bg-yellow-600/20 text-yellow-500 border-yellow-500/20",
+                                       product.quantity <= 0 && "bg-red-600/20 text-red-500 border-red-500/20"
+                                   )}
+                            >
                                 {product.quantity} / {product.initialQuantity}
                             </Badge>
                         </TableCell>
