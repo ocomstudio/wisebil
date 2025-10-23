@@ -835,5 +835,9 @@
     "trial_days_remaining": "{{days}} trial days remaining",
     "upgrade_to_keep_features": "Upgrade to a plan to keep your features.",
     "see_plans_button": "See plans",
-    "plan_active": "{{planName}} plan active"
+    "plan_active": "{{planName}} plan active",
+    "payment_by_card_soon": "Soon by card",
+    "payment_refused": "Your payment has been refused. Please try again.",
+    "payment_success": "Your subscription is now active. Welcome!",
+    "payment_error_technical": "A technical error has occurred. Please try again later."
 }

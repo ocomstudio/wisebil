@@ -106,18 +106,18 @@ export default function BillingPage() {
 
         CinetPay.waitResponse(function(data: any) {
             if (data.status == "REFUSED") {
-                toast.error("Votre paiement a été refusé. Veuillez réessayer.");
+                toast.error(t('payment_refused'));
             } else if (data.status == "ACCEPTED") {
                 // Here you would ideally verify the transaction with your backend
                 // before granting the subscription.
-                toast.success("Votre abonnement est maintenant actif. Bienvenue !");
+                toast.success(t('payment_success'));
                 // Potentially update user context here or redirect.
             }
         });
 
         CinetPay.onError(function(data: any) {
             console.error("CinetPay Error:", data);
-             toast.error("Une erreur technique est survenue. Veuillez réessayer plus tard.");
+             toast.error(t('payment_error_technical'));
         });
     }
 
@@ -218,22 +218,24 @@ export default function BillingPage() {
                               >
                                 {t('current_plan_button')}
                               </Button>
-                           ) : (
-                                plan.name === 'custom' ? (
-                                    <Button asChild className="w-full">
-                                        <a href="mailto:contact@wisebil.com">
-                                            {plan.buttonText} <ArrowRight className="ml-2 h-4 w-4" />
-                                        </a>
-                                    </Button>
-                                ) : (
-                                    <Button
-                                        onClick={() => handlePayment(plan.name as 'premium' | 'business')}
-                                        className="w-full"
-                                    >
-                                        {plan.buttonText}
-                                    </Button>
-                                )
-                           )}
+                           ) : plan.name === 'custom' ? (
+                                <Button asChild className="w-full">
+                                    <a href="mailto:contact@wisebil.com">
+                                        {plan.buttonText} <ArrowRight className="ml-2 h-4 w-4" />
+                                    </a>
+                                </Button>
+                            ) : currency !== 'XOF' ? (
+                                <Button variant="outline" className="w-full" disabled>
+                                    {t('payment_by_card_soon')}
+                                </Button>
+                            ) : (
+                                <Button
+                                    onClick={() => handlePayment(plan.name as 'premium' | 'business')}
+                                    className="w-full"
+                                >
+                                    {plan.buttonText}
+                                </Button>
+                            )}
                         </div>
                     </Card>
                 ))}

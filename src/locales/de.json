@@ -835,5 +835,9 @@
     "trial_days_remaining": "{{days}} verbleibende Testtage",
     "upgrade_to_keep_features": "Upgraden Sie auf einen Plan, um Ihre Funktionen zu behalten.",
     "see_plans_button": "Pläne ansehen",
-    "plan_active": "{{planName}} Plan aktiv"
+    "plan_active": "{{planName}} Plan aktiv",
+    "payment_by_card_soon": "Bald per Karte",
+    "payment_refused": "Ihre Zahlung wurde abgelehnt. Bitte versuchen Sie es erneut.",
+    "payment_success": "Ihr Abonnement ist jetzt aktiv. Willkommen!",
+    "payment_error_technical": "Ein technischer Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
 }

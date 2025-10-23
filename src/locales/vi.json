@@ -835,5 +835,9 @@
     "trial_days_remaining": "Còn lại {{days}} ngày dùng thử",
     "upgrade_to_keep_features": "Nâng cấp lên một gói để giữ lại các tính năng của bạn.",
     "see_plans_button": "Xem các gói",
-    "plan_active": "Gói {{planName}} đang hoạt động"
+    "plan_active": "Gói {{planName}} đang hoạt động",
+    "payment_by_card_soon": "Sắp có bằng thẻ",
+    "payment_refused": "Thanh toán của bạn đã bị từ chối. Vui lòng thử lại.",
+    "payment_success": "Đăng ký của bạn hiện đang hoạt động. Chào mừng!",
+    "payment_error_technical": "Đã xảy ra lỗi kỹ thuật. Vui lòng thử lại sau."
 }

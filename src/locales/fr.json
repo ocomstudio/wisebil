@@ -835,5 +835,9 @@
     "trial_days_remaining": "Il vous reste {{days}} jours d'essai",
     "upgrade_to_keep_features": "Passez à un plan supérieur pour conserver vos fonctionnalités.",
     "see_plans_button": "Voir les plans",
-    "plan_active": "Plan {{planName}} actif"
+    "plan_active": "Plan {{planName}} actif",
+    "payment_by_card_soon": "Bientôt par carte",
+    "payment_refused": "Votre paiement a été refusé. Veuillez réessayer.",
+    "payment_success": "Votre abonnement est maintenant actif. Bienvenue !",
+    "payment_error_technical": "Une erreur technique est survenue. Veuillez réessayer plus tard."
 }

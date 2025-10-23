@@ -835,5 +835,9 @@
     "trial_days_remaining": "{{days}} días de prueba restantes",
     "upgrade_to_keep_features": "Actualice a un plan para conservar sus funciones.",
     "see_plans_button": "Ver planes",
-    "plan_active": "Plan {{planName}} activo"
+    "plan_active": "Plan {{planName}} activo",
+    "payment_by_card_soon": "Pronto con tarjeta",
+    "payment_refused": "Su pago ha sido rechazado. Por favor, inténtelo de nuevo.",
+    "payment_success": "Su suscripción ya está activa. ¡Bienvenido!",
+    "payment_error_technical": "Se ha producido un error técnico. Por favor, inténtelo de nuevo más tarde."
 }
