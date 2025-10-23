@@ -10,11 +10,7 @@ import { useAuth } from "@/context/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from 'uuid';
 import toast from 'react-hot-toast';
-import axios from 'axios';
-import type { Country } from 'react-phone-number-input';
 
-// This makes CinetPay functions available in the component
-declare const CinetPay: any;
 
 export const pricing = {
     premium: { XOF: 3000, EUR: 5, USD: 6 },
@@ -37,28 +33,11 @@ export default function BillingPage() {
     const { t, currency, formatCurrency, locale } = useLocale();
     const { user } = useAuth();
     const { toast: uiToast } = useToast();
-    const [detectedCountry, setDetectedCountry] = useState<Country>('CM');
     
     // This is placeholder logic. Replace with actual subscription status check.
     const isCurrentPlan = (plan: 'premium' | 'business') => {
         return user?.subscriptionStatus === 'active' && user?.subscriptionPlan === plan;
     };
-
-    useEffect(() => {
-        const fetchCountry = async () => {
-            try {
-                const response = await axios.get('https://ipapi.co/json/');
-                const countryCode = response.data?.country_code as Country | undefined;
-                if (countryCode) {
-                    setDetectedCountry(countryCode);
-                }
-            } catch (error) {
-                console.warn("Could not detect user country, defaulting to CM.", error);
-            }
-        };
-
-        fetchCountry();
-    }, []);
 
     const handlePayment = (plan: 'premium' | 'business') => {
         const apiKey = process.env.NEXT_PUBLIC_CINETPAY_API_KEY;
@@ -75,45 +54,30 @@ export default function BillingPage() {
 
         const planDetails = pricing[plan];
         const amount = planDetails.XOF;
-        const transactionId = `wisebil-${plan}-${uuidv4()}`;
+        const transactionId = `wisebil-${plan}-${uuidv4().substring(0, 8)}`;
         const description = `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} Wisebil`;
-
-        CinetPay.setConfig({
+        const returnUrl = window.location.href; // Redirect back to this page after payment
+        
+        const params = new URLSearchParams({
             apikey: apiKey,
             site_id: siteId,
-            notify_url: `${window.location.origin}/api/cinetpay-notify`,
-            mode: 'PRODUCTION'
-        });
-        
-        CinetPay.getCheckout({
             transaction_id: transactionId,
-            amount: amount,
+            amount: amount.toString(),
             currency: 'XOF',
-            channels: 'ALL',
             description: description,
+            channels: 'ALL',
+            return_url: returnUrl,
+            // Customer info
             customer_name: user?.displayName?.split(' ')[0] || "Utilisateur",
             customer_surname: user?.displayName?.split(' ').slice(1).join(' ') || "Wisebil",
             customer_email: user?.email || "",
             customer_phone_number: user?.phone || "",
-            customer_address: "N/A",
-            customer_city: "N/A",
-            customer_country : detectedCountry,
-            customer_state : detectedCountry,
-            customer_zip_code : "00000"
         });
 
-        CinetPay.waitResponse(function(data: any) {
-            if (data.status == "REFUSED") {
-                toast.error(t('payment_refused'));
-            } else if (data.status == "ACCEPTED") {
-                toast.success(t('payment_success'));
-            }
-        });
-
-        CinetPay.onError(function(data: any) {
-            console.error("CinetPay Error:", data);
-             toast.error(t('payment_error_technical'));
-        });
+        const paymentUrl = `https://checkout.cinetpay.com/payment?${params.toString()}`;
+        
+        // Redirect user to CinetPay checkout page
+        window.open(paymentUrl, '_blank');
     }
 
     const plans: Plan[] = [
