@@ -63,7 +63,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     type: 'website',
-    url: 'https://wisebil-596a8.web.app/', // Remplacez par votre URL de production
+    url: 'https://wisebil.com/',
     title: 'Wisebil - Votre Conseiller Financier IA',
     description: APP_DESCRIPTION,
     siteName: APP_NAME,
@@ -85,15 +85,33 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cinetpayApiKey = process.env.NEXT_PUBLIC_CINETPAY_API_KEY;
+  const cinetpaySiteId = process.env.NEXT_PUBLIC_CINETPAY_SITE_ID;
+
   return (
     <html lang="fr" suppressHydrationWarning className="dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
-         <link rel="manifest" href="/manifest.json" />
+        <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icons/icon-512x512.png"></link>
-        <Script src="https://cdn.cinetpay.com/seamless/main.js" strategy="beforeInteractive" />
+        
+        {/* Inject CinetPay SDK and config */}
+        <script src="https://cdn.cinetpay.com/seamless/main.js" strategy="beforeInteractive"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.CinetPay = window.CinetPay || {};
+              window.CinetPay.config = {
+                apikey: "${cinetpayApiKey}",
+                site_id: "${cinetpaySiteId}",
+                notify_url: "https://wisebil.com/api/cinetpay-notify",
+                mode: 'PRODUCTION'
+              };
+            `,
+          }}
+        />
       </head>
       <body className="font-body antialiased" suppressHydrationWarning={true}>
         <AuthProvider>

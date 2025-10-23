@@ -38,15 +38,13 @@ export default function BillingPage() {
 
     const handlePayment = (plan: 'premium' | 'business') => {
         const CinetPay = (window as any).CinetPay;
-        if (!CinetPay) {
+        if (!CinetPay || !CinetPay.getCheckout) {
             toast.error("Le service de paiement n'a pas pu être chargé. Veuillez rafraîchir la page.");
             return;
         }
-
-        const apiKey = process.env.NEXT_PUBLIC_CINETPAY_API_KEY;
-        const siteId = process.env.NEXT_PUBLIC_CINETPAY_SITE_ID;
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://wisebil-596a8.web.app';
-
+        
+        const apiKey = CinetPay.config?.apikey;
+        const siteId = CinetPay.config?.site_id;
 
         if (!apiKey || !siteId) {
             toast.error("Les informations de paiement ne sont pas configurées. Veuillez contacter le support.");
@@ -60,7 +58,7 @@ export default function BillingPage() {
         
         const nameParts = user.displayName.trim().split(' ');
         const customer_surname = nameParts.length > 1 ? nameParts.slice(1).join(' ').trim() : 'Wisebil';
-        const customer_name = nameParts[0].trim();
+        const customer_name = nameParts[0].trim() || 'Client';
 
         const planDetails = pricing[plan];
         const amount = planDetails.XOF;
@@ -68,13 +66,6 @@ export default function BillingPage() {
         const transaction_id = `wisebil-${plan}-${Math.floor(Math.random() * 100000000).toString()}`;
         const description = `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} Wisebil`;
         
-        CinetPay.setConfig({
-            apikey: apiKey,
-            site_id: siteId,
-            notify_url: `${appUrl}/api/cinetpay-notify`,
-            mode: 'PRODUCTION'
-        });
-
         CinetPay.getCheckout({
             transaction_id,
             amount,
@@ -85,7 +76,7 @@ export default function BillingPage() {
             customer_surname,
             customer_email: user.email.trim(),
             customer_phone_number: (user.phone || "").trim(),
-            customer_address: "BP 0024",
+            customer_address : "BP 0024",
             customer_city: "Dakar",
             customer_country : "SN",
             customer_state : "SN",
@@ -246,5 +237,3 @@ export default function BillingPage() {
         </div>
     )
 }
-
-    
