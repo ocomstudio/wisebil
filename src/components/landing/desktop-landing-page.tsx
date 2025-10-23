@@ -203,17 +203,16 @@ export default function DesktopLandingPage() {
     ]
 
     const pricing = {
-        premium: { XOF: 3000 },
-        business: { XOF: 9900 },
+        premium: { XOF: 3000, EUR: 5, USD: 6 },
+        business: { XOF: 9900, EUR: 15, USD: 16 },
     };
 
-  return (
-    <AuthProvider>
+    return (
         <TooltipProvider>
             <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
             <header className="w-full px-4 lg:px-6 h-16 flex justify-center bg-background/80 backdrop-blur-sm sticky top-0 z-50 border-b border-border/50">
                 <div className="w-full max-w-7xl flex items-center">
-                    <Logo />
+                    <Logo isLink={true} />
                     <nav className="ml-auto hidden lg:flex gap-6 items-center">
                         <Link className="text-sm font-medium hover:text-primary transition-colors" href="#features">
                             {t('nav_features')}
@@ -343,19 +342,19 @@ export default function DesktopLandingPage() {
                                 </p>
                             </div>
                         </div>
-                        <div className="mx-auto grid max-w-5xl items-stretch gap-8 grid-cols-1 lg:grid-cols-3 mt-12">
+                        <div className="mx-auto grid max-w-7xl items-stretch gap-8 grid-cols-1 lg:grid-cols-4 mt-12">
+                           
                             <Card className="flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/10 shadow-lg">
                                 <CardHeader className="pb-4">
                                     <CardTitle className="font-headline text-2xl">{t('plan_free_title')}</CardTitle>
-                                    <p className="text-4xl font-bold">{formatCurrency(0, currency)} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
-                                    <p className="text-muted-foreground text-sm pt-2">{t('plan_free_desc')}</p>
+                                    <p className="text-4xl font-bold">{formatCurrency(0, 'XOF')} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
+                                    <p className="text-muted-foreground text-sm pt-2 min-h-[40px]">{t('plan_free_desc')}</p>
                                 </CardHeader>
                                 <CardContent className="flex-1 space-y-4">
                                     <ul className="space-y-2 text-sm">
-                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_transactions')}</li>
-                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_budgets')}</li>
-                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_assistant_free')}</li>
-                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_agent_free')}</li>
+                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('feature_personal_finance')}</li>
+                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('feature_enterprise_trial')}</li>
+                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('feature_ai_limited')}</li>
                                     </ul>
                                 </CardContent>
                                 <div className="p-6 pt-0 mt-auto">
@@ -371,61 +370,65 @@ export default function DesktopLandingPage() {
                                     </Dialog>
                                 </div>
                             </Card>
+
                             <Card className="flex flex-col border-primary shadow-2xl shadow-primary/20 transform-gpu scale-105">
                                 <CardHeader className="pb-4">
                                     <p className="text-sm font-semibold text-primary">{t('plan_premium_badge')}</p>
                                     <CardTitle className="font-headline text-2xl">{t('plan_premium_title')}</CardTitle>
-                                    <p className="text-4xl font-bold">{formatCurrency(pricing.premium.XOF, 'XOF')} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
-                                    <p className="text-muted-foreground text-sm pt-2">{t('plan_premium_desc')}</p>
+                                    <p className="text-4xl font-bold">{formatCurrency(pricing.premium[currency], currency)} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
+                                    <p className="text-muted-foreground text-sm pt-2 min-h-[40px]">{t('plan_premium_desc')}</p>
                                 </CardHeader>
                                 <CardContent className="flex-1 space-y-4">
                                     <ul className="space-y-2 text-sm">
-                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_all_free')}</li>
-                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_assistant_premium')}</li>
-                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_agent_premium')}</li>
-                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_support')}</li>
+                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('feature_enterprise_full')}</li>
+                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('feature_ai_premium')}</li>
+                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('feature_reports_daily')}</li>
+                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('feature_one_business')}</li>
                                     </ul>
                                 </CardContent>
                                 <div className="p-6 pt-0 mt-auto">
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <div className="w-full">
-                                            <Button disabled={true} className="w-full">{t('upgrade_premium_button')}</Button>
-                                        </div>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>Les paiements sont temporairement indisponibles.</p>
-                                      </TooltipContent>
-                                    </Tooltip>
+                                    <Button className="w-full">{t('upgrade_premium_button')}</Button>
                                 </div>
                             </Card>
+
                             <Card className="flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/10 shadow-lg">
                                 <CardHeader className="pb-4">
                                     <CardTitle className="font-headline text-2xl">{t('plan_business_title')}</CardTitle>
-                                    <p className="text-4xl font-bold">{formatCurrency(pricing.business.XOF, 'XOF')} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
-                                    <p className="text-muted-foreground text-sm pt-2">{t('plan_business_desc')}</p>
+                                    <p className="text-4xl font-bold">{formatCurrency(pricing.business[currency], currency)} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
+                                    <p className="text-muted-foreground text-sm pt-2 min-h-[40px]">{t('plan_business_desc')}</p>
                                 </CardHeader>
                                 <CardContent className="flex-1 space-y-4">
                                     <ul className="space-y-2 text-sm">
-                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_all_premium')}</li>
-                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_assistant_business')}</li>
-                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_agent_business')}</li>
-                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('plan_feature_early_access')}</li>
+                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('feature_all_premium')}</li>
+                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('feature_ai_unlimited')}</li>
+                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('feature_reports_full')}</li>
+                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('feature_three_businesses')}</li>
+                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('feature_history_export')}</li>
                                     </ul>
                                 </CardContent>
                                 <div className="p-6 pt-0 mt-auto">
-                                     <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <div className="w-full">
-                                            <Button disabled={true} variant="outline" className="w-full">{t('choose_plan_button')}</Button>
-                                        </div>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>Les paiements sont temporairement indisponibles.</p>
-                                      </TooltipContent>
-                                    </Tooltip>
+                                    <Button variant="outline" className="w-full">{t('upgrade_business_button')}</Button>
                                 </div>
                             </Card>
+
+                             <Card className="flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/10 shadow-lg">
+                                <CardHeader className="pb-4">
+                                    <CardTitle className="font-headline text-2xl">{t('plan_custom_title')}</CardTitle>
+                                    <p className="text-4xl font-bold">{t('on_demand')}</p>
+                                    <p className="text-muted-foreground text-sm pt-2 min-h-[40px]">{t('plan_custom_desc')}</p>
+                                </CardHeader>
+                                <CardContent className="flex-1 space-y-4">
+                                    <ul className="space-y-2 text-sm">
+                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('feature_all_business')}</li>
+                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('feature_dedicated_support')}</li>
+                                        <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {t('feature_custom_integrations')}</li>
+                                    </ul>
+                                </CardContent>
+                                <div className="p-6 pt-0 mt-auto">
+                                    <Button variant="outline" className="w-full" asChild><Link href="/contact">{t('contact_us_button')}</Link></Button>
+                                </div>
+                            </Card>
+
                         </div>
                     </div>
                 </section>
@@ -522,7 +525,7 @@ export default function DesktopLandingPage() {
                 <div className="w-full max-w-7xl px-4 md:px-6 py-8">
                 <div className="grid gap-8 lg:grid-cols-4">
                     <div className="space-y-4">
-                    <Logo />
+                    <Logo isLink={true} />
                     <p className="text-sm text-muted-foreground">{t('footer_desc')}</p>
                     <div className="flex gap-2">
                         <Button variant="ghost" size="icon" className="text-muted-foreground"><Twitter className="h-4 w-4" /></Button>
@@ -569,6 +572,5 @@ export default function DesktopLandingPage() {
             </footer>
             </div>
         </TooltipProvider>
-    </AuthProvider>
   );
 }
