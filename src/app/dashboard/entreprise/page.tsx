@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, ShoppingCart, Package, DollarSign, ArrowUpRight, Leaf, Settings, RefreshCw, Activity, AlertCircle } from "lucide-react";
+import { PlusCircle, ShoppingCart, Package, DollarSign, ArrowUpRight, Leaf, Settings, RefreshCw, Activity, AlertCircle, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { useSales } from "@/context/sales-context";
 import { useProducts } from "@/context/product-context";
@@ -12,6 +12,7 @@ import { useLocale } from "@/context/locale-context";
 import { usePurchases } from "@/context/purchase-context";
 import { ActivityHistory } from "@/components/dashboard/entreprise/activity-history";
 import { useAuth } from "@/context/auth-context";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function EnterprisePage() {
   const { sales } = useSales();
@@ -20,6 +21,7 @@ export default function EnterprisePage() {
   const { t, formatCurrency } = useLocale();
   const { user } = useAuth(); // Assuming user object contains subscription info
   const [isActivityHistoryOpen, setIsActivityHistoryOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
   const totalProductsSold = sales.reduce((sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
@@ -163,7 +165,14 @@ export default function EnterprisePage() {
       <div className="grid gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
+              <div className="flex items-center justify-between">
                 <CardTitle>{t('recent_sales_title')}</CardTitle>
+                {isMobile && sales.length > 0 && (
+                  <Button asChild variant="link" size="sm">
+                    <Link href="/dashboard/entreprise/sales/invoices">{t('see_all')}</Link>
+                  </Button>
+                )}
+              </div>
                 <CardDescription>{t('recent_sales_desc')}</CardDescription>
             </CardHeader>
             <CardContent>
@@ -233,8 +242,15 @@ export default function EnterprisePage() {
           </Card>
            <Card className="lg:col-span-2">
             <CardHeader>
+              <div className="flex items-center justify-between">
                 <CardTitle>{t('recent_purchases_title')}</CardTitle>
-                <CardDescription>{t('recent_purchases_desc')}</CardDescription>
+                {isMobile && purchases.length > 0 && (
+                   <Button asChild variant="link" size="sm">
+                    <Link href="/dashboard/entreprise/purchases/invoices">{t('see_all')}</Link>
+                  </Button>
+                )}
+              </div>
+              <CardDescription>{t('recent_purchases_desc')}</CardDescription>
             </CardHeader>
             <CardContent>
                 {purchases.length > 0 ? (
