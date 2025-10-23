@@ -52,11 +52,23 @@ export default function BillingPage() {
             return;
         }
 
+        if (!user || !user.displayName || !user.email) {
+            uiToast({
+                variant: "destructive",
+                title: "Informations utilisateur manquantes",
+                description: "Impossible de procéder au paiement sans les informations complètes de l'utilisateur.",
+            });
+            return;
+        }
+
+        const nameParts = user.displayName.trim().split(' ');
+        const customer_name = nameParts[0];
+        const customer_surname = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Wisebil';
+        
         const planDetails = pricing[plan];
         const amount = planDetails.XOF;
         const transactionId = `wisebil-${plan}-${uuidv4().substring(0, 8)}`;
         const description = `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} Wisebil`;
-        const returnUrl = window.location.href; // Redirect back to this page after payment
         
         const params = new URLSearchParams({
             apikey: apiKey,
@@ -66,19 +78,44 @@ export default function BillingPage() {
             currency: 'XOF',
             description: description,
             channels: 'ALL',
-            return_url: returnUrl,
+            // return_url is where the user is sent after payment attempt. CinetPay adds status parameters.
+            return_url: window.location.href,
+            // notify_url is a backend webhook CinetPay calls to confirm the transaction status.
+            // It's required, even if you only handle confirmation on the client-side via return_url.
+            notify_url: `${window.location.origin}/api/cinetpay-notify`,
             // Customer info
-            customer_name: user?.displayName?.split(' ')[0] || "Utilisateur",
-            customer_surname: user?.displayName?.split(' ').slice(1).join(' ') || "Wisebil",
-            customer_email: user?.email || "",
-            customer_phone_number: user?.phone || "",
+            customer_name: customer_name.trim(),
+            customer_surname: customer_surname.trim(),
+            customer_email: user.email.trim(),
+            customer_phone_number: (user.phone || "").trim(),
+            customer_address: "BP 0024", // Placeholder
+            customer_city: "Dakar", // Placeholder
+            customer_country: "SN", // Placeholder for Senegal
+            customer_state: "SN", // Placeholder
+            customer_zip_code: "00221", // Placeholder
         });
 
         const paymentUrl = `https://checkout.cinetpay.com/payment?${params.toString()}`;
         
-        // Redirect user to CinetPay checkout page
-        window.open(paymentUrl, '_blank');
+        window.location.href = paymentUrl;
     }
+    
+    // Gestion des retours de CinetPay
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentStatus = urlParams.get('transaction_status');
+        
+        if (paymentStatus) {
+            if (paymentStatus === 'ACCEPTED') {
+                 toast.success(t('payment_success'));
+            } else if (paymentStatus === 'REFUSED') {
+                toast.error(t('payment_refused'));
+            }
+            // Nettoyer l'URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }, [t]);
+
 
     const plans: Plan[] = [
         {
@@ -183,7 +220,7 @@ export default function BillingPage() {
                                         {plan.buttonText} <ArrowRight className="ml-2 h-4 w-4" />
                                     </a>
                                 </Button>
-                            ) : currency !== 'XOF' ? (
+                             ) : currency !== 'XOF' ? (
                                 <Button variant="outline" className="w-full" disabled>
                                     {t('payment_by_card_soon')}
                                 </Button>
