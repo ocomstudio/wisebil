@@ -74,7 +74,6 @@ export default function BillingPage() {
         }
 
         const planDetails = pricing[plan];
-        // Always use XOF for CinetPay transaction amount
         const amount = planDetails.XOF;
         const transactionId = `wisebil-${plan}-${uuidv4()}`;
         const description = `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} Wisebil`;
@@ -83,21 +82,20 @@ export default function BillingPage() {
             apikey: apiKey,
             site_id: siteId,
             notify_url: `${window.location.origin}/api/cinetpay-notify`,
-            mode: 'PRODUCTION' // Use 'PRODUCTION' for real payments
+            mode: 'PRODUCTION'
         });
         
         CinetPay.getCheckout({
             transaction_id: transactionId,
             amount: amount,
-            currency: 'XOF', // Force XOF for the transaction
+            currency: 'XOF',
             channels: 'ALL',
             description: description,
-            // Customer information
             customer_name: user?.displayName?.split(' ')[0] || "Utilisateur",
             customer_surname: user?.displayName?.split(' ').slice(1).join(' ') || "Wisebil",
             customer_email: user?.email || "",
             customer_phone_number: user?.phone || "",
-            customer_address: "N/A", // Can be improved later
+            customer_address: "N/A",
             customer_city: "N/A",
             customer_country : detectedCountry,
             customer_state : detectedCountry,
@@ -108,10 +106,7 @@ export default function BillingPage() {
             if (data.status == "REFUSED") {
                 toast.error(t('payment_refused'));
             } else if (data.status == "ACCEPTED") {
-                // Here you would ideally verify the transaction with your backend
-                // before granting the subscription.
                 toast.success(t('payment_success'));
-                // Potentially update user context here or redirect.
             }
         });
 

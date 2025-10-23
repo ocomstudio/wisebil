@@ -29,9 +29,12 @@ const nextConfig = {
       },
     ],
   },
-  env: {
-
-  }
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '4mb',
+    },
+  },
+  // env is no longer needed here as long as variables are prefixed with NEXT_PUBLIC_
 };
 
 module.exports = nextConfig;
