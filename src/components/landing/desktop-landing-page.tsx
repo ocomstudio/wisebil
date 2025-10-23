@@ -203,9 +203,26 @@ export default function DesktopLandingPage() {
     ]
 
     const pricing = {
-        premium: { XOF: 3000, EUR: 5, USD: 6 },
+        premium: { XOF: 5000, EUR: 8, USD: 9 },
         business: { XOF: 9900, EUR: 15, USD: 16 },
     };
+
+    const handleSubscriptionClick = (plan: string) => {
+        if (firebaseUser) {
+            router.push('/dashboard/billing');
+        } else {
+            sessionStorage.setItem('redirect_plan', plan);
+            // This logic assumes you have a way to open the signup dialog.
+            // You might need to lift state up or use a global state manager for the dialog.
+            // For now, let's just log it.
+            console.log("User not logged in, opening signup dialog for plan:", plan);
+            const signupButton = document.querySelector('button[data-dialog-trigger="signup"]');
+            if (signupButton) {
+                (signupButton as HTMLButtonElement).click();
+            }
+        }
+    };
+
 
     return (
         <TooltipProvider>
@@ -387,7 +404,7 @@ export default function DesktopLandingPage() {
                                     </ul>
                                 </CardContent>
                                 <div className="p-6 pt-0 mt-auto">
-                                    <Button className="w-full">{t('upgrade_premium_button')}</Button>
+                                    <Button className="w-full" onClick={() => handleSubscriptionClick('premium')}>{t('upgrade_premium_button')}</Button>
                                 </div>
                             </Card>
 
@@ -407,7 +424,7 @@ export default function DesktopLandingPage() {
                                     </ul>
                                 </CardContent>
                                 <div className="p-6 pt-0 mt-auto">
-                                    <Button variant="outline" className="w-full">{t('upgrade_business_button')}</Button>
+                                    <Button variant="outline" className="w-full" onClick={() => handleSubscriptionClick('business')}>{t('upgrade_business_button')}</Button>
                                 </div>
                             </Card>
 
