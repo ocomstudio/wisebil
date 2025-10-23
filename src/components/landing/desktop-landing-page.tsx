@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/common/logo';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Check, Eye, BarChart, Bot, Shield, Star, Twitter, Facebook, Instagram, HeartHandshake, Zap, Rocket, Info, Briefcase, FileText, PiggyBank, Target, Scale, Globe } from 'lucide-react';
+import { Check, Eye, BarChart, Bot, Shield, Star, Twitter, Facebook, Instagram, HeartHandshake, Zap, Rocket, Info, Briefcase, FileText, PiggyBank, Target, Scale, Globe, ShoppingCart, Package, RefreshCw } from 'lucide-react';
 import { GooglePlayLogo } from './logos/google-play-logo';
 import { AppStoreLogo } from './logos/app-store-logo';
 import { LanguageSelector } from '../common/language-selector';
@@ -16,7 +16,7 @@ import type { Currency } from '@/context/locale-context';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import LoginPage from '@/app/auth/login/page';
 import SignupPage from '@/app/auth/signup/page';
-import { AuthProvider, useAuth } from '@/context/auth-context';
+import { useAuth } from '@/context/auth-context';
 import { useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { useRouter } from 'next/navigation';
@@ -116,9 +116,9 @@ export default function DesktopLandingPage() {
             description: t('feature2_desc'),
         },
         {
-            icon: <FileText className="h-8 w-8 text-primary" />,
-            title: t('feature3_title'),
-            description: t('feature3_desc'),
+            icon: <Briefcase className="h-8 w-8 text-primary" />,
+            title: t('feature_enterprise_title'),
+            description: t('feature_enterprise_desc'),
         },
         {
             icon: <Scale className="h-8 w-8 text-primary" />,
