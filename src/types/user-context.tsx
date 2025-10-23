@@ -16,7 +16,8 @@ import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, runTransaction } from 'firebase/firestore';
 import { v4 as uuidv4 } from "uuid";
 import type { Purchase } from '@/types/purchase';
-import type { ActivityLog } from './activity-log';
+import type { ActivityLog } from '@/types/activity-log';
+import { useToast } from '@/hooks/use-toast';
 
 
 export interface UserData {
@@ -55,6 +56,7 @@ interface UserDataContextType {
   isLoading: boolean;
   updateUserData: (data: Partial<UserData>) => Promise<void>;
   addUserSale: (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber'>) => Promise<Sale>;
+  logActivity: (activity: Omit<ActivityLog, 'id' | 'timestamp' | 'userName' | 'userId'>) => Promise<void>;
 }
 
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
@@ -62,6 +64,7 @@ const UserDataContext = createContext<UserDataContextType | undefined>(undefined
 export const UserDataProvider = ({ children }: { children: ReactNode }) => {
   const { fullUserData, isLoading } = useAuth();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const getUserDocRef = useCallback(() => {
     if (!user) return null;
@@ -79,6 +82,20 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
       throw error;
     }
   }, [getUserDocRef]);
+  
+  const logActivity = useCallback(async (activity: Omit<ActivityLog, 'id' | 'timestamp' | 'userName' | 'userId'>) => {
+    if (!user) return;
+    const newLog: ActivityLog = {
+      id: uuidv4(),
+      timestamp: new Date().toISOString(),
+      userName: user.displayName || 'Utilisateur inconnu',
+      userId: user.uid,
+      ...activity,
+    };
+    const currentActivities = fullUserData?.enterpriseActivities || [];
+    await updateUserData({ enterpriseActivities: [newLog, ...currentActivities] });
+  }, [user, fullUserData?.enterpriseActivities, updateUserData]);
+
 
    const addUserSale = useCallback(async (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber'>): Promise<Sale> => {
     const userDocRef = getUserDocRef();
@@ -118,15 +135,27 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
             for (const item of newSale.items) {
                 const productIndex = updatedProducts.findIndex(p => p.id === item.productId);
                 if (productIndex !== -1) {
-                    const newQuantity = updatedProducts[productIndex].quantity - item.quantity;
-                    updatedProducts[productIndex] = { ...updatedProducts[productIndex], quantity: newQuantity >= 0 ? newQuantity : 0 };
+                    const product = updatedProducts[productIndex];
+                    const newQuantity = product.quantity - item.quantity;
+                    updatedProducts[productIndex] = { ...product, quantity: newQuantity >= 0 ? newQuantity : 0 };
                 }
             }
+            
+             const newLog: ActivityLog = {
+              id: uuidv4(),
+              timestamp: new Date().toISOString(),
+              type: 'sale_created',
+              description: `Vente #${invoiceNumber} créée pour ${newSale.customerName}.`,
+              userName: user?.displayName || 'Unknown',
+              userId: user?.uid || 'Unknown',
+            };
+            const currentActivities = currentData.enterpriseActivities || [];
             
             transaction.update(userDocRef, { 
                 sales: updatedSales,
                 products: updatedProducts,
                 saleInvoiceCounter: newCount,
+                enterpriseActivities: [newLog, ...currentActivities],
             });
         });
         if (newSale) {
@@ -138,14 +167,15 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
       console.error("Failed to add sale and update stock", e);
       throw e;
     }
-  }, [getUserDocRef]);
+  }, [getUserDocRef, user, toast]);
 
   const value = useMemo(() => ({
     userData: fullUserData,
     isLoading,
     updateUserData,
     addUserSale,
-  }), [fullUserData, isLoading, updateUserData, addUserSale]);
+    logActivity
+  }), [fullUserData, isLoading, updateUserData, addUserSale, logActivity]);
 
   return (
     <UserDataContext.Provider value={value}>

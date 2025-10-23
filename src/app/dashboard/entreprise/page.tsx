@@ -4,23 +4,64 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, ShoppingCart, Package, DollarSign, ArrowUpRight, Leaf, Settings, RefreshCw, Activity } from "lucide-react";
+import { PlusCircle, ShoppingCart, Package, DollarSign, ArrowUpRight, Leaf, Settings, RefreshCw, Activity, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useSales } from "@/context/sales-context";
 import { useProducts } from "@/context/product-context";
 import { useLocale } from "@/context/locale-context";
 import { usePurchases } from "@/context/purchase-context";
 import { ActivityHistory } from "@/components/dashboard/entreprise/activity-history";
+import { useAuth } from "@/context/auth-context";
 
 export default function EnterprisePage() {
   const { sales } = useSales();
   const { products } = useProducts();
   const { purchases } = usePurchases();
   const { t, formatCurrency } = useLocale();
+  const { user } = useAuth(); // Assuming user object contains subscription info
   const [isActivityHistoryOpen, setIsActivityHistoryOpen] = useState(false);
 
   const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
   const totalProductsSold = sales.reduce((sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
+
+  // Placeholder for trial days logic
+  const trialDaysRemaining = 28; 
+  const subscriptionStatus = user?.subscriptionPlan || 'trial'; // 'trial', 'premium', 'business'
+
+  const SubscriptionBanner = () => {
+    if (subscriptionStatus === 'premium' || subscriptionStatus === 'business') {
+      return (
+        <Card className="bg-green-600/10 border-green-600/20 text-green-500">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+                <CheckCircle className="h-5 w-5" />
+                <span>{t('plan_active', { planName: t(`plan_${subscriptionStatus}_title`) })}</span>
+            </CardTitle>
+          </CardHeader>
+        </Card>
+      )
+    }
+    return (
+       <Card className="bg-amber-500/10 border-amber-500/20 text-amber-500">
+          <CardHeader>
+            <div className="flex justify-between items-center">
+                <div>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <AlertCircle className="h-5 w-5" />
+                        <span>{t('trial_days_remaining', { days: trialDaysRemaining })}</span>
+                    </CardTitle>
+                    <CardDescription className="text-amber-500/80 text-xs mt-1">
+                        {t('upgrade_to_keep_features')}
+                    </CardDescription>
+                </div>
+                 <Button asChild size="sm" variant="outline" className="bg-amber-500/20 border-amber-500/30 hover:bg-amber-500/30">
+                    <Link href="/dashboard/billing">{t('see_plans_button')}</Link>
+                </Button>
+            </div>
+          </CardHeader>
+        </Card>
+    )
+  }
 
   return (
     <div className="space-y-6 pb-24 md:pb-8">
@@ -39,6 +80,8 @@ export default function EnterprisePage() {
             </Button>
          </div>
       </div>
+      
+      <SubscriptionBanner />
 
        <Card className="bg-card text-card-foreground shadow-xl rounded-2xl overflow-hidden relative border-primary/20 transform-gpu transition-transform hover:scale-[1.02]">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-transparent z-0 opacity-40"></div>

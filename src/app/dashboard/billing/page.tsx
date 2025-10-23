@@ -5,24 +5,24 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useLocale } from "@/context/locale-context";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const pricing = {
-    premium: { XOF: 3000, EUR: 5, USD: 5 },
+    premium: { XOF: 5000, EUR: 8, USD: 9 },
     business: { XOF: 9900, EUR: 15, USD: 16 },
 };
 
 interface Plan {
-  name: 'free' | 'premium' | 'business';
+  name: 'free' | 'premium' | 'business' | 'custom';
   title: string;
-  prices: { XOF: number; EUR: number; USD: number };
+  prices: { XOF: number; EUR: number; USD: number } | null;
   description: string;
   features: string[];
   isCurrent: boolean;
-  buttonText?: string; 
+  buttonText: string; 
   isPopular?: boolean;
 }
 
@@ -30,11 +30,20 @@ interface Plan {
 export default function BillingPage() {
     const { t, currency, formatCurrency } = useLocale();
     const { user } = useAuth();
+    const { toast } = useToast();
     
+    // This is placeholder logic. Replace with actual subscription status check.
     const isCurrentPlan = (plan: 'premium' | 'business') => {
-        // This is a placeholder logic. You should replace it with your actual subscription status check.
-        return user?.subscriptionStatus === 'active' && plan === 'premium';
+        return user?.subscriptionStatus === 'active' && user?.subscriptionPlan === plan;
     };
+    
+    const handlePayment = (plan: 'premium' | 'business') => {
+        // Here you would integrate with CinetPay
+        toast({
+            title: "Redirection vers CinetPay...",
+            description: "Vous allez être redirigé pour finaliser votre paiement.",
+        });
+    }
 
     const plans: Plan[] = [
         {
@@ -43,12 +52,11 @@ export default function BillingPage() {
             prices: { XOF: 0, EUR: 0, USD: 0 },
             description: t('plan_free_desc'),
             features: [
-                t('plan_feature_transactions'),
-                t('plan_feature_budgets'),
-                t('plan_feature_assistant_free'),
-                t('plan_feature_agent_free')
+                t('feature_personal_finance'),
+                t('feature_enterprise_trial'),
+                t('feature_ai_limited'),
             ],
-            isCurrent: user?.subscriptionStatus === 'inactive' || !user?.subscriptionStatus,
+            isCurrent: user?.subscriptionStatus !== 'active',
             buttonText: t('current_plan_button'),
         },
         {
@@ -57,13 +65,14 @@ export default function BillingPage() {
             prices: pricing.premium,
             description: t('plan_premium_desc'),
             features: [
-                t('plan_feature_all_free'),
-                t('plan_feature_assistant_premium'),
-                t('plan_feature_agent_premium'),
-                t('plan_feature_support')
+                t('feature_enterprise_full'),
+                t('feature_ai_premium'),
+                t('feature_reports_daily'),
+                t('feature_one_business'),
             ],
             isCurrent: isCurrentPlan('premium'),
             isPopular: true,
+            buttonText: t('upgrade_premium_button'),
         },
         {
             name: 'business',
@@ -71,12 +80,27 @@ export default function BillingPage() {
             prices: pricing.business,
             description: t('plan_business_desc'),
             features: [
-                t('plan_feature_all_premium'),
-                t('plan_feature_assistant_business'),
-                t('plan_feature_agent_business'),
-                t('plan_feature_early_access')
+                t('feature_all_premium'),
+                t('feature_ai_unlimited'),
+                t('feature_reports_full'),
+                t('feature_three_businesses'),
+                t('feature_history_export')
             ],
             isCurrent: isCurrentPlan('business'),
+            buttonText: t('upgrade_business_button'),
+        },
+        {
+            name: 'custom',
+            title: t('plan_custom_title'),
+            prices: null,
+            description: t('plan_custom_desc'),
+            features: [
+                t('feature_all_business'),
+                t('feature_dedicated_support'),
+                t('feature_custom_integrations'),
+            ],
+            isCurrent: false,
+            buttonText: t('contact_us_button'),
         }
     ]
 
@@ -88,19 +112,25 @@ export default function BillingPage() {
                 <p className="text-muted-foreground mt-2">{t('billing_page_subtitle')}</p>
             </div>
 
-             <div className="mx-auto grid max-w-5xl items-stretch gap-8 grid-cols-1 lg:grid-cols-3 mt-12">
+             <div className="mx-auto grid max-w-7xl items-stretch gap-8 grid-cols-1 lg:grid-cols-4 mt-12">
                 {plans.map(plan => (
-                     <Card key={plan.name} className={`flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/20 shadow-xl ${plan.isPopular ? 'border-primary shadow-2xl shadow-primary/20 scale-105' : ''}`}>
+                     <Card key={plan.name} className={`flex flex-col transform-gpu transition-transform hover:scale-105 hover:shadow-primary/20 shadow-xl ${plan.isPopular ? 'border-primary shadow-2xl shadow-primary/20 scale-105' : 'border-border'}`}>
                         <CardHeader className="pb-4">
                             {plan.isPopular && <p className="text-sm font-semibold text-primary">{t('plan_premium_badge')}</p>}
                             <CardTitle className="font-headline text-2xl">{plan.title}</CardTitle>
-                            <p className="text-4xl font-bold">{formatCurrency(plan.prices[currency], currency)} <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span></p>
+                            <p className="text-4xl font-bold">
+                                {plan.prices ? formatCurrency(plan.prices[currency], currency) : <span className="text-2xl">{t('on_demand')}</span>}
+                                {plan.prices && <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span>}
+                            </p>
                             <CardDescription className="text-sm pt-2 min-h-[40px]">{plan.description}</CardDescription>
                         </CardHeader>
                         <CardContent className="flex-1 space-y-4">
                             <ul className="space-y-2 text-sm">
                                {plan.features.map(feature => (
-                                    <li key={feature} className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {feature}</li>
+                                    <li key={feature} className="flex items-start gap-2">
+                                        <Check className="h-4 w-4 text-primary mt-1 shrink-0" /> 
+                                        <span>{feature}</span>
+                                    </li>
                                ))}
                             </ul>
                         </CardContent>
@@ -114,21 +144,30 @@ export default function BillingPage() {
                                 {t('current_plan_button')}
                               </Button>
                            ) : (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                 <div className="w-full">
-                                    <Button
-                                        className="w-full"
-                                        disabled={true}
-                                    >
-                                        {t('upgrade_premium_button')}
+                                plan.name === 'custom' ? (
+                                    <Button asChild className="w-full">
+                                        <a href="mailto:contact@wisebil.com">
+                                            {plan.buttonText} <ArrowRight className="ml-2 h-4 w-4" />
+                                        </a>
                                     </Button>
-                                 </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Les paiements sont temporairement indisponibles.</p>
-                              </TooltipContent>
-                            </Tooltip>
+                                ) : (
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="w-full">
+                                            <Button
+                                                onClick={() => handlePayment(plan.name as 'premium' | 'business')}
+                                                className="w-full"
+                                                disabled={true} // Re-enable once CinetPay logic is fully integrated
+                                            >
+                                                {plan.buttonText}
+                                            </Button>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Le paiement en ligne sera bientôt disponible.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                )
                            )}
                         </div>
                     </Card>

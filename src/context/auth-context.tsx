@@ -19,6 +19,7 @@ export interface User {
   profileComplete?: boolean;
   stripeCustomerId?: string;
   subscriptionStatus?: 'active' | 'inactive';
+  subscriptionPlan?: 'premium' | 'business';
   hasCompletedTutorial?: boolean;
   emailVerified?: boolean;
 }
