@@ -85,8 +85,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cinetpayApiKey = process.env.NEXT_PUBLIC_CINETPAY_API_KEY;
-  const cinetpaySiteId = process.env.NEXT_PUBLIC_CINETPAY_SITE_ID;
 
   return (
     <html lang="fr" suppressHydrationWarning className="dark">
@@ -97,21 +95,8 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icons/icon-512x512.png"></link>
         
-        {/* Inject CinetPay SDK and config */}
-        <script src="https://cdn.cinetpay.com/seamless/main.js" strategy="beforeInteractive"></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.CinetPay = window.CinetPay || {};
-              window.CinetPay.config = {
-                apikey: "${cinetpayApiKey}",
-                site_id: "${cinetpaySiteId}",
-                notify_url: "https://wisebil.com/api/cinetpay-notify",
-                mode: 'PRODUCTION'
-              };
-            `,
-          }}
-        />
+        {/* Inject CinetPay SDK */}
+        <script src="https://cdn.cinetpay.com/seamless/main.js" async></script>
       </head>
       <body className="font-body antialiased" suppressHydrationWarning={true}>
         <AuthProvider>

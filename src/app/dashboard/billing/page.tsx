@@ -8,6 +8,7 @@ import { useLocale } from "@/context/locale-context";
 import { Check, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import toast from 'react-hot-toast';
+import Link from "next/link";
 
 
 export const pricing = {
@@ -28,7 +29,7 @@ interface Plan {
 
 
 export default function BillingPage() {
-    const { t, currency, formatCurrency, locale } = useLocale();
+    const { t, currency, formatCurrency } = useLocale();
     const { user } = useAuth();
     
     // This is placeholder logic. Replace with actual subscription status check.
@@ -42,15 +43,15 @@ export default function BillingPage() {
             toast.error("Le service de paiement n'a pas pu être chargé. Veuillez rafraîchir la page.");
             return;
         }
-        
-        const apiKey = CinetPay.config?.apikey;
-        const siteId = CinetPay.config?.site_id;
+
+        const apiKey = process.env.NEXT_PUBLIC_CINETPAY_API_KEY;
+        const siteId = process.env.NEXT_PUBLIC_CINETPAY_SITE_ID;
 
         if (!apiKey || !siteId) {
             toast.error("Les informations de paiement ne sont pas configurées. Veuillez contacter le support.");
             return;
         }
-
+        
         if (!user || !user.displayName || !user.email) {
              toast.error("Informations utilisateur manquantes. Impossible de procéder au paiement.");
             return;
@@ -63,8 +64,15 @@ export default function BillingPage() {
         const planDetails = pricing[plan];
         const amount = planDetails.XOF;
         // Generate a random transaction ID
-        const transaction_id = `wisebil-${plan}-${Math.floor(Math.random() * 100000000).toString()}`;
+        const transaction_id = `wisebil-${plan}-${Math.random().toString(36).substring(2, 11)}`;
         const description = `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} Wisebil`;
+        
+        CinetPay.setConfig({
+            apikey: apiKey,
+            site_id: siteId,
+            notify_url: `${window.location.origin}/api/cinetpay-notify`,
+            mode: 'PRODUCTION'
+        });
         
         CinetPay.getCheckout({
             transaction_id,
@@ -98,7 +106,6 @@ export default function BillingPage() {
         });
     }
     
-    // This effect is kept to handle potential redirections if seamless fails on some platforms
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const paymentStatus = urlParams.get('transaction_status');
@@ -109,7 +116,6 @@ export default function BillingPage() {
             } else if (paymentStatus === 'REFUSED') {
                 toast.error(t('payment_refused'));
             }
-            // Clean the URL
             window.history.replaceState({}, document.title, window.location.pathname);
         }
     }, [t]);
