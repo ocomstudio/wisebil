@@ -839,5 +839,9 @@
     "payment_by_card_soon": "Bientôt par carte",
     "payment_refused": "Votre paiement a été refusé. Veuillez réessayer.",
     "payment_success": "Votre abonnement est maintenant actif. Bienvenue !",
-    "payment_error_technical": "Une erreur technique est survenue. Veuillez réessayer plus tard."
+    "payment_error_technical": "Une erreur technique est survenue. Veuillez réessayer plus tard.",
+    "url_copied_title": "URL copiée",
+    "url_copied_desc": "Le lien a été copié dans le presse-papiers.",
+    "purchase_invoice_not_found_title": "Bon de commande non trouvé",
+    "nav_accounting": "Comptabilité"
 }

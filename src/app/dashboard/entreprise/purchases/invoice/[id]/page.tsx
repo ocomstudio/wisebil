@@ -23,6 +23,9 @@ const PurchaseInvoiceTemplate = React.forwardRef<HTMLDivElement, { purchase: Pur
     const { t, formatCurrency, formatDateTime } = useLocale();
     const { companyProfile } = useCompanyProfile();
     const brandColor = companyProfile?.brandColor || '#179C00';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://wisebil.com';
+    const publicUrl = `${appUrl}/purchase-order/${purchase.id}`;
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(publicUrl)}`;
 
     const brandStyle = { color: brandColor };
     const brandBgStyle = { backgroundColor: brandColor };
@@ -48,10 +51,14 @@ const PurchaseInvoiceTemplate = React.forwardRef<HTMLDivElement, { purchase: Pur
                 </div>
             </CardHeader>
             <CardContent className="p-8">
-                 <div className="grid grid-cols-2 gap-8 mb-8">
+                 <div className="flex justify-between items-start mb-8">
                     <div>
                         <h2 className="font-semibold text-muted-foreground mb-2">{t('supplier_label')}</h2>
                         <p className="font-bold text-lg">{purchase.supplierName}</p>
+                    </div>
+                    <div className="text-right">
+                        <Image src={qrCodeUrl} alt="QR Code" width={80} height={80} />
+                        <p className="text-xs text-muted-foreground mt-1">Scanner pour voir</p>
                     </div>
                 </div>
                 <Table>
@@ -150,17 +157,23 @@ export default function ViewPurchaseInvoicePage() {
   };
 
   const handleShare = async () => {
-    if (navigator.share && purchase) {
+    if (!purchase) return;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://wisebil.com';
+    const publicUrl = `${appUrl}/purchase-order/${purchase.id}`;
+
+    if (navigator.share) {
       try {
         await navigator.share({
           title: `Bon de Commande ${purchase.invoiceNumber}`,
           text: `Voici le bon de commande pour ${purchase.supplierName}.`,
+          url: publicUrl,
         });
       } catch (error) {
         console.error("Share error:", error);
       }
     } else {
-      toast({ title: t('share_not_supported_title'), description: t('share_not_supported_desc')})
+      navigator.clipboard.writeText(publicUrl);
+      toast({ title: t('url_copied_title'), description: t('url_copied_desc')})
     }
   }
 
