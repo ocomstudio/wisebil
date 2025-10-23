@@ -151,22 +151,12 @@ export default function BillingPage() {
                                         </a>
                                     </Button>
                                 ) : (
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <div className="w-full">
-                                            <Button
-                                                onClick={() => handlePayment(plan.name as 'premium' | 'business')}
-                                                className="w-full"
-                                                disabled={true} // Re-enable once CinetPay logic is fully integrated
-                                            >
-                                                {plan.buttonText}
-                                            </Button>
-                                            </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>Le paiement en ligne sera bientôt disponible.</p>
-                                        </TooltipContent>
-                                    </Tooltip>
+                                    <Button
+                                        onClick={() => handlePayment(plan.name as 'premium' | 'business')}
+                                        className="w-full"
+                                    >
+                                        {plan.buttonText}
+                                    </Button>
                                 )
                            )}
                         </div>
