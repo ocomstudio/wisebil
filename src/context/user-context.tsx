@@ -13,7 +13,7 @@ import type { CompanyProfile } from '@/types/company';
 import type { Product, ProductCategory } from '@/types/product';
 import type { Sale } from '@/types/sale';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, runTransaction, collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { doc, getDoc, setDoc, runTransaction, collection, query, where, getDocs, limit, collectionGroup } from 'firebase/firestore';
 import { v4 as uuidv4 } from "uuid";
 import type { Purchase } from '@/types/purchase';
 import type { ActivityLog } from '@/types/activity-log';
@@ -54,15 +54,32 @@ export interface UserData {
 // Function to fetch user data based on sale ID (server-side usage)
 export async function getUserBySaleId(saleId: string): Promise<UserData | null> {
     try {
-        const usersCollection = collection(db, 'users');
-        const usersSnapshot = await getDocs(usersCollection);
-        for (const doc of usersSnapshot.docs) {
-            const userData = doc.data() as UserData;
-            if (userData.sales?.some(s => s.id === saleId)) {
-                return userData;
-            }
+        const q = query(collectionGroup(db, 'sales'), where('id', '==', saleId), limit(1));
+        const saleSnapshot = await getDocs(q);
+
+        if (saleSnapshot.empty) {
+            console.warn(`No sale found with ID: ${saleId}`);
+            return null;
         }
-        return null;
+
+        const saleDoc = saleSnapshot.docs[0];
+        const saleData = saleDoc.data() as Sale;
+        const userId = saleData.userId;
+
+        if (!userId) {
+            console.error(`Sale with ID ${saleId} is missing userId field.`);
+            return null;
+        }
+
+        const userDocRef = doc(db, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (userDocSnap.exists()) {
+            return userDocSnap.data() as UserData;
+        } else {
+            console.error(`User document not found for userId: ${userId}`);
+            return null;
+        }
     } catch (error) {
         console.error("Error fetching user by sale ID:", error);
         return null;
@@ -72,25 +89,39 @@ export async function getUserBySaleId(saleId: string): Promise<UserData | null> 
 
 // Function to fetch user data based on purchase ID (server-side usage)
 export async function getUserByPurchaseId(purchaseId: string) {
-    // Firestore does not support querying for nested objects inside an array efficiently.
-    // We have to retrieve all users and filter client-side. This is not scalable.
-    // For a production app, sales/purchases should be top-level collections.
-    const usersCollection = collection(db, 'users');
-    const usersSnapshot = await getDocs(usersCollection);
-    for (const doc of usersSnapshot.docs) {
-        const userData = doc.data() as UserData;
-        if (userData.purchases?.some(p => p.id === purchaseId)) {
-            return userData;
-        }
+    const q = query(collectionGroup(db, 'purchases'), where('id', '==', purchaseId), limit(1));
+    const purchaseSnapshot = await getDocs(q);
+
+    if (purchaseSnapshot.empty) {
+        console.warn(`No purchase found with ID: ${purchaseId}`);
+        return null;
     }
-    return null;
+
+    const purchaseDoc = purchaseSnapshot.docs[0];
+    const purchaseData = purchaseDoc.data() as Purchase;
+    const userId = purchaseData.userId;
+
+    if (!userId) {
+        console.error(`Purchase with ID ${purchaseId} is missing userId field.`);
+        return null;
+    }
+
+    const userDocRef = doc(db, 'users', userId);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (userDocSnap.exists()) {
+        return userDocSnap.data() as UserData;
+    } else {
+        console.error(`User document not found for userId: ${userId}`);
+        return null;
+    }
 }
 
 interface UserDataContextType {
   userData: UserData | null;
   isLoading: boolean;
   updateUserData: (data: Partial<UserData>) => Promise<void>;
-  addUserSale: (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber'>) => Promise<Sale>;
+  addUserSale: (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber' | 'userId'>) => Promise<Sale>;
   logActivity: (activity: Omit<ActivityLog, 'id' | 'timestamp' | 'userName' | 'userId'>) => Promise<void>;
   initialData?: UserData | null;
 }
@@ -137,9 +168,9 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
   }, [user, userData?.enterpriseActivities, updateUserData]);
 
 
-   const addUserSale = useCallback(async (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber'>): Promise<Sale> => {
+   const addUserSale = useCallback(async (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber' | 'userId'>): Promise<Sale> => {
     const userDocRef = getUserDocRef();
-    if (!userDocRef) throw new Error("Utilisateur non authentifié");
+    if (!userDocRef || !user) throw new Error("Utilisateur non authentifié");
 
     const newSaleId = uuidv4();
     let newSale: Sale | null = null;
@@ -162,6 +193,7 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
                 id: newSaleId,
                 invoiceNumber,
                 date: new Date().toISOString(),
+                userId: user.uid,
                 ...saleData,
             };
 

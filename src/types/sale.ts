@@ -9,6 +9,7 @@ export interface SaleItem {
 export interface Sale {
   id: string;
   invoiceNumber: string;
+  userId: string; // ID of the user who created the sale
   customerName: string;
   customerPhone?: string;
   items: SaleItem[];

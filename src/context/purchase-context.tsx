@@ -13,7 +13,7 @@ import type { ActivityLog } from '@/types/activity-log';
 
 interface PurchasesContextType {
   purchases: Purchase[];
-  addPurchase: (purchaseData: Omit<Purchase, 'id' | 'date' | 'invoiceNumber'>) => Promise<Purchase>;
+  addPurchase: (purchaseData: Omit<Purchase, 'id' | 'date' | 'invoiceNumber' | 'userId'>) => Promise<Purchase>;
   getPurchaseById: (id: string) => Purchase | undefined;
   isLoading: boolean;
 }
@@ -38,9 +38,9 @@ export const PurchasesProvider = ({ children }: { children: ReactNode }) => {
     return doc(db, 'users', user.uid);
   }, [user]);
 
-  const addPurchase = useCallback(async (purchaseData: Omit<Purchase, 'id' | 'date' | 'invoiceNumber'>): Promise<Purchase> => {
+  const addPurchase = useCallback(async (purchaseData: Omit<Purchase, 'id' | 'date' | 'invoiceNumber' | 'userId'>): Promise<Purchase> => {
     const userDocRef = getUserDocRef();
-    if (!userDocRef) throw new Error("Utilisateur non authentifié");
+    if (!userDocRef || !user) throw new Error("Utilisateur non authentifié");
 
     const newPurchaseId = uuidv4();
     let newPurchase: Purchase | null = null;
@@ -63,6 +63,7 @@ export const PurchasesProvider = ({ children }: { children: ReactNode }) => {
                 id: newPurchaseId,
                 invoiceNumber,
                 date: new Date().toISOString(),
+                userId: user.uid,
                 ...purchaseData,
             };
 

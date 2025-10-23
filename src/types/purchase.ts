@@ -9,6 +9,7 @@ export interface PurchaseItem {
 export interface Purchase {
   id: string;
   invoiceNumber: string;
+  userId: string; // ID of the user who created the purchase
   supplierName: string;
   items: PurchaseItem[];
   total: number;
