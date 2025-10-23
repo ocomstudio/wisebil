@@ -74,7 +74,8 @@ export default function BillingPage() {
         }
 
         const planDetails = pricing[plan];
-        const amount = planDetails[currency];
+        // Always use XOF for CinetPay transaction amount
+        const amount = planDetails.XOF;
         const transactionId = `wisebil-${plan}-${uuidv4()}`;
         const description = `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} Wisebil`;
 
@@ -88,7 +89,7 @@ export default function BillingPage() {
         CinetPay.getCheckout({
             transaction_id: transactionId,
             amount: amount,
-            currency: currency,
+            currency: 'XOF', // Force XOF for the transaction
             channels: 'ALL',
             description: description,
             // Customer information
