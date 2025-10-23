@@ -1,18 +1,20 @@
 // src/app/dashboard/billing/page.tsx
 "use client";
 
-import { useState }from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useLocale } from "@/context/locale-context";
-import { Check, Loader2, ArrowRight } from "lucide-react";
+import { Check, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useToast } from "@/hooks/use-toast";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { v4 as uuidv4 } from 'uuid';
 
+// This makes CinetPay functions available in the component
+declare const CinetPay: any;
+
 export const pricing = {
-    premium: { XOF: 5000, EUR: 8, USD: 9 },
+    premium: { XOF: 3000, EUR: 5, USD: 6 },
     business: { XOF: 9900, EUR: 15, USD: 16 },
 };
 
@@ -29,7 +31,7 @@ interface Plan {
 
 
 export default function BillingPage() {
-    const { t, currency, formatCurrency } = useLocale();
+    const { t, currency, formatCurrency, locale } = useLocale();
     const { user } = useAuth();
     const { toast } = useToast();
     
@@ -37,7 +39,7 @@ export default function BillingPage() {
     const isCurrentPlan = (plan: 'premium' | 'business') => {
         return user?.subscriptionStatus === 'active' && user?.subscriptionPlan === plan;
     };
-    
+
     const handlePayment = (plan: 'premium' | 'business') => {
         const apiKey = process.env.NEXT_PUBLIC_CINETPAY_API_KEY;
         const siteId = process.env.NEXT_PUBLIC_CINETPAY_SITE_ID;
@@ -54,26 +56,59 @@ export default function BillingPage() {
         const planDetails = pricing[plan];
         const amount = planDetails[currency];
         const transactionId = `wisebil-${plan}-${uuidv4()}`;
-
         const description = `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} Wisebil`;
 
-        const paymentUrl = new URL('https://api-checkout.cinetpay.com/v2/payment');
-        paymentUrl.searchParams.append('apikey', apiKey);
-        paymentUrl.searchParams.append('site_id', siteId);
-        paymentUrl.searchParams.append('transaction_id', transactionId);
-        paymentUrl.searchParams.append('amount', String(amount));
-        paymentUrl.searchParams.append('currency', currency);
-        paymentUrl.searchParams.append('description', description);
-        paymentUrl.searchParams.append('return_url', `${window.location.origin}/dashboard`);
-        paymentUrl.searchParams.append('notify_url', `${window.location.origin}/api/cinetpay-notify`);
+        CinetPay.setConfig({
+            apikey: apiKey,
+            site_id: siteId,
+            notify_url: `${window.location.origin}/api/cinetpay-notify`,
+            mode: 'PRODUCTION' // Use 'PRODUCTION' for real payments
+        });
         
-        // Customer data
-        if (user) {
-            paymentUrl.searchParams.append('customer_name', user.displayName || 'Utilisateur');
-            paymentUrl.searchParams.append('customer_email', user.email || '');
-        }
+        CinetPay.getCheckout({
+            transaction_id: transactionId,
+            amount: amount,
+            currency: currency,
+            channels: 'ALL',
+            description: description,
+            // Customer information
+            customer_name: user?.displayName?.split(' ')[0] || "Utilisateur",
+            customer_surname: user?.displayName?.split(' ').slice(1).join(' ') || "Wisebil",
+            customer_email: user?.email || "",
+            customer_phone_number: user?.phone || "",
+            customer_address: "N/A", // Can be improved later
+            customer_city: "N/A",
+            customer_country: locale.toUpperCase(), // Assuming locale is 'fr', 'en', etc.
+            customer_state: locale.toUpperCase(),
+            customer_zip_code: "00000"
+        });
 
-        window.location.href = paymentUrl.toString();
+        CinetPay.waitResponse(function(data: any) {
+            if (data.status == "REFUSED") {
+                toast({
+                    variant: "destructive",
+                    title: "Paiement échoué",
+                    description: "Votre paiement a été refusé. Veuillez réessayer.",
+                });
+            } else if (data.status == "ACCEPTED") {
+                // Here you would ideally verify the transaction with your backend
+                // before granting the subscription.
+                toast({
+                    title: "Paiement réussi !",
+                    description: "Votre abonnement est maintenant actif. Bienvenue !",
+                });
+                // Potentially update user context here or redirect.
+            }
+        });
+
+        CinetPay.onError(function(data: any) {
+            console.error("CinetPay Error:", data);
+             toast({
+                variant: "destructive",
+                title: "Erreur de paiement",
+                description: "Une erreur technique est survenue. Veuillez réessayer plus tard.",
+            });
+        });
     }
 
     const plans: Plan[] = [
@@ -136,7 +171,6 @@ export default function BillingPage() {
     ]
 
     return (
-      <TooltipProvider>
         <div className="space-y-8 pb-20 md:pb-8">
             <div className="text-center">
                 <h1 className="text-3xl font-bold font-headline">{t('billing_page_title')}</h1>
@@ -195,6 +229,5 @@ export default function BillingPage() {
                 ))}
              </div>
         </div>
-      </TooltipProvider>
     )
 }
