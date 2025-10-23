@@ -572,5 +572,5 @@ export default function DesktopLandingPage() {
             </footer>
             </div>
         </TooltipProvider>
-  );
+    );
 }
