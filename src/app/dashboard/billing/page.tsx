@@ -13,7 +13,7 @@ import toast from 'react-hot-toast';
 
 
 export const pricing = {
-    premium: { XOF: 3000, EUR: 5, USD: 6 },
+    premium: { XOF: 5000, EUR: 8, USD: 9 },
     business: { XOF: 9900, EUR: 15, USD: 16 },
 };
 
@@ -53,18 +53,18 @@ export default function BillingPage() {
         }
 
         if (!user || !user.displayName || !user.email) {
-            uiToast({
+             uiToast({
                 variant: "destructive",
                 title: "Informations utilisateur manquantes",
                 description: "Impossible de procéder au paiement sans les informations complètes de l'utilisateur.",
             });
             return;
         }
-
-        const nameParts = user.displayName.trim().split(' ');
-        const customer_name = nameParts[0];
-        const customer_surname = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Wisebil';
         
+        const nameParts = user.displayName.trim().split(' ');
+        const customer_name = nameParts[0].trim();
+        const customer_surname = nameParts.length > 1 ? nameParts.slice(1).join(' ').trim() : 'Wisebil';
+
         const planDetails = pricing[plan];
         const amount = planDetails.XOF;
         const transactionId = `wisebil-${plan}-${uuidv4().substring(0, 8)}`;
@@ -78,21 +78,17 @@ export default function BillingPage() {
             currency: 'XOF',
             description: description,
             channels: 'ALL',
-            // return_url is where the user is sent after payment attempt. CinetPay adds status parameters.
             return_url: window.location.href,
-            // notify_url is a backend webhook CinetPay calls to confirm the transaction status.
-            // It's required, even if you only handle confirmation on the client-side via return_url.
             notify_url: `${window.location.origin}/api/cinetpay-notify`,
-            // Customer info
-            customer_name: customer_name.trim(),
-            customer_surname: customer_surname.trim(),
+            customer_name,
+            customer_surname,
             customer_email: user.email.trim(),
             customer_phone_number: (user.phone || "").trim(),
-            customer_address: "BP 0024", // Placeholder
-            customer_city: "Dakar", // Placeholder
-            customer_country: "SN", // Placeholder for Senegal
-            customer_state: "SN", // Placeholder
-            customer_zip_code: "00221", // Placeholder
+            customer_address: "BP 0024",
+            customer_city: "Dakar",
+            customer_country: "SN",
+            customer_state: "SN",
+            customer_zip_code: "00221",
         });
 
         const paymentUrl = `https://checkout.cinetpay.com/payment?${params.toString()}`;
