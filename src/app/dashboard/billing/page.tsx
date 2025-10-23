@@ -1,7 +1,7 @@
 // src/app/dashboard/billing/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState }from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useLocale } from "@/context/locale-context";
@@ -9,6 +9,7 @@ import { Check, Loader2, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { v4 as uuidv4 } from 'uuid';
 
 export const pricing = {
     premium: { XOF: 5000, EUR: 8, USD: 9 },
@@ -38,11 +39,41 @@ export default function BillingPage() {
     };
     
     const handlePayment = (plan: 'premium' | 'business') => {
-        // Here you would integrate with CinetPay
-        toast({
-            title: "Redirection vers CinetPay...",
-            description: "Vous allez être redirigé pour finaliser votre paiement.",
-        });
+        const apiKey = process.env.NEXT_PUBLIC_CINETPAY_API_KEY;
+        const siteId = process.env.NEXT_PUBLIC_CINETPAY_SITE_ID;
+
+        if (!apiKey || !siteId) {
+            toast({
+                variant: "destructive",
+                title: "Configuration manquante",
+                description: "Les informations de paiement ne sont pas configurées. Veuillez contacter le support.",
+            });
+            return;
+        }
+
+        const planDetails = pricing[plan];
+        const amount = planDetails[currency];
+        const transactionId = `wisebil-${plan}-${uuidv4()}`;
+
+        const description = `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} Wisebil`;
+
+        const paymentUrl = new URL('https://api-checkout.cinetpay.com/v2/payment');
+        paymentUrl.searchParams.append('apikey', apiKey);
+        paymentUrl.searchParams.append('site_id', siteId);
+        paymentUrl.searchParams.append('transaction_id', transactionId);
+        paymentUrl.searchParams.append('amount', String(amount));
+        paymentUrl.searchParams.append('currency', currency);
+        paymentUrl.searchParams.append('description', description);
+        paymentUrl.searchParams.append('return_url', `${window.location.origin}/dashboard`);
+        paymentUrl.searchParams.append('notify_url', `${window.location.origin}/api/cinetpay-notify`);
+        
+        // Customer data
+        if (user) {
+            paymentUrl.searchParams.append('customer_name', user.displayName || 'Utilisateur');
+            paymentUrl.searchParams.append('customer_email', user.email || '');
+        }
+
+        window.location.href = paymentUrl.toString();
     }
 
     const plans: Plan[] = [

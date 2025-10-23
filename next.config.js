@@ -42,7 +42,8 @@ const nextConfig = {
     ]
   },
   env: {
-
+    NEXT_PUBLIC_CINETPAY_API_KEY: '115005263965f879c0ae4c05.63857515',
+    NEXT_PUBLIC_CINETPAY_SITE_ID: '105905440'
   }
 };
 
