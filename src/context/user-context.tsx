@@ -52,24 +52,23 @@ export interface UserData {
 }
 
 // Function to fetch user data based on sale ID (server-side usage)
-export async function getUserBySaleId(saleId: string) {
-    const q = query(collection(db, "users"), where("sales", "array-contains-any", [{id: saleId}]), limit(1));
-    const querySnapshot = await getDocs(q);
-    
-    if (querySnapshot.empty) {
-        // Fallback for nested objects
-        const allUsersSnapshot = await getDocs(collection(db, "users"));
-        for (const doc of allUsersSnapshot.docs) {
+export async function getUserBySaleId(saleId: string): Promise<UserData | null> {
+    try {
+        const usersCollection = collection(db, 'users');
+        const usersSnapshot = await getDocs(usersCollection);
+        for (const doc of usersSnapshot.docs) {
             const userData = doc.data() as UserData;
             if (userData.sales?.some(s => s.id === saleId)) {
                 return userData;
             }
         }
         return null;
+    } catch (error) {
+        console.error("Error fetching user by sale ID:", error);
+        return null;
     }
-    
-    return querySnapshot.docs[0].data() as UserData;
 }
+
 
 // Function to fetch user data based on purchase ID (server-side usage)
 export async function getUserByPurchaseId(purchaseId: string) {
