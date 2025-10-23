@@ -7,8 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useLocale } from "@/context/locale-context";
 import { Check, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
-import { useToast } from "@/hooks/use-toast";
-import { v4 as uuidv4 } from 'uuid';
 import toast from 'react-hot-toast';
 
 
@@ -32,7 +30,6 @@ interface Plan {
 export default function BillingPage() {
     const { t, currency, formatCurrency, locale } = useLocale();
     const { user } = useAuth();
-    const { toast: uiToast } = useToast();
     
     // This is placeholder logic. Replace with actual subscription status check.
     const isCurrentPlan = (plan: 'premium' | 'business') => {
@@ -40,49 +37,50 @@ export default function BillingPage() {
     };
 
     const handlePayment = (plan: 'premium' | 'business') => {
+        const CinetPay = (window as any).CinetPay;
+        if (!CinetPay) {
+            toast.error("Le service de paiement n'a pas pu être chargé. Veuillez rafraîchir la page.");
+            return;
+        }
+
         const apiKey = process.env.NEXT_PUBLIC_CINETPAY_API_KEY;
         const siteId = process.env.NEXT_PUBLIC_CINETPAY_SITE_ID;
-        const wisebilProductionOrigin = 'https://wisebil-596a8.web.app';
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://wisebil-596a8.web.app';
 
 
         if (!apiKey || !siteId) {
-            uiToast({
-                variant: "destructive",
-                title: "Configuration manquante",
-                description: "Les informations de paiement ne sont pas configurées. Veuillez contacter le support.",
-            });
+            toast.error("Les informations de paiement ne sont pas configurées. Veuillez contacter le support.");
             return;
         }
 
         if (!user || !user.displayName || !user.email) {
-             uiToast({
-                variant: "destructive",
-                title: "Informations utilisateur manquantes",
-                description: "Impossible de procéder au paiement sans les informations complètes de l'utilisateur.",
-            });
+             toast.error("Informations utilisateur manquantes. Impossible de procéder au paiement.");
             return;
         }
         
         const nameParts = user.displayName.trim().split(' ');
-        const customer_name = nameParts.length > 1 ? nameParts.slice(1).join(' ').trim() : 'Wisebil';
-        const customer_surname = nameParts[0].trim();
+        const customer_surname = nameParts.length > 1 ? nameParts.slice(1).join(' ').trim() : 'Wisebil';
+        const customer_name = nameParts[0].trim();
 
         const planDetails = pricing[plan];
         const amount = planDetails.XOF;
-        const transactionId = `wisebil-${plan}-${uuidv4().substring(0, 8)}`;
+        // Generate a random transaction ID
+        const transaction_id = `wisebil-${plan}-${Math.floor(Math.random() * 100000000).toString()}`;
         const description = `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} Wisebil`;
         
-        const params = new URLSearchParams({
+        CinetPay.setConfig({
             apikey: apiKey,
             site_id: siteId,
-            transaction_id: transactionId,
-            amount: amount.toString(),
+            notify_url: `${appUrl}/api/cinetpay-notify`,
+            mode: 'PRODUCTION'
+        });
+
+        CinetPay.getCheckout({
+            transaction_id,
+            amount,
             currency: 'XOF',
-            description: description,
             channels: 'ALL',
-            // Use production URLs for return and notification
-            return_url: `${wisebilProductionOrigin}/dashboard/billing`,
-            notify_url: `${wisebilProductionOrigin}/api/cinetpay-notify`,
+            description,
             customer_name,
             customer_surname,
             customer_email: user.email.trim(),
@@ -94,12 +92,22 @@ export default function BillingPage() {
             customer_zip_code : "00221",
         });
 
-        const paymentUrl = `https://checkout.cinetpay.com/payment?${params.toString()}`;
-        
-        window.location.href = paymentUrl;
+        CinetPay.waitResponse((data: any) => {
+            if (data.status === "REFUSED") {
+                toast.error(t('payment_refused'));
+            } else if (data.status === "ACCEPTED") {
+                toast.success(t('payment_success'));
+                // Here, you would typically update the user's subscription status in your database
+            }
+        });
+
+        CinetPay.onError((data: any) => {
+            console.error("CinetPay Error:", data);
+            toast.error(t('payment_error_technical'));
+        });
     }
     
-    // Gestion des retours de CinetPay
+    // This effect is kept to handle potential redirections if seamless fails on some platforms
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const paymentStatus = urlParams.get('transaction_status');
@@ -110,7 +118,7 @@ export default function BillingPage() {
             } else if (paymentStatus === 'REFUSED') {
                 toast.error(t('payment_refused'));
             }
-            // Nettoyer l'URL
+            // Clean the URL
             window.history.replaceState({}, document.title, window.location.pathname);
         }
     }, [t]);
@@ -238,3 +246,5 @@ export default function BillingPage() {
         </div>
     )
 }
+
+    
