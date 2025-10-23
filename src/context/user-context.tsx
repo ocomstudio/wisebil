@@ -13,7 +13,7 @@ import type { CompanyProfile } from '@/types/company';
 import type { Product, ProductCategory } from '@/types/product';
 import type { Sale } from '@/types/sale';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, runTransaction } from 'firebase/firestore';
+import { doc, getDoc, setDoc, runTransaction, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { v4 as uuidv4 } from "uuid";
 import type { Purchase } from '@/types/purchase';
 import type { ActivityLog } from '@/types/activity-log';
@@ -51,20 +51,61 @@ export interface UserData {
   hasCompletedTutorial?: boolean;
 }
 
+// Function to fetch user data based on sale ID (server-side usage)
+export async function getUserBySaleId(saleId: string) {
+    const q = query(collection(db, "users"), where("sales", "array-contains-any", [{id: saleId}]), limit(1));
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
+        // Fallback for nested objects
+        const allUsersSnapshot = await getDocs(collection(db, "users"));
+        for (const doc of allUsersSnapshot.docs) {
+            const userData = doc.data() as UserData;
+            if (userData.sales?.some(s => s.id === saleId)) {
+                return userData;
+            }
+        }
+        return null;
+    }
+    
+    return querySnapshot.docs[0].data() as UserData;
+}
+
+// Function to fetch user data based on purchase ID (server-side usage)
+export async function getUserByPurchaseId(purchaseId: string) {
+    // Firestore does not support querying for nested objects inside an array efficiently.
+    // We have to retrieve all users and filter client-side. This is not scalable.
+    // For a production app, sales/purchases should be top-level collections.
+    const usersCollection = collection(db, 'users');
+    const usersSnapshot = await getDocs(usersCollection);
+    for (const doc of usersSnapshot.docs) {
+        const userData = doc.data() as UserData;
+        if (userData.purchases?.some(p => p.id === purchaseId)) {
+            return userData;
+        }
+    }
+    return null;
+}
+
 interface UserDataContextType {
   userData: UserData | null;
   isLoading: boolean;
   updateUserData: (data: Partial<UserData>) => Promise<void>;
   addUserSale: (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber'>) => Promise<Sale>;
   logActivity: (activity: Omit<ActivityLog, 'id' | 'timestamp' | 'userName' | 'userId'>) => Promise<void>;
+  initialData?: UserData | null;
 }
 
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
 
-export const UserDataProvider = ({ children }: { children: ReactNode }) => {
-  const { fullUserData, isLoading } = useAuth();
+export const UserDataProvider = ({ children, initialData }: { children: ReactNode, initialData?: UserData | null }) => {
+  const { fullUserData: authFullUserData, isLoading: authIsLoading } = useAuth();
   const { user } = useAuth();
   const { toast } = useToast();
+
+  const userData = initialData || authFullUserData;
+  const isLoading = initialData ? false : authIsLoading;
+
 
   const getUserDocRef = useCallback(() => {
     if (!user) return null;
@@ -92,9 +133,9 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
       userId: user.uid,
       ...activity,
     };
-    const currentActivities = fullUserData?.enterpriseActivities || [];
+    const currentActivities = userData?.enterpriseActivities || [];
     await updateUserData({ enterpriseActivities: [newLog, ...currentActivities] });
-  }, [user, fullUserData?.enterpriseActivities, updateUserData]);
+  }, [user, userData?.enterpriseActivities, updateUserData]);
 
 
    const addUserSale = useCallback(async (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber'>): Promise<Sale> => {
@@ -138,14 +179,6 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
                     const product = updatedProducts[productIndex];
                     const newQuantity = product.quantity - item.quantity;
                     updatedProducts[productIndex] = { ...product, quantity: newQuantity >= 0 ? newQuantity : 0 };
-
-                    // Low stock notification
-                    if (newQuantity > 0 && newQuantity <= (product.initialQuantity * 0.25)) {
-                        toast({
-                            title: 'Stock Faible',
-                            description: `Le stock pour "${product.name}" est bas. Pensez à réapprovisionner.`,
-                        });
-                    }
                 }
             }
             
@@ -178,12 +211,13 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
   }, [getUserDocRef, user, toast]);
 
   const value = useMemo(() => ({
-    userData: fullUserData,
+    userData: userData,
     isLoading,
     updateUserData,
     addUserSale,
-    logActivity
-  }), [fullUserData, isLoading, updateUserData, addUserSale, logActivity]);
+    logActivity,
+    initialData
+  }), [userData, isLoading, updateUserData, addUserSale, logActivity, initialData]);
 
   return (
     <UserDataContext.Provider value={value}>
