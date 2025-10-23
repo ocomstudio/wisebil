@@ -1,7 +1,7 @@
 // src/app/dashboard/billing/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useLocale } from "@/context/locale-context";
@@ -9,6 +9,9 @@ import { Check, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from 'uuid';
+import toast from 'react-hot-toast';
+import axios from 'axios';
+import type { Country } from 'react-phone-number-input';
 
 // This makes CinetPay functions available in the component
 declare const CinetPay: any;
@@ -33,19 +36,36 @@ interface Plan {
 export default function BillingPage() {
     const { t, currency, formatCurrency, locale } = useLocale();
     const { user } = useAuth();
-    const { toast } = useToast();
+    const { toast: uiToast } = useToast();
+    const [detectedCountry, setDetectedCountry] = useState<Country>('CM');
     
     // This is placeholder logic. Replace with actual subscription status check.
     const isCurrentPlan = (plan: 'premium' | 'business') => {
         return user?.subscriptionStatus === 'active' && user?.subscriptionPlan === plan;
     };
 
+    useEffect(() => {
+        const fetchCountry = async () => {
+            try {
+                const response = await axios.get('https://ipapi.co/json/');
+                const countryCode = response.data?.country_code as Country | undefined;
+                if (countryCode) {
+                    setDetectedCountry(countryCode);
+                }
+            } catch (error) {
+                console.warn("Could not detect user country, defaulting to CM.", error);
+            }
+        };
+
+        fetchCountry();
+    }, []);
+
     const handlePayment = (plan: 'premium' | 'business') => {
         const apiKey = process.env.NEXT_PUBLIC_CINETPAY_API_KEY;
         const siteId = process.env.NEXT_PUBLIC_CINETPAY_SITE_ID;
 
         if (!apiKey || !siteId) {
-            toast({
+            uiToast({
                 variant: "destructive",
                 title: "Configuration manquante",
                 description: "Les informations de paiement ne sont pas configurées. Veuillez contacter le support.",
@@ -78,36 +98,25 @@ export default function BillingPage() {
             customer_phone_number: user?.phone || "",
             customer_address: "N/A", // Can be improved later
             customer_city: "N/A",
-            customer_country: locale.toUpperCase(), // Assuming locale is 'fr', 'en', etc.
-            customer_state: locale.toUpperCase(),
-            customer_zip_code: "00000"
+            customer_country : detectedCountry,
+            customer_state : detectedCountry,
+            customer_zip_code : "00000"
         });
 
         CinetPay.waitResponse(function(data: any) {
             if (data.status == "REFUSED") {
-                toast({
-                    variant: "destructive",
-                    title: "Paiement échoué",
-                    description: "Votre paiement a été refusé. Veuillez réessayer.",
-                });
+                toast.error("Votre paiement a été refusé. Veuillez réessayer.");
             } else if (data.status == "ACCEPTED") {
                 // Here you would ideally verify the transaction with your backend
                 // before granting the subscription.
-                toast({
-                    title: "Paiement réussi !",
-                    description: "Votre abonnement est maintenant actif. Bienvenue !",
-                });
+                toast.success("Votre abonnement est maintenant actif. Bienvenue !");
                 // Potentially update user context here or redirect.
             }
         });
 
         CinetPay.onError(function(data: any) {
             console.error("CinetPay Error:", data);
-             toast({
-                variant: "destructive",
-                title: "Erreur de paiement",
-                description: "Une erreur technique est survenue. Veuillez réessayer plus tard.",
-            });
+             toast.error("Une erreur technique est survenue. Veuillez réessayer plus tard.");
         });
     }
 
