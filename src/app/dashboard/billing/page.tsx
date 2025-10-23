@@ -42,6 +42,8 @@ export default function BillingPage() {
     const handlePayment = (plan: 'premium' | 'business') => {
         const apiKey = process.env.NEXT_PUBLIC_CINETPAY_API_KEY;
         const siteId = process.env.NEXT_PUBLIC_CINETPAY_SITE_ID;
+        const wisebilProductionOrigin = 'https://wisebil-596a8.web.app';
+
 
         if (!apiKey || !siteId) {
             uiToast({
@@ -62,8 +64,8 @@ export default function BillingPage() {
         }
         
         const nameParts = user.displayName.trim().split(' ');
-        const customer_name = nameParts[0].trim();
-        const customer_surname = nameParts.length > 1 ? nameParts.slice(1).join(' ').trim() : 'Wisebil';
+        const customer_name = nameParts.length > 1 ? nameParts.slice(1).join(' ').trim() : 'Wisebil';
+        const customer_surname = nameParts[0].trim();
 
         const planDetails = pricing[plan];
         const amount = planDetails.XOF;
@@ -78,17 +80,18 @@ export default function BillingPage() {
             currency: 'XOF',
             description: description,
             channels: 'ALL',
-            return_url: window.location.href,
-            notify_url: `${window.location.origin}/api/cinetpay-notify`,
+            // Use production URLs for return and notification
+            return_url: `${wisebilProductionOrigin}/dashboard/billing`,
+            notify_url: `${wisebilProductionOrigin}/api/cinetpay-notify`,
             customer_name,
             customer_surname,
             customer_email: user.email.trim(),
             customer_phone_number: (user.phone || "").trim(),
             customer_address: "BP 0024",
             customer_city: "Dakar",
-            customer_country: "SN",
-            customer_state: "SN",
-            customer_zip_code: "00221",
+            customer_country : "SN",
+            customer_state : "SN",
+            customer_zip_code : "00221",
         });
 
         const paymentUrl = `https://checkout.cinetpay.com/payment?${params.toString()}`;
