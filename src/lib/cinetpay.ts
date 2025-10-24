@@ -1,7 +1,6 @@
 // src/lib/cinetpay.ts
 'use server';
 
-import axios from 'axios';
 import type { User } from '@/context/auth-context';
 
 interface PaymentData {
@@ -47,7 +46,7 @@ export async function generateCinetPayLink(paymentData: PaymentData, user: User 
     amount,
     currency,
     description: `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} Wisebil`,
-    return_url: `${appUrl}/dashboard/billing`,
+    return_url: `${appUrl}/dashboard/billing?status=success`,
     notify_url: `${appUrl}/api/cinetpay-notify`,
     channels: 'ALL',
     lang: 'fr',
@@ -64,24 +63,33 @@ export async function generateCinetPayLink(paymentData: PaymentData, user: User 
   };
 
   try {
-    const response = await axios.post<CinetPayResponse>(
+    const response = await fetch(
       'https://api-checkout.cinetpay.com/v2/payment',
-      data,
       {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify(data),
       }
     );
 
-    if (response.data.code === '201' && response.data.data?.payment_url) {
-      return { success: true, url: response.data.data.payment_url, message: 'Payment link generated.' };
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error('CinetPay API Error (non-2xx response):', errorText);
+        throw new Error(`CinetPay API responded with status ${response.status}`);
+    }
+
+    const responseData: CinetPayResponse = await response.json();
+
+    if (responseData.code === '201' && responseData.data?.payment_url) {
+      return { success: true, url: responseData.data.payment_url, message: 'Payment link generated.' };
     } else {
-      console.error('CinetPay API Error:', response.data.message);
-      return { success: false, message: response.data.message || 'Failed to generate payment link.' };
+      console.error('CinetPay API Error:', responseData.message);
+      return { success: false, message: responseData.message || 'Failed to generate payment link.' };
     }
   } catch (error: any) {
-    console.error('Error calling CinetPay API:', error.response ? error.response.data : error.message);
+    console.error('Error calling CinetPay API:', error.message);
     return { success: false, message: 'An unexpected error occurred while contacting the payment service.' };
   }
 }
