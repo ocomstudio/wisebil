@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useLocale } from "@/context/locale-context";
-import { Check, ArrowRight, Loader2 } from "lucide-react";
+import { Check, ArrowRight, Loader2, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
@@ -205,9 +205,16 @@ export default function BillingPage() {
         <>
         <Script src="https://cdn.cinetpay.com/seamless/main.js" type="text/javascript" />
         <div className="space-y-8 pb-20 md:pb-8">
-            <div className="text-center">
-                <h1 className="text-3xl font-bold font-headline">{t('billing_page_title')}</h1>
-                <p className="text-muted-foreground mt-2">{t('billing_page_subtitle')}</p>
+            <div className="flex items-center gap-4">
+                 <Button variant="outline" size="icon" asChild>
+                    <Link href="/dashboard/entreprise">
+                        <ArrowLeft className="h-4 w-4" />
+                    </Link>
+                </Button>
+                <div className="flex-1">
+                    <h1 className="text-3xl font-bold font-headline">{t('billing_page_title')}</h1>
+                    <p className="text-muted-foreground mt-1">{t('billing_page_subtitle')}</p>
+                </div>
             </div>
 
              <div className="mx-auto grid max-w-7xl items-stretch gap-8 grid-cols-1 lg:grid-cols-4 mt-12">
