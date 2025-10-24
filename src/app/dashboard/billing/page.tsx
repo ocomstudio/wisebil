@@ -39,13 +39,14 @@ export default function BillingPage() {
 
     const handlePayment = (plan: 'premium' | 'business') => {
         const CinetPay = (window as any).CinetPay;
-        if (!CinetPay || !CinetPay.getCheckout) {
-            toast.error("Le service de paiement n'a pas pu être chargé. Veuillez rafraîchir la page.");
-            return;
-        }
-
+        
         const apiKey = '115005263965f879c0ae4c05.63857515';
         const siteId = 105905440;
+
+        if (!apiKey || !siteId) {
+            toast.error("Les informations de paiement ne sont pas configurées. Veuillez contacter le support.");
+            return;
+        }
 
         if (!user || !user.displayName || !user.email) {
              toast.error("Informations utilisateur manquantes. Impossible de procéder au paiement.");
@@ -53,8 +54,8 @@ export default function BillingPage() {
         }
         
         const nameParts = user.displayName.trim().split(' ');
-        const customer_surname = nameParts.length > 1 ? nameParts.slice(1).join(' ').trim() : 'Wisebil';
-        const customer_name = nameParts[0].trim() || 'Client';
+        const customer_name = nameParts.shift() || 'Client';
+        const customer_surname = nameParts.join(' ') || 'Wisebil';
 
         const planDetails = pricing[plan];
         const amount = planDetails.XOF;
@@ -75,8 +76,8 @@ export default function BillingPage() {
             currency: 'XOF',
             channels: 'ALL',
             description,
-            customer_name,
-            customer_surname,
+            customer_name: customer_name.trim(),
+            customer_surname: customer_surname.trim(),
             customer_email: user.email.trim(),
             customer_phone_number: (user.phone || "").trim(),
             customer_address : "BP 0024",
