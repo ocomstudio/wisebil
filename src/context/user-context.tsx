@@ -54,8 +54,9 @@ export interface UserData {
 // Function to fetch user data based on sale ID (server-side usage)
 export async function getUserBySaleId(saleId: string): Promise<UserData | null> {
     try {
-        const q = query(collectionGroup(db, 'sales'), where('id', '==', saleId), limit(1));
-        const saleSnapshot = await getDocs(q);
+        // Since sales are in a subcollection, this needs a collectionGroup query
+        const salesQuery = query(collectionGroup(db, 'sales'), where('id', '==', saleId), limit(1));
+        const saleSnapshot = await getDocs(salesQuery);
 
         if (saleSnapshot.empty) {
             console.warn(`No sale found with ID: ${saleId}`);
@@ -63,21 +64,20 @@ export async function getUserBySaleId(saleId: string): Promise<UserData | null> 
         }
 
         const saleDoc = saleSnapshot.docs[0];
-        const saleData = saleDoc.data() as Sale;
-        const userId = saleData.userId;
+        // The user document is the parent of the sales collection document
+        const userDocRef = saleDoc.ref.parent.parent;
 
-        if (!userId) {
-            console.error(`Sale with ID ${saleId} is missing userId field.`);
-            return null;
+        if (!userDocRef) {
+             console.error(`Could not find parent user for sale ID: ${saleId}`);
+             return null;
         }
 
-        const userDocRef = doc(db, 'users', userId);
         const userDocSnap = await getDoc(userDocRef);
 
         if (userDocSnap.exists()) {
             return userDocSnap.data() as UserData;
         } else {
-            console.error(`User document not found for userId: ${userId}`);
+            console.error(`User document not found for sale ID: ${saleId}`);
             return null;
         }
     } catch (error) {
@@ -88,7 +88,7 @@ export async function getUserBySaleId(saleId: string): Promise<UserData | null> 
 
 
 // Function to fetch user data based on purchase ID (server-side usage)
-export async function getUserByPurchaseId(purchaseId: string) {
+export async function getUserByPurchaseId(purchaseId: string): Promise<UserData | null> {
     const q = query(collectionGroup(db, 'purchases'), where('id', '==', purchaseId), limit(1));
     const purchaseSnapshot = await getDocs(q);
 
@@ -98,21 +98,17 @@ export async function getUserByPurchaseId(purchaseId: string) {
     }
 
     const purchaseDoc = purchaseSnapshot.docs[0];
-    const purchaseData = purchaseDoc.data() as Purchase;
-    const userId = purchaseData.userId;
-
-    if (!userId) {
-        console.error(`Purchase with ID ${purchaseId} is missing userId field.`);
-        return null;
+    const userDocRef = purchaseDoc.ref.parent.parent;
+    if (!userDocRef) {
+         console.error(`Could not find parent user for purchase ID: ${purchaseId}`);
+         return null;
     }
-
-    const userDocRef = doc(db, 'users', userId);
     const userDocSnap = await getDoc(userDocRef);
 
     if (userDocSnap.exists()) {
         return userDocSnap.data() as UserData;
     } else {
-        console.error(`User document not found for userId: ${userId}`);
+        console.error(`User document not found for purchase ID: ${purchaseId}`);
         return null;
     }
 }
@@ -208,8 +204,13 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
                 const productIndex = updatedProducts.findIndex(p => p.id === item.productId);
                 if (productIndex !== -1) {
                     const product = updatedProducts[productIndex];
+                     if (product.quantity < item.quantity) {
+                        throw new Error(`Stock insuffisant pour le produit "${product.name}".`);
+                    }
                     const newQuantity = product.quantity - item.quantity;
-                    updatedProducts[productIndex] = { ...product, quantity: newQuantity >= 0 ? newQuantity : 0 };
+                    updatedProducts[productIndex] = { ...product, quantity: newQuantity };
+                } else {
+                    throw new Error(`Produit avec ID ${item.productId} non trouvé.`);
                 }
             }
             
@@ -235,8 +236,13 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
         } else {
             throw new Error("La création de la vente a échoué après la transaction.");
         }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Failed to add sale and update stock", e);
+      toast({
+        variant: "destructive",
+        title: "Erreur de Vente",
+        description: e.message || "Une erreur est survenue lors de l'enregistrement de la vente."
+      })
       throw e;
     }
   }, [getUserDocRef, user, toast]);

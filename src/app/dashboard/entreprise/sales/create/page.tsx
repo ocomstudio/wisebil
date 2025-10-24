@@ -1,4 +1,3 @@
-
 // src/app/dashboard/entreprise/sales/create/page.tsx
 "use client";
 
@@ -22,17 +21,36 @@ import 'react-phone-number-input/style.css';
 import PhoneInput, { isValidPhoneNumber, type Country } from 'react-phone-number-input';
 import { useUserData } from '@/context/user-context';
 import axios from "axios";
-import { useEnterprise } from '@/context/enterprise-context';
+import { useAuth } from '@/context/auth-context';
+import { checkUserSubscriptionStatus } from '@/app/actions/check-subscription';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CreateSalePage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useAuth();
   const { products, isLoading: isLoadingProducts } = useProducts();
   const { addUserSale, isLoading: isLoadingSales } = useUserData();
   const { t, formatCurrency } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [detectedCountry, setDetectedCountry] = useState<Country>('SN');
-  const { isTrialActive } = useEnterprise();
+  const [isTrialActive, setIsTrialActive] = useState<boolean | null>(null);
+
+   useEffect(() => {
+    async function checkSubscription() {
+        if (user) {
+            const idToken = await user.getIdToken();
+            const headers = new Headers();
+            headers.append('Authorization', `Bearer ${idToken}`);
+            const response = await fetch('/api/check-subscription-status', { headers });
+            const { isActive } = await response.json();
+            setIsTrialActive(isActive);
+        } else {
+            setIsTrialActive(false);
+        }
+    }
+    checkSubscription();
+  }, [user]);
 
   useEffect(() => {
     const fetchCountry = async () => {
@@ -137,6 +155,16 @@ export default function CreateSalePage() {
     }
   };
 
+  if (isTrialActive === null) {
+      return (
+          <div className="space-y-6">
+              <Skeleton className="h-10 w-1/3" />
+              <Skeleton className="h-96 w-full" />
+              <Skeleton className="h-10 w-32 self-end" />
+          </div>
+      )
+  }
+
   if (!isTrialActive) {
     return (
         <Card className="w-full max-w-lg mx-auto mt-10 text-center">
@@ -144,9 +172,9 @@ export default function CreateSalePage() {
                 <div className="mx-auto bg-destructive/10 p-4 rounded-full mb-4 w-fit">
                   <Shield className="h-12 w-12 text-destructive" />
                 </div>
-                <CardTitle>Période d'essai terminée</CardTitle>
+                <CardTitle>Période d'essai terminée ou Abonnement inactif</CardTitle>
                 <CardDescription>
-                    Votre période d'essai pour les fonctionnalités Entreprise est terminée.
+                    Votre accès aux fonctionnalités Entreprise est limité.
                 </CardDescription>
             </CardHeader>
             <CardContent>

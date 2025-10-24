@@ -1,8 +1,7 @@
-
 // src/app/dashboard/entreprise/products/create/page.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -24,17 +23,36 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { fr, enUS, de, es, vi } from 'date-fns/locale';
-import { useEnterprise } from '@/context/enterprise-context';
+import { useAuth } from '@/context/auth-context';
+import { checkUserSubscriptionStatus } from '@/app/actions/check-subscription';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CreateProductPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useAuth();
   const { addProduct, isLoading, productCategories, addProductCategory } = useProducts();
   const { t, currency, locale } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
-  const { isTrialActive } = useEnterprise();
+  const [isTrialActive, setIsTrialActive] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    async function checkSubscription() {
+        if (user) {
+            const idToken = await user.getIdToken();
+            const headers = new Headers();
+            headers.append('Authorization', `Bearer ${idToken}`);
+            const response = await fetch('/api/check-subscription-status', { headers });
+            const { isActive } = await response.json();
+            setIsTrialActive(isActive);
+        } else {
+            setIsTrialActive(false);
+        }
+    }
+    checkSubscription();
+  }, [user]);
 
   const formSchema = z.object({
     name: z.string().min(2, t('product_name_required_error')),
@@ -119,6 +137,16 @@ export default function CreateProductPage() {
   const dateLocales = { fr, en: enUS, de, es, vi };
   const dateLocale = dateLocales[locale] || enUS;
   
+  if (isTrialActive === null) {
+      return (
+          <div className="space-y-6">
+              <Skeleton className="h-10 w-1/3" />
+              <Skeleton className="h-96 w-full" />
+              <Skeleton className="h-10 w-32 self-end" />
+          </div>
+      )
+  }
+
   if (!isTrialActive) {
       return (
           <Card className="w-full max-w-lg mx-auto mt-10 text-center">
@@ -126,9 +154,9 @@ export default function CreateProductPage() {
                   <div className="mx-auto bg-destructive/10 p-4 rounded-full mb-4 w-fit">
                     <Shield className="h-12 w-12 text-destructive" />
                   </div>
-                  <CardTitle>Période d'essai terminée</CardTitle>
+                  <CardTitle>Période d'essai terminée ou Abonnement inactif</CardTitle>
                   <CardDescription>
-                      Votre période d'essai pour les fonctionnalités Entreprise est terminée.
+                      Votre accès aux fonctionnalités Entreprise est limité.
                   </CardDescription>
               </CardHeader>
               <CardContent>
