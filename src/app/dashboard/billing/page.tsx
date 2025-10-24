@@ -1,15 +1,17 @@
 // src/app/dashboard/billing/page.tsx
 "use client";
 
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useLocale } from "@/context/locale-context";
-import { Check, ArrowRight } from "lucide-react";
+import { Check, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import toast from 'react-hot-toast';
 import Link from "next/link";
 import { useUserData } from "@/context/user-context";
-
+import { generateCinetPayLink } from '@/lib/cinetpay';
+import { useRouter } from 'next/navigation';
 
 export const pricing = {
     premium: { XOF: 5000, EUR: 8, USD: 9 },
@@ -32,75 +34,40 @@ export default function BillingPage() {
     const { t, currency, formatCurrency } = useLocale();
     const { user } = useAuth();
     const { userData } = useUserData();
+    const [isLoading, setIsLoading] = useState<string | null>(null);
+    const router = useRouter();
     
     // This is placeholder logic. Replace with actual subscription status check.
     const isCurrentPlan = (plan: 'premium' | 'business') => {
         return userData?.profile?.subscriptionStatus === 'active' && userData?.profile?.subscriptionPlan === plan;
     };
 
-    const handlePayment = (plan: 'premium' | 'business') => {
-        if (typeof window === 'undefined' || !(window as any).CinetPay) {
-            toast.error(t('payment_error_technical'));
+    const handlePayment = async (plan: 'premium' | 'business') => {
+        if (!user) {
+            toast.error("Veuillez vous connecter pour souscrire à un abonnement.");
             return;
         }
 
-        if (!user || !user.displayName || !user.email) {
-             toast.error("Informations utilisateur manquantes. Impossible de procéder au paiement.");
-            return;
-        }
-
-        const CinetPay = (window as any).CinetPay;
-        const apiKey = '115005263965f879c0ae4c05.63857515';
-        const siteId = 105905440;
-        
-        const nameParts = user.displayName.trim().split(' ');
-        const customer_name = nameParts.shift() || 'Client';
-        const customer_surname = nameParts.join(' ') || 'Wisebil';
+        setIsLoading(plan);
 
         const planDetails = pricing[plan];
-        const amount = planDetails.XOF;
+        const amount = planDetails[currency] || planDetails.XOF;
 
-        const transactionId = `wisebil-${plan}-${Math.random().toString(36).substring(2, 11)}`;
-
-        CinetPay.setConfig({
-            apikey: apiKey,
-            site_id: siteId,
-            notify_url: 'https://wisebil.com/api/cinetpay-notify',
-            mode: 'PRODUCTION'
-        });
-        
-        CinetPay.getCheckout({
-            transaction_id: transactionId,
+        const result = await generateCinetPayLink({
             amount,
-            currency: 'XOF',
-            channels: 'ALL',
-            description: `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} Wisebil`,
-            customer_name: customer_name.trim(),
-            customer_surname: customer_surname.trim(),
-            customer_email: user.email.trim(),
-            customer_phone_number: (userData?.profile?.phone || "").trim(),
-            customer_address : "BP 0024",
-            customer_city: "Dakar",
-            customer_country : "SN",
-            customer_state : "SN",
-            customer_zip_code : "00221",
-        });
+            currency: currency,
+            plan,
+        }, user);
 
-        CinetPay.waitResponse(function(data: any) {
-            if (data.status === "REFUSED") {
-                toast.error(t('payment_refused'));
-            } else if (data.status === "ACCEPTED") {
-                toast.success(t('payment_success'));
-                // Here you would typically trigger a server-side verification via the notify_url
-                // and update the user's subscription status in your database.
-            }
-        });
+        setIsLoading(null);
 
-        CinetPay.onError(function(data: any) {
-            console.error("CinetPay Error:", data);
-            toast.error(t('payment_error_technical'));
-        });
-    }
+        if (result.success && result.url) {
+            // Redirect the user to the payment page
+            router.push(result.url);
+        } else {
+            toast.error(result.message || t('payment_error_technical'));
+        }
+    };
 
     const plans: Plan[] = [
         {
@@ -205,16 +172,14 @@ export default function BillingPage() {
                                         {plan.buttonText} <ArrowRight className="ml-2 h-4 w-4" />
                                     </a>
                                 </Button>
-                             ) : currency !== 'XOF' ? (
-                                <Button variant="outline" className="w-full" disabled>
-                                    {t('payment_by_card_soon')}
-                                </Button>
                             ) : (
                                 <Button
                                     onClick={() => handlePayment(plan.name as 'premium' | 'business')}
                                     className="w-full"
+                                    disabled={!!isLoading}
                                 >
-                                    {plan.buttonText}
+                                    {isLoading === plan.name ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                    {isLoading === plan.name ? 'Traitement...' : plan.buttonText}
                                 </Button>
                             )}
                         </div>
