@@ -1,3 +1,4 @@
+// src/lib/cinetpay.ts
 'use server';
 
 import axios from 'axios';
@@ -19,13 +20,13 @@ interface CinetPayResponse {
 
 export async function generateCinetPayLink(paymentData: PaymentData, user: User | null): Promise<{ success: boolean; url?: string; message: string }> {
   
-  const apiKey = process.env.CINETPAY_API_KEY;
-  const siteId = process.env.CINETPAY_SITE_ID;
+  const apiKey = process.env.NEXT_PUBLIC_CINETPAY_API_KEY;
+  const siteId = process.env.NEXT_PUBLIC_CINETPAY_SITE_ID;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://wisebil.com';
   
   if (!apiKey || !siteId) {
     console.error('CinetPay API Key or Site ID is not configured.');
-    return { success: false, message: 'Payment gateway not configured. Please contact support.' };
+    return { success: false, message: 'Les informations de paiement ne sont pas configurées. Veuillez contacter le support.' };
   }
 
   if (!user) {
@@ -55,11 +56,11 @@ export async function generateCinetPayLink(paymentData: PaymentData, user: User 
     customer_surname: customer_surname,
     customer_email: user.email || 'no-email@wisebil.com',
     customer_phone_number: user.phone || '',
-    customer_address: 'N/A',
-    customer_city: 'N/A',
-    customer_country: 'CM',
-    customer_state: 'CM',
-    customer_zip_code: '00000',
+    customer_address : "BP 0024",//addresse du client
+    customer_city: "Antananarivo",// La ville du client
+    customer_country : "CM",// le code ISO du pays
+    customer_state : "CM",// le code ISO l'état
+    customer_zip_code : "06510", // code postal
   };
 
   try {
