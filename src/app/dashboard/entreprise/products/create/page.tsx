@@ -1,3 +1,4 @@
+
 // src/app/dashboard/entreprise/products/create/page.tsx
 "use client";
 
@@ -15,7 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Loader2, CalendarIcon } from 'lucide-react';
+import { ArrowLeft, Loader2, CalendarIcon, Shield } from 'lucide-react';
 import { useProducts } from '@/context/product-context';
 import { useLocale } from '@/context/locale-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -23,6 +24,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { fr, enUS, de, es, vi } from 'date-fns/locale';
+import { useEnterprise } from '@/context/enterprise-context';
 
 export default function CreateProductPage() {
   const router = useRouter();
@@ -32,6 +34,7 @@ export default function CreateProductPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const { isTrialActive } = useEnterprise();
 
   const formSchema = z.object({
     name: z.string().min(2, t('product_name_required_error')),
@@ -86,6 +89,11 @@ export default function CreateProductPage() {
   };
 
   const onSubmit = async (data: ProductFormValues) => {
+    if (!isTrialActive) {
+        router.push('/dashboard/billing');
+        toast({ variant: "destructive", title: "Abonnement requis", description: "Veuillez choisir un plan pour ajouter des produits."});
+        return;
+    }
     setIsSubmitting(true);
     try {
       const productData = { ...data, purchaseDate: data.purchaseDate.toISOString() };
@@ -110,6 +118,31 @@ export default function CreateProductPage() {
 
   const dateLocales = { fr, en: enUS, de, es, vi };
   const dateLocale = dateLocales[locale] || enUS;
+  
+  if (!isTrialActive) {
+      return (
+          <Card className="w-full max-w-lg mx-auto mt-10 text-center">
+              <CardHeader>
+                  <div className="mx-auto bg-destructive/10 p-4 rounded-full mb-4 w-fit">
+                    <Shield className="h-12 w-12 text-destructive" />
+                  </div>
+                  <CardTitle>Période d'essai terminée</CardTitle>
+                  <CardDescription>
+                      Votre période d'essai pour les fonctionnalités Entreprise est terminée.
+                  </CardDescription>
+              </CardHeader>
+              <CardContent>
+                  <p className="text-sm text-muted-foreground mb-6">
+                      Veuillez passer à un plan supérieur pour continuer à ajouter des produits et gérer votre entreprise.
+                  </p>
+                  <Button asChild>
+                      <Link href="/dashboard/billing">Voir les plans d'abonnement</Link>
+                  </Button>
+              </CardContent>
+          </Card>
+      )
+  }
+
 
   return (
     <div className="space-y-6 pb-24 md:pb-0">

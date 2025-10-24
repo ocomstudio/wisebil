@@ -2,7 +2,7 @@
 // src/context/enterprise-context.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo } from 'react';
 import type { Enterprise, Invitation, Member } from '@/types/enterprise';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './auth-context';
@@ -14,6 +14,9 @@ import {
 } from 'firebase/firestore';
 import { useUserData } from './user-context';
 
+const TRIAL_PERIOD_DAYS = 28;
+
+
 interface EnterpriseContextType {
   enterprises: Enterprise[];
   pendingInvitations: Invitation[];
@@ -21,6 +24,8 @@ interface EnterpriseContextType {
   sendInvitation: (enterpriseId: string, email: string, role: string) => Promise<void>;
   respondToInvitation: (invitationId: string, response: 'accepted' | 'declined') => Promise<void>;
   isLoading: boolean;
+  isTrialActive: boolean;
+  trialDaysRemaining: number;
 }
 
 const EnterpriseContext = createContext<EnterpriseContextType | undefined>(undefined);
@@ -32,6 +37,29 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { userData, isLoading: isUserDataLoading } = useUserData();
+  
+  const { isTrialActive, trialDaysRemaining } = useMemo(() => {
+    if (!user) return { isTrialActive: false, trialDaysRemaining: 0 };
+    
+    if (user.subscriptionStatus === 'active') {
+        return { isTrialActive: true, trialDaysRemaining: Infinity };
+    }
+    
+    const trialStartDate = user.trialStartDate ? new Date(user.trialStartDate) : null;
+    if (!trialStartDate) {
+        return { isTrialActive: false, trialDaysRemaining: 0 };
+    }
+    
+    const today = new Date();
+    const timeDiff = today.getTime() - trialStartDate.getTime();
+    const daysPassed = Math.floor(timeDiff / (1000 * 3600 * 24));
+    
+    const remaining = Math.max(0, TRIAL_PERIOD_DAYS - daysPassed);
+    
+    return { isTrialActive: remaining > 0, trialDaysRemaining: remaining };
+
+  }, [user]);
+
 
   useEffect(() => {
     if (!user || isUserDataLoading) {
@@ -214,7 +242,7 @@ export const EnterpriseProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <EnterpriseContext.Provider value={{ enterprises, pendingInvitations, addEnterprise, sendInvitation, respondToInvitation, isLoading }}>
+    <EnterpriseContext.Provider value={{ enterprises, pendingInvitations, addEnterprise, sendInvitation, respondToInvitation, isLoading, isTrialActive, trialDaysRemaining }}>
       {children}
     </EnterpriseContext.Provider>
   );

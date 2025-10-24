@@ -14,6 +14,7 @@ import { usePurchases } from "@/context/purchase-context";
 import { ActivityHistory } from "@/components/dashboard/entreprise/activity-history";
 import { useAuth } from "@/context/auth-context";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useEnterprise } from "@/context/enterprise-context";
 
 const TRIAL_PERIOD_DAYS = 28;
 
@@ -25,22 +26,14 @@ export default function EnterprisePage() {
   const { user } = useAuth();
   const [isActivityHistoryOpen, setIsActivityHistoryOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { isTrialActive, trialDaysRemaining } = useEnterprise();
 
   const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
   const totalProductsSold = sales.reduce((sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
 
-  const subscriptionStatus = user?.subscriptionStatus || 'inactive';
-  const trialStartDate = user?.trialStartDate ? new Date(user.trialStartDate) : null;
-  
-  let trialDaysRemaining = 0;
-  if (trialStartDate && subscriptionStatus === 'inactive') {
-    const today = new Date();
-    const timeDiff = today.getTime() - trialStartDate.getTime();
-    const daysPassed = Math.floor(timeDiff / (1000 * 3600 * 24));
-    trialDaysRemaining = Math.max(0, TRIAL_PERIOD_DAYS - daysPassed);
-  }
-
   const SubscriptionBanner = () => {
+    const subscriptionStatus = user?.subscriptionStatus || 'inactive';
+
     if (subscriptionStatus === 'active') {
       const planName = user?.subscriptionPlan === 'premium' ? t('plan_premium_title') : t('plan_business_title');
       return (
@@ -141,30 +134,36 @@ export default function EnterprisePage() {
        </Card>
 
        <div className="grid grid-cols-3 gap-2">
-            <Link href="/dashboard/entreprise/sales/create" className="col-span-1">
-                <Card className="h-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-primary/20">
-                    <CardHeader className="flex flex-col items-center justify-center text-center p-2">
-                        <ShoppingCart className="h-6 w-6 mb-1" />
-                        <CardTitle className="text-xs font-bold">{t('nav_sales')}</CardTitle>
-                    </CardHeader>
-                </Card>
-            </Link>
-            <Link href="/dashboard/entreprise/products/create" className="col-span-1">
-                <Card className="h-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-secondary/20">
-                     <CardHeader className="flex flex-col items-center justify-center text-center p-2">
-                        <PlusCircle className="h-6 w-6 mb-1" />
-                        <CardTitle className="text-xs font-bold">{t('nav_products')}</CardTitle>
-                    </CardHeader>
-                </Card>
-            </Link>
-             <Link href="/dashboard/entreprise/purchases/create" className="col-span-1">
-                <Card className="h-full bg-accent text-accent-foreground hover:bg-accent/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-accent/20">
-                     <CardHeader className="flex flex-col items-center justify-center text-center p-2">
-                        <RefreshCw className="h-6 w-6 mb-1" />
-                        <CardTitle className="text-xs font-bold">{t('nav_purchases')}</CardTitle>
-                    </CardHeader>
-                </Card>
-            </Link>
+            <Button asChild className="col-span-1 h-auto" variant="ghost" disabled={!isTrialActive}>
+                <Link href={isTrialActive ? "/dashboard/entreprise/sales/create" : "/dashboard/billing"}>
+                    <Card className="w-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-primary/20">
+                        <CardHeader className="flex flex-col items-center justify-center text-center p-2">
+                            <ShoppingCart className="h-6 w-6 mb-1" />
+                            <CardTitle className="text-xs font-bold">{t('nav_sales')}</CardTitle>
+                        </CardHeader>
+                    </Card>
+                </Link>
+            </Button>
+             <Button asChild className="col-span-1 h-auto" variant="ghost" disabled={!isTrialActive}>
+                <Link href={isTrialActive ? "/dashboard/entreprise/products/create" : "/dashboard/billing"}>
+                    <Card className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-secondary/20">
+                        <CardHeader className="flex flex-col items-center justify-center text-center p-2">
+                            <PlusCircle className="h-6 w-6 mb-1" />
+                            <CardTitle className="text-xs font-bold">{t('nav_products')}</CardTitle>
+                        </CardHeader>
+                    </Card>
+                </Link>
+            </Button>
+             <Button asChild className="col-span-1 h-auto" variant="ghost" disabled={!isTrialActive}>
+                <Link href={isTrialActive ? "/dashboard/entreprise/purchases/create" : "/dashboard/billing"}>
+                    <Card className="w-full bg-accent text-accent-foreground hover:bg-accent/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-accent/20">
+                        <CardHeader className="flex flex-col items-center justify-center text-center p-2">
+                            <RefreshCw className="h-6 w-6 mb-1" />
+                            <CardTitle className="text-xs font-bold">{t('nav_purchases')}</CardTitle>
+                        </CardHeader>
+                    </Card>
+                </Link>
+            </Button>
        </div>
 
 

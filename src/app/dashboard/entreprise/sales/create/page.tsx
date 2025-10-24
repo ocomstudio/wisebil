@@ -1,3 +1,4 @@
+
 // src/app/dashboard/entreprise/sales/create/page.tsx
 "use client";
 
@@ -13,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Loader2, PlusCircle, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, PlusCircle, Shield, Trash2 } from 'lucide-react';
 import { useProducts } from '@/context/product-context';
 import { useLocale } from '@/context/locale-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -21,6 +22,7 @@ import 'react-phone-number-input/style.css';
 import PhoneInput, { isValidPhoneNumber, type Country } from 'react-phone-number-input';
 import { useUserData } from '@/context/user-context';
 import axios from "axios";
+import { useEnterprise } from '@/context/enterprise-context';
 
 export default function CreateSalePage() {
   const router = useRouter();
@@ -30,6 +32,7 @@ export default function CreateSalePage() {
   const { t, formatCurrency } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [detectedCountry, setDetectedCountry] = useState<Country>('SN');
+  const { isTrialActive } = useEnterprise();
 
   useEffect(() => {
     const fetchCountry = async () => {
@@ -98,6 +101,11 @@ export default function CreateSalePage() {
   const total = watchedItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   const onSubmit = async (data: SaleFormValues) => {
+    if (!isTrialActive) {
+        router.push('/dashboard/billing');
+        toast({ variant: "destructive", title: "Abonnement requis", description: "Veuillez choisir un plan pour créer des ventes."});
+        return;
+    }
     setIsSubmitting(true);
     try {
         const saleData = {
@@ -128,6 +136,30 @@ export default function CreateSalePage() {
       setIsSubmitting(false);
     }
   };
+
+  if (!isTrialActive) {
+    return (
+        <Card className="w-full max-w-lg mx-auto mt-10 text-center">
+            <CardHeader>
+                <div className="mx-auto bg-destructive/10 p-4 rounded-full mb-4 w-fit">
+                  <Shield className="h-12 w-12 text-destructive" />
+                </div>
+                <CardTitle>Période d'essai terminée</CardTitle>
+                <CardDescription>
+                    Votre période d'essai pour les fonctionnalités Entreprise est terminée.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-muted-foreground mb-6">
+                    Veuillez passer à un plan supérieur pour continuer à enregistrer des ventes.
+                </p>
+                <Button asChild>
+                    <Link href="/dashboard/billing">Voir les plans d'abonnement</Link>
+                </Button>
+            </CardContent>
+        </Card>
+    )
+  }
 
   return (
     <div className="space-y-6 pb-24 md:pb-8">
