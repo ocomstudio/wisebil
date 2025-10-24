@@ -2,12 +2,13 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile, UserCredential, sendEmailVerification as firebaseSendEmailVerification, sendPasswordResetEmail, confirmPasswordReset, EmailAuthProvider, reauthenticateWithCredential, updateEmail, updatePassword } from 'firebase/auth';
+import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithRedirect, getRedirectResult, updateProfile, UserCredential, sendEmailVerification as firebaseSendEmailVerification, sendPasswordResetEmail, confirmPasswordReset, EmailAuthProvider, reauthenticateWithCredential, updateEmail, updatePassword } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc, getDoc, setDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import type { Currency, Language } from './locale-context';
 import type { UserData } from './user-context';
+import axios from 'axios';
 
 
 export interface User {
@@ -37,7 +38,7 @@ interface AuthContextType {
   isLoading: boolean;
   loginWithEmail: typeof signInWithEmailAndPassword;
   signupWithEmail: SignupFunction;
-  loginWithGoogle: () => Promise<{ isNewUser: boolean; user: FirebaseUser }>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (newUserData: Partial<Omit<User, 'uid'>>) => Promise<void>;
   updateUserEmail: (currentPassword: string, newEmail: string) => Promise<void>;
@@ -49,23 +50,80 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const getLocaleFromCountry = (countryCode: string): { lang: Language, curr: Currency } => {
+    const countryMap: Record<string, { lang: Language, curr: Currency }> = {
+        'FR': { lang: 'fr', curr: 'EUR' }, 'BE': { lang: 'fr', curr: 'EUR' },
+        'CH': { lang: 'fr', curr: 'EUR' }, 'LU': { lang: 'fr', curr: 'EUR' },
+        'DE': { lang: 'de', curr: 'EUR' }, 'AT': { lang: 'de', curr: 'EUR' },
+        'ES': { lang: 'es', curr: 'EUR' }, 'SN': { lang: 'fr', curr: 'XOF' },
+        'CM': { lang: 'fr', curr: 'XOF' }, 'CI': { lang: 'fr', curr: 'XOF' },
+        'TG': { lang: 'fr', curr: 'XOF' }, 'BJ': { lang: 'fr', curr: 'XOF' },
+        'BF': { lang: 'fr', curr: 'XOF' }, 'NE': { lang: 'fr', curr: 'XOF' },
+        'ML': { lang: 'fr', curr: 'XOF' }, 'GA': { lang: 'fr', curr: 'XOF' },
+        'CG': { lang: 'fr', curr: 'XOF' }, 'CD': { lang: 'fr', curr: 'USD' },
+        'TN': { lang: 'fr', curr: 'EUR' }, 'VN': { lang: 'vi', curr: 'VND' },
+        'US': { lang: 'en', curr: 'USD' }, 'CA': { lang: 'en', curr: 'USD' },
+        'GB': { lang: 'en', curr: 'EUR' },
+    };
+    return countryMap[countryCode.toUpperCase()] || { lang: 'en', curr: 'USD' };
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [fullUserData, setFullUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  const safeFunction = useCallback(<T extends (...args: any[]) => any>(fn: T): T => {
-    return ((...args: Parameters<T>) => {
-      if (isLoading) {
-        console.warn("Auth context not ready, function call prevented.");
-        return Promise.reject(new Error("Authentication service is not ready."));
-      }
-      return fn(...args);
-    }) as T;
-  }, [isLoading]);
+  const [isLoadingRedirect, setIsLoadingRedirect] = useState(true);
 
   useEffect(() => {
+    const handleGoogleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          const userDocRef = doc(db, 'users', result.user.uid);
+          const docSnap = await getDoc(userDocRef);
+
+          if (!docSnap.exists() || !docSnap.data().profile?.profileComplete) {
+            let userLocale: { lang: Language, curr: Currency } = { lang: 'en', curr: 'USD' };
+            try {
+              const response = await axios.get('https://ipapi.co/json/');
+              const countryCode = response.data?.country_code;
+              if (countryCode) {
+                userLocale = getLocaleFromCountry(countryCode);
+              }
+            } catch (error) {
+              console.warn("Could not detect user country for Google Sign-In, using defaults.", error);
+            }
+
+            const profileData: Partial<User> = {
+              email: result.user.email,
+              displayName: result.user.displayName,
+              avatar: result.user.photoURL,
+              profileComplete: true,
+              subscriptionStatus: 'inactive',
+              phone: result.user.phoneNumber,
+              hasCompletedTutorial: false,
+              emailVerified: true,
+            };
+            await setDoc(userDocRef, { 
+              profile: profileData, 
+              preferences: { currency: userLocale.curr, language: userLocale.lang }
+            }, { merge: true });
+          }
+        }
+      } catch (error) {
+        console.error("Firebase Redirect Result Error:", error);
+      } finally {
+        setIsLoadingRedirect(false);
+      }
+    };
+
+    handleGoogleRedirectResult();
+  }, []);
+
+  useEffect(() => {
+    if (isLoadingRedirect) return;
+
     const unsubscribeAuth = onAuthStateChanged(auth, (fbUser) => {
       if (fbUser) {
         setFirebaseUser(fbUser);
@@ -81,7 +139,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             uid: fbUser.uid,
             email: fbUser.email,
             displayName: fbUser.displayName,
-            avatar: profileData?.avatar || fbUser.photoURL, // Prioritize Firestore avatar
+            avatar: profileData?.avatar || fbUser.photoURL,
             emailVerified: fbUser.emailVerified,
             ...profileData
           };
@@ -99,7 +157,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setIsLoading(false);
         });
 
-        return () => unsubscribeDoc(); // Unsubscribe from doc listener when auth state changes
+        return () => unsubscribeDoc();
       } else {
         setFirebaseUser(null);
         setUser(null);
@@ -108,8 +166,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    return () => unsubscribeAuth(); // Unsubscribe from auth listener on cleanup
-  }, []);
+    return () => unsubscribeAuth();
+  }, [isLoadingRedirect]);
   
   const signupWithEmail: SignupFunction = async (email, password, { fullName, phone, currency, language }) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -143,26 +201,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    const userDocRef = doc(db, 'users', result.user.uid);
-    const docSnap = await getDoc(userDocRef);
-
-    if (docSnap.exists() && docSnap.data().profile?.profileComplete) {
-      return { isNewUser: false, user: result.user };
-    } else {
-      const profileData: Partial<User> = {
-        email: result.user.email,
-        displayName: result.user.displayName,
-        avatar: result.user.photoURL,
-        profileComplete: true,
-        subscriptionStatus: 'inactive',
-        phone: result.user.phoneNumber,
-        hasCompletedTutorial: false,
-        emailVerified: true,
-      };
-      await setDoc(userDocRef, { profile: profileData, preferences: { currency: 'USD', language: 'en'} }, { merge: true });
-      return { isNewUser: true, user: result.user };
-    }
+    await signInWithRedirect(auth, provider);
   }
 
   const logout = () => signOut(auth);
@@ -213,22 +252,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw new Error("No user is currently signed in.");
     }
   };
-  
+
   const value: AuthContextType = {
     user,
     firebaseUser,
     fullUserData,
-    isLoading,
-    loginWithEmail: safeFunction((...args) => signInWithEmailAndPassword(auth, ...args)),
-    signupWithEmail: safeFunction(signupWithEmail),
-    loginWithGoogle: safeFunction(loginWithGoogle),
-    logout: safeFunction(logout),
-    updateUser: safeFunction(updateUser),
-    updateUserEmail: safeFunction(updateUserEmail),
-    updateUserPassword: safeFunction(updateUserPassword),
-    sendVerificationEmail: safeFunction(sendVerificationEmail),
-    sendPasswordResetEmail: safeFunction((...args) => sendPasswordResetEmail(auth, ...args)),
-    confirmPasswordReset: safeFunction((...args) => confirmPasswordReset(auth, ...args)),
+    isLoading: isLoading || isLoadingRedirect,
+    loginWithEmail: (...args) => signInWithEmailAndPassword(auth, ...args),
+    signupWithEmail,
+    loginWithGoogle,
+    logout,
+    updateUser,
+    updateUserEmail,
+    updateUserPassword,
+    sendVerificationEmail,
+    sendPasswordResetEmail: (...args) => sendPasswordResetEmail(auth, ...args),
+    confirmPasswordReset: (...args) => confirmPasswordReset(auth, ...args),
   };
 
   return (

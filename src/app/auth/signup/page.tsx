@@ -44,6 +44,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   const router = useRouter();
   const { signupWithEmail, loginWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [detectedCountry, setDetectedCountry] = useState<Country>('US');
@@ -106,6 +107,9 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
             case 'auth/too-many-requests':
                 description = t('too_many_requests_error');
                 break;
+            case 'auth/argument-error':
+                description = "La connexion Google n'est pas encore configurée. Veuillez vous inscrire avec e-mail et mot de passe.";
+                break;
             default:
                 description = (error as Error).message;
         }
@@ -140,18 +144,13 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   };
   
   const onGoogleLogin = async () => {
-    setIsLoading(true);
+    setIsGoogleLoading(true);
     try {
       await loginWithGoogle();
-      toast({
-        title: t('login_success_title'),
-        description: t('welcome_back'),
-      });
-      router.push('/dashboard');
+      // The redirection will happen, and the context will handle the rest.
     } catch (error) {
       handleAuthError(error);
-    } finally {
-        setIsLoading(false);
+      setIsGoogleLoading(false);
     }
   }
 
@@ -279,15 +278,15 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
             {isLoading && <Loader2 className="animate-spin" />}
             {t('create_account_button')}
           </Button>
         </form>
       </Form>
       <Separator className="my-6" />
-      <Button variant="outline" className="w-full" onClick={onGoogleLogin} disabled={isLoading}>
-        {isLoading ? <Loader2 className="animate-spin" /> : <FcGoogle className="mr-2 h-5 w-5" />}
+      <Button variant="outline" className="w-full" onClick={onGoogleLogin} disabled={isLoading || isGoogleLoading}>
+        {isGoogleLoading ? <Loader2 className="animate-spin" /> : <FcGoogle className="mr-2 h-5 w-5" />}
         {t('signup_with_google')}
       </Button>
       <p className="mt-6 text-center text-sm text-muted-foreground">
