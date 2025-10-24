@@ -1,3 +1,4 @@
+
 // src/app/auth/signup/page.tsx
 "use client";
 
@@ -107,9 +108,9 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
             case 'auth/too-many-requests':
                 description = t('too_many_requests_error');
                 break;
-            case 'auth/argument-error':
-                description = "La connexion Google n'est pas encore configurée. Veuillez vous inscrire avec e-mail et mot de passe.";
-                break;
+             case 'auth/popup-closed-by-user':
+                 // User closed the Google popup, do nothing.
+                 return;
             default:
                 description = (error as Error).message;
         }
@@ -147,9 +148,15 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
     setIsGoogleLoading(true);
     try {
       await loginWithGoogle();
-      // The redirection will happen, and the context will handle the rest.
+      // On success, the AuthProvider's onAuthStateChanged will handle redirection.
+      toast({
+        title: t('signup_success_title'),
+        description: t('welcome_message'),
+      });
+      router.push("/dashboard");
     } catch (error) {
       handleAuthError(error);
+    } finally {
       setIsGoogleLoading(false);
     }
   }

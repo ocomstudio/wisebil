@@ -1,8 +1,9 @@
+
 // src/context/auth-context.tsx
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithRedirect, getRedirectResult, updateProfile, UserCredential, sendEmailVerification as firebaseSendEmailVerification, sendPasswordResetEmail, confirmPasswordReset, EmailAuthProvider, reauthenticateWithCredential, updateEmail, updatePassword } from 'firebase/auth';
+import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile, UserCredential, sendEmailVerification as firebaseSendEmailVerification, sendPasswordResetEmail, confirmPasswordReset, EmailAuthProvider, reauthenticateWithCredential, updateEmail, updatePassword } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc, getDoc, setDoc, onSnapshot, updateDoc } from 'firebase/firestore';
@@ -73,63 +74,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [fullUserData, setFullUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingRedirect, setIsLoadingRedirect] = useState(true);
 
   useEffect(() => {
-    // This effect runs once on mount to handle the redirect result from Google
-    const handleGoogleRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result) {
-          // If a user is new or doesn't have a complete profile, create it.
-          const userDocRef = doc(db, 'users', result.user.uid);
-          const docSnap = await getDoc(userDocRef);
-
-          if (!docSnap.exists() || !docSnap.data().profile?.profileComplete) {
-            let userLocale: { lang: Language, curr: Currency } = { lang: 'en', curr: 'USD' };
-            try {
-              const response = await axios.get('https://ipapi.co/json/');
-              const countryCode = response.data?.country_code;
-              if (countryCode) {
-                userLocale = getLocaleFromCountry(countryCode);
-              }
-            } catch (error) {
-              console.warn("Could not detect user country for Google Sign-In, using defaults.", error);
-            }
-
-            const profileData: Partial<User> = {
-              email: result.user.email,
-              displayName: result.user.displayName,
-              avatar: result.user.photoURL,
-              profileComplete: true,
-              subscriptionStatus: 'inactive',
-              phone: result.user.phoneNumber,
-              hasCompletedTutorial: false,
-              emailVerified: true,
-            };
-            await setDoc(userDocRef, { 
-              profile: profileData, 
-              preferences: { currency: userLocale.curr, language: userLocale.lang }
-            }, { merge: true });
-          }
-        }
-      } catch (error) {
-        // This is where auth/argument-error can happen
-        console.error("Firebase Redirect Result Error:", error);
-      } finally {
-        // IMPORTANT: Set loading to false regardless of outcome.
-        setIsLoadingRedirect(false);
-      }
-    };
-
-    handleGoogleRedirectResult();
-  }, []);
-
-  useEffect(() => {
-    // This effect runs after the redirect check is complete.
-    // It's the primary listener for auth state changes.
-    if (isLoadingRedirect) return;
-
     const unsubscribeAuth = onAuthStateChanged(auth, (fbUser) => {
       if (fbUser) {
         setFirebaseUser(fbUser);
@@ -178,7 +124,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => unsubscribeAuth();
-  }, [isLoadingRedirect]);
+  }, []);
   
   const signupWithEmail: SignupFunction = async (email, password, { fullName, phone, currency, language }) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -212,8 +158,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    await signInWithRedirect(auth, provider);
-  }
+    const result = await signInWithPopup(auth, provider);
+    
+    // Check if user is new and create their profile doc if needed
+    const userDocRef = doc(db, 'users', result.user.uid);
+    const docSnap = await getDoc(userDocRef);
+
+    if (!docSnap.exists()) {
+      let userLocale: { lang: Language; curr: Currency } = { lang: 'en', curr: 'USD' };
+      try {
+        const response = await axios.get('https://ipapi.co/json/');
+        const countryCode = response.data?.country_code;
+        if (countryCode) {
+          userLocale = getLocaleFromCountry(countryCode);
+        }
+      } catch (error) {
+        console.warn("Could not detect user country for Google Sign-In, using defaults.", error);
+      }
+      
+      const profileData: Partial<User> = {
+        email: result.user.email,
+        displayName: result.user.displayName,
+        avatar: result.user.photoURL,
+        profileComplete: true,
+        subscriptionStatus: 'inactive',
+        phone: result.user.phoneNumber,
+        hasCompletedTutorial: false,
+        emailVerified: true,
+      };
+
+      await setDoc(userDocRef, {
+        profile: profileData,
+        preferences: { currency: userLocale.curr, language: userLocale.lang }
+      }, { merge: true });
+    }
+  };
 
   const logout = () => signOut(auth);
 
@@ -268,7 +247,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     firebaseUser,
     fullUserData,
-    isLoading: isLoading || isLoadingRedirect,
+    isLoading: isLoading,
     loginWithEmail: (...args) => signInWithEmailAndPassword(auth, ...args),
     signupWithEmail,
     loginWithGoogle,
