@@ -43,11 +43,6 @@ export default function BillingPage() {
         const apiKey = '115005263965f879c0ae4c05.63857515';
         const siteId = 105905440;
 
-        if (!apiKey || !siteId) {
-            toast.error("Les informations de paiement ne sont pas configurées. Veuillez contacter le support.");
-            return;
-        }
-
         if (!user || !user.displayName || !user.email) {
              toast.error("Informations utilisateur manquantes. Impossible de procéder au paiement.");
             return;
@@ -59,23 +54,20 @@ export default function BillingPage() {
 
         const planDetails = pricing[plan];
         const amount = planDetails.XOF;
-        const transaction_id = `wisebil-${plan}-${Math.random().toString(36).substring(2, 11)}`;
-        const description = `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} Wisebil`;
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://wisebil.com';
         
         CinetPay.setConfig({
             apikey: apiKey,
             site_id: siteId,
-            notify_url: `${appUrl}/api/cinetpay-notify`,
+            notify_url: 'https://wisebil.com/api/cinetpay-notify',
             mode: 'PRODUCTION'
         });
         
         CinetPay.getCheckout({
-            transaction_id,
+            transaction_id: `wisebil-${plan}-${Math.random().toString(36).substring(2, 11)}`,
             amount,
             currency: 'XOF',
             channels: 'ALL',
-            description,
+            description: `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} Wisebil`,
             customer_name: customer_name.trim(),
             customer_surname: customer_surname.trim(),
             customer_email: user.email.trim(),
@@ -89,16 +81,18 @@ export default function BillingPage() {
 
         CinetPay.waitResponse(function(data: any) {
             if (data.status === "REFUSED") {
-                toast.error(t('payment_refused'));
+                if (alert("Votre paiement a échoué")) {
+                    window.location.reload();
+                }
             } else if (data.status === "ACCEPTED") {
-                toast.success(t('payment_success'));
-                // Here, you would typically update the user's subscription status in your database
+                if (alert("Votre paiement a été effectué avec succès")) {
+                    window.location.reload();
+                }
             }
         });
 
         CinetPay.onError(function(data: any) {
             console.error("CinetPay Error:", data);
-            toast.error(t('payment_error_technical'));
         });
     }
     
