@@ -76,10 +76,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoadingRedirect, setIsLoadingRedirect] = useState(true);
 
   useEffect(() => {
+    // This effect runs once on mount to handle the redirect result from Google
     const handleGoogleRedirectResult = async () => {
       try {
         const result = await getRedirectResult(auth);
         if (result) {
+          // If a user is new or doesn't have a complete profile, create it.
           const userDocRef = doc(db, 'users', result.user.uid);
           const docSnap = await getDoc(userDocRef);
 
@@ -112,8 +114,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         }
       } catch (error) {
+        // This is where auth/argument-error can happen
         console.error("Firebase Redirect Result Error:", error);
       } finally {
+        // IMPORTANT: Set loading to false regardless of outcome.
         setIsLoadingRedirect(false);
       }
     };
@@ -122,6 +126,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    // This effect runs after the redirect check is complete.
+    // It's the primary listener for auth state changes.
     if (isLoadingRedirect) return;
 
     const unsubscribeAuth = onAuthStateChanged(auth, (fbUser) => {
@@ -130,27 +136,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userDocRef = doc(db, 'users', fbUser.uid);
         
         const unsubscribeDoc = onSnapshot(userDocRef, (docSnap) => {
-          const data = docSnap.data() as UserData | undefined;
-          setFullUserData(data || null);
+          if (docSnap.exists()) {
+              const data = docSnap.data() as UserData | undefined;
+              setFullUserData(data || null);
 
-          const profileData = data?.profile;
-          
-          const combinedUser: User = {
-            uid: fbUser.uid,
-            email: fbUser.email,
-            displayName: fbUser.displayName,
-            avatar: profileData?.avatar || fbUser.photoURL,
-            emailVerified: fbUser.emailVerified,
-            ...profileData
-          };
-
-          if (!docSnap.exists() || !profileData) {
-              combinedUser.profileComplete = false;
-              combinedUser.subscriptionStatus = 'inactive';
-              combinedUser.hasCompletedTutorial = false;
+              const profileData = data?.profile;
+              
+              const combinedUser: User = {
+                uid: fbUser.uid,
+                email: fbUser.email,
+                displayName: fbUser.displayName,
+                avatar: profileData?.avatar || fbUser.photoURL,
+                emailVerified: fbUser.emailVerified,
+                ...profileData
+              };
+              setUser(combinedUser);
+          } else {
+              // This can happen briefly during new user creation
+              setUser({
+                uid: fbUser.uid,
+                email: fbUser.email,
+                displayName: fbUser.displayName,
+                avatar: fbUser.photoURL,
+                emailVerified: fbUser.emailVerified,
+                profileComplete: false,
+              });
           }
-          
-          setUser(combinedUser);
           setIsLoading(false);
         }, (error) => {
             console.error("Firestore snapshot error:", error);
