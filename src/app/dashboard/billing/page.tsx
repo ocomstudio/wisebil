@@ -1,7 +1,6 @@
 // src/app/dashboard/billing/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useLocale } from "@/context/locale-context";
@@ -9,6 +8,7 @@ import { Check, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import toast from 'react-hot-toast';
 import Link from "next/link";
+import { useUserData } from "@/context/user-context";
 
 
 export const pricing = {
@@ -31,22 +31,27 @@ interface Plan {
 export default function BillingPage() {
     const { t, currency, formatCurrency } = useLocale();
     const { user } = useAuth();
+    const { userData } = useUserData();
     
     // This is placeholder logic. Replace with actual subscription status check.
     const isCurrentPlan = (plan: 'premium' | 'business') => {
-        return user?.subscriptionStatus === 'active' && user?.subscriptionPlan === plan;
+        return userData?.profile?.subscriptionStatus === 'active' && userData?.profile?.subscriptionPlan === plan;
     };
 
     const handlePayment = (plan: 'premium' | 'business') => {
-        const CinetPay = (window as any).CinetPay;
-        
-        const apiKey = '115005263965f879c0ae4c05.63857515';
-        const siteId = 105905440;
+        if (typeof window === 'undefined' || !(window as any).CinetPay) {
+            toast.error(t('payment_error_technical'));
+            return;
+        }
 
         if (!user || !user.displayName || !user.email) {
              toast.error("Informations utilisateur manquantes. Impossible de procéder au paiement.");
             return;
         }
+
+        const CinetPay = (window as any).CinetPay;
+        const apiKey = '115005263965f879c0ae4c05.63857515';
+        const siteId = 105905440;
         
         const nameParts = user.displayName.trim().split(' ');
         const customer_name = nameParts.shift() || 'Client';
@@ -54,7 +59,9 @@ export default function BillingPage() {
 
         const planDetails = pricing[plan];
         const amount = planDetails.XOF;
-        
+
+        const transactionId = `wisebil-${plan}-${Math.random().toString(36).substring(2, 11)}`;
+
         CinetPay.setConfig({
             apikey: apiKey,
             site_id: siteId,
@@ -63,7 +70,7 @@ export default function BillingPage() {
         });
         
         CinetPay.getCheckout({
-            transaction_id: `wisebil-${plan}-${Math.random().toString(36).substring(2, 11)}`,
+            transaction_id: transactionId,
             amount,
             currency: 'XOF',
             channels: 'ALL',
@@ -71,7 +78,7 @@ export default function BillingPage() {
             customer_name: customer_name.trim(),
             customer_surname: customer_surname.trim(),
             customer_email: user.email.trim(),
-            customer_phone_number: (user.phone || "").trim(),
+            customer_phone_number: (userData?.profile?.phone || "").trim(),
             customer_address : "BP 0024",
             customer_city: "Dakar",
             customer_country : "SN",
@@ -81,35 +88,19 @@ export default function BillingPage() {
 
         CinetPay.waitResponse(function(data: any) {
             if (data.status === "REFUSED") {
-                if (alert("Votre paiement a échoué")) {
-                    window.location.reload();
-                }
+                toast.error(t('payment_refused'));
             } else if (data.status === "ACCEPTED") {
-                if (alert("Votre paiement a été effectué avec succès")) {
-                    window.location.reload();
-                }
+                toast.success(t('payment_success'));
+                // Here you would typically trigger a server-side verification via the notify_url
+                // and update the user's subscription status in your database.
             }
         });
 
         CinetPay.onError(function(data: any) {
             console.error("CinetPay Error:", data);
+            toast.error(t('payment_error_technical'));
         });
     }
-    
-    useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const paymentStatus = urlParams.get('transaction_status');
-        
-        if (paymentStatus) {
-            if (paymentStatus === 'ACCEPTED') {
-                 toast.success(t('payment_success'));
-            } else if (paymentStatus === 'REFUSED') {
-                toast.error(t('payment_refused'));
-            }
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-    }, [t]);
-
 
     const plans: Plan[] = [
         {
@@ -122,7 +113,7 @@ export default function BillingPage() {
                 t('feature_enterprise_trial'),
                 t('feature_ai_limited'),
             ],
-            isCurrent: user?.subscriptionStatus !== 'active',
+            isCurrent: userData?.profile?.subscriptionStatus !== 'active',
             buttonText: t('current_plan_button'),
         },
         {
