@@ -44,14 +44,9 @@ export default function BillingPage() {
             return;
         }
 
-        const apiKey = process.env.NEXT_PUBLIC_CINETPAY_API_KEY;
-        const siteId = process.env.NEXT_PUBLIC_CINETPAY_SITE_ID;
+        const apiKey = '115005263965f879c0ae4c05.63857515';
+        const siteId = 105905440;
 
-        if (!apiKey || !siteId) {
-            toast.error("Les informations de paiement ne sont pas configurées. Veuillez contacter le support.");
-            return;
-        }
-        
         if (!user || !user.displayName || !user.email) {
              toast.error("Informations utilisateur manquantes. Impossible de procéder au paiement.");
             return;
@@ -63,14 +58,14 @@ export default function BillingPage() {
 
         const planDetails = pricing[plan];
         const amount = planDetails.XOF;
-        // Generate a random transaction ID
         const transaction_id = `wisebil-${plan}-${Math.random().toString(36).substring(2, 11)}`;
         const description = `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} Wisebil`;
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://wisebil.com';
         
         CinetPay.setConfig({
             apikey: apiKey,
             site_id: siteId,
-            notify_url: `${window.location.origin}/api/cinetpay-notify`,
+            notify_url: `${appUrl}/api/cinetpay-notify`,
             mode: 'PRODUCTION'
         });
         
@@ -91,7 +86,7 @@ export default function BillingPage() {
             customer_zip_code : "00221",
         });
 
-        CinetPay.waitResponse((data: any) => {
+        CinetPay.waitResponse(function(data: any) {
             if (data.status === "REFUSED") {
                 toast.error(t('payment_refused'));
             } else if (data.status === "ACCEPTED") {
@@ -100,7 +95,7 @@ export default function BillingPage() {
             }
         });
 
-        CinetPay.onError((data: any) => {
+        CinetPay.onError(function(data: any) {
             console.error("CinetPay Error:", data);
             toast.error(t('payment_error_technical'));
         });

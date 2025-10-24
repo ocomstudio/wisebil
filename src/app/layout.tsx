@@ -95,7 +95,6 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icons/icon-512x512.png"></link>
         
-        {/* Inject CinetPay SDK */}
         <script src="https://cdn.cinetpay.com/seamless/main.js" async></script>
       </head>
       <body className="font-body antialiased" suppressHydrationWarning={true}>
