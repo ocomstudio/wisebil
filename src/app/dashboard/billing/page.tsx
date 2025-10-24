@@ -1,17 +1,24 @@
 // src/app/dashboard/billing/page.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useLocale } from "@/context/locale-context";
 import { Check, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
-import toast from 'react-hot-toast';
+import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useUserData } from "@/context/user-context";
-import { generateCinetPayLink } from '@/lib/cinetpay';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Script from 'next/script';
+
+// This declares the CinetPay object on the window
+declare global {
+  interface Window {
+    CinetPay: any;
+  }
+}
 
 export const pricing = {
     premium: { XOF: 5000, EUR: 8, USD: 9 },
@@ -35,16 +42,42 @@ export default function BillingPage() {
     const { user } = useAuth();
     const { userData } = useUserData();
     const [isLoading, setIsLoading] = useState<string | null>(null);
+    const { toast } = useToast();
     const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // Handle payment status from URL redirect
+    useEffect(() => {
+        const status = searchParams.get('status');
+        if (status === 'success') {
+            toast({
+                title: t('payment_success'),
+                description: "Votre plan a été mis à jour.",
+            });
+            router.replace('/dashboard/billing');
+        } else if (status === 'refused') {
+            toast({
+                variant: 'destructive',
+                title: t('payment_refused'),
+                description: "Veuillez réessayer ou contacter le support.",
+            });
+            router.replace('/dashboard/billing');
+        }
+    }, [searchParams, router, toast, t]);
     
-    // This is placeholder logic. Replace with actual subscription status check.
     const isCurrentPlan = (plan: 'premium' | 'business') => {
         return userData?.profile?.subscriptionStatus === 'active' && userData?.profile?.subscriptionPlan === plan;
     };
 
     const handlePayment = async (plan: 'premium' | 'business') => {
         if (!user) {
-            toast.error("Veuillez vous connecter pour souscrire à un abonnement.");
+            toast({ variant: 'destructive', title: "Veuillez vous connecter pour continuer." });
+            return;
+        }
+
+        if (typeof window.CinetPay === 'undefined') {
+            toast({ variant: 'destructive', title: t('payment_error_technical') });
+            console.error("CinetPay SDK not loaded.");
             return;
         }
 
@@ -52,22 +85,62 @@ export default function BillingPage() {
 
         const planDetails = pricing[plan];
         const amount = planDetails[currency] || planDetails.XOF;
+        const transaction_id = `wisebil-${plan}-${Date.now()}`;
+        const nameParts = (user.displayName || 'Wisebil Client').trim().split(' ');
+        const customer_name = nameParts.shift() || 'Client';
+        const customer_surname = nameParts.join(' ') || 'Wisebil';
 
-        const result = await generateCinetPayLink({
-            amount,
-            currency: currency,
-            plan,
-        }, user);
+        try {
+            window.CinetPay.setConfig({
+                apikey: '115005263965f879c0ae4c05.63857515',
+                site_id: '105905440',
+                notify_url: 'https://wisebil.com/api/cinetpay-notify',
+                mode: 'PRODUCTION',
+                close_on_error: false
+            });
 
-        setIsLoading(null);
+            window.CinetPay.getCheckout({
+                transaction_id: transaction_id,
+                amount: amount,
+                currency: currency,
+                channels: 'ALL',
+                description: `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} Wisebil`,
+                customer_name: customer_name,
+                customer_surname: customer_surname,
+                customer_email: user.email || 'no-email@wisebil.com',
+                customer_phone_number: user.phone || '',
+                customer_address: "Non spécifiée",
+                customer_city: "Non spécifiée",
+                customer_country: "CM",
+                customer_state: "CM",
+                customer_zip_code: "00000",
+            });
 
-        if (result.success && result.url) {
-            // Redirect the user to the payment page
-            router.push(result.url);
-        } else {
-            toast.error(result.message || t('payment_error_technical'));
+            window.CinetPay.waitResponse((data: any) => {
+                setIsLoading(null);
+                if (data.status === "ACCEPTED") {
+                    toast({ title: t('payment_success') });
+                    // Here you would update the user's subscription status in your database.
+                    router.push('/dashboard/billing?status=success');
+                } else {
+                    toast({ variant: "destructive", title: t('payment_refused') });
+                    router.push('/dashboard/billing?status=refused');
+                }
+            });
+
+            window.CinetPay.onError((data: any) => {
+                setIsLoading(null);
+                console.error('CinetPay Error:', data);
+                toast({ variant: "destructive", title: t('payment_error_technical') });
+            });
+            
+        } catch (error) {
+            setIsLoading(null);
+            console.error('Error during CinetPay checkout:', error);
+            toast({ variant: 'destructive', title: t('payment_error_technical') });
         }
     };
+
 
     const plans: Plan[] = [
         {
@@ -129,6 +202,8 @@ export default function BillingPage() {
     ]
 
     return (
+        <>
+        <Script src="https://cdn.cinetpay.com/seamless/main.js" type="text/javascript" />
         <div className="space-y-8 pb-20 md:pb-8">
             <div className="text-center">
                 <h1 className="text-3xl font-bold font-headline">{t('billing_page_title')}</h1>
@@ -187,5 +262,6 @@ export default function BillingPage() {
                 ))}
              </div>
         </div>
+        </>
     )
 }
