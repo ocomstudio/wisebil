@@ -1,7 +1,8 @@
+
 // src/app/dashboard/entreprise/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle, ShoppingCart, Package, DollarSign, ArrowUpRight, Leaf, Settings, RefreshCw, Activity, AlertCircle, CheckCircle } from "lucide-react";
@@ -14,55 +15,90 @@ import { ActivityHistory } from "@/components/dashboard/entreprise/activity-hist
 import { useAuth } from "@/context/auth-context";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+const TRIAL_PERIOD_DAYS = 28;
+
 export default function EnterprisePage() {
   const { sales } = useSales();
   const { products } = useProducts();
   const { purchases } = usePurchases();
   const { t, formatCurrency } = useLocale();
-  const { user } = useAuth(); // Assuming user object contains subscription info
+  const { user } = useAuth();
   const [isActivityHistoryOpen, setIsActivityHistoryOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
   const totalProductsSold = sales.reduce((sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
 
-  // Placeholder for trial days logic
-  const trialDaysRemaining = 28; 
-  const subscriptionStatus = user?.subscriptionPlan || 'trial'; // 'trial', 'premium', 'business'
+  const subscriptionStatus = user?.subscriptionStatus || 'inactive';
+  const trialStartDate = user?.trialStartDate ? new Date(user.trialStartDate) : null;
+  
+  let trialDaysRemaining = 0;
+  if (trialStartDate && subscriptionStatus === 'inactive') {
+    const today = new Date();
+    const timeDiff = today.getTime() - trialStartDate.getTime();
+    const daysPassed = Math.floor(timeDiff / (1000 * 3600 * 24));
+    trialDaysRemaining = Math.max(0, TRIAL_PERIOD_DAYS - daysPassed);
+  }
 
   const SubscriptionBanner = () => {
-    if (subscriptionStatus === 'premium' || subscriptionStatus === 'business') {
+    if (subscriptionStatus === 'active') {
+      const planName = user?.subscriptionPlan === 'premium' ? t('plan_premium_title') : t('plan_business_title');
       return (
         <Card className="bg-green-600/10 border-green-600/20 text-green-500">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
                 <CheckCircle className="h-5 w-5" />
-                <span>{t('plan_active', { planName: t(`plan_${subscriptionStatus}_title`) })}</span>
+                <span>{t('plan_active', { planName })}</span>
             </CardTitle>
           </CardHeader>
         </Card>
       )
     }
+
+    if (trialDaysRemaining > 0) {
+        return (
+           <Card className="bg-amber-500/10 border-amber-500/20 text-amber-500">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                    <div>
+                        <CardTitle className="text-base flex items-center gap-2">
+                            <AlertCircle className="h-5 w-5" />
+                            <span>{t('trial_days_remaining', { days: trialDaysRemaining })}</span>
+                        </CardTitle>
+                        <CardDescription className="text-amber-500/80 text-xs mt-1">
+                            {t('upgrade_to_keep_features')}
+                        </CardDescription>
+                    </div>
+                     <Button asChild size="sm" variant="outline" className="bg-amber-500/20 border-amber-500/30 hover:bg-amber-500/30">
+                        <Link href="/dashboard/billing">{t('see_plans_button')}</Link>
+                    </Button>
+                </div>
+              </CardHeader>
+            </Card>
+        );
+    }
+    
+    // Trial expired
     return (
-       <Card className="bg-amber-500/10 border-amber-500/20 text-amber-500">
+        <Card className="bg-destructive/10 border-destructive/20 text-destructive">
           <CardHeader>
             <div className="flex justify-between items-center">
                 <div>
                     <CardTitle className="text-base flex items-center gap-2">
                         <AlertCircle className="h-5 w-5" />
-                        <span>{t('trial_days_remaining', { days: trialDaysRemaining })}</span>
+                        <span>Période d'essai terminée</span>
                     </CardTitle>
-                    <CardDescription className="text-amber-500/80 text-xs mt-1">
-                        {t('upgrade_to_keep_features')}
+                    <CardDescription className="text-destructive/80 text-xs mt-1">
+                        Passez à un plan supérieur pour continuer à utiliser les fonctionnalités Entreprise.
                     </CardDescription>
                 </div>
-                 <Button asChild size="sm" variant="outline" className="bg-amber-500/20 border-amber-500/30 hover:bg-amber-500/30">
+                 <Button asChild size="sm" variant="outline" className="bg-destructive/20 border-destructive/30 hover:bg-destructive/30 text-destructive">
                     <Link href="/dashboard/billing">{t('see_plans_button')}</Link>
                 </Button>
             </div>
           </CardHeader>
         </Card>
-    )
+    );
   }
 
   return (

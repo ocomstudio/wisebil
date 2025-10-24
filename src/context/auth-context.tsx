@@ -3,7 +3,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile, UserCredential, sendEmailVerification as firebaseSendEmailVerification, sendPasswordResetEmail, confirmPasswordReset, EmailAuthProvider, reauthenticateWithCredential, updateEmail, updatePassword } from 'firebase/auth';
+import { onAuthStateChanged, User as FirebaseUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile, UserCredential, sendEmailVerification as firebaseSendEmailVerification, sendPasswordResetEmail, confirmPasswordReset, EmailAuthProvider, reauthenticateWithCredential, updateEmail, updatePassword, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc, getDoc, setDoc, onSnapshot, updateDoc } from 'firebase/firestore';
@@ -22,6 +22,7 @@ export interface User {
   stripeCustomerId?: string;
   subscriptionStatus?: 'active' | 'inactive';
   subscriptionPlan?: 'premium' | 'business';
+  trialStartDate?: string; // ISO date string
   hasCompletedTutorial?: boolean;
   emailVerified?: boolean;
 }
@@ -136,6 +137,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const profileData: Omit<User, 'uid' | 'avatar' | 'email' | 'displayName' | 'emailVerified'> = {
       phone,
       subscriptionStatus: 'inactive',
+      trialStartDate: new Date().toISOString(),
       profileComplete: true,
       hasCompletedTutorial: false,
     };
@@ -158,39 +160,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    
-    // Check if user is new and create their profile doc if needed
-    const userDocRef = doc(db, 'users', result.user.uid);
-    const docSnap = await getDoc(userDocRef);
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const userDocRef = doc(db, 'users', result.user.uid);
+        const docSnap = await getDoc(userDocRef);
 
-    if (!docSnap.exists()) {
-      let userLocale: { lang: Language; curr: Currency } = { lang: 'en', curr: 'USD' };
-      try {
-        const response = await axios.get('https://ipapi.co/json/');
-        const countryCode = response.data?.country_code;
-        if (countryCode) {
-          userLocale = getLocaleFromCountry(countryCode);
+        if (!docSnap.exists()) {
+            let userLocale: { lang: Language; curr: Currency } = { lang: 'en', curr: 'USD' };
+            try {
+                const response = await axios.get('https://ipapi.co/json/');
+                const countryCode = response.data?.country_code;
+                if (countryCode) {
+                    userLocale = getLocaleFromCountry(countryCode);
+                }
+            } catch (error) {
+                console.warn("Could not detect user country for Google Sign-In, using defaults.", error);
+            }
+            
+            const profileData: Partial<User> = {
+                email: result.user.email,
+                displayName: result.user.displayName,
+                avatar: result.user.photoURL,
+                profileComplete: true,
+                subscriptionStatus: 'inactive',
+                trialStartDate: new Date().toISOString(),
+                phone: result.user.phoneNumber,
+                hasCompletedTutorial: false,
+                emailVerified: true,
+            };
+
+            await setDoc(userDocRef, {
+                profile: profileData,
+                preferences: { currency: userLocale.curr, language: userLocale.lang }
+            }, { merge: true });
         }
-      } catch (error) {
-        console.warn("Could not detect user country for Google Sign-In, using defaults.", error);
-      }
-      
-      const profileData: Partial<User> = {
-        email: result.user.email,
-        displayName: result.user.displayName,
-        avatar: result.user.photoURL,
-        profileComplete: true,
-        subscriptionStatus: 'inactive',
-        phone: result.user.phoneNumber,
-        hasCompletedTutorial: false,
-        emailVerified: true,
-      };
-
-      await setDoc(userDocRef, {
-        profile: profileData,
-        preferences: { currency: userLocale.curr, language: userLocale.lang }
-      }, { merge: true });
+    } catch (error) {
+        console.error("Google Sign-In Error", error);
+        throw error; // Re-throw the error to be caught in the UI component
     }
   };
 
