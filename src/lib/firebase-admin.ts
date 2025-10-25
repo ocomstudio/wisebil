@@ -3,26 +3,36 @@ import admin from 'firebase-admin';
 
 let db: admin.firestore.Firestore;
 let auth: admin.auth.Auth;
+let isFirebaseAdminInitialized = false;
 
 try {
-  if (!admin.apps.length) {
-    if (process.env.FIREBASE_ADMIN_SDK) {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_SDK as string);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-      });
-    } else {
-      console.warn('FIREBASE_ADMIN_SDK is not set. Firebase Admin features will be disabled.');
-    }
+  if (process.env.FIREBASE_ADMIN_SDK && admin.apps.length === 0) {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_SDK);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+    isFirebaseAdminInitialized = true;
   }
-  db = admin.firestore();
-  auth = admin.auth();
+
+  if (admin.apps.length > 0) {
+    db = admin.firestore();
+    auth = admin.auth();
+    isFirebaseAdminInitialized = true;
+  } else {
+    console.warn('Firebase Admin SDK not initialized. Check FIREBASE_ADMIN_SDK environment variable.');
+    // Provide dummy implementations to prevent crashes
+    db = {} as admin.firestore.Firestore;
+    auth = {
+        verifyIdToken: () => Promise.reject(new Error('Firebase Admin not initialized.'))
+    } as unknown as admin.auth.Auth;
+  }
 } catch (error: any) {
   console.error('Firebase admin initialization error:', error.message);
-  console.warn('Firebase Admin features will be disabled due to initialization error.');
-  // Fallback to dummy implementations if initialization fails
+  // Provide dummy implementations to prevent crashes
   db = {} as admin.firestore.Firestore;
-  auth = {} as admin.auth.Auth;
+  auth = {
+      verifyIdToken: () => Promise.reject(new Error('Firebase Admin initialization failed.'))
+  } as unknown as admin.auth.Auth;
 }
 
-export { db, auth };
+export { db, auth, isFirebaseAdminInitialized };

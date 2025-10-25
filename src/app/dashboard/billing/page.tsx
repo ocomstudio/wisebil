@@ -12,7 +12,6 @@ import Link from "next/link";
 import { useUserData } from "@/context/user-context";
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import { v4 as uuidv4 } from "uuid";
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
