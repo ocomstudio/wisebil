@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useUserData } from "@/context/user-context";
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
+import { v4 as uuidv4 } from "uuid";
 
 
 export const pricing = {
@@ -40,7 +41,7 @@ export default function BillingPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    // Handle payment status from URL redirect
+    // Handle payment status from URL redirect if needed (backup)
     useEffect(() => {
         const status = searchParams.get('status');
         if (status === 'success') {
@@ -62,9 +63,9 @@ export default function BillingPage() {
     const isCurrentPlan = (plan: 'premium' | 'business') => {
         return userData?.profile?.subscriptionStatus === 'active' && userData?.profile?.subscriptionPlan === plan;
     };
-
+    
     const handlePayment = async (plan: 'premium' | 'business') => {
-        if (!user) {
+        if (!user || !userData) {
             toast({ variant: 'destructive', title: "Veuillez vous connecter pour continuer." });
             return;
         }
@@ -72,22 +73,71 @@ export default function BillingPage() {
         setIsLoading(plan);
 
         try {
-            const response = await axios.post('/api/cinetpay/initiate-payment', {
-                plan,
-                userId: user.uid,
+            // Step 1: Fetch API keys securely from our server
+            const keysResponse = await axios.get('/api/cinetpay/get-keys');
+            const { apiKey, siteId } = keysResponse.data;
+
+            if (!apiKey || !siteId) {
+                throw new Error("Configuration de paiement manquante sur le serveur.");
+            }
+
+            const amount = pricing[plan][currency];
+            const transaction_id = `wisebil-${plan}-${user.uid}-${Date.now()}`;
+            
+            const CinetPay = (window as any).CinetPay;
+            if (!CinetPay) {
+                throw new Error("Le SDK CinetPay n'a pas pu être chargé.");
+            }
+
+            CinetPay.getCheckout({
+                transaction_id: transaction_id,
+                amount: amount,
+                currency: currency,
+                channels: 'ALL',
+                description: `Abonnement ${plan} Wisebil`,
+                // Customer data
+                customer_name: userData.profile.displayName?.split(' ')[0] || "Client",
+                customer_surname: userData.profile.displayName?.split(' ').slice(1).join(' ') || "Wisebil",
+                customer_email: userData.profile.email,
+                customer_phone_number: userData.profile.phone,
+                apikey: apiKey,
+                site_id: parseInt(siteId, 10),
+                // Callbacks
+                notify_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/cinetpay/notify`,
+                return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?status=success`,
+                
+                // UX configuration
+                mode: 'seamless',
+                onpending: () => {
+                    console.log('Payment pending');
+                },
+                onsuccess: (paymentInfo: any) => {
+                    toast({
+                        title: t('payment_success'),
+                        description: "Votre abonnement est en cours de mise à jour.",
+                    });
+                    // The notify_url will handle the actual subscription update.
+                    // We just need to give the user feedback and maybe poll for status.
+                    setIsLoading(null);
+                    router.push('/dashboard');
+                },
+                onerror: (err: any) => {
+                    console.error("CinetPay Error:", err);
+                    let errorMessage = "Une erreur est survenue lors du paiement.";
+                    if (typeof err === 'string') {
+                        errorMessage = err;
+                    }
+                    toast({ variant: 'destructive', title: 'Erreur de Paiement', description: errorMessage });
+                    setIsLoading(null);
+                },
+                onclose: () => {
+                    setIsLoading(null);
+                }
             });
 
-            const { payment_url } = response.data;
-
-            if (payment_url) {
-                // Redirect user to CinetPay's payment page
-                window.location.href = payment_url;
-            } else {
-                throw new Error("URL de paiement non reçue.");
-            }
         } catch (error) {
             console.error('Error during payment initiation:', error);
-            const errorMessage = (error as any).response?.data?.error || t('payment_error_technical');
+            const errorMessage = (error as any).response?.data?.error || (error as Error).message || t('payment_error_technical');
             toast({ variant: 'destructive', title: t('error_title'), description: errorMessage });
             setIsLoading(null);
         }
@@ -157,7 +207,7 @@ export default function BillingPage() {
         <div className="space-y-8 pb-20 md:pb-8">
             <div className="flex items-center gap-4">
                  <Button variant="outline" size="icon" asChild>
-                    <Link href="/dashboard">
+                    <Link href="/dashboard/entreprise">
                         <ArrowLeft className="h-4 w-4" />
                     </Link>
                 </Button>
