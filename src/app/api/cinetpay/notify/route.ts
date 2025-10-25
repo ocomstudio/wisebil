@@ -1,7 +1,7 @@
 // src/app/api/cinetpay/notify/route.ts
 import { NextResponse } from 'next/server';
-import { CinetPay } from 'cinetpay-nodejs';
 import { db } from '@/lib/firebase-admin';
+import axios from 'axios';
 
 export async function POST(request: Request) {
   const API_KEY = process.env.CINETPAY_API_KEY;
@@ -11,11 +11,6 @@ export async function POST(request: Request) {
     console.error("CinetPay notify route: API Key or Site ID is not defined.");
     return NextResponse.json({ error: "Configuration du serveur de paiement incomplète." }, { status: 500 });
   }
-
-  const cp = new CinetPay({
-    apikey: API_KEY,
-    site_id: parseInt(SITE_ID, 10),
-  });
 
   try {
     const { cpm_trans_id } = await request.json();
@@ -27,10 +22,23 @@ export async function POST(request: Request) {
     
     console.log(`CinetPay notify: Processing transaction ${cpm_trans_id}`);
     
+    // The transaction ID from CinetPay is the same as our document ID
     const transactionRef = db.collection('transactions').doc(cpm_trans_id);
     
-    // Check status on CinetPay
-    const { data } = await cp.checkPayStatus(cpm_trans_id);
+    // Check status on CinetPay using a direct API call
+    const checkStatusResponse = await axios.post('https://api-checkout.cinetpay.com/v2/payment/check', {
+        apikey: API_KEY,
+        site_id: SITE_ID,
+        transaction_id: cpm_trans_id,
+    });
+    
+    const { data, message, code } = checkStatusResponse.data;
+
+    if (code !== '00') {
+      console.error(`CinetPay checkPayStatus failed for ${cpm_trans_id}: ${message}`);
+      await transactionRef.update({ status: 'ERROR_VERIFICATION_FAILED', updatedAt: new Date().toISOString() });
+      return NextResponse.json({ success: false, message: `Could not verify transaction: ${message}`});
+    }
 
     if (!data) {
         console.error(`CinetPay notify: No data returned from checkPayStatus for ${cpm_trans_id}`);
@@ -41,7 +49,8 @@ export async function POST(request: Request) {
     const transactionDoc = await transactionRef.get();
     if (!transactionDoc.exists) {
         console.warn(`Transaction non trouvée dans la DB : ${cpm_trans_id}. CinetPay status: ${data.status}`);
-        return NextResponse.json({ success: false, message: 'Transaction non trouvée.' });
+        // Acknowledge to CinetPay even if we can't find it, to prevent retries.
+        return NextResponse.json({ success: true, message: 'Transaction not found in DB, but acknowledged.' });
     }
     const transactionData = transactionDoc.data();
 
@@ -49,6 +58,7 @@ export async function POST(request: Request) {
       console.log(`CinetPay notify: Transaction ${cpm_trans_id} ACCEPTED. Updating user subscription.`);
       const userRef = db.collection('users').doc(transactionData!.userId);
       
+      // Use a Firestore transaction to ensure atomicity
       await db.runTransaction(async (t) => {
           t.update(userRef, {
             'profile.subscriptionStatus': 'active',

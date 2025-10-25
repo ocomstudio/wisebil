@@ -10,7 +10,7 @@ import { useAuth } from "@/context/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useUserData } from "@/context/user-context";
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { v4 as uuidv4 } from "uuid";
 import { doc, setDoc } from 'firebase/firestore';
@@ -41,26 +41,6 @@ export default function BillingPage() {
     const [isLoading, setIsLoading] = useState<string | null>(null);
     const { toast } = useToast();
     const router = useRouter();
-    const searchParams = useSearchParams();
-
-    // Handle payment status from URL redirect if needed (backup)
-    useEffect(() => {
-        const status = searchParams.get('status');
-        if (status === 'success') {
-            toast({
-                title: t('payment_success'),
-                description: "Votre plan a été mis à jour.",
-            });
-            router.replace('/dashboard/billing');
-        } else if (status === 'refused') {
-            toast({
-                variant: 'destructive',
-                title: t('payment_refused'),
-                description: "Veuillez réessayer ou contacter le support.",
-            });
-            router.replace('/dashboard/billing');
-        }
-    }, [searchParams, router, toast, t]);
     
     const isCurrentPlan = (plan: 'premium' | 'business') => {
         return userData?.profile?.subscriptionStatus === 'active' && userData?.profile?.subscriptionPlan === plan;
@@ -120,7 +100,7 @@ export default function BillingPage() {
                 site_id: parseInt(siteId, 10),
                 // Callbacks
                 notify_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/cinetpay/notify`,
-                return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?status=success`,
+                return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`, // Simplified return
                 
                 // UX configuration
                 mode: 'seamless',
@@ -226,7 +206,7 @@ export default function BillingPage() {
         <div className="space-y-8 pb-20 md:pb-8">
             <div className="flex items-center gap-4">
                  <Button variant="outline" size="icon" asChild>
-                    <Link href="/dashboard/entreprise">
+                    <Link href="/dashboard">
                         <ArrowLeft className="h-4 w-4" />
                     </Link>
                 </Button>
