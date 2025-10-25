@@ -157,7 +157,7 @@ export default function BillingPage() {
         <div className="space-y-8 pb-20 md:pb-8">
             <div className="flex items-center gap-4">
                  <Button variant="outline" size="icon" asChild>
-                    <Link href="/dashboard/entreprise">
+                    <Link href="/dashboard">
                         <ArrowLeft className="h-4 w-4" />
                     </Link>
                 </Button>

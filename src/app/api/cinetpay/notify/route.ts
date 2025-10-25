@@ -3,19 +3,18 @@ import { NextResponse } from 'next/server';
 import { CinetPay } from 'cinetpay-nodejs';
 import { db } from '@/lib/firebase-admin';
 
-const API_KEY = process.env.CINETPAY_API_KEY;
-const SITE_ID = process.env.CINETPAY_SITE_ID;
-
-if (!API_KEY || !SITE_ID) {
-  console.error("CinetPay API Key or Site ID is not defined in environment variables for notify route.");
-  // We don't throw an error here to avoid breaking the server start,
-  // but payments will fail.
-}
-
 export async function POST(request: Request) {
+  const API_KEY = process.env.CINETPAY_API_KEY;
+  const SITE_ID = process.env.CINETPAY_SITE_ID;
+
+  if (!API_KEY || !SITE_ID) {
+    console.error("CinetPay notify route: API Key or Site ID is not defined.");
+    return NextResponse.json({ error: "Configuration du serveur de paiement incomplète." }, { status: 500 });
+  }
+
   const cp = new CinetPay({
-    apikey: API_KEY!,
-    site_id: parseInt(SITE_ID!, 10),
+    apikey: API_KEY,
+    site_id: parseInt(SITE_ID, 10),
   });
 
   try {

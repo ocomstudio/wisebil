@@ -5,22 +5,23 @@ import { db } from '@/lib/firebase-admin';
 import { pricing } from '@/app/dashboard/billing/page';
 import type { UserData } from '@/context/user-context';
 
-const API_KEY = process.env.CINETPAY_API_KEY;
-const SITE_ID = process.env.CINETPAY_SITE_ID;
-
-if (!API_KEY || !SITE_ID) {
-  console.error("CinetPay API Key or Site ID is not defined in environment variables.");
-  throw new Error("CinetPay API Key or Site ID is not defined in environment variables.");
-}
-
-const cp = new CinetPay({
-    apikey: API_KEY,
-    site_id: parseInt(SITE_ID, 10),
-    notify_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/cinetpay/notify`,
-});
 
 export async function POST(request: Request) {
   try {
+    const API_KEY = process.env.CINETPAY_API_KEY;
+    const SITE_ID = process.env.CINETPAY_SITE_ID;
+    
+    if (!API_KEY || !SITE_ID) {
+      console.error("CinetPay API Key or Site ID is not defined in environment variables.");
+      return NextResponse.json({ error: "Les clés CinetPay ne sont pas configurées sur le serveur." }, { status: 500 });
+    }
+
+    const cp = new CinetPay({
+        apikey: API_KEY,
+        site_id: parseInt(SITE_ID, 10),
+        notify_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/cinetpay/notify`,
+    });
+
     const body = await request.json();
     const { userId, plan } = body;
 
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
       currency,
       transaction_id,
       description: `Abonnement ${plan} Wisebil`,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing`,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?status=success`,
       customer_name,
       customer_surname,
       customer_email: userData.profile.email || '',
