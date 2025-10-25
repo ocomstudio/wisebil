@@ -1,4 +1,3 @@
-
 // src/app/dashboard/entreprise/page.tsx
 "use client";
 
@@ -15,8 +14,9 @@ import { ActivityHistory } from "@/components/dashboard/entreprise/activity-hist
 import { useAuth } from "@/context/auth-context";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEnterprise } from "@/context/enterprise-context";
+import { checkUserSubscriptionStatus } from "@/app/actions/check-subscription";
+import { useRouter } from "next/navigation";
 
-const TRIAL_PERIOD_DAYS = 28;
 
 export default function EnterprisePage() {
   const { sales } = useSales();
@@ -27,9 +27,26 @@ export default function EnterprisePage() {
   const [isActivityHistoryOpen, setIsActivityHistoryOpen] = useState(false);
   const isMobile = useIsMobile();
   const { isTrialActive, trialDaysRemaining } = useEnterprise();
+  const router = useRouter();
+  const [isSubscriptionActive, setIsSubscriptionActive] = useState(true); // Default to true
+
+  useEffect(() => {
+    // This check is now mostly for future use, as the server action currently always returns true.
+    // When you want to re-enable restrictions, the logic is already here.
+    checkUserSubscriptionStatus().then(({ isActive }) => {
+      setIsSubscriptionActive(isActive);
+    });
+  }, []);
 
   const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
   const totalProductsSold = sales.reduce((sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
+  
+  const handleProtectedLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
+    if (!isSubscriptionActive) {
+      e.preventDefault();
+      router.push('/dashboard/billing');
+    }
+  };
 
   const SubscriptionBanner = () => {
     const subscriptionStatus = user?.subscriptionStatus || 'inactive';
