@@ -11,14 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useUserData } from "@/context/user-context";
 import { useRouter, useSearchParams } from 'next/navigation';
-import Script from 'next/script';
+import axios from 'axios';
 
-// This declares the CinetPay object on the window
-declare global {
-  interface Window {
-    CinetPay: any;
-  }
-}
 
 export const pricing = {
     premium: { XOF: 5000, EUR: 8, USD: 9 },
@@ -75,69 +69,27 @@ export default function BillingPage() {
             return;
         }
 
-        if (typeof window.CinetPay === 'undefined') {
-            toast({ variant: 'destructive', title: t('payment_error_technical') });
-            console.error("CinetPay SDK not loaded.");
-            return;
-        }
-
         setIsLoading(plan);
 
-        const planDetails = pricing[plan];
-        const amount = planDetails[currency] || planDetails.XOF;
-        const transaction_id = `wisebil-${plan}-${Date.now()}`;
-        const nameParts = (user.displayName || 'Wisebil Client').trim().split(' ');
-        const customer_name = nameParts.shift() || 'Client';
-        const customer_surname = nameParts.join(' ') || 'Wisebil';
-
         try {
-            window.CinetPay.setConfig({
-                apikey: '115005263965f879c0ae4c05.63857515',
-                site_id: '105905440',
-                notify_url: 'https://wisebil.com/api/cinetpay-notify',
-                mode: 'PRODUCTION',
-                close_on_error: false
+            const response = await axios.post('/api/cinetpay/initiate-payment', {
+                plan,
+                userId: user.uid,
             });
 
-            window.CinetPay.getCheckout({
-                transaction_id: transaction_id,
-                amount: amount,
-                currency: currency,
-                channels: 'ALL',
-                description: `Abonnement ${plan.charAt(0).toUpperCase() + plan.slice(1)} Wisebil`,
-                customer_name: customer_name,
-                customer_surname: customer_surname,
-                customer_email: user.email || 'no-email@wisebil.com',
-                customer_phone_number: user.phone || '',
-                customer_address: "Non spécifiée",
-                customer_city: "Non spécifiée",
-                customer_country: "CM",
-                customer_state: "CM",
-                customer_zip_code: "00000",
-            });
+            const { payment_url } = response.data;
 
-            window.CinetPay.waitResponse((data: any) => {
-                setIsLoading(null);
-                if (data.status === "ACCEPTED") {
-                    toast({ title: t('payment_success') });
-                    // Here you would update the user's subscription status in your database.
-                    router.push('/dashboard/billing?status=success');
-                } else {
-                    toast({ variant: "destructive", title: t('payment_refused') });
-                    router.push('/dashboard/billing?status=refused');
-                }
-            });
-
-            window.CinetPay.onError((data: any) => {
-                setIsLoading(null);
-                console.error('CinetPay Error:', data);
-                toast({ variant: "destructive", title: t('payment_error_technical') });
-            });
-            
+            if (payment_url) {
+                // Redirect user to CinetPay's payment page
+                window.location.href = payment_url;
+            } else {
+                throw new Error("URL de paiement non reçue.");
+            }
         } catch (error) {
+            console.error('Error during payment initiation:', error);
+            const errorMessage = (error as any).response?.data?.error || t('payment_error_technical');
+            toast({ variant: 'destructive', title: t('error_title'), description: errorMessage });
             setIsLoading(null);
-            console.error('Error during CinetPay checkout:', error);
-            toast({ variant: 'destructive', title: t('payment_error_technical') });
         }
     };
 
@@ -202,8 +154,6 @@ export default function BillingPage() {
     ]
 
     return (
-        <>
-        <Script src="https://cdn.cinetpay.com/seamless/main.js" type="text/javascript" />
         <div className="space-y-8 pb-20 md:pb-8">
             <div className="flex items-center gap-4">
                  <Button variant="outline" size="icon" asChild>
@@ -269,6 +219,5 @@ export default function BillingPage() {
                 ))}
              </div>
         </div>
-        </>
     )
 }
