@@ -13,6 +13,8 @@ import { useUserData } from "@/context/user-context";
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import { v4 as uuidv4 } from "uuid";
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 
 export const pricing = {
@@ -34,7 +36,7 @@ interface Plan {
 
 export default function BillingPage() {
     const { t, currency, formatCurrency } = useLocale();
-    const { user } = useAuth();
+    const { user, firebaseUser } = useAuth();
     const { userData } = useUserData();
     const [isLoading, setIsLoading] = useState<string | null>(null);
     const { toast } = useToast();
@@ -65,7 +67,7 @@ export default function BillingPage() {
     };
     
     const handlePayment = async (plan: 'premium' | 'business') => {
-        if (!user || !userData) {
+        if (!user || !userData || !firebaseUser) {
             toast({ variant: 'destructive', title: "Veuillez vous connecter pour continuer." });
             return;
         }
@@ -73,21 +75,35 @@ export default function BillingPage() {
         setIsLoading(plan);
 
         try {
-            // Step 1: Fetch API keys securely from our server
-            const keysResponse = await axios.get('/api/cinetpay/get-keys');
+            // Step 1: Securely fetch API keys from our server by providing the user's auth token
+            const idToken = await firebaseUser.getIdToken();
+            const keysResponse = await axios.get('/api/cinetpay/get-keys', {
+                headers: { Authorization: `Bearer ${idToken}` }
+            });
             const { apiKey, siteId } = keysResponse.data;
 
             if (!apiKey || !siteId) {
                 throw new Error("Configuration de paiement manquante sur le serveur.");
             }
-
-            const amount = pricing[plan][currency];
-            const transaction_id = `wisebil-${plan}-${user.uid}-${Date.now()}`;
             
             const CinetPay = (window as any).CinetPay;
             if (!CinetPay) {
                 throw new Error("Le SDK CinetPay n'a pas pu être chargé.");
             }
+
+            const amount = pricing[plan][currency];
+            const transaction_id = `wisebil-${plan}-${user.uid}-${Date.now()}`;
+            
+             // Create a pending transaction document in Firestore
+            const transactionRef = doc(db, 'transactions', transaction_id);
+            await setDoc(transactionRef, {
+                userId: user.uid,
+                plan: plan,
+                amount: amount,
+                currency: currency,
+                status: 'PENDING',
+                createdAt: new Date().toISOString(),
+            });
 
             CinetPay.getCheckout({
                 transaction_id: transaction_id,
@@ -110,6 +126,7 @@ export default function BillingPage() {
                 mode: 'seamless',
                 onpending: () => {
                     console.log('Payment pending');
+                    setIsLoading(null);
                 },
                 onsuccess: (paymentInfo: any) => {
                     toast({
@@ -124,7 +141,9 @@ export default function BillingPage() {
                 onerror: (err: any) => {
                     console.error("CinetPay Error:", err);
                     let errorMessage = "Une erreur est survenue lors du paiement.";
-                    if (typeof err === 'string') {
+                    if (typeof err === 'string' && err.toLowerCase().includes('montant minimum')) {
+                       errorMessage = `Le montant minimum pour cette transaction est de 100 ${currency}.`;
+                    } else if (typeof err === 'string') {
                         errorMessage = err;
                     }
                     toast({ variant: 'destructive', title: 'Erreur de Paiement', description: errorMessage });
