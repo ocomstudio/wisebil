@@ -21,36 +21,15 @@ import 'react-phone-number-input/style.css';
 import PhoneInput, { isValidPhoneNumber, type Country } from 'react-phone-number-input';
 import { useUserData } from '@/context/user-context';
 import axios from "axios";
-import { useAuth } from '@/context/auth-context';
-import { checkUserSubscriptionStatus } from '@/app/actions/check-subscription';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CreateSalePage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { user } = useAuth();
   const { products, isLoading: isLoadingProducts } = useProducts();
   const { addUserSale, isLoading: isLoadingSales } = useUserData();
   const { t, formatCurrency } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [detectedCountry, setDetectedCountry] = useState<Country>('SN');
-  const [isTrialActive, setIsTrialActive] = useState<boolean | null>(null);
-
-   useEffect(() => {
-    async function checkSubscription() {
-        if (user) {
-            const idToken = await user.getIdToken();
-            const headers = new Headers();
-            headers.append('Authorization', `Bearer ${idToken}`);
-            const response = await fetch('/api/check-subscription-status', { headers });
-            const { isActive } = await response.json();
-            setIsTrialActive(isActive);
-        } else {
-            setIsTrialActive(false);
-        }
-    }
-    checkSubscription();
-  }, [user]);
 
   useEffect(() => {
     const fetchCountry = async () => {
@@ -119,11 +98,6 @@ export default function CreateSalePage() {
   const total = watchedItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   const onSubmit = async (data: SaleFormValues) => {
-    if (!isTrialActive) {
-        router.push('/dashboard/billing');
-        toast({ variant: "destructive", title: "Abonnement requis", description: "Veuillez choisir un plan pour créer des ventes."});
-        return;
-    }
     setIsSubmitting(true);
     try {
         const saleData = {
@@ -154,40 +128,6 @@ export default function CreateSalePage() {
       setIsSubmitting(false);
     }
   };
-
-  if (isTrialActive === null) {
-      return (
-          <div className="space-y-6">
-              <Skeleton className="h-10 w-1/3" />
-              <Skeleton className="h-96 w-full" />
-              <Skeleton className="h-10 w-32 self-end" />
-          </div>
-      )
-  }
-
-  if (!isTrialActive) {
-    return (
-        <Card className="w-full max-w-lg mx-auto mt-10 text-center">
-            <CardHeader>
-                <div className="mx-auto bg-destructive/10 p-4 rounded-full mb-4 w-fit">
-                  <Shield className="h-12 w-12 text-destructive" />
-                </div>
-                <CardTitle>Période d'essai terminée ou Abonnement inactif</CardTitle>
-                <CardDescription>
-                    Votre accès aux fonctionnalités Entreprise est limité.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <p className="text-sm text-muted-foreground mb-6">
-                    Veuillez passer à un plan supérieur pour continuer à enregistrer des ventes.
-                </p>
-                <Button asChild>
-                    <Link href="/dashboard/billing">Voir les plans d'abonnement</Link>
-                </Button>
-            </CardContent>
-        </Card>
-    )
-  }
 
   return (
     <div className="space-y-6 pb-24 md:pb-8">

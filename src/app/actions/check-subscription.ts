@@ -8,6 +8,11 @@ import { headers } from 'next/headers';
 const TRIAL_PERIOD_DAYS = 28;
 
 export async function checkUserSubscriptionStatus(): Promise<{ isActive: boolean }> {
+  // Temporarily return true to allow all users to access enterprise features during launch.
+  return { isActive: true };
+
+  /*
+  // Original logic to be restored later
   try {
     const authorization = headers().get('Authorization');
     if (!authorization?.startsWith('Bearer ')) {
@@ -50,4 +55,5 @@ export async function checkUserSubscriptionStatus(): Promise<{ isActive: boolean
     console.error("Error checking subscription status:", error);
     return { isActive: false };
   }
+  */
 }

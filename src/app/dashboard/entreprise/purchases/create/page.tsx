@@ -1,4 +1,3 @@
-
 // src/app/dashboard/entreprise/purchases/create/page.tsx
 "use client";
 
@@ -19,7 +18,6 @@ import { useProducts } from '@/context/product-context';
 import { useLocale } from '@/context/locale-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { usePurchases } from '@/context/purchase-context';
-import { useEnterprise } from '@/context/enterprise-context';
 
 export default function CreatePurchasePage() {
   const router = useRouter();
@@ -28,7 +26,6 @@ export default function CreatePurchasePage() {
   const { addPurchase, isLoading: isLoadingPurchases } = usePurchases();
   const { t, formatCurrency, currency } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { isTrialActive } = useEnterprise();
 
   const purchaseItemSchema = z.object({
     productId: z.string().min(1, t('sale_item_product_error')),
@@ -68,11 +65,6 @@ export default function CreatePurchasePage() {
   const total = watchedItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   const onSubmit = async (data: PurchaseFormValues) => {
-    if (!isTrialActive) {
-        router.push('/dashboard/billing');
-        toast({ variant: "destructive", title: "Abonnement requis", description: "Veuillez choisir un plan pour enregistrer des achats."});
-        return;
-    }
     setIsSubmitting(true);
     try {
         const purchaseData = {
@@ -103,30 +95,6 @@ export default function CreatePurchasePage() {
       setIsSubmitting(false);
     }
   };
-
-  if (!isTrialActive) {
-    return (
-        <Card className="w-full max-w-lg mx-auto mt-10 text-center">
-            <CardHeader>
-                <div className="mx-auto bg-destructive/10 p-4 rounded-full mb-4 w-fit">
-                  <Shield className="h-12 w-12 text-destructive" />
-                </div>
-                <CardTitle>Période d'essai terminée</CardTitle>
-                <CardDescription>
-                    Votre période d'essai pour les fonctionnalités Entreprise est terminée.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <p className="text-sm text-muted-foreground mb-6">
-                    Veuillez passer à un plan supérieur pour continuer à enregistrer des achats.
-                </p>
-                <Button asChild>
-                    <Link href="/dashboard/billing">Voir les plans d'abonnement</Link>
-                </Button>
-            </CardContent>
-        </Card>
-    )
-  }
 
   return (
     <div className="space-y-6 pb-24 md:pb-8">
