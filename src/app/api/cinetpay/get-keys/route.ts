@@ -27,6 +27,9 @@ export async function GET(request: Request) {
 
   } catch (error: any) {
     console.error('[API] Error getting CinetPay keys:', error.message);
+    if (error.code === 'auth/id-token-expired') {
+        return NextResponse.json({ error: 'Unauthorized: Token has expired.' }, { status: 401 });
+    }
     return NextResponse.json({ error: 'Unauthorized: Invalid token.' }, { status: 401 });
   }
 }
