@@ -76,7 +76,7 @@ export default function BillingPage() {
 
         try {
             // Step 1: Securely fetch API keys from our server by providing the user's auth token
-            const idToken = await firebaseUser.getIdToken();
+            const idToken = await firebaseUser.getIdToken(true); // Force token refresh
             const keysResponse = await axios.get('/api/cinetpay/get-keys', {
                 headers: { Authorization: `Bearer ${idToken}` }
             });
