@@ -134,9 +134,9 @@ export default function EnterprisePage() {
        </Card>
 
        <div className="grid grid-cols-3 gap-2">
-            <Button asChild className="col-span-1 h-auto p-0" variant="ghost" disabled={!isTrialActive}>
-                <Link href={isTrialActive ? "/dashboard/entreprise/sales/create" : "/dashboard/billing"}>
-                    <Card className="w-full h-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-primary/20">
+            <Button asChild className="col-span-1 h-auto p-0" variant="ghost">
+                <Link href="/dashboard/entreprise/sales/create">
+                    <Card className="w-full h-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all transform-gpu hover:shadow-xl hover:shadow-primary/20">
                         <CardHeader className="flex flex-col items-center justify-center text-center p-2">
                             <ShoppingCart className="h-6 w-6 mb-1" />
                             <CardTitle className="text-xs font-bold">{t('nav_sales')}</CardTitle>
@@ -144,9 +144,9 @@ export default function EnterprisePage() {
                     </Card>
                 </Link>
             </Button>
-             <Button asChild className="col-span-1 h-auto p-0" variant="ghost" disabled={!isTrialActive}>
-                <Link href={isTrialActive ? "/dashboard/entreprise/products/create" : "/dashboard/billing"}>
-                    <Card className="w-full h-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-secondary/20">
+             <Button asChild className="col-span-1 h-auto p-0" variant="ghost">
+                <Link href="/dashboard/entreprise/products/create">
+                    <Card className="w-full h-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all transform-gpu hover:shadow-xl hover:shadow-secondary/20">
                         <CardHeader className="flex flex-col items-center justify-center text-center p-2">
                             <PlusCircle className="h-6 w-6 mb-1" />
                             <CardTitle className="text-xs font-bold">{t('nav_products')}</CardTitle>
@@ -154,9 +154,9 @@ export default function EnterprisePage() {
                     </Card>
                 </Link>
             </Button>
-             <Button asChild className="col-span-1 h-auto p-0" variant="ghost" disabled={!isTrialActive}>
-                <Link href={isTrialActive ? "/dashboard/entreprise/purchases/create" : "/dashboard/billing"}>
-                    <Card className="w-full h-full bg-accent text-accent-foreground hover:bg-accent/90 transition-all transform-gpu hover:scale-[1.03] shadow-lg shadow-accent/20">
+             <Button asChild className="col-span-1 h-auto p-0" variant="ghost">
+                <Link href="/dashboard/entreprise/purchases/create">
+                    <Card className="w-full h-full bg-accent text-accent-foreground hover:bg-accent/90 transition-all transform-gpu hover:shadow-xl hover:shadow-accent/20">
                         <CardHeader className="flex flex-col items-center justify-center text-center p-2">
                             <RefreshCw className="h-6 w-6 mb-1" />
                             <CardTitle className="text-xs font-bold">{t('nav_purchases')}</CardTitle>
