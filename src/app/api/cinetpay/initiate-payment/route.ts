@@ -1,10 +1,8 @@
 // src/app/api/cinetpay/initiate-payment/route.ts
 import { NextResponse } from 'next/server';
-import { CinetPay } from 'cinetpay-nodejs';
 import { db } from '@/lib/firebase-admin';
 import { pricing } from '@/app/dashboard/billing/page';
 import type { UserData } from '@/context/user-context';
-
 
 export async function POST(request: Request) {
   try {
@@ -15,12 +13,6 @@ export async function POST(request: Request) {
       console.error("CinetPay API Key or Site ID is not defined in environment variables.");
       return NextResponse.json({ error: "Les clés CinetPay ne sont pas configurées sur le serveur." }, { status: 500 });
     }
-
-    const cp = new CinetPay({
-        apikey: API_KEY,
-        site_id: parseInt(SITE_ID, 10),
-        notify_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/cinetpay/notify`,
-    });
 
     const body = await request.json();
     const { userId, plan } = body;
@@ -53,25 +45,37 @@ export async function POST(request: Request) {
       customer_surname,
       customer_email: userData.profile.email || '',
       customer_phone_number: userData.profile.phone || '',
+      apikey: API_KEY,
+      site_id: SITE_ID,
+      notify_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/cinetpay/notify`,
     };
     
-    // We add the transaction to our DB before sending to CinetPay
     await db.collection('transactions').doc(transaction_id).set({
-      ...paymentData,
       userId,
       plan,
       status: 'PENDING',
       createdAt: new Date().toISOString(),
+      amount,
+      currency,
+      description: paymentData.description,
     });
     
-    const { payment_url, error } = await cp.generatePaymentLink(paymentData);
-    
-    if (error) {
-        console.error("CinetPay Error:", error);
-        throw new Error("Erreur lors de la génération du lien de paiement.");
+    const cinetpayResponse = await fetch('https://api-checkout.cinetpay.com/v2/payment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(paymentData)
+    });
+
+    const responseData = await cinetpayResponse.json();
+
+    if (responseData.code !== '201') {
+        console.error("CinetPay Error:", responseData.message, responseData.description);
+        throw new Error(responseData.description || "Erreur lors de la génération du lien de paiement.");
     }
     
-    return NextResponse.json({ payment_url });
+    return NextResponse.json({ payment_url: responseData.data.payment_url });
 
   } catch (error: any) {
     console.error('[API] Error initiating payment:', error);
