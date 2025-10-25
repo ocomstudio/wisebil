@@ -30,6 +30,10 @@ export async function GET(request: Request) {
     if (error.code === 'auth/id-token-expired') {
         return NextResponse.json({ error: 'Unauthorized: Token has expired.' }, { status: 401 });
     }
+    if (error.code === 'auth/argument-error') {
+        console.error('[AUTH ERROR] Firebase Admin SDK likely not initialized. Check server environment variables.');
+        return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
+    }
     return NextResponse.json({ error: 'Unauthorized: Invalid token.' }, { status: 401 });
   }
 }
