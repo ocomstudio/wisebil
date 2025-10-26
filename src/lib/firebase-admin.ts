@@ -23,9 +23,8 @@ if (!admin.apps.length) {
 
   } catch (error: any) {
     console.error('Firebase Admin SDK initialization error:', error.message);
-    // You might want to throw the error in a production environment
-    // to prevent the server from starting with a misconfiguration.
-    // For now, we'll log it.
+    // In a production environment, you might want to prevent the server from starting.
+    // For development, logging the error is crucial.
   }
 }
 
