@@ -1,15 +1,13 @@
 // src/app/payment/initiate/page.tsx
 import { Suspense } from 'react';
-import { headers } from 'next/headers';
-import { db } from '@/lib/firebase-admin';
-import { auth as adminAuth } from '@/lib/firebase-admin';
+import { db, auth as adminAuth } from '@/lib/firebase-admin';
 
 async function InitiatePaymentPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
-    const { plan, transaction_id, amount, currency } = searchParams;
+    const { plan, transaction_id, amount, currency, idToken } = searchParams;
     
     // 1. Validate required parameters
-    if (!plan || !transaction_id || !amount || !currency) {
-        return <div className="text-red-500 p-8">Erreur: Paramètres de paiement manquants.</div>;
+    if (!plan || !transaction_id || !amount || !currency || !idToken) {
+        return <div className="text-red-500 p-8">Erreur: Paramètres de paiement invalides ou manquants.</div>;
     }
 
     const apiKey = process.env.CINETPAY_API_KEY;
@@ -19,24 +17,20 @@ async function InitiatePaymentPage({ searchParams }: { searchParams: { [key: str
         return <div className="text-red-500 p-8">Erreur: Configuration de paiement du serveur manquante. Veuillez contacter le support.</div>;
     }
 
-    // 2. Get User Info from Authorization Header (if available)
-    const authorization = headers().get('Authorization');
-    let user = { uid: 'anonymous', email: 'anonymous@example.com', displayName: 'Client', phone: '' };
-
-    if (authorization?.startsWith('Bearer ')) {
-        const idToken = authorization.split('Bearer ')[1];
-        try {
-            const decodedToken = await adminAuth.verifyIdToken(idToken);
-            const userRecord = await adminAuth.getUser(decodedToken.uid);
-            user = {
-                uid: userRecord.uid,
-                email: userRecord.email || 'no-email@example.com',
-                displayName: userRecord.displayName || 'Utilisateur',
-                phone: userRecord.phoneNumber || ''
-            };
-        } catch (error) {
-            console.error("Error verifying token, proceeding as anonymous for CinetPay:", error);
-        }
+    // 2. Verify Auth Token and Get User Info
+    let user: { uid: string; email: string; displayName: string; phone: string; };
+    try {
+        const decodedToken = await adminAuth.verifyIdToken(idToken as string);
+        const userRecord = await adminAuth.getUser(decodedToken.uid);
+        user = {
+            uid: userRecord.uid,
+            email: userRecord.email || 'no-email@example.com',
+            displayName: userRecord.displayName || 'Utilisateur',
+            phone: userRecord.phoneNumber || ''
+        };
+    } catch (error) {
+        console.error("Error verifying token:", error);
+        return <div className="text-red-500 p-8">Erreur d'authentification. Impossible de vérifier l'utilisateur.</div>;
     }
 
     // 3. Create a PENDING transaction in Firestore

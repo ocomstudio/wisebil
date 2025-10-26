@@ -51,15 +51,20 @@ export default function BillingPage() {
         setIsLoading(plan);
         const transactionId = uuidv4();
         
-        // Redirect to a server page that will handle the CinetPay form submission
-        // Pass the user's auth token for server-side user identification
+        // Step 1: Get user's auth token
         const idToken = await firebaseUser.getIdToken(true);
-        const url = `/payment/initiate?plan=${plan}&transaction_id=${transactionId}&amount=${pricing[plan][currency]}&currency=${currency}`;
         
-        // Since we are redirecting, we can't easily pass headers.
-        // The server page will rely on the user's cookie-based session if available,
-        // or process the payment more anonymously if needed.
-        // For better security, sensitive actions on the server page should re-verify the user.
+        // Step 2: Redirect to a server page that will handle the CinetPay form submission,
+        // passing all necessary info, including the auth token for server-side verification.
+        const params = new URLSearchParams({
+            plan,
+            transaction_id: transactionId,
+            amount: pricing[plan][currency].toString(),
+            currency: currency,
+            idToken: idToken,
+        });
+
+        const url = `/payment/initiate?${params.toString()}`;
         router.push(url);
     };
 
