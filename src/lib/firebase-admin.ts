@@ -1,37 +1,35 @@
 // src/lib/firebase-admin.ts
 import admin from 'firebase-admin';
 
-let db: admin.firestore.Firestore;
-let auth: admin.auth.Auth;
-let isFirebaseAdminInitialized = false;
+// Check if the SDK has already been initialized
+if (!admin.apps.length) {
+  try {
+    const serviceAccountString = process.env.FIREBASE_ADMIN_SDK;
+    if (!serviceAccountString) {
+      throw new Error('The FIREBASE_ADMIN_SDK environment variable is not set. The application will not be able to function correctly in a server environment.');
+    }
+    
+    // Clean the string if it's quoted
+    const cleanedServiceAccountString = serviceAccountString.startsWith('"') && serviceAccountString.endsWith('"')
+      ? serviceAccountString.substring(1, serviceAccountString.length - 1)
+      : serviceAccountString;
 
-try {
-  if (process.env.FIREBASE_ADMIN_SDK && admin.apps.length === 0) {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_SDK as string);
+    const serviceAccount = JSON.parse(cleanedServiceAccountString);
+    
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
-    db = admin.firestore();
-    auth = admin.auth();
-    isFirebaseAdminInitialized = true;
-  } else if (admin.apps.length > 0) {
-    db = admin.firestore();
-    auth = admin.auth();
-    isFirebaseAdminInitialized = true;
+    console.log("Firebase Admin SDK initialized successfully.");
+
+  } catch (error: any) {
+    console.error('Firebase Admin SDK initialization error:', error.message);
+    // You might want to throw the error in a production environment
+    // to prevent the server from starting with a misconfiguration.
+    // For now, we'll log it.
   }
-} catch (error: any) {
-  console.error('Firebase Admin SDK initialization error:', error.message);
-  // This will prevent the app from starting if the SDK is malformed, which is a good thing.
 }
 
-if (!isFirebaseAdminInitialized) {
-  console.warn('Firebase Admin SDK not initialized. Ensure FIREBASE_ADMIN_SDK environment variable is set correctly.');
-  // Provide dummy implementations for type safety, but they will throw errors if used.
-  db = {} as admin.firestore.Firestore;
-  auth = {
-    verifyIdToken: () => Promise.reject(new Error('Firebase Admin not initialized.')),
-  } as unknown as admin.auth.Auth;
-}
+const db = admin.firestore();
+const auth = admin.auth();
 
-
-export { db, auth, isFirebaseAdminInitialized };
+export { db, auth };

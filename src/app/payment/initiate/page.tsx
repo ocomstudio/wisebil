@@ -1,6 +1,6 @@
 // src/app/payment/initiate/page.tsx
 import { Suspense } from 'react';
-import { db, auth as adminAuth } from '@/lib/firebase-admin';
+import { db, auth } from '@/lib/firebase-admin';
 
 async function InitiatePaymentPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
     const { plan, transaction_id, amount, currency, idToken } = searchParams;
@@ -20,8 +20,8 @@ async function InitiatePaymentPage({ searchParams }: { searchParams: { [key: str
     // 2. Verify Auth Token and Get User Info
     let user: { uid: string; email: string; displayName: string; phone: string; };
     try {
-        const decodedToken = await adminAuth.verifyIdToken(idToken as string);
-        const userRecord = await adminAuth.getUser(decodedToken.uid);
+        const decodedToken = await auth.verifyIdToken(idToken as string);
+        const userRecord = await auth.getUser(decodedToken.uid);
         user = {
             uid: userRecord.uid,
             email: userRecord.email || 'no-email@example.com',
