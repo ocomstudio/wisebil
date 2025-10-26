@@ -11,9 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useUserData } from "@/context/user-context";
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
-import { doc, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { v4 as uuidv4 } from 'uuid';
 
 
 export const pricing = {
@@ -46,99 +44,14 @@ export default function BillingPage() {
     };
     
     const handlePayment = async (plan: 'premium' | 'business') => {
-        if (!user || !userData || !firebaseUser) {
+        if (!user) {
             toast({ variant: 'destructive', title: "Veuillez vous connecter pour continuer." });
             return;
         }
-
         setIsLoading(plan);
-
-        try {
-            // Step 1: Securely fetch API keys from our server by providing the user's auth token
-            const idToken = await firebaseUser.getIdToken(true); // Force token refresh
-            const keysResponse = await axios.get('/api/cinetpay/get-keys', {
-                headers: { Authorization: `Bearer ${idToken}` }
-            });
-            const { apiKey, siteId } = keysResponse.data;
-
-            if (!apiKey || !siteId) {
-                throw new Error("Configuration de paiement manquante sur le serveur.");
-            }
-            
-            const CinetPay = (window as any).CinetPay;
-            if (!CinetPay) {
-                throw new Error("Le SDK CinetPay n'a pas pu être chargé.");
-            }
-
-            const amount = pricing[plan][currency];
-            const transaction_id = `wisebil-${plan}-${user.uid}-${Date.now()}`;
-            
-             // Create a pending transaction document in Firestore
-            const transactionRef = doc(db, 'transactions', transaction_id);
-            await setDoc(transactionRef, {
-                userId: user.uid,
-                plan: plan,
-                amount: amount,
-                currency: currency,
-                status: 'PENDING',
-                createdAt: new Date().toISOString(),
-            });
-
-            CinetPay.getCheckout({
-                transaction_id: transaction_id,
-                amount: amount,
-                currency: currency,
-                channels: 'ALL',
-                description: `Abonnement ${plan} Wisebil`,
-                // Customer data
-                customer_name: userData.profile.displayName?.split(' ')[0] || "Client",
-                customer_surname: userData.profile.displayName?.split(' ').slice(1).join(' ') || "Wisebil",
-                customer_email: userData.profile.email,
-                customer_phone_number: userData.profile.phone,
-                apikey: apiKey,
-                site_id: parseInt(siteId, 10),
-                // Callbacks
-                notify_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/cinetpay/notify`,
-                return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`, // Simplified return
-                
-                // UX configuration
-                mode: 'seamless',
-                onpending: () => {
-                    console.log('Payment pending');
-                    setIsLoading(null);
-                },
-                onsuccess: (paymentInfo: any) => {
-                    toast({
-                        title: t('payment_success'),
-                        description: "Votre abonnement est en cours de mise à jour.",
-                    });
-                    // The notify_url will handle the actual subscription update.
-                    // We just need to give the user feedback and maybe poll for status.
-                    setIsLoading(null);
-                    router.push('/dashboard');
-                },
-                onerror: (err: any) => {
-                    console.error("CinetPay Error:", err);
-                    let errorMessage = "Une erreur est survenue lors du paiement.";
-                    if (typeof err === 'string' && err.toLowerCase().includes('montant minimum')) {
-                       errorMessage = `Le montant minimum pour cette transaction est de 100 ${currency}.`;
-                    } else if (typeof err === 'string') {
-                        errorMessage = err;
-                    }
-                    toast({ variant: 'destructive', title: 'Erreur de Paiement', description: errorMessage });
-                    setIsLoading(null);
-                },
-                onclose: () => {
-                    setIsLoading(null);
-                }
-            });
-
-        } catch (error) {
-            console.error('Error during payment initiation:', error);
-            const errorMessage = (error as any).response?.data?.error || (error as Error).message || t('payment_error_technical');
-            toast({ variant: 'destructive', title: t('error_title'), description: errorMessage });
-            setIsLoading(null);
-        }
+        const transactionId = uuidv4();
+        // Redirect to a server page that will handle the CinetPay form submission
+        router.push(`/payment/initiate?plan=${plan}&transaction_id=${transactionId}&amount=${pricing[plan][currency]}&currency=${currency}`);
     };
 
 
