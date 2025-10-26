@@ -11,17 +11,20 @@ try {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
+    db = admin.firestore();
+    auth = admin.auth();
+    isFirebaseAdminInitialized = true;
+  } else if (admin.apps.length > 0) {
+    db = admin.firestore();
+    auth = admin.auth();
+    isFirebaseAdminInitialized = true;
   }
 } catch (error: any) {
   console.error('Firebase Admin SDK initialization error:', error.message);
   // This will prevent the app from starting if the SDK is malformed, which is a good thing.
 }
 
-if (admin.apps.length > 0) {
-  db = admin.firestore();
-  auth = admin.auth();
-  isFirebaseAdminInitialized = true;
-} else {
+if (!isFirebaseAdminInitialized) {
   console.warn('Firebase Admin SDK not initialized. Ensure FIREBASE_ADMIN_SDK environment variable is set correctly.');
   // Provide dummy implementations for type safety, but they will throw errors if used.
   db = {} as admin.firestore.Firestore;
