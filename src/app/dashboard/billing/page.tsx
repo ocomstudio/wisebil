@@ -44,14 +44,23 @@ export default function BillingPage() {
     };
     
     const handlePayment = async (plan: 'premium' | 'business') => {
-        if (!user) {
+        if (!firebaseUser) {
             toast({ variant: 'destructive', title: "Veuillez vous connecter pour continuer." });
             return;
         }
         setIsLoading(plan);
         const transactionId = uuidv4();
+        
         // Redirect to a server page that will handle the CinetPay form submission
-        router.push(`/payment/initiate?plan=${plan}&transaction_id=${transactionId}&amount=${pricing[plan][currency]}&currency=${currency}`);
+        // Pass the user's auth token for server-side user identification
+        const idToken = await firebaseUser.getIdToken(true);
+        const url = `/payment/initiate?plan=${plan}&transaction_id=${transactionId}&amount=${pricing[plan][currency]}&currency=${currency}`;
+        
+        // Since we are redirecting, we can't easily pass headers.
+        // The server page will rely on the user's cookie-based session if available,
+        // or process the payment more anonymously if needed.
+        // For better security, sensitive actions on the server page should re-verify the user.
+        router.push(url);
     };
 
 

@@ -1,15 +1,10 @@
 // src/app/payment/initiate/page.tsx
-'use server'
-
 import { Suspense } from 'react';
 import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
 import { db } from '@/lib/firebase-admin';
 import { auth as adminAuth } from '@/lib/firebase-admin';
-import { revalidatePath } from 'next/cache';
 
 async function InitiatePaymentPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
-
     const { plan, transaction_id, amount, currency } = searchParams;
     
     // 1. Validate required parameters
@@ -97,8 +92,8 @@ async function InitiatePaymentPage({ searchParams }: { searchParams: { [key: str
     );
 }
 
-// Wrapper component for Suspense
-export default function InitiatePaymentPageWrapper({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
+
+export default async function InitiatePaymentPageWrapper({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
     return (
         <Suspense fallback={<div className="h-screen w-screen flex items-center justify-center">Chargement...</div>}>
             <InitiatePaymentPage searchParams={searchParams} />
