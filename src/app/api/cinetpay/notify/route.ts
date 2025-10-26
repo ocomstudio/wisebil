@@ -1,7 +1,28 @@
 // src/app/api/cinetpay/notify/route.ts
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import admin from 'firebase-admin';
 import axios from 'axios';
+
+// Helper to initialize Firebase Admin SDK.
+// It ensures initialization only happens once.
+const initializeFirebaseAdmin = () => {
+    if (!admin.apps.length) {
+        try {
+            const serviceAccountString = process.env.FIREBASE_ADMIN_SDK;
+            if (!serviceAccountString) {
+                throw new Error('The FIREBASE_ADMIN_SDK environment variable is not set.');
+            }
+            const serviceAccount = JSON.parse(serviceAccountString);
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount),
+            });
+        } catch (error: any) {
+            console.error('Firebase Admin SDK initialization error:', error.message);
+        }
+    }
+    return admin;
+};
+
 
 export async function POST(request: Request) {
   const API_KEY = process.env.CINETPAY_API_KEY;
@@ -13,6 +34,9 @@ export async function POST(request: Request) {
   }
 
   try {
+    const adminApp = initializeFirebaseAdmin();
+    const db = adminApp.firestore();
+
     const { cpm_trans_id } = await request.json();
 
     if (!cpm_trans_id) {

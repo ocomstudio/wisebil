@@ -1,6 +1,27 @@
 // src/app/payment/initiate/page.tsx
 import { Suspense } from 'react';
-import { db, auth } from '@/lib/firebase-admin';
+import admin from 'firebase-admin';
+
+// Helper to initialize Firebase Admin SDK.
+// It ensures initialization only happens once.
+const initializeFirebaseAdmin = () => {
+    if (!admin.apps.length) {
+        try {
+            const serviceAccountString = process.env.FIREBASE_ADMIN_SDK;
+            if (!serviceAccountString) {
+                throw new Error('The FIREBASE_ADMIN_SDK environment variable is not set.');
+            }
+            const serviceAccount = JSON.parse(serviceAccountString);
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount),
+            });
+        } catch (error: any) {
+            console.error('Firebase Admin SDK initialization error:', error.message);
+            // Do not throw here, let the functions that use it handle the uninitialized state.
+        }
+    }
+    return admin;
+};
 
 async function InitiatePaymentPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
     const { plan, transaction_id, amount, currency, idToken } = searchParams;
@@ -17,9 +38,14 @@ async function InitiatePaymentPage({ searchParams }: { searchParams: { [key: str
         return <div className="text-red-500 p-8">Erreur: Configuration de paiement du serveur manquante. Veuillez contacter le support.</div>;
     }
 
-    // 2. Verify Auth Token and Get User Info
+    // 2. Initialize Firebase Admin and get services
     let user: { uid: string; email: string; displayName: string; phone: string; };
     try {
+        const adminApp = initializeFirebaseAdmin();
+        const auth = adminApp.auth();
+        const db = adminApp.firestore();
+
+        // 3. Verify Auth Token and Get User Info
         const decodedToken = await auth.verifyIdToken(idToken as string);
         const userRecord = await auth.getUser(decodedToken.uid);
         user = {
@@ -28,13 +54,8 @@ async function InitiatePaymentPage({ searchParams }: { searchParams: { [key: str
             displayName: userRecord.displayName || 'Utilisateur',
             phone: userRecord.phoneNumber || ''
         };
-    } catch (error) {
-        console.error("Error verifying token:", error);
-        return <div className="text-red-500 p-8">Erreur d'authentification. Impossible de vérifier l'utilisateur.</div>;
-    }
 
-    // 3. Create a PENDING transaction in Firestore
-    try {
+        // 4. Create a PENDING transaction in Firestore
         const transactionRef = db.collection('transactions').doc(transaction_id as string);
         await transactionRef.set({
             userId: user.uid,
@@ -44,16 +65,16 @@ async function InitiatePaymentPage({ searchParams }: { searchParams: { [key: str
             status: 'PENDING',
             createdAt: new Date().toISOString(),
         });
-    } catch(e) {
-        console.error("Firestore Error: Could not create pending transaction", e);
-        return <div className="text-red-500 p-8">Erreur de base de données : Impossible d'initier la transaction.</div>
+    } catch (error: any) {
+        console.error("Error during server-side payment initiation:", error.message);
+        return <div className="text-red-500 p-8">Erreur d'authentification ou de base de données. Impossible de vérifier l'utilisateur ou d'initier la transaction.</div>;
     }
     
     const description = `Abonnement ${plan} - Wisebil`;
     const return_url = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?status=success`;
     const notify_url = `${process.env.NEXT_PUBLIC_APP_URL}/api/cinetpay/notify`;
 
-    // 4. Create an auto-submitting form to redirect to CinetPay
+    // 5. Create an auto-submitting form to redirect to CinetPay
     return (
         <div className="h-screen w-screen flex flex-col items-center justify-center bg-background text-foreground">
             <h1 className="text-2xl font-bold mb-4">Redirection vers CinetPay...</h1>
