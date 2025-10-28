@@ -1,7 +1,7 @@
 // src/app/dashboard/layout.tsx
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { usePathname } from "next/navigation";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { Logo } from "@/components/common/logo";
@@ -21,9 +21,8 @@ import { Toaster as HotToaster } from 'react-hot-toast';
 import Link from "next/link";
 import { LocaleProvider, useLocale } from "@/context/locale-context";
 import { TutorialProvider } from "@/context/tutorial-context";
-import { useNotifications } from "@/context/notifications-context";
+import { useNotifications, NotificationsProvider } from "@/context/notifications-context";
 import { Badge } from "@/components/ui/badge";
-import { NotificationsProvider } from "@/context/notifications-context";
 import { cn } from "@/lib/utils";
 import { TeamChatProvider } from "@/context/team-chat-context";
 import { TeamChat } from "@/components/dashboard/team/team-chat";
@@ -41,15 +40,13 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { unreadCount } = useNotifications();
   const isMobile = useIsMobile();
-  const isEnterprisePage = pathname.startsWith('/dashboard/entreprise');
-
+  
+  const showTeamChatPanel = pathname.startsWith('/dashboard/entreprise/management');
 
   // Hide main layout for the full-screen scan page on mobile
   if (pathname.startsWith('/dashboard/scan-receipt')) {
     return <div className="h-screen w-screen">{children}</div>;
   }
-  
-  const showTeamChatPanel = pathname.startsWith('/dashboard/entreprise/management');
   
   return (
     <div className={cn("grid h-screen w-full overflow-hidden", showTeamChatPanel ? "md:grid-cols-[250px_1fr_350px]" : "md:grid-cols-[250px_1fr_350px]")}>
