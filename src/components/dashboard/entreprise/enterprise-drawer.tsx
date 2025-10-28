@@ -20,16 +20,20 @@ export function EnterpriseDrawer({ children }: { children: React.ReactNode }) {
 
   const controls = useAnimation();
   const y = useMotionValue(0);
+  
+  const drawerRef = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
     if (isEnterprisePage) {
-      controls.start({ y: 0 });
-    } else {
-      controls.start({ y: "-100%" });
+      controls.start({ y: 0 }, { duration: 0.3 });
+    } else if (isDashboardHome) {
+      controls.start({ y: "-100%" }, { duration: 0.3 });
     }
-  }, [isEnterprisePage, controls]);
+  }, [isEnterprisePage, isDashboardHome, controls]);
 
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    // This function is for pulling down from the home screen
     if (info.velocity.y > 500 || info.offset.y > window.innerHeight * 0.3) {
       router.push('/dashboard/entreprise');
     } else {
@@ -40,36 +44,40 @@ export function EnterpriseDrawer({ children }: { children: React.ReactNode }) {
   const handleClose = () => {
     router.push('/dashboard');
   };
-
+  
+  // Render children directly if not on mobile dashboard or enterprise pages.
   if (!isDashboardHome && !isEnterprisePage) {
     return <div className="max-w-6xl mx-auto h-full">{children}</div>;
   }
-
+  
   return (
     <>
       {isDashboardHome && (
         <>
-          <div className="sticky -top-4 -mx-4 z-30 mb-2" onClick={() => router.push('/dashboard/entreprise')}>
-              <div className="p-2 pt-6 text-center text-xs text-muted-foreground bg-gradient-to-b from-background to-transparent cursor-pointer">
-                  <ChevronDown className="h-5 w-5 mx-auto animate-bounce opacity-70" />
+          <motion.div 
+            className="sticky -top-4 -mx-4 z-30 mb-2"
+            drag="y"
+            dragConstraints={{ top: -100, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.8 }}
+            onDragEnd={handleDragEnd}
+            >
+              <div className="p-2 pt-6 text-center text-xs text-muted-foreground bg-gradient-to-b from-background to-transparent cursor-grab">
+                  <ChevronDown className="h-5 w-5 mx-auto opacity-70" />
                   <p className="font-semibold">{t('open_enterprise_space')}</p>
               </div>
-          </div>
+          </motion.div>
           <div className="max-w-6xl mx-auto h-full">{children}</div>
         </>
       )}
 
       <motion.div
-        drag="y"
-        dragConstraints={{ top: 0, bottom: 0 }}
-        dragElastic={0.1}
-        onDragEnd={handleDragEnd}
+        ref={drawerRef}
         animate={controls}
         transition={{ type: "spring", damping: 30, stiffness: 300 }}
         style={{ y }}
         className={cn(
-          "fixed inset-x-0 top-0 h-screen bg-background/80 backdrop-blur-sm flex flex-col",
-          isEnterprisePage ? 'z-[60]' : '-z-10' // High z-index only when it's supposed to be visible
+          "fixed inset-x-0 top-0 h-[100dvh] bg-background flex flex-col",
+          isEnterprisePage ? 'z-[60]' : 'z-20'
         )}
       >
         <header className="p-4 flex items-center justify-between border-b flex-shrink-0">
