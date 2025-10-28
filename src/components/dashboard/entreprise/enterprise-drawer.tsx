@@ -2,56 +2,59 @@
 "use client";
 
 import { useState } from "react";
-import { motion, useMotionValue, useAnimation } from "framer-motion";
+import { motion, useAnimation, PanInfo } from "framer-motion";
 import { Building, ChevronDown, ArrowLeft } from "lucide-react";
 import { useLocale } from "@/context/locale-context";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import EnterprisePage from "@/app/dashboard/entreprise/page";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function EnterpriseDrawer() {
   const { t } = useLocale();
   const [isOpen, setIsOpen] = useState(false);
-  const y = useMotionValue(0);
   const controls = useAnimation();
 
-  const handleDragEnd = (event: any, info: any) => {
-    const dragThreshold = 50; // Threshold to open/close
-    if (info.offset.y > dragThreshold) {
-      // Dragged down
-      setIsOpen(true);
-      controls.start({ y: "100vh" });
-    } else if (info.offset.y < -dragThreshold) {
-      // Dragged up
-      setIsOpen(false);
-      controls.start({ y: 0 });
-    } else {
-      // Didn't pass threshold, snap back
-      controls.start({ y: isOpen ? "100vh" : 0 });
-    }
+  const handleOpen = () => {
+    setIsOpen(true);
+    controls.start({ y: 0 });
   };
 
   const handleClose = () => {
     setIsOpen(false);
-    controls.start({ y: 0 });
+    controls.start({ y: "100%" });
+  };
+
+  const handleDrag = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (info.offset.y > 0) {
+      controls.set({ y: info.offset.y });
+    }
+  };
+
+  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (info.offset.y > 100) {
+      handleClose();
+    } else {
+      controls.start({ y: 0 });
+    }
   };
 
   return (
     <>
       {/* Drawer content */}
       <motion.div
-        className="fixed inset-0 z-40 bg-background flex flex-col"
-        initial={{ y: "-100vh" }}
+        className="fixed top-0 left-0 h-full w-full z-40 bg-background flex flex-col"
+        initial={{ y: "100%" }}
         animate={controls}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        style={{ y }}
-        drag="y"
-        dragConstraints={{ top: 0, bottom: 0 }}
-        dragElastic={0.1}
-        onDragEnd={handleDragEnd}
+        transition={{ type: "spring", stiffness: 400, damping: 40 }}
       >
-        <header className="p-4 flex items-center justify-between border-b flex-shrink-0">
-           <Button variant="ghost" size="icon" onClick={handleClose}>
+        <header 
+          className="p-4 flex items-center justify-between border-b flex-shrink-0 cursor-grab touch-none"
+          onPanStart={handleDrag}
+          onPan={handleDrag}
+          onPanEnd={handleDragEnd}
+        >
+           <Button variant="ghost" size="icon" onClick={handleClose} className="cursor-pointer">
              <ArrowLeft className="h-5 w-5" />
            </Button>
            <h2 className="font-bold text-lg">{t('nav_enterprise')}</h2>
@@ -65,17 +68,18 @@ export function EnterpriseDrawer() {
       </motion.div>
 
       {/* Handle / Trigger */}
-      {!isOpen && (
-        <motion.div
-          className="sticky -top-4 -mx-4 z-30 mb-2 cursor-grab"
-          whileTap={{ cursor: "grabbing" }}
-        >
+      <div 
+        className={cn(
+          "sticky -top-4 -mx-4 z-30 mb-2 cursor-pointer transition-opacity",
+          isOpen && 'opacity-0 pointer-events-none'
+        )}
+        onClick={handleOpen}
+      >
           <div className="p-2 pt-6 text-center text-xs text-muted-foreground bg-gradient-to-b from-background to-transparent">
             <ChevronDown className="h-5 w-5 mx-auto animate-bounce opacity-70" />
             <p className="font-semibold">{t('open_enterprise_space')}</p>
           </div>
-        </motion.div>
-      )}
+      </div>
     </>
   );
 }
