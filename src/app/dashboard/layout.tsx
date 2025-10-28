@@ -41,6 +41,8 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { unreadCount } = useNotifications();
   const isMobile = useIsMobile();
+  const isEnterprisePage = pathname.startsWith('/dashboard/entreprise');
+
 
   // Hide main layout for the full-screen scan page on mobile
   if (pathname.startsWith('/dashboard/scan-receipt')) {
@@ -86,8 +88,8 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
         {/* Main Content */}
         <main className="flex-1 p-4 md:p-8 bg-background md:bg-muted/40 overflow-y-auto pb-24 md:pb-8 relative">
-           {isMobile && <EnterpriseDrawer />}
-          <div className="max-w-6xl mx-auto h-full">{children}</div>
+           {isMobile && <EnterpriseDrawer>{children}</EnterpriseDrawer>}
+           {!isMobile && <div className="max-w-6xl mx-auto h-full">{children}</div>}
         </main>
       </div>
       
