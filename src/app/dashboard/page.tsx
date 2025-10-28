@@ -42,6 +42,7 @@ export default function DashboardPage() {
         isOpen={showTutorial}
         onFinish={handleTutorialFinish}
       />
+      
       <div id="balance-card-tutorial">
         <BalanceCard balance={balance} income={income} expenses={expenses} />
       </div>
