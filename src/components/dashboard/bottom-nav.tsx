@@ -25,7 +25,7 @@ export function BottomNav() {
     { href: '/dashboard/reports', label: t('nav_reports'), icon: BarChart },
     { href: '/dashboard/scan-receipt', label: t('nav_scan'), icon: ScanLine },
     { href: '/dashboard/budget', label: t('nav_budgets'), icon: Target },
-    { href: isEnterprisePage ? '/dashboard/settings' : '/dashboard/conseil', label: isEnterprisePage ? t('nav_settings') : t('nav_advice'), icon: isEnterprisePage ? Settings : Lightbulb },
+    { href: '/dashboard/conseil', label: t('nav_advice'), icon: Lightbulb },
   ];
 
   return (
