@@ -839,5 +839,14 @@
     "payment_by_card_soon": "Sắp có bằng thẻ",
     "payment_refused": "Thanh toán của bạn đã bị từ chối. Vui lòng thử lại.",
     "payment_success": "Đăng ký của bạn hiện đang hoạt động. Chào mừng!",
-    "payment_error_technical": "Đã xảy ra lỗi kỹ thuật. Vui lòng thử lại sau."
+    "payment_error_technical": "Đã xảy ra lỗi kỹ thuật. Vui lòng thử lại sau.",
+    "url_copied_title": "Đã sao chép URL",
+    "url_copied_desc": "Liên kết đã được sao chép vào khay nhớ tạm.",
+    "purchase_invoice_not_found_title": "Không tìm thấy đơn đặt hàng",
+    "nav_accounting": "Kế toán",
+    "issue_date_header": "Ngày phát hành",
+    "product_image_label": "Hình ảnh Sản phẩm",
+    "product_image_preview_alt": "Xem trước hình ảnh sản phẩm",
+    "product_image_upload_cta": "Nhấp để tải lên hình ảnh",
+    "open_enterprise_space": "↓ Không gian Doanh nghiệp ↓"
 }

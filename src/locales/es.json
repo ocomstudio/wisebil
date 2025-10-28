@@ -839,5 +839,14 @@
     "payment_by_card_soon": "Pronto con tarjeta",
     "payment_refused": "Su pago ha sido rechazado. Por favor, inténtelo de nuevo.",
     "payment_success": "Su suscripción ya está activa. ¡Bienvenido!",
-    "payment_error_technical": "Se ha producido un error técnico. Por favor, inténtelo de nuevo más tarde."
+    "payment_error_technical": "Se ha producido un error técnico. Por favor, inténtelo de nuevo más tarde.",
+    "url_copied_title": "URL copiada",
+    "url_copied_desc": "El enlace ha sido copiado al portapapeles.",
+    "purchase_invoice_not_found_title": "Orden de compra no encontrada",
+    "nav_accounting": "Contabilidad",
+    "issue_date_header": "Fecha de emisión",
+    "product_image_label": "Imagen del Producto",
+    "product_image_preview_alt": "Vista previa de la imagen del producto",
+    "product_image_upload_cta": "Haga clic para cargar una imagen",
+    "open_enterprise_space": "↓ Espacio Empresa ↓"
 }

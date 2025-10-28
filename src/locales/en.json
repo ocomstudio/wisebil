@@ -839,5 +839,14 @@
     "payment_by_card_soon": "Soon by card",
     "payment_refused": "Your payment has been refused. Please try again.",
     "payment_success": "Your subscription is now active. Welcome!",
-    "payment_error_technical": "A technical error has occurred. Please try again later."
+    "payment_error_technical": "A technical error has occurred. Please try again later.",
+    "url_copied_title": "URL copied",
+    "url_copied_desc": "The link has been copied to the clipboard.",
+    "purchase_invoice_not_found_title": "Purchase order not found",
+    "nav_accounting": "Accounting",
+    "issue_date_header": "Issue Date",
+    "product_image_label": "Product Image",
+    "product_image_preview_alt": "Product image preview",
+    "product_image_upload_cta": "Click to upload an image",
+    "open_enterprise_space": "↓ Enterprise Space ↓"
 }

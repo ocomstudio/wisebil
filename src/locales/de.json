@@ -839,5 +839,14 @@
     "payment_by_card_soon": "Bald per Karte",
     "payment_refused": "Ihre Zahlung wurde abgelehnt. Bitte versuchen Sie es erneut.",
     "payment_success": "Ihr Abonnement ist jetzt aktiv. Willkommen!",
-    "payment_error_technical": "Ein technischer Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
+    "payment_error_technical": "Ein technischer Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.",
+    "url_copied_title": "URL kopiert",
+    "url_copied_desc": "Der Link wurde in die Zwischenablage kopiert.",
+    "purchase_invoice_not_found_title": "Bestellung nicht gefunden",
+    "nav_accounting": "Buchhaltung",
+    "issue_date_header": "Ausstellungsdatum",
+    "product_image_label": "Produktbild",
+    "product_image_preview_alt": "Vorschau des Produktbildes",
+    "product_image_upload_cta": "Klicken, um ein Bild hochzuladen",
+    "open_enterprise_space": "↓ Unternehmensbereich ↓"
 }
