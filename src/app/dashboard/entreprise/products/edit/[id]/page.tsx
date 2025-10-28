@@ -16,7 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Loader2, CalendarIcon } from 'lucide-react';
+import { ArrowLeft, Loader2, CalendarIcon, Upload } from 'lucide-react';
 import { useProducts } from '@/context/product-context';
 import { useLocale } from '@/context/locale-context';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -31,13 +31,15 @@ export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
-  const { getProductById, updateProduct, isLoading, productCategories, addProductCategory } = useProducts();
+  const { getProductById, updateProduct, isLoading, uploadImage, productCategories, addProductCategory } = useProducts();
   const { t, currency, locale } = useLocale();
   
   const [product, setProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const id = params.id as string;
 
@@ -78,12 +80,25 @@ export default function EditProductPage() {
                 purchaseDate: new Date(foundProduct.purchaseDate),
                 storageLocation: foundProduct.storageLocation || "",
             });
+            setImagePreview(foundProduct.imageUrl || null);
         } else {
              toast({ variant: 'destructive', title: t('product_not_found_error') });
              router.push('/dashboard/entreprise/products');
         }
     }
   }, [id, isLoading, getProductById, router, toast, t, form]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   
   const handleCategoryChange = (value: string) => {
     if (value === 'CREATE_NEW') {
@@ -111,7 +126,12 @@ export default function EditProductPage() {
     if (!product) return;
     setIsSubmitting(true);
     try {
-      await updateProduct(product.id, { ...data, purchaseDate: data.purchaseDate.toISOString() });
+      let imageUrl = product.imageUrl;
+      if (imageFile) {
+        imageUrl = await uploadImage(imageFile, `${Date.now()}-${imageFile.name}`);
+      }
+
+      await updateProduct(product.id, { ...data, imageUrl, purchaseDate: data.purchaseDate.toISOString() });
 
       toast({
         title: t('product_updated_title'),
@@ -171,6 +191,23 @@ export default function EditProductPage() {
                     <CardDescription>{t('product_details_update_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                     <FormItem>
+                        <FormLabel>{t('product_image_label')}</FormLabel>
+                         <FormControl>
+                            <label className="cursor-pointer border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/50 h-48 w-full">
+                                {imagePreview ? (
+                                    <Image src={imagePreview} alt={t('product_image_preview_alt')} width={150} height={150} className="max-h-full w-auto object-contain rounded-md" />
+                                ) : (
+                                    <>
+                                        <Upload className="h-8 w-8 mb-2" />
+                                        <span>{t('product_image_upload_cta')}</span>
+                                    </>
+                                )}
+                                <Input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                            </label>
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
                      <FormField control={form.control} name="name" render={({ field }) => (
                         <FormItem><FormLabel>{t('product_name_label')}<span className="text-red-500">*</span></FormLabel><FormControl><Input placeholder={t('product_name_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
                     )} />

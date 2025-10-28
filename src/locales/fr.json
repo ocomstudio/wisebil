@@ -844,5 +844,8 @@
     "url_copied_desc": "Le lien a été copié dans le presse-papiers.",
     "purchase_invoice_not_found_title": "Bon de commande non trouvé",
     "nav_accounting": "Comptabilité",
-    "issue_date_header": "Date d'émission"
+    "issue_date_header": "Date d'émission",
+    "product_image_label": "Image du Produit",
+    "product_image_preview_alt": "Aperçu de l'image du produit",
+    "product_image_upload_cta": "Cliquez pour télécharger une image"
 }
