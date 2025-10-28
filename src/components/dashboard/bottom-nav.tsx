@@ -16,6 +16,7 @@ export function BottomNav() {
   const { t } = useLocale();
   const [isScanOpen, setIsScanOpen] = useState(false);
   const { user } = useAuth();
+  const isEnterprisePage = pathname.startsWith('/dashboard/entreprise');
 
   const isEmailUnverified = user?.email && !user.emailVerified;
 
@@ -24,7 +25,7 @@ export function BottomNav() {
     { href: '/dashboard/reports', label: t('nav_reports'), icon: BarChart },
     { href: '/dashboard/scan-receipt', label: t('nav_scan'), icon: ScanLine },
     { href: '/dashboard/budget', label: t('nav_budgets'), icon: Target },
-    { href: '/dashboard/conseil', label: t('nav_advice'), icon: Lightbulb },
+    { href: isEnterprisePage ? '/dashboard/settings' : '/dashboard/conseil', label: isEnterprisePage ? t('nav_settings') : t('nav_advice'), icon: isEnterprisePage ? Settings : Lightbulb },
   ];
 
   return (

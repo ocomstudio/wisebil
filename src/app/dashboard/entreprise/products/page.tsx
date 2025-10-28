@@ -67,6 +67,7 @@ export default function ProductsPage() {
                 </Button>
             </div>
            ) : (
+            <div className="w-full overflow-x-auto">
              <Table>
                 <TableHeader>
                     <TableRow>
@@ -154,6 +155,7 @@ export default function ProductsPage() {
                     ))}
                 </TableBody>
              </Table>
+            </div>
            )}
         </CardContent>
       </Card>

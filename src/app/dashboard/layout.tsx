@@ -88,8 +88,11 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
         {/* Main Content */}
         <main className="flex-1 p-4 md:p-8 bg-background md:bg-muted/40 overflow-y-auto pb-24 md:pb-8 relative">
-           {isMobile && <EnterpriseDrawer>{children}</EnterpriseDrawer>}
-           {!isMobile && <div className="max-w-6xl mx-auto h-full">{children}</div>}
+           {isMobile ? (
+              <EnterpriseDrawer>{children}</EnterpriseDrawer>
+            ) : (
+              <div className="max-w-6xl mx-auto h-full">{children}</div>
+            )}
         </main>
       </div>
       

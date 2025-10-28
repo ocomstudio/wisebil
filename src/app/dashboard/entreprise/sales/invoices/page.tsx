@@ -65,6 +65,7 @@ export default function SaleInvoicesPage() {
                 </Button>
             </div>
            ) : (
+            <div className="w-full overflow-x-auto">
              <Table>
                 <TableHeader>
                     <TableRow>
@@ -102,6 +103,7 @@ export default function SaleInvoicesPage() {
                     ))}
                 </TableBody>
              </Table>
+            </div>
            )}
         </CardContent>
       </Card>
