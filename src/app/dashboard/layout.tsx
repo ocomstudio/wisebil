@@ -33,12 +33,14 @@ import { CompanyProfileProvider } from "@/context/company-profile-context";
 import { ProductProvider } from "@/context/product-context";
 import { SalesProvider } from "@/context/sales-context";
 import { PurchasesProvider } from "@/context/purchase-context";
-
+import { EnterpriseDrawer } from "@/components/dashboard/entreprise/enterprise-drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { t } = useLocale();
   const pathname = usePathname();
   const { unreadCount } = useNotifications();
+  const isMobile = useIsMobile();
 
   // Hide main layout for the full-screen scan page on mobile
   if (pathname.startsWith('/dashboard/scan-receipt')) {
@@ -84,6 +86,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
         {/* Main Content */}
         <main className="flex-1 p-4 md:p-8 bg-background md:bg-muted/40 overflow-y-auto pb-24 md:pb-8 relative">
+           {isMobile && <EnterpriseDrawer />}
           <div className="max-w-6xl mx-auto h-full">{children}</div>
         </main>
       </div>
