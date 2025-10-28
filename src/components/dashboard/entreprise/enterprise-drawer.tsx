@@ -1,9 +1,10 @@
+
 // src/components/dashboard/entreprise/enterprise-drawer.tsx
 "use client";
 
 import { useState, useRef, useEffect } from "react";
 import { motion, useAnimation, useMotionValue, PanInfo } from "framer-motion";
-import { ChevronDown, ArrowLeft, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, ChevronDown } from "lucide-react";
 import { useLocale } from "@/context/locale-context";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -47,19 +48,18 @@ export function EnterpriseDrawer({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {showPuller && (
-        <div 
-          onClick={() => router.push('/dashboard/entreprise')}
-          className="sticky -top-4 -mx-4 z-30 mb-2"
-        >
-          <div className="p-2 pt-4 text-center text-xs text-muted-foreground bg-background cursor-grab">
-            <ArrowDown className="h-5 w-5 mx-auto opacity-70" />
-            <p className="font-semibold select-none">{t('open_enterprise_space')}</p>
+      <div className={cn("relative", !showPuller && "h-full")}>
+        {showPuller && (
+          <div
+            onClick={() => router.push('/dashboard/entreprise')}
+            className="sticky -top-4 -mx-4 z-30 mb-2"
+          >
+            <div className="p-2 pt-4 text-center text-xs text-muted-foreground bg-background cursor-grab">
+              <ArrowDown className="h-5 w-5 mx-auto opacity-70" />
+              <p className="font-semibold select-none">{t('open_enterprise_space')}</p>
+            </div>
           </div>
-        </div>
-      )}
-      
-      <div className={!showPuller ? "h-full" : ""}>
+        )}
         {children}
       </div>
 
@@ -83,11 +83,11 @@ export function EnterpriseDrawer({ children }: { children: React.ReactNode }) {
           <h2 className="font-bold text-lg">{t('nav_enterprise')}</h2>
           <div className="w-10"></div>
         </header>
-        <ScrollArea className="flex-1">
+        <div className="flex-1 overflow-y-auto">
           <div className="p-4">
             {isEnterprisePage && children}
           </div>
-        </ScrollArea>
+        </div>
       </motion.div>
     </>
   );
