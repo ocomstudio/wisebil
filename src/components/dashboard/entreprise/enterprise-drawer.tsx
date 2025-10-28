@@ -29,12 +29,12 @@ export function EnterpriseDrawer() {
 
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     // Velocity check to close on a fast swipe up
-    if (info.velocity.y < -500) {
+    if (info.velocity.y > 500) {
       closeDrawer();
       return;
     }
     // Position check to snap open or closed
-    if (drawerRef.current && info.point.y > drawerRef.current.clientHeight / 2.5) {
+    if (drawerRef.current && info.point.y > drawerRef.current.clientHeight / 2) {
       openDrawer();
     } else {
       closeDrawer();
@@ -50,7 +50,7 @@ export function EnterpriseDrawer() {
       {/* Drawer content */}
       <motion.div
         ref={drawerRef}
-        className="fixed top-0 left-0 h-full w-full z-40 bg-background/80 backdrop-blur-sm flex flex-col"
+        className="fixed top-0 left-0 h-screen w-screen z-[60] bg-background/80 backdrop-blur-sm flex flex-col"
         initial={{ y: "-100%" }}
         animate={animationControls}
         transition={{ type: "spring", stiffness: 400, damping: 40 }}

@@ -13,12 +13,16 @@ import { TipCard } from "@/components/dashboard/tip-card";
 import { useAuth } from "@/context/auth-context";
 import { useTutorial } from "@/context/tutorial-context";
 import { Tutorial } from "@/components/common/tutorial-step";
+import { EnterpriseDrawer } from "@/components/dashboard/entreprise/enterprise-drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
+
 
 export default function DashboardPage() {
   const { transactions, balance, income, expenses } = useTransactions();
   const { t } = useLocale();
   const { user, updateUser } = useAuth();
   const { showTutorial, setShowTutorial } = useTutorial();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     // Only show tutorial if the flag is explicitly false.
@@ -38,6 +42,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 pb-20">
+       {isMobile && <EnterpriseDrawer />}
       <Tutorial
         isOpen={showTutorial}
         onFinish={handleTutorialFinish}

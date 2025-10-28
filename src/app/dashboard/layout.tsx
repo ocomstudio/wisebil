@@ -33,16 +33,12 @@ import { CompanyProfileProvider } from "@/context/company-profile-context";
 import { ProductProvider } from "@/context/product-context";
 import { SalesProvider } from "@/context/sales-context";
 import { PurchasesProvider } from "@/context/purchase-context";
-import { EnterpriseDrawer } from "@/components/dashboard/entreprise/enterprise-drawer";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { t } = useLocale();
   const pathname = usePathname();
   const { unreadCount } = useNotifications();
-  const isMobile = useIsMobile();
-  const showEnterpriseDrawer = isMobile && pathname === '/dashboard';
 
   // Hide main layout for the full-screen scan page on mobile
   if (pathname.startsWith('/dashboard/scan-receipt')) {
@@ -54,8 +50,8 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <div className={cn("grid h-screen w-full overflow-hidden", showTeamChatPanel ? "md:grid-cols-[250px_1fr_350px]" : "md:grid-cols-[250px_1fr_350px]")}>
       {/* Desktop Sidebar */}
-      <aside className="hidden border-r bg-muted/40 md:flex flex-col gap-6 p-4">
-        <div className="px-2">
+      <aside className="hidden border-r bg-muted/40 md:flex flex-col">
+        <div className="p-4 px-6">
           <Logo />
         </div>
         <SidebarNav />
@@ -88,7 +84,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
         {/* Main Content */}
         <main className="flex-1 p-4 md:p-8 bg-background md:bg-muted/40 overflow-y-auto pb-24 md:pb-8 relative">
-          {showEnterpriseDrawer && <EnterpriseDrawer />}
           <div className="max-w-6xl mx-auto h-full">{children}</div>
         </main>
       </div>
