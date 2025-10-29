@@ -19,8 +19,8 @@ export function EnterpriseMobilePuller() {
             className="-mx-4 mb-2 cursor-pointer"
         >
             <div className="p-2 pt-4 text-center text-xs text-muted-foreground bg-transparent">
-                <ArrowDown className="h-5 w-5 mx-auto opacity-70 animate-bounce" />
                 <p className="font-semibold select-none">{t('open_enterprise_space')}</p>
+                 <ArrowDown className="h-5 w-5 mx-auto opacity-70 animate-bounce" />
             </div>
         </div>
     );

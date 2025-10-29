@@ -24,16 +24,16 @@ export function EnterpriseDrawer({ children }: { children: React.ReactNode }) {
     if (isEnterprisePage) {
       controls.start({ y: 0 });
     } else {
-      controls.start({ y: "100%" });
+      controls.start({ y: "-100%" });
     }
   }, [isEnterprisePage, controls]);
 
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (info.velocity.y < -200 || info.offset.y < -window.innerHeight * 0.3) {
+    if (info.velocity.y > 200 || info.offset.y > window.innerHeight * 0.3) {
       controls.start({ y: 0 });
       router.push('/dashboard/entreprise');
     } else {
-      controls.start({ y: "100%" });
+      controls.start({ y: "-100%" });
     }
   };
   
@@ -56,10 +56,9 @@ export function EnterpriseDrawer({ children }: { children: React.ReactNode }) {
         onDragEnd={handleDragEnd}
         animate={controls}
         transition={{ type: "spring", damping: 40, stiffness: 400 }}
-        style={{ y }}
+        style={{ y, top: '-100%', bottom: 'auto' }}
         className={cn(
-          "fixed inset-x-0 bottom-0 h-screen bg-background/95 backdrop-blur-sm flex flex-col",
-          "z-[60]"
+          "fixed inset-x-0 h-screen bg-background/95 backdrop-blur-sm flex flex-col z-[60]"
         )}
       >
         <header className="p-4 flex items-center justify-between border-b flex-shrink-0">
