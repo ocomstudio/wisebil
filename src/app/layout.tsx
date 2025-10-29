@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { LocaleProvider } from '@/context/locale-context';
 import { AuthProvider } from '@/context/auth-context';
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import Script from 'next/script';
 
 const APP_NAME = "Wisebil";
 const APP_DESCRIPTION = "Maîtrisez vos finances avec l'IA. Wisebil est votre conseiller financier personnel pour la gestion de budget, le suivi des dépenses, l'épargne intelligente et la planification financière au Sénégal, Cameroun, Côte d'Ivoire et dans toute l'Afrique francophone.";
@@ -93,7 +94,6 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icons/icon-512x512.png"></link>
-        <script src="https://cdn.cinetpay.com/seamless/main.js" type="text/javascript" async></script>
       </head>
       <body className="font-body antialiased" suppressHydrationWarning={true}>
         <AuthProvider>
@@ -103,6 +103,7 @@ export default function RootLayout({
         </AuthProvider>
         <Toaster />
         <SpeedInsights />
+        <Script src="https://cdn.cinetpay.com/seamless/main.js" strategy="lazyOnload" />
       </body>
     </html>
   );
