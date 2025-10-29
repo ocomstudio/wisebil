@@ -11,7 +11,6 @@ export interface Product {
   purchasePrice: number; // Cost of buying the product
   price: number; // Selling price
   promoPrice?: number;
-  imageUrl?: string;
   initialQuantity: number;
   quantity: number;
   categoryId?: string;

@@ -7,7 +7,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -193,7 +192,7 @@ export default function CreateSalePage() {
                                             {isLoadingProducts ? <p>{t('loading_tip')}</p> : products.map(p => 
                                                 <SelectItem key={p.id} value={p.id} disabled={p.quantity <= 0}>
                                                     <div className="flex items-center gap-2">
-                                                        {p.imageUrl ? <Image src={p.imageUrl} alt={p.name} width={24} height={24} className="rounded-sm object-cover" /> : <Package className="h-6 w-6 text-muted-foreground" />}
+                                                        <Package className="h-6 w-6 text-muted-foreground" />
                                                         <span>{p.name} ({p.quantity} en stock)</span>
                                                     </div>
                                                 </SelectItem>

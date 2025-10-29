@@ -10,7 +10,6 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from "uuid";
 import { useUserData } from './user-context';
 import { useLocale } from './locale-context';
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface ProductContextType {
   products: Product[];
@@ -22,7 +21,6 @@ interface ProductContextType {
   getProductById: (id: string) => Product | undefined;
   getCategoryById: (id: string) => ProductCategory | undefined;
   addProductCategory: (name: string) => Promise<ProductCategory | null>;
-  uploadImage: (file: File, path: string) => Promise<string>;
   isLoading: boolean;
 }
 
@@ -47,14 +45,6 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const products = useMemo(() => userData?.products || [], [userData]);
   const productCategories = useMemo(() => userData?.productCategories || [], [userData]);
 
-  const uploadImage = async (file: File, path: string): Promise<string> => {
-    if (!user) throw new Error("User not authenticated.");
-    const storage = getStorage();
-    const storageRef = ref(storage, `users/${user.uid}/product_images/${path}`);
-    await uploadBytes(storageRef, file);
-    return await getDownloadURL(storageRef);
-  };
-  
   const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => {
     if (!user) throw new Error("User not authenticated.");
       
@@ -168,7 +158,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
 
 
   return (
-    <ProductContext.Provider value={{ products, productCategories, addProduct, updateProduct, deleteProduct, resetProducts, getProductById, getCategoryById, addProductCategory, isLoading: isUserDataLoading, uploadImage }}>
+    <ProductContext.Provider value={{ products, productCategories, addProduct, updateProduct, deleteProduct, resetProducts, getProductById, getCategoryById, addProductCategory, isLoading: isUserDataLoading }}>
       {children}
     </ProductContext.Provider>
   );
