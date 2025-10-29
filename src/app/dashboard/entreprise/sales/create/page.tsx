@@ -179,9 +179,10 @@ export default function CreateSalePage() {
                 <CardContent>
                     <div className="space-y-4">
                         {fields.map((field, index) => (
-                           <div key={field.id} className="grid grid-cols-[1fr_80px_auto] gap-2 items-start">
+                           <div key={field.id} className="grid grid-cols-1 md:grid-cols-[1fr_80px_auto] gap-2 items-start">
                               <FormField control={form.control} name={`items.${index}.productId`} render={({ field }) => (
                                 <FormItem>
+                                    <FormLabel className="md:hidden">Produit</FormLabel>
                                      <Select onValueChange={(value) => {field.onChange(value); handleProductChange(index, value)}} defaultValue={field.value}>
                                         <FormControl>
                                         <SelectTrigger>
@@ -203,9 +204,11 @@ export default function CreateSalePage() {
                                 </FormItem>
                               )} />
                               <FormField control={form.control} name={`items.${index}.quantity`} render={({ field }) => (
-                                <FormItem><FormControl><Input type="number" placeholder={t('quantity_item_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                <FormLabel className="md:hidden">Qté</FormLabel>
+                                <FormControl><Input type="number" placeholder={t('quantity_item_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
                               )} />
-                              <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                              <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="self-end">
                                 <Trash2 className="h-4 w-4 text-destructive" />
                               </Button>
                            </div>
@@ -228,7 +231,7 @@ export default function CreateSalePage() {
             </div>
 
             <div className="flex justify-end gap-2">
-                 <Button type="button" variant="outline" onClick={() => router.back()}>{t('cancel')}</Button>
+                 <Button type="button" variant="outline" asChild><Link href="/dashboard/entreprise">{t('cancel')}</Link></Button>
                  <Button type="submit" disabled={isSubmitting || isLoadingSales || isLoadingProducts}>
                      {(isSubmitting || isLoadingSales) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                      {t('save_and_generate_invoice_button')}

@@ -177,7 +177,7 @@ export default function CreatePurchasePage() {
             </div>
 
             <div className="flex justify-end gap-2">
-                 <Button type="button" variant="outline" onClick={() => router.back()}>{t('cancel')}</Button>
+                 <Button type="button" variant="outline" asChild><Link href="/dashboard/entreprise">{t('cancel')}</Link></Button>
                  <Button type="submit" disabled={isSubmitting || isLoadingPurchases || isLoadingProducts}>
                      {(isSubmitting || isLoadingPurchases) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                      {t('save_purchase_button')}
