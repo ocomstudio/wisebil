@@ -5,6 +5,8 @@ import { LocaleProvider } from '@/context/locale-context';
 import { AuthProvider } from '@/context/auth-context';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import Script from 'next/script';
+import { poppins, pt_sans } from './fonts';
+import { cn } from '@/lib/utils';
 
 const APP_NAME = "Wisebil";
 const APP_DESCRIPTION = "Maîtrisez vos finances avec l'IA. Wisebil est votre conseiller financier personnel pour la gestion de budget, le suivi des dépenses, l'épargne intelligente et la planification financière au Sénégal, Cameroun, Côte d'Ivoire et dans toute l'Afrique francophone.";
@@ -87,11 +89,8 @@ export default function RootLayout({
 }>) {
 
   return (
-    <html lang="fr" suppressHydrationWarning className="dark">
+    <html lang="fr" suppressHydrationWarning className={cn("dark", poppins.variable, pt_sans.variable)}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icons/icon-512x512.png"></link>
       </head>
