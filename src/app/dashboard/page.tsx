@@ -13,6 +13,7 @@ import { TipCard } from "@/components/dashboard/tip-card";
 import { useAuth } from "@/context/auth-context";
 import { useTutorial } from "@/context/tutorial-context";
 import { Tutorial } from "@/components/common/tutorial-step";
+import { EnterpriseMobilePuller } from "@/components/dashboard/entreprise/enterprise-mobile-puller";
 
 
 export default function DashboardPage() {
@@ -43,6 +44,8 @@ export default function DashboardPage() {
         isOpen={showTutorial}
         onFinish={handleTutorialFinish}
       />
+      
+      <EnterpriseMobilePuller />
       
       <div id="balance-card-tutorial">
         <BalanceCard balance={balance} income={income} expenses={expenses} />

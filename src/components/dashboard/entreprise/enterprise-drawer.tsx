@@ -1,12 +1,10 @@
-
 // src/components/dashboard/entreprise/enterprise-drawer.tsx
 "use client";
 
 import { useState, useRef, useEffect } from "react";
 import { motion, useAnimation, useMotionValue, PanInfo } from "framer-motion";
-import { ArrowDown, ArrowLeft, ArrowUp, ChevronDown } from "lucide-react";
+import { ArrowLeft, ArrowUp } from "lucide-react";
 import { useLocale } from "@/context/locale-context";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { usePathname, useRouter } from 'next/navigation';
@@ -26,17 +24,16 @@ export function EnterpriseDrawer({ children }: { children: React.ReactNode }) {
     if (isEnterprisePage) {
       controls.start({ y: 0 });
     } else {
-      controls.start({ y: "-100%" });
+      controls.start({ y: "100%" });
     }
   }, [isEnterprisePage, controls]);
 
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (isEnterprisePage) return; // Disable drag-to-close when inside enterprise section
-
-    if (info.velocity.y > 200 || info.offset.y > window.innerHeight * 0.3) {
+    if (info.velocity.y < -200 || info.offset.y < -window.innerHeight * 0.3) {
+      controls.start({ y: 0 });
       router.push('/dashboard/entreprise');
     } else {
-      controls.start({ y: "-100%" });
+      controls.start({ y: "100%" });
     }
   };
   
@@ -48,32 +45,21 @@ export function EnterpriseDrawer({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <div className={cn("relative", !showPuller && "h-full")}>
-        {showPuller && (
-          <div
-            onClick={() => router.push('/dashboard/entreprise')}
-            className="sticky -top-4 -mx-4 z-30 mb-2"
-          >
-            <div className="p-2 pt-4 text-center text-xs text-muted-foreground bg-background cursor-grab">
-              <ArrowDown className="h-5 w-5 mx-auto opacity-70" />
-              <p className="font-semibold select-none">{t('open_enterprise_space')}</p>
-            </div>
-          </div>
-        )}
+      <div className={cn("relative", !isEnterprisePage && "h-full")}>
         {children}
       </div>
 
       <motion.div
         drag={isEnterprisePage ? false : "y"}
         dragConstraints={{ top: 0, bottom: 0 }}
-        dragElastic={{ top: 0, bottom: 0.2 }}
+        dragElastic={{ top: 0.2, bottom: 0.2 }}
         onDragEnd={handleDragEnd}
         animate={controls}
         transition={{ type: "spring", damping: 40, stiffness: 400 }}
         style={{ y }}
         className={cn(
-          "fixed inset-x-0 top-0 h-screen bg-background/95 backdrop-blur-sm flex flex-col",
-          isEnterprisePage ? 'z-[60]' : '-z-10'
+          "fixed inset-x-0 bottom-0 h-screen bg-background/95 backdrop-blur-sm flex flex-col",
+          "z-[60]"
         )}
       >
         <header className="p-4 flex items-center justify-between border-b flex-shrink-0">
