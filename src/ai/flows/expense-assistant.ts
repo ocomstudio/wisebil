@@ -79,6 +79,7 @@ Contexte financier de l'utilisateur (Devise: ${currency}):
   ] as { role: 'user' | 'assistant'; content: string }[];
 
   const answer = await callPoe({
+      model: 'wise25000',
       systemPrompt: `${systemPrompt}\n${financialContext}`,
       messages,
   });
