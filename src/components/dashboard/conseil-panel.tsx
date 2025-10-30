@@ -480,7 +480,7 @@ export function ConseilPanel() {
   }
 
 
-  const onSubmit = async (data: AssistantFormValues) => {
+ const onSubmit = async (data: AssistantFormValues) => {
     const prompt = data.prompt.trim();
     if (!prompt) return;
   
@@ -496,38 +496,25 @@ export function ConseilPanel() {
     setCurrentConversation((prev) => [...prev, userMessage]);
     setIsThinking(true);
   
-    const assistantMessageId = uuidv4();
-    // Add a placeholder for the streaming response
-    setCurrentConversation((prev) => [
-      ...prev,
-      { id: assistantMessageId, role: 'model', type: 'text', content: '' },
-    ]);
-  
     try {
-      const historyForApi = [...currentConversation, userMessage]
+      const historyForApi = currentConversation
         .filter((m) => m.type === 'text')
         .map((m) => ({ role: m.role, content: m.content }));
   
       const financialData = { income, expenses, transactions, budgets, savingsGoals };
   
-      const responseStream = await askExpenseAssistant({
+      const response = await askExpenseAssistant({
         question: prompt,
-        history: historyForApi.slice(0, -1), // Don't include the current prompt in history
+        history: historyForApi,
         language: locale,
         currency: currency,
         financialData: financialData,
         userName: user?.displayName || 'Utilisateur',
       });
   
-      for await (const chunk of responseStream) {
-        setCurrentConversation((prev) =>
-          prev.map((msg) =>
-            msg.id === assistantMessageId
-              ? { ...msg, content: msg.content + chunk }
-              : msg
-          )
-        );
-      }
+      const assistantMessage: Message = { id: uuidv4(), role: 'model', type: 'text', content: response };
+      setCurrentConversation((prev) => [...prev, assistantMessage]);
+
     } catch (error) {
       console.error("AI assistant failed:", error);
       uiToast({
@@ -535,8 +522,8 @@ export function ConseilPanel() {
         title: t('assistant_error_title'),
         description: t('assistant_error_desc'),
       });
-      // Remove the user message and the placeholder
-      setCurrentConversation((prev) => prev.slice(0, -2));
+      // Remove the user message
+      setCurrentConversation((prev) => prev.filter(msg => msg.id !== userMessage.id));
     } finally {
       setIsThinking(false);
       await saveCurrentConversation();
@@ -737,7 +724,7 @@ const AgentWReviewCard = ({ message }: { message: Message }) => {
                     )}
                   </div>
                 ))}
-                 {isThinking && currentConversation[currentConversation.length - 1]?.content === '' && (
+                 {isThinking && (
                   <div className="flex items-start gap-3 justify-start">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>

@@ -8,11 +8,11 @@
  * - ExpenseAssistantInput - The input type for the askExpenseAssistant function.
  */
 
-import type { ExpenseAssistantInput as ExpenseAssistantInputType } from '@/types/ai-schemas';
+import { callPoe } from '@/lib/poe';
+import type { ExpenseAssistantInput } from '@/types/ai-schemas';
 import type { Transaction } from '@/types/transaction';
 import type { Budget } from '@/types/budget';
 import type { SavingsGoal } from '@/types/savings-goal';
-import { streamPoe } from '@/lib/poe';
 
 type PoeMessage = {
     role: 'system' | 'user' | 'assistant' | 'model';
@@ -20,23 +20,23 @@ type PoeMessage = {
 };
 
 
-async function* askExpenseAssistantFlow(input: ExpenseAssistantInputType): AsyncGenerator<string> {
+export async function askExpenseAssistant(input: ExpenseAssistantInput): Promise<string> {
   const { question, history, language, currency, financialData, userName } = input;
   
   const hasFinancialData = financialData.income || financialData.expenses || (financialData.transactions && financialData.transactions.length > 0);
 
   const formatTransactions = (transactions: Transaction[] | undefined) => {
-      if (!transactions || transactions.length === 0) return 'Aucune';
+      if (!transactions || transactions.length === 0) return 'N/A';
       return transactions.slice(0, 5).map(t => `${t.description} (${t.amount})`).join(', ');
   }
 
   const formatBudgets = (budgets: Budget[] | undefined) => {
-      if (!budgets || budgets.length === 0) return 'Aucun';
+      if (!budgets || budgets.length === 0) return 'N/A';
       return budgets.map(b => `${b.name} (${b.amount})`).join(', ');
   }
 
   const formatSavingsGoals = (savingsGoals: SavingsGoal[] | undefined) => {
-      if (!savingsGoals || savingsGoals.length === 0) return 'Aucun';
+      if (!savingsGoals || savingsGoals.length === 0) return 'N/A';
       return savingsGoals.map(s => `${s.name} (${s.currentAmount}/${s.targetAmount})`).join(', ');
   }
 
@@ -84,34 +84,15 @@ Contexte financier de l'utilisateur (Devise: ${currency}):
     { role: 'user', content: question }
   ] as PoeMessage[];
 
-  const stream = streamPoe({
+  const result = await callPoe({
       model: 'wise25000',
       systemPrompt: `${systemPrompt}\n${financialContext}`,
       messages,
   });
 
-  for await (const chunk of stream) {
-    yield chunk;
+  if (typeof result !== 'string') {
+    throw new Error('AI response was not a string.');
   }
-}
 
-
-export async function askExpenseAssistant(input: ExpenseAssistantInputType): Promise<ReadableStream<string>> {
-  const iterator = askExpenseAssistantFlow(input);
-  const encoder = new TextEncoder();
-
-  return new ReadableStream({
-    async pull(controller) {
-      const { value, done } = await iterator.next();
-      if (done) {
-        controller.close();
-      } else {
-        controller.enqueue(encoder.encode(value));
-      }
-    },
-     cancel() {
-        // This will be called if the client aborts the request.
-        console.log("Stream canceled by client.");
-    },
-  });
+  return result;
 }
