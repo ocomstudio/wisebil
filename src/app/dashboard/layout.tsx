@@ -30,8 +30,6 @@ import { EnterpriseProvider } from "@/context/enterprise-context";
 import { UserDataProvider } from "@/context/user-context";
 import { CompanyProfileProvider } from "@/context/company-profile-context";
 import { ProductProvider } from "@/context/product-context";
-import { SalesProvider } from "@/context/sales-context";
-import { PurchasesProvider } from "@/context/purchase-context";
 import { EnterpriseDrawer } from "@/components/dashboard/entreprise/enterprise-drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -122,15 +120,11 @@ export default function DashboardLayout({
                       <NotificationsProvider>
                         <CompanyProfileProvider>
                            <ProductProvider>
-                             <SalesProvider>
-                                <PurchasesProvider>
-                                    <TutorialProvider>
-                                        <TeamChatProvider>
-                                        <DashboardLayoutContent>{children}</DashboardLayoutContent>
-                                        </TeamChatProvider>
-                                    </TutorialProvider>
-                                </PurchasesProvider>
-                              </SalesProvider>
+                                <TutorialProvider>
+                                    <TeamChatProvider>
+                                      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+                                    </TeamChatProvider>
+                                </TutorialProvider>
                             </ProductProvider>
                         </CompanyProfileProvider>
                       </NotificationsProvider>
