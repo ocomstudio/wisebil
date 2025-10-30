@@ -66,7 +66,7 @@ export type AgentWNewBudget = z.infer<typeof AgentWNewBudgetSchema>;
 export const AgentWNewSavingsGoalSchema = z.object({
   name: z.string().describe('The name for the new savings goal.'),
   targetAmount: z.number().describe('The target amount for the savings goal.'),
-  currentAmount: z.number().optional().default(0).describe('The starting amount, defaults to 0.'),
+  currentAmount: z.number().optional().default(0).describe('The starting amount, which could be the first contribution. Defaults to 0.'),
   emoji: z.string().optional().describe("An optional emoji for the goal.")
 });
 export type AgentWNewSavingsGoal = z.infer<typeof AgentWNewSavingsGoalSchema>;
@@ -75,6 +75,8 @@ const SavingsContributionSchema = z.object({
   goalName: z.string().describe('The name of the existing savings goal to contribute to.'),
   amount: z.number().describe('The amount to add to the savings goal.'),
 });
+export type SavingsContribution = z.infer<typeof SavingsContributionSchema>;
+
 
 export const AgentWInputSchema = z.object({
   prompt: z.string().describe("The user's text describing their daily financial activities."),
@@ -88,7 +90,7 @@ export type AgentWInput = z.infer<typeof AgentWInputSchema>;
 export const AgentWOutputSchema = z.object({
   transactions: z.array(AgentWTransactionSchema).optional().default([]).describe('A list of all financial transactions found. Do not separate into income/expense. Use negative amounts for expenses.'),
   newBudgets: z.array(AgentWNewBudgetSchema).optional().default([]).describe('A list of new budgets to be created.'),
-  newSavingsGoals: z.array(AgentWNewSavingsGoalSchema).optional().default([]).describe('A list of new savings goals to be created.'),
+  newSavingsGoals: z.array(AgentWNewSavingsGoalSchema).optional().default([]).describe('A list of new savings goals to be created. Use this if the user mentions contributing to a non-existent goal.'),
   savingsContributions: z.array(SavingsContributionSchema).optional().default([]).describe('A list of contributions to existing savings goals.'),
 });
 export type AgentWOutput = z.infer<typeof AgentWOutputSchema>;
