@@ -519,6 +519,7 @@ export function ConseilPanel() {
         setCurrentConversation(prev => [...prev, assistantMessage]);
     } finally {
         setIsThinking(false);
+        saveCurrentConversation();
     }
   };
   
