@@ -12,9 +12,15 @@ import type { ExpenseAssistantInput as ExpenseAssistantInputType } from '@/types
 import type { Transaction } from '@/types/transaction';
 import type { Budget } from '@/types/budget';
 import type { SavingsGoal } from '@/types/savings-goal';
-import { callPoe } from '@/lib/poe';
+import { streamPoe } from '@/lib/poe';
 
-async function askExpenseAssistantFlow(input: ExpenseAssistantInputType): Promise<string> {
+type PoeMessage = {
+    role: 'system' | 'user' | 'assistant' | 'model';
+    content: string;
+};
+
+
+async function* askExpenseAssistantFlow(input: ExpenseAssistantInputType): AsyncGenerator<string> {
   const { question, history, language, currency, financialData, userName } = input;
   
   const hasFinancialData = financialData.income || financialData.expenses || (financialData.transactions && financialData.transactions.length > 0);
@@ -68,38 +74,44 @@ Contexte financier de l'utilisateur (Devise: ${currency}):
 
 8.  **Gestion de l'Absence de Données Personnelles :** Si le contexte financier est vide et que la question est personnelle, guide l'utilisateur. "Je vois que ton tableau de bord est encore vierge, ${userName}. Ajoute ta première dépense pour que je puisse t'aider plus précisément."`;
   
-  const historyForApi = history.map(h => ({
-      role: h.role as 'user' | 'assistant',
+  const historyForApi: PoeMessage[] = history.map(h => ({
+      role: h.role as 'user' | 'assistant' | 'model',
       content: h.content
   }));
   
   const messages = [
     ...historyForApi,
     { role: 'user', content: question }
-  ] as { role: 'user' | 'assistant'; content: string }[];
+  ] as PoeMessage[];
 
-  const answer = await callPoe({
+  const stream = streamPoe({
       model: 'wise25000',
       systemPrompt: `${systemPrompt}\n${financialContext}`,
       messages,
   });
 
-  if (typeof answer !== 'string') {
-      throw new Error("AI failed to generate a text response.");
+  for await (const chunk of stream) {
+    yield chunk;
   }
-  return answer;
 }
 
 
-export async function askExpenseAssistant(input: ExpenseAssistantInputType): Promise<{ answer: string }> {
-  try {
-    const answer = await askExpenseAssistantFlow(input);
-    return { answer };
-  } catch (error) {
-    throw new Error(
-      `AI assistant failed to generate a response. Details: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
-  }
+export async function askExpenseAssistant(input: ExpenseAssistantInputType): Promise<ReadableStream<string>> {
+  const iterator = askExpenseAssistantFlow(input);
+  const encoder = new TextEncoder();
+
+  return new ReadableStream({
+    async pull(controller) {
+      const { value, done } = await iterator.next();
+      if (done) {
+        controller.close();
+      } else {
+        controller.enqueue(encoder.encode(value));
+      }
+    },
+     cancel() {
+        // This will be called if the client aborts the request.
+        console.log("Stream canceled by client.");
+    },
+  });
 }

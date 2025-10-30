@@ -37,10 +37,9 @@ import { useTransactions } from '@/context/transactions-context';
 import { useBudgets } from '@/context/budget-context';
 import { useSavings } from '@/context/savings-context';
 import { v4 as uuidv4 } from "uuid";
-import type { ExpenseAssistantInput, AgentWInput, AgentWOutput } from '@/types/ai-schemas';
+import type { AgentWInput, AgentWOutput } from '@/types/ai-schemas';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
-import { streamPoe } from '@/lib/poe';
 
 const assistantSchema = z.object({
   prompt: z.string().min(1, 'Veuillez entrer une question.'),
@@ -484,104 +483,63 @@ export function ConseilPanel() {
   const onSubmit = async (data: AssistantFormValues) => {
     const prompt = data.prompt.trim();
     if (!prompt) return;
-
+  
     form.reset();
-
+  
     if (agentMode === 'agent') {
-        await processAgentWPrompt(prompt);
-        return;
+      await processAgentWPrompt(prompt);
+      return;
     }
-    
+  
     // Wise Mode
     const userMessage: Message = { id: uuidv4(), role: 'user', type: 'text', content: prompt };
-    const historyForApi = [...currentConversation, userMessage]
-      .filter(m => m.type === 'text' && !(m.role === 'model' && currentConversation.indexOf(m) === 0))
-      .map(m => ({ role: m.role as 'user' | 'model', content: m.content }));
-
-    setCurrentConversation(prev => [...prev, userMessage]);
+    setCurrentConversation((prev) => [...prev, userMessage]);
     setIsThinking(true);
-    
+  
     const assistantMessageId = uuidv4();
-    // Add a placeholder message
-    setCurrentConversation(prev => [...prev, { id: assistantMessageId, role: 'model', type: 'text', content: '...' }]);
-    
+    // Add a placeholder for the streaming response
+    setCurrentConversation((prev) => [
+      ...prev,
+      { id: assistantMessageId, role: 'model', type: 'text', content: '' },
+    ]);
+  
     try {
-        const hasFinancialData = income || expenses || (transactions && transactions.length > 0);
-
-        const formatTransactions = (transactions: Transaction[] | undefined) => {
-            if (!transactions || transactions.length === 0) return 'Aucune';
-            return transactions.slice(0, 5).map(t => `${t.description} (${t.amount})`).join(', ');
-        }
-        const formatBudgets = (budgets: Budget[] | undefined) => {
-            if (!budgets || budgets.length === 0) return 'Aucun';
-            return budgets.map(b => `${b.name} (${b.amount})`).join(', ');
-        }
-        const formatSavingsGoals = (savingsGoals: SavingsGoal[] | undefined) => {
-            if (!savingsGoals || savingsGoals.length === 0) return 'Aucun';
-            return savingsGoals.map(s => `${s.name} (${s.currentAmount}/${s.targetAmount})`).join(', ');
-        }
-
-        const financialContext = `
-        Contexte financier de l'utilisateur (Devise: ${currency}):
-        - Revenu Total: ${income ?? 'N/A'}
-        - Dépenses Totales: ${expenses ?? 'N/A'}
-        - Transactions Récentes (${transactions?.length ?? 0}): ${formatTransactions(transactions)}
-        - Budgets (${budgets?.length ?? 0}): ${formatBudgets(budgets)}
-        - Objectifs d'épargne (${savingsGoals?.length ?? 0}): ${formatSavingsGoals(savingsGoals)}
-        `;
-
-        const systemPrompt = `Tu es "Wise", une intelligence artificielle experte en finance, conçue pour être ultra-humain, pédagogue et pertinent. Le nom de l'utilisateur est ${user?.displayName || 'Utilisateur'}.
-
-        **Ta Mission et Directives (Règles impératives) :**
-
-        1.  **Double Compétence :**
-            *   **Coach Personnel :** Si la question de l'utilisateur porte sur SES finances personnelles (dépenses, budget, épargne), tu dois te baser **uniquement** sur le contexte financier fourni. Sois un coach précis, concis et proactif.
-            *   **Expert Financier Mondial :** Si la question est d'ordre général, ouverte, ou concerne des sujets financiers externes (ex: "quelles sont les options de financement pour un projet IA ?", "comment fonctionne la bourse ?", "qu'est-ce qu'une startup ?"), tu dois utiliser tes connaissances étendues et ta capacité d'accès à l'information pour fournir une réponse **claire, structurée, constructive et pertinente**. Ton rôle est d'éduquer, former et orienter.
-
-        2.  **Langue (Règle la plus importante):** Tu dois répondre **OBLIGATOIREMENT ET EXCLUSIVEMENT** dans la langue de l'utilisateur : **${locale}**. N'utilise aucune autre langue sous aucun prétexte.
-
-        3.  **Ton et Style :** Tu es un partenaire, pas un robot. Adresse-toi à l'utilisateur de manière amicale, simple, directe et avec une grammaire impeccable. Utilise son prénom, ${user?.displayName || 'Utilisateur'}, pour créer un lien.
-
-        4.  **Précision et Clarté :** Sois **ultra-précis**. Ne réponds **UNIQUEMENT** qu'à la question posée. N'ajoute **AUCUNE** information non sollicitée, sauf si elle est nécessaire pour une réponse complète à une question générale.
-
-        5.  **Célébrer les Victoires :** Sois le premier à féliciter ${user?.displayName || 'Utilisateur'} pour ses succès personnels (budget respecté, etc.) quand l'échange s'y prête. "Bravo ${user?.displayName || 'Utilisateur'} ! Tu as parfaitement respecté ton budget 'Courses'."
-
-        6.  **Ton Identité :** Si on te demande qui t'a créé, ta seule et unique réponse doit être : "J'ai été développé par l'agence de communication et d'innovation technologique Ocomstudio."
-
-        7.  **Ton Cadre Strict :**
-            *   Ton rôle est de conseiller et d'informer sur la finance.
-            *   NE RECOMMANDE **JAMAIS** de produits, banques ou services financiers spécifiques. Reste neutre et informatif.
-            *   Évite toute familiarité ou expression inappropriée.
-
-        8.  **Gestion de l'Absence de Données Personnelles :** Si le contexte financier est vide et que la question est personnelle, guide l'utilisateur. "Je vois que ton tableau de bord est encore vierge, ${user?.displayName || 'Utilisateur'}. Ajoute ta première dépense pour que je puisse t'aider plus précisément."`;
-
-        const stream = streamPoe({
-            model: 'wise25000',
-            messages: historyForApi,
-            systemPrompt: `${systemPrompt}\n${financialContext}`,
-        });
-
-        for await (const chunk of stream) {
-            setCurrentConversation(prev =>
-                prev.map(msg =>
-                    msg.id === assistantMessageId
-                        ? { ...msg, content: msg.content === '...' ? chunk : msg.content + chunk }
-                        : msg
-                )
-            );
-        }
-
+      const historyForApi = [...currentConversation, userMessage]
+        .filter((m) => m.type === 'text')
+        .map((m) => ({ role: m.role, content: m.content }));
+  
+      const financialData = { income, expenses, transactions, budgets, savingsGoals };
+  
+      const responseStream = await askExpenseAssistant({
+        question: prompt,
+        history: historyForApi.slice(0, -1), // Don't include the current prompt in history
+        language: locale,
+        currency: currency,
+        financialData: financialData,
+        userName: user?.displayName || 'Utilisateur',
+      });
+  
+      for await (const chunk of responseStream) {
+        setCurrentConversation((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantMessageId
+              ? { ...msg, content: msg.content + chunk }
+              : msg
+          )
+        );
+      }
     } catch (error) {
-        console.error("AI assistant failed:", error);
-        uiToast({
-          variant: 'destructive',
-          title: t('assistant_error_title'),
-          description: t('assistant_error_desc'),
-        });
-        setCurrentConversation(prev => prev.slice(0, -2)); // Remove user message and placeholder
+      console.error("AI assistant failed:", error);
+      uiToast({
+        variant: 'destructive',
+        title: t('assistant_error_title'),
+        description: t('assistant_error_desc'),
+      });
+      // Remove the user message and the placeholder
+      setCurrentConversation((prev) => prev.slice(0, -2));
     } finally {
-        setIsThinking(false);
-        saveCurrentConversation();
+      setIsThinking(false);
+      await saveCurrentConversation();
     }
   };
   
@@ -779,7 +737,7 @@ const AgentWReviewCard = ({ message }: { message: Message }) => {
                     )}
                   </div>
                 ))}
-                 {isThinking && !currentConversation.some(m => m.id.endsWith('-streaming')) && (
+                 {isThinking && currentConversation[currentConversation.length - 1]?.content === '' && (
                   <div className="flex items-start gap-3 justify-start">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>

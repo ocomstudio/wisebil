@@ -6,11 +6,13 @@ const POE_API_URL = "https://api.poe.com/v1/chat/completions";
 const POE_API_KEY = process.env.POE_API_KEY;
 
 if (!POE_API_KEY) {
-    throw new Error('POE_API_KEY environment variable not found.');
+    console.error('POE_API_KEY environment variable not found.');
+    // We don't throw here to avoid crashing the server build if the file is just being analyzed.
+    // The error will be caught in functions that use it.
 }
 
 interface PoeMessage {
-    role: 'system' | 'user' | 'assistant';
+    role: 'system' | 'user' | 'assistant' | 'model';
     content: string | (string | { type: string; [key: string]: any })[];
 }
 
@@ -19,16 +21,18 @@ interface callPoeOptions<T> {
     messages: PoeMessage[];
     systemPrompt?: string;
     jsonResponseSchema?: ZodSchema<T>;
-    stream?: boolean;
 }
 
 export async function callPoe<T>(options: callPoeOptions<T>): Promise<T | string> {
+    if (!POE_API_KEY) {
+        throw new Error('POE_API_KEY environment variable not set on the server.');
+    }
+    
     const {
         model = 'Claude-3-Sonnet',
         messages,
         systemPrompt,
         jsonResponseSchema,
-        stream = false
     } = options;
 
     const headers = {
@@ -38,13 +42,19 @@ export async function callPoe<T>(options: callPoeOptions<T>): Promise<T | string
 
     const finalMessages = [...messages];
     if (systemPrompt) {
-        finalMessages.unshift({ role: 'system', content: systemPrompt });
+        // Poe API prefers the system prompt to be the first message with role 'system'
+        const systemMessageIndex = finalMessages.findIndex(m => m.role === 'system');
+        if (systemMessageIndex !== -1) {
+            finalMessages[systemMessageIndex].content = systemPrompt;
+        } else {
+            finalMessages.unshift({ role: 'system', content: systemPrompt });
+        }
     }
+
 
     const requestBody: any = {
         model,
         messages: finalMessages,
-        stream
     };
 
     if (jsonResponseSchema) {
@@ -57,39 +67,7 @@ export async function callPoe<T>(options: callPoeOptions<T>): Promise<T | string
     }
 
     try {
-        const response = await axios.post(POE_API_URL, requestBody, { headers, responseType: stream ? 'stream' : 'json' });
-
-        if (stream) {
-            // This is a simplified example. In a real app, you'd handle the stream.
-            // For this environment, we'll simulate the streaming by just getting the final result.
-            // This is a limitation of the current tool execution environment, not the Poe API.
-            // The frontend will handle the streaming illusion.
-            // Here, we'll just concatenate the stream for non-browser environments if needed.
-             if (response.data.readable) { // Node.js stream
-                return new Promise((resolve, reject) => {
-                    let completeResponse = '';
-                    response.data.on('data', (chunk: Buffer) => {
-                        const text = chunk.toString('utf8');
-                         // Simplified parsing of SSE
-                        const lines = text.split('\n');
-                        for (const line of lines) {
-                            if (line.startsWith('data: ')) {
-                                try {
-                                    const json = JSON.parse(line.substring(6));
-                                    if (json.text) {
-                                        completeResponse += json.text;
-                                    }
-                                } catch (e) {
-                                    // ignore parse errors
-                                }
-                            }
-                        }
-                    });
-                    response.data.on('end', () => resolve(completeResponse));
-                    response.data.on('error', reject);
-                });
-            }
-        }
+        const response = await axios.post(POE_API_URL, requestBody, { headers });
         
         const content = response.data.choices[0].message.content;
 
@@ -112,7 +90,11 @@ export async function callPoe<T>(options: callPoeOptions<T>): Promise<T | string
     }
 }
 
-export async function* streamPoe<T>(options: callPoeOptions<T>): AsyncGenerator<string> {
+export async function* streamPoe(options: callPoeOptions<any>): AsyncGenerator<string> {
+  if (!POE_API_KEY) {
+    throw new Error('POE_API_KEY environment variable not set on the server.');
+  }
+  
   const {
     model = 'Claude-3-Sonnet',
     messages,
@@ -126,9 +108,14 @@ export async function* streamPoe<T>(options: callPoeOptions<T>): AsyncGenerator<
   };
 
   const finalMessages = [...messages];
-  if (systemPrompt) {
-    finalMessages.unshift({ role: 'system', content: systemPrompt });
-  }
+   if (systemPrompt) {
+        const systemMessageIndex = finalMessages.findIndex(m => m.role === 'system');
+        if (systemMessageIndex !== -1) {
+            finalMessages[systemMessageIndex].content = systemPrompt;
+        } else {
+            finalMessages.unshift({ role: 'system', content: systemPrompt });
+        }
+    }
 
   const requestBody = {
     model,
@@ -144,7 +131,7 @@ export async function* streamPoe<T>(options: callPoeOptions<T>): AsyncGenerator<
     });
 
     if (!response.body) {
-      throw new Error('No response body');
+      throw new Error('No response body from Poe API stream.');
     }
 
     const reader = response.body.getReader();
@@ -158,23 +145,28 @@ export async function* streamPoe<T>(options: callPoeOptions<T>): AsyncGenerator<
       }
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
+      buffer = lines.pop() || ''; // Keep the last, possibly incomplete, line
 
       for (const line of lines) {
         if (line.startsWith('data: ')) {
-          try {
-            const data = JSON.parse(line.substring(6));
-            if (data.text) {
-              yield data.text;
+           try {
+              const content = line.substring(6);
+              if (content === '[DONE]') {
+                break;
+              }
+              const data = JSON.parse(content);
+              if (data.choices && data.choices[0].delta?.content) {
+                yield data.choices[0].delta.content;
+              }
+            } catch (e) {
+                // It's possible to get incomplete JSON objects, so we just log and continue
+                console.warn('Could not parse streaming chunk from Poe API:', e);
             }
-          } catch (e) {
-            // Ignore incomplete JSON
-          }
         }
       }
     }
   } catch (error) {
-    console.error('Streaming Poe API error:', error);
+    console.error('Streaming from Poe API failed:', error);
     throw error;
   }
 }
