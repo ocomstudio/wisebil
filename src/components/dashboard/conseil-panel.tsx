@@ -509,14 +509,18 @@ export function ConseilPanel() {
             userName: user?.displayName || 'User',
             financialData: { income, expenses, transactions, budgets, savingsGoals }
         };
-        const result = await askExpenseAssistant(input);
-        const assistantMessage: Message = { id: uuidv4(), role: 'model', type: 'text', content: result.answer };
+        const { answer } = await askExpenseAssistant(input);
+        const assistantMessage: Message = { id: uuidv4(), role: 'model', type: 'text', content: answer };
         setCurrentConversation(prev => [...prev, assistantMessage]);
 
     } catch (error) {
-        console.error("Error during agent processing:", error);
-        const assistantMessage: Message = { id: uuidv4(), role: 'model', type: 'text', content: t('assistant_error_desc') };
-        setCurrentConversation(prev => [...prev, assistantMessage]);
+        console.error("AI assistant failed:", error);
+        uiToast({
+          variant: 'destructive',
+          title: t('assistant_error_title'),
+          description: t('assistant_error_desc'),
+        });
+        setCurrentConversation(prev => prev.slice(0, -1)); // Remove the user message on failure
     } finally {
         setIsThinking(false);
         saveCurrentConversation();
