@@ -8,7 +8,7 @@
  * - FinancialSummaryInput - The input type for the getFinancialSummary function.
  * - FinancialSummaryOutput - The return type for the getFinancialSummary function.
  */
-import {ai} from '@/lib/genkit';
+import { callPoe } from '@/lib/poe';
 import {
     FinancialSummaryInputSchema,
     FinancialSummaryOutputSchema,
@@ -64,19 +64,17 @@ async function getFinancialSummaryFlow(input: FinancialSummaryInput): Promise<Fi
     
     Based on the provided data, generate a summary, advice, and prediction in language code '${language}'.`;
 
-    const { output } = await ai.generate({
-        model: 'googleai/gemini-pro',
-        prompt: `${systemPrompt}\n\n${userPrompt}`,
-        output: {
-            schema: FinancialSummaryOutputSchema,
-            format: 'json'
-        },
+    const result = await callPoe({
+        messages: [{ role: 'user', content: userPrompt }],
+        systemPrompt,
+        jsonResponseSchema: FinancialSummaryOutputSchema,
     });
     
-    if (!output) {
-      throw new Error("AI failed to generate a financial summary.");
+    if (typeof result === 'string' || !result) {
+        throw new Error("AI failed to generate a financial summary.");
     }
-    return output;
+    
+    return result as FinancialSummaryOutput;
 }
 
 

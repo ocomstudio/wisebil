@@ -8,7 +8,7 @@
  * - ProcessReceiptInput - The input type for the processReceipt function.
  * - ProcessReceiptOutput - The return type for the processReceipt function.
  */
-import {ai} from '@/lib/genkit';
+import { callPoe } from '@/lib/poe';
 import { expenseCategories } from '@/config/categories';
 import {
   ProcessReceiptInputSchema,
@@ -16,7 +16,6 @@ import {
   type ProcessReceiptInput,
   type ProcessReceiptOutput,
 } from '@/types/ai-schemas';
-import { Part } from 'genkit';
 
 
 export type { ProcessReceiptInput, ProcessReceiptOutput };
@@ -26,24 +25,33 @@ async function processReceiptFlow(input: ProcessReceiptInput): Promise<ProcessRe
   const systemPrompt = `You are an expert at processing receipts. Analyze the image and extract the following information: merchant name, total amount, and transaction date. Also, suggest an appropriate expense category from this list: ${expenseCategories.map(c => c.name).join(', ')}. If no date is found, use today's date: ${new Date().toISOString().split('T')[0]}.
   The date format MUST be YYYY-MM-DD.`;
 
-  const prompt = [
-      { text: systemPrompt },
-      { media: { url: input.photoDataUri } }
-  ];
+  const mimeType = input.photoDataUri.substring(input.photoDataUri.indexOf(':') + 1, input.photoDataUri.indexOf(';'));
 
-  const { output } = await ai.generate({
-    model: 'googleai/gemini-pro-vision',
-    prompt,
-    output: {
-      schema: ProcessReceiptOutputSchema,
-      format: 'json',
-    },
+  const result = await callPoe({
+    model: 'Claude-3-Sonnet',
+    messages: [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: systemPrompt },
+          { 
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: mimeType,
+              data: input.photoDataUri.split(',')[1],
+            }
+          }
+        ]
+      }
+    ],
+    jsonResponseSchema: ProcessReceiptOutputSchema,
   });
-  
-  if (!output) {
+
+  if (typeof result === 'string' || !result) {
     throw new Error("AI failed to generate a response from the receipt image.");
   }
-  return output;
+  return result as ProcessReceiptOutput;
 }
 
 export async function processReceipt(input: ProcessReceiptInput): Promise<ProcessReceiptOutput> {

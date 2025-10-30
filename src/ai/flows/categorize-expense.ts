@@ -7,7 +7,7 @@
  * - CategorizeExpenseInput - The input type for the categorizeExpense function.
  * - CategorizeExpenseOutput - The return type for the categorizeExpense function.
  */
-import {ai} from '@/lib/genkit';
+import { callPoe } from '@/lib/poe';
 import { expenseCategories } from '@/config/categories';
 import { CategorizeExpenseOutputSchema, CategorizeExpenseInputSchema, CategorizeExpenseInput, CategorizeExpenseOutput } from '@/types/ai-schemas';
 
@@ -18,20 +18,18 @@ async function categorizeExpenseFlow(input: CategorizeExpenseInput): Promise<Cat
   const systemPrompt = `You are an expert financial advisor. Your job is to categorize expenses based on their description.
 Here are the available categories: ${expenseCategories.map((c) => c.name).join(', ')}. You MUST select one of these categories. If no category seems appropriate, choose 'Autre'.
 The user's preferred language is French (fr). You must respond in this language.`;
-
-  const { output } = await ai.generate({
-    model: 'googleai/gemini-pro',
-    prompt: `${systemPrompt}\n\nExpense description: ${input.description}`,
-    output: {
-        schema: CategorizeExpenseOutputSchema,
-        format: 'json'
-    },
-  });
   
-  if (!output) {
+  const result = await callPoe({
+      messages: [{ role: 'user', content: `Expense description: ${input.description}` }],
+      systemPrompt,
+      jsonResponseSchema: CategorizeExpenseOutputSchema,
+  });
+
+  if (typeof result === 'string' || !result) {
       throw new Error("AI failed to categorize the expense.");
   }
-  return output;
+  
+  return result as CategorizeExpenseOutput;
 }
 
 export async function categorizeExpense(input: CategorizeExpenseInput): Promise<CategorizeExpenseOutput> {

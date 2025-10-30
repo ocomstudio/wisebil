@@ -12,9 +12,7 @@ import type { ExpenseAssistantInput as ExpenseAssistantInputType } from '@/types
 import type { Transaction } from '@/types/transaction';
 import type { Budget } from '@/types/budget';
 import type { SavingsGoal } from '@/types/savings-goal';
-import {ai} from '@/lib/genkit';
-import {MessageData} from 'genkit';
-
+import { callPoe } from '@/lib/poe';
 
 async function askExpenseAssistantFlow(input: ExpenseAssistantInputType): Promise<string> {
   const { question, history, language, currency, financialData, userName } = input;
@@ -70,23 +68,25 @@ Contexte financier de l'utilisateur (Devise: ${currency}):
 
 8.  **Gestion de l'Absence de Données Personnelles :** Si le contexte financier est vide et que la question est personnelle, guide l'utilisateur. "Je vois que ton tableau de bord est encore vierge, ${userName}. Ajoute ta première dépense pour que je puisse t'aider plus précisément."`;
   
-  const historyForApi: MessageData[] = history.map(h => ({
-      role: h.role as 'user' | 'model',
-      content: [{ text: h.content }]
+  const historyForApi = history.map(h => ({
+      role: h.role as 'user' | 'assistant',
+      content: h.content
   }));
   
-  const messages: MessageData[] = [
-    { role: 'system', content: [{ text: `${systemPrompt}\n${financialContext}` }] },
+  const messages = [
     ...historyForApi,
-    { role: 'user', content: [{ text: question }] }
-  ];
+    { role: 'user', content: question }
+  ] as { role: 'user' | 'assistant'; content: string }[];
 
-  const {text} = await ai.generate({
-      model: 'googleai/gemini-pro',
+  const answer = await callPoe({
+      systemPrompt: `${systemPrompt}\n${financialContext}`,
       messages,
   });
 
-  return text;
+  if (typeof answer !== 'string') {
+      throw new Error("AI failed to generate a text response.");
+  }
+  return answer;
 }
 
 

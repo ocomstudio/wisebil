@@ -8,7 +8,7 @@
  * - AgentWInput - The input type for the runAgentW function.
  * - AgentWOutput - The return type for the runAgentW function.
  */
-import {ai} from '@/lib/genkit';
+import { callPoe } from '@/lib/poe';
 import { expenseCategories, incomeCategories } from '@/config/categories';
 import {
   AgentWInputSchema,
@@ -41,20 +41,18 @@ async function runAgentWFlow(input: AgentWInput): Promise<AgentWOutput> {
     - If the user says "ajoute 10000 à mon épargne 'Voiture'", and 'Voiture' is in the existing list, add it to 'savingsContributions'. If 'Voiture' does not exist, create it under 'newSavingsGoals'.
 7.  **Handle Currency:** The user's currency is ${currency}. All amounts are in this currency.
 8.  **STRICT JSON-ONLY OUTPUT:** You MUST respond ONLY with a JSON object conforming to the output schema. Do not include apologies, explanations, or ANY text outside of the JSON brackets. If no actions of a certain type are found, its corresponding array MUST be empty, for example: "transactions": []. NEVER return a list with an empty object like "transactions": [{}]. The 'date' field for transactions is REQUIRED, and it MUST be in YYYY-MM-DD format.`;
-
-    const {output} = await ai.generate({
-        model: 'googleai/gemini-pro',
-        prompt: `${systemPrompt}\n\nUser prompt: ${input.prompt}`,
-        output: {
-            schema: AgentWOutputSchema,
-            format: 'json'
-        },
+    
+    const result = await callPoe({
+        messages: [{ role: 'user', content: `User prompt: ${input.prompt}` }],
+        systemPrompt,
+        jsonResponseSchema: AgentWOutputSchema,
     });
-
-    if (!output) {
-      throw new Error("AI failed to parse the user's prompt.");
+    
+    if (typeof result === 'string' || !result) {
+        throw new Error("AI failed to parse the user's prompt.");
     }
-    return output;
+    
+    return result as AgentWOutput;
 }
 
 

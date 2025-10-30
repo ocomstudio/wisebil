@@ -7,7 +7,7 @@
  * - scanDocument - A function that handles the document scanning and parsing.
  * - ScanDocumentInput - The input type for the scanDocument function.
  */
-import {ai} from '@/lib/genkit';
+import { callPoe } from '@/lib/poe';
 import { expenseCategories, incomeCategories } from '@/config/categories';
 import {
   AgentWOutputSchema,
@@ -37,22 +37,32 @@ async function scanDocumentFlow(input: ScanDocumentInput): Promise<AgentWOutput>
 6.  **Identify Other Actions:** Separately identify actions for creating new budgets or new savings goals.
 7.  **STRICT JSON-ONLY OUTPUT:** You MUST respond ONLY with a JSON object conforming to the output schema. Do not include apologies, explanations, or ANY text outside of the JSON brackets. If no actions of a certain type are found, its corresponding array MUST be empty, for example: "transactions": []. NEVER return a list with an empty object like "transactions": [{}]. The 'date' field for transactions is REQUIRED, and it MUST be in YYYY-MM-DD format. The primary list of financial events should be in the 'transactions' field.`;
 
-  const { output } = await ai.generate({
-    model: 'googleai/gemini-pro-vision',
-    prompt: [
-        { text: systemPrompt },
-        { media: { url: input.photoDataUri } }
-    ],
-    output: {
-      schema: AgentWOutputSchema,
-      format: 'json'
-    },
+  const mimeType = input.photoDataUri.substring(input.photoDataUri.indexOf(':') + 1, input.photoDataUri.indexOf(';'));
+
+  const result = await callPoe({
+    model: 'Claude-3-Sonnet',
+    messages: [{
+      role: 'user',
+      content: [
+          { type: 'text', text: systemPrompt },
+          { 
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: mimeType,
+              data: input.photoDataUri.split(',')[1],
+            }
+          }
+      ]
+    }],
+    jsonResponseSchema: AgentWOutputSchema,
   });
 
-  if (!output) {
-      throw new Error("AI failed to parse the document text.");
+  if (typeof result === 'string' || !result) {
+    throw new Error("AI failed to parse the document text.");
   }
-  return output;
+  
+  return result as AgentWOutput;
 }
 
 

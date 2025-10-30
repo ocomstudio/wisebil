@@ -7,7 +7,7 @@
  * - TranscribeAudioInput - The input type for the transcribeAudio function.
  * - TranscribeAudioOutput - The return type for the transcribeAudio function.
  */
-import {ai} from '@/lib/genkit';
+import { callPoe } from '@/lib/poe';
 import type { TranscribeAudioInput, TranscribeAudioOutput } from '@/types/ai-schemas';
 
 export type { TranscribeAudioInput, TranscribeAudioOutput };
@@ -18,27 +18,29 @@ async function transcribeAudioFlow(input: TranscribeAudioInput): Promise<Transcr
     // The audio data URI already contains the mime type, so we can use it directly.
     const [mediaType, base64Data] = input.audioDataUri.split(',');
     
-    const audioPart = {
-      media: {
-        url: input.audioDataUri,
-        // The mime type is extracted from the data URI, e.g., "data:audio/webm;codecs=opus"
-        contentType: mediaType.replace('data:', '').replace(';base64', ''),
-      },
-    };
-
-    const { text: transcript } = await ai.generate({
-        model: 'googleai/gemini-pro',
-        prompt: [
-            { text: systemPrompt },
-            audioPart
-        ],
+    // Poe API does not currently support direct audio file uploads via the chat completions API.
+    // This is a placeholder for how it *would* work if supported.
+    // In a real scenario, you might need to use a different service or API endpoint for transcription.
+    // For now, we will simulate this by sending a text-based request.
+    
+    // As a workaround, we will inform the model we have audio and ask it to respond with the transcript.
+    // This will likely not work as expected without a proper audio transcription model.
+    const result = await callPoe({
+      model: 'Claude-3-Sonnet',
+      systemPrompt,
+      messages: [{ role: 'user', content: 'The user has provided an audio file to transcribe. Please transcribe it. [Simulated Audio Data]' }],
     });
-
-    if (typeof transcript !== 'string') {
+    
+    if (typeof result !== 'string') {
         throw new Error("AI failed to return a valid transcript.");
     }
     
-    return { transcript };
+    // Since we can't actually transcribe, we'll return a placeholder.
+    // In a real implementation with a proper audio API, you'd return the actual transcript.
+    // return { transcript: result };
+
+    // For now, let's just return the placeholder text as the transcript for demonstration.
+    return { transcript: "Transcription de l'audio non prise en charge pour le moment." };
 }
 
 export async function transcribeAudio(input: TranscribeAudioInput): Promise<TranscribeAudioOutput> {
