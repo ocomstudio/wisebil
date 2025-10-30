@@ -517,13 +517,9 @@ export function ConseilPanel() {
 
     } catch (error) {
       console.error("AI assistant failed:", error);
-      uiToast({
-        variant: 'destructive',
-        title: t('assistant_error_title'),
-        description: t('assistant_error_desc'),
-      });
+      setCurrentConversation((prev) => [...prev, { id: uuidv4(), role: 'model', type: 'text', content: t('assistant_error_desc') }]);
       // Remove the user message
-      setCurrentConversation((prev) => prev.filter(msg => msg.id !== userMessage.id));
+      // setCurrentConversation((prev) => prev.filter(msg => msg.id !== userMessage.id));
     } finally {
       setIsThinking(false);
       await saveCurrentConversation();
