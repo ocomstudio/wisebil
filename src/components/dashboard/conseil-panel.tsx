@@ -5,7 +5,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from 'zod';
-import { useToast } from '@/hooks/use-toast';
+import { askExpenseAssistant } from '@/ai/flows/expense-assistant';
+
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
@@ -29,7 +30,6 @@ import { useAuth } from '@/context/auth-context';
 import toast from 'react-hot-toast';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '../ui/skeleton';
-import { askExpenseAssistant } from '@/ai/flows/expense-assistant';
 import { runAgentW } from '@/ai/flows/wise-agent';
 import { transcribeAudio } from '@/ai/flows/transcribe-audio';
 import type { TranscribeAudioInput, AgentWTransaction, AgentWNewBudget, AgentWNewSavingsGoal } from '@/types/ai-schemas';
@@ -336,7 +336,7 @@ export function ConseilPanel() {
                      releaseWakeLock(); 
                  };
                  reader.onerror = () => { throw new Error("Failed to read audio file."); }
-                 reader.readAsDataURL(audioBlob);
+                 reader.readAsDataURL(file);
             } catch (error) {
                 console.error("Error during transcription:", error);
                 uiToast({ variant: 'destructive', title: t('transcription_error_title'), description: t('transcription_error_desc') });
@@ -389,7 +389,7 @@ export function ConseilPanel() {
     toast.success(t('history_deleted_success'));
   };
 
-  const processAgentWResponse = (response: AugmentedAgentWOutput, messageId: string) => {
+  const processAgentWResponse = (response: AugmentedAgentWOutput) => {
     let itemsAdded = 0;
     
     if (response.transactions?.length) {
@@ -417,15 +417,15 @@ export function ConseilPanel() {
         });
     }
 
+    let agentMessage: Message;
     if (itemsAdded === 0) {
-        const agentMessage: Message = { id: uuidv4(), role: 'model', type: 'text', content: t('agent_w_no_action')};
-        setCurrentConversation(prev => [...prev, agentMessage]);
+        agentMessage = { id: uuidv4(), role: 'model', type: 'text', content: t('agent_w_no_action')};
     } else {
         const successMessage = t('agent_w_success_feedback', { count: itemsAdded });
-        const agentMessage: Message = { id: uuidv4(), role: 'model', type: 'text', content: successMessage};
-        setCurrentConversation(prev => [...prev.map(m => m.id === messageId ? {...m, isProcessed: true} : m), agentMessage]);
+        agentMessage = { id: uuidv4(), role: 'model', type: 'text', content: successMessage};
         toast.success(t('agent_w_success'));
     }
+    setCurrentConversation(prev => [...prev, agentMessage]);
   };
   
   const processAgentWPrompt = async (prompt: string) => {
@@ -448,23 +448,7 @@ export function ConseilPanel() {
                            (result.savingsContributions && result.savingsContributions.length > 0);
 
         if (hasActions) {
-            const augmentedResult: AugmentedAgentWOutput = {
-                ...result,
-                transactions: result.transactions?.map(t => ({...t, id: uuidv4()})),
-                newBudgets: result.newBudgets?.map(b => ({...b, id: uuidv4()})),
-                newSavingsGoals: result.newSavingsGoals?.map(g => ({...g, id: uuidv4()})),
-                // savingsContributions don't need a client-side ID for display
-            }
-
-            const assistantMessage: Message = { 
-                id: uuidv4(), 
-                role: 'model', 
-                type: 'agent-review', 
-                content: t('agent_w_review_prompt'),
-                agentData: augmentedResult,
-                isProcessed: false
-            };
-            setCurrentConversation(prev => [...prev, assistantMessage]);
+            processAgentWResponse(result);
         } else {
              const assistantMessage: Message = { id: uuidv4(), role: 'model', type: 'text', content: t('agent_w_no_action') };
              setCurrentConversation(prev => [...prev, assistantMessage]);
@@ -610,7 +594,8 @@ const AgentWReviewCard = ({ message }: { message: Message }) => {
 
     const handleConfirm = () => {
         if (message.agentData) {
-            processAgentWResponse(message.agentData, message.id);
+            processAgentWResponse(message.agentData);
+            setCurrentConversation(prev => prev.map(m => m.id === message.id ? {...m, isProcessed: true} : m));
         }
     };
 
@@ -647,7 +632,7 @@ const AgentWReviewCard = ({ message }: { message: Message }) => {
                     </div>
                 ))}
                  {savingsContributions.map((item, index) => (
-                    <div key={item.id || `sc-${index}`} className="flex items-center gap-2">
+                    <div key={`sc-${index}`} className="flex items-center gap-2">
                        <PiggyBank className="h-4 w-4 text-pink-500" />
                        <span>{t('contribution')}: {item.goalName}</span>
                        <span className="ml-auto font-semibold">{formatCurrency(item.amount)}</span>
