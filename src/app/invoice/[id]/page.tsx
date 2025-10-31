@@ -2,35 +2,66 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { UserDataProvider, getUserBySaleId } from '@/context/user-context';
+import { UserDataProvider } from '@/context/user-context';
 import { Sale } from '@/types/sale';
 import { CompanyProfile } from '@/types/company';
 import { InvoiceTemplate } from '@/components/invoice/invoice-template';
 import { LocaleProvider } from '@/context/locale-context';
 import { Skeleton } from '@/components/ui/skeleton';
+import { collectionGroup, query, where, getDocs, limit, getDoc, doc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import type { Enterprise } from '@/types/enterprise';
+import { User } from '@/context/auth-context';
+
 
 // Server-side data fetching function remains separate
-async function getSaleData(id: string): Promise<{ sale: Sale; companyProfile: CompanyProfile | null; userData: any } | null> {
-  const userData = await getUserBySaleId(id);
-  if (!userData) {
+async function getSaleData(id: string): Promise<{ sale: Sale; companyProfile: CompanyProfile | null; userData: User | null } | null> {
+  const salesQuery = query(collectionGroup(db, 'sales'), where('id', '==', id), limit(1));
+  const saleSnapshot = await getDocs(salesQuery);
+
+  if (saleSnapshot.empty) {
+    console.warn(`No sale found with ID: ${id}`);
     return null;
   }
 
-  const sale = userData.sales?.find(s => s.id === id);
-  if (!sale) {
+  const saleDoc = saleSnapshot.docs[0];
+  const saleData = saleDoc.data() as Sale;
+  const enterpriseDocRef = saleDoc.ref.parent.parent;
+
+  if (!enterpriseDocRef) {
+    console.error(`Could not find parent enterprise for sale ID: ${id}`);
     return null;
   }
   
-  return { sale, companyProfile: userData.companyProfile || null, userData };
+  const enterpriseDocSnap = await getDoc(enterpriseDocRef);
+  if (!enterpriseDocSnap.exists()) {
+      console.error(`Enterprise document not found for sale ID: ${id}`);
+      return null;
+  }
+
+  const enterpriseData = enterpriseDocSnap.data() as Enterprise;
+  const companyProfile = enterpriseData.companyProfile || null;
+  const ownerId = enterpriseData.ownerId;
+  
+  const userDocSnap = await getDoc(doc(db, 'users', ownerId));
+  const userData = userDocSnap.exists() ? userDocSnap.data().profile as User : null;
+
+  return { sale: saleData, companyProfile, userData };
 }
 
 // Client Component to handle rendering and context providers
-function PublicInvoiceView({ sale, userData }: { sale: Sale, userData: any }) {
+function PublicInvoiceView({ sale, companyProfile, userData }: { sale: Sale, companyProfile: CompanyProfile | null, userData: User | null }) {
+    // This is a mock provider setup since we can't fully replicate the context server-side
+    // for a public page without a logged-in user. The essential data is passed as props.
+    const MockCompanyProfileProvider = ({ children }: { children: React.ReactNode }) => (
+        <>{children}</> 
+    );
+    
     return (
-        <UserDataProvider initialData={userData}>
+        <UserDataProvider initialData={{profile: userData, preferences: { language: 'fr', currency: 'XOF'}, settings: {}, transactions: [], budgets: [], savingsGoals: [] }}>
             <LocaleProvider>
                 <div className="min-h-screen bg-muted/40 p-4 sm:p-8">
-                    <InvoiceTemplate sale={sale} />
+                    <InvoiceTemplate sale={sale} companyProfile={companyProfile} />
                 </div>
             </LocaleProvider>
         </UserDataProvider>
@@ -40,7 +71,7 @@ function PublicInvoiceView({ sale, userData }: { sale: Sale, userData: any }) {
 
 // The Page component is now a client component to manage state and effects
 export default function PublicInvoicePage({ params }: { params: { id: string } }) {
-  const [data, setData] = useState<{ sale: Sale; userData: any } | null>(null);
+  const [data, setData] = useState<{ sale: Sale; companyProfile: CompanyProfile | null; userData: User | null } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,7 +80,7 @@ export default function PublicInvoicePage({ params }: { params: { id: string } }
       try {
         const result = await getSaleData(params.id);
         if (result) {
-          setData({ sale: result.sale, userData: result.userData });
+          setData(result);
         } else {
           setError("Facture non trouvée");
         }
@@ -82,5 +113,5 @@ export default function PublicInvoicePage({ params }: { params: { id: string } }
     );
   }
 
-  return <PublicInvoiceView sale={data.sale} userData={data.userData} />;
+  return <PublicInvoiceView sale={data.sale} companyProfile={data.companyProfile} userData={data.userData} />;
 }

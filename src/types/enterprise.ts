@@ -1,5 +1,10 @@
 // src/types/enterprise.ts
 import type { Transaction } from './transaction';
+import type { Product, ProductCategory } from './product';
+import type { Sale } from './sale';
+import type { Purchase } from './purchase';
+import type { ActivityLog } from './activity-log';
+import type { CompanyProfile } from './company';
 
 export interface Member {
     uid: string;
@@ -16,6 +21,14 @@ export interface Enterprise {
     members: Member[];
     memberIds: string[]; // For easier querying
     transactions: Transaction[]; // Transactions specific to the enterprise
+    products?: Product[];
+    productCategories?: ProductCategory[];
+    sales?: Sale[];
+    purchases?: Purchase[];
+    enterpriseActivities?: ActivityLog[];
+    companyProfile?: CompanyProfile;
+    saleInvoiceCounter?: number;
+    purchaseInvoiceCounter?: number;
 }
 
 export interface Invitation {

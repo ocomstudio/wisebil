@@ -6,17 +6,17 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useLocale } from '@/context/locale-context';
-import { useCompanyProfile } from '@/context/company-profile-context';
 import Image from 'next/image';
 import type { Purchase } from '@/types/purchase';
+import type { CompanyProfile } from '@/types/company';
 
 interface PurchaseOrderTemplateProps extends React.HTMLAttributes<HTMLDivElement> {
     purchase: Purchase;
+    companyProfile: CompanyProfile | null;
 }
 
-export const PurchaseOrderTemplate = React.forwardRef<HTMLDivElement, PurchaseOrderTemplateProps>(({ purchase, ...props }, ref) => {
+export const PurchaseOrderTemplate = React.forwardRef<HTMLDivElement, PurchaseOrderTemplateProps>(({ purchase, companyProfile, ...props }, ref) => {
     const { t, formatCurrency, formatDateTime } = useLocale();
-    const { companyProfile } = useCompanyProfile();
     const brandColor = companyProfile?.brandColor || '#179C00';
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://wisebil.com';
     const publicUrl = `${appUrl}/purchase-order/${purchase.id}`;

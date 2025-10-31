@@ -6,17 +6,17 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useLocale } from '@/context/locale-context';
-import { useCompanyProfile } from '@/context/company-profile-context';
 import Image from 'next/image';
 import type { Sale } from '@/types/sale';
+import type { CompanyProfile } from '@/types/company';
 
 interface InvoiceTemplateProps extends React.HTMLAttributes<HTMLDivElement> {
     sale: Sale;
+    companyProfile: CompanyProfile | null;
 }
 
-export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ sale, ...props }, ref) => {
+export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ sale, companyProfile, ...props }, ref) => {
     const { t, formatCurrency, formatDateTime } = useLocale();
-    const { companyProfile } = useCompanyProfile();
     const brandColor = companyProfile?.brandColor || '#179C00';
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://wisebil.com';
     const publicUrl = `${appUrl}/invoice/${sale.id}`;
@@ -102,7 +102,7 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceTemplateP
                         )}
                     </div>
                 </div>
-            </CardFooter>
+             </CardFooter>
         </Card>
     );
 });

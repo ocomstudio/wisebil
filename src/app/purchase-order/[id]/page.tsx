@@ -2,34 +2,57 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { UserDataProvider, getUserByPurchaseId } from '@/context/user-context';
+import { UserDataProvider } from '@/context/user-context';
 import { Purchase } from '@/types/purchase';
 import { CompanyProfile } from '@/types/company';
 import { PurchaseOrderTemplate } from '@/components/invoice/purchase-order-template';
 import { LocaleProvider } from '@/context/locale-context';
 import { Skeleton } from '@/components/ui/skeleton';
+import { collectionGroup, query, where, getDocs, limit, getDoc, doc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import type { Enterprise } from '@/types/enterprise';
+import { User } from '@/context/auth-context';
 
 
-async function getPurchaseData(id: string): Promise<{ purchase: Purchase; companyProfile: CompanyProfile | null, userData: any } | null> {
-  const userData = await getUserByPurchaseId(id);
-  if (!userData) {
-    return null;
-  }
+async function getPurchaseData(id: string): Promise<{ purchase: Purchase; companyProfile: CompanyProfile | null, userData: User | null } | null> {
+    const q = query(collectionGroup(db, 'purchases'), where('id', '==', id), limit(1));
+    const purchaseSnapshot = await getDocs(q);
 
-  const purchase = userData.purchases?.find(p => p.id === id);
-  if (!purchase) {
-    return null;
-  }
-  
-  return { purchase, companyProfile: userData.companyProfile || null, userData };
+    if (purchaseSnapshot.empty) {
+        console.warn(`No purchase found with ID: ${id}`);
+        return null;
+    }
+
+    const purchaseDoc = purchaseSnapshot.docs[0];
+    const purchaseData = purchaseDoc.data() as Purchase;
+    const enterpriseDocRef = purchaseDoc.ref.parent.parent;
+    if (!enterpriseDocRef) {
+         console.error(`Could not find parent enterprise for purchase ID: ${id}`);
+         return null;
+    }
+
+    const enterpriseDocSnap = await getDoc(enterpriseDocRef);
+    if (!enterpriseDocSnap.exists()) {
+      console.error(`Enterprise document not found for purchase ID: ${id}`);
+      return null;
+    }
+
+    const enterpriseData = enterpriseDocSnap.data() as Enterprise;
+    const companyProfile = enterpriseData.companyProfile || null;
+    const ownerId = enterpriseData.ownerId;
+    
+    const userDocSnap = await getDoc(doc(db, 'users', ownerId));
+    const userData = userDocSnap.exists() ? userDocSnap.data().profile as User : null;
+
+    return { purchase: purchaseData, companyProfile, userData };
 }
 
-function PublicPurchaseOrderView({ purchase, userData }: { purchase: Purchase, userData: any }) {
+function PublicPurchaseOrderView({ purchase, companyProfile, userData }: { purchase: Purchase, companyProfile: CompanyProfile | null, userData: User | null }) {
     return (
-        <UserDataProvider initialData={userData}>
+        <UserDataProvider initialData={{profile: userData, preferences: { language: 'fr', currency: 'XOF'}, settings: {}, transactions: [], budgets: [], savingsGoals: [] }}>
             <LocaleProvider>
                 <div className="min-h-screen bg-muted/40 p-4 sm:p-8">
-                    <PurchaseOrderTemplate purchase={purchase} />
+                    <PurchaseOrderTemplate purchase={purchase} companyProfile={companyProfile} />
                 </div>
             </LocaleProvider>
         </UserDataProvider>
@@ -37,7 +60,7 @@ function PublicPurchaseOrderView({ purchase, userData }: { purchase: Purchase, u
 }
 
 export default function PublicPurchaseOrderPage({ params }: { params: { id: string } }) {
-  const [data, setData] = useState<{ purchase: Purchase; userData: any } | null>(null);
+  const [data, setData] = useState<{ purchase: Purchase; companyProfile: CompanyProfile | null; userData: User | null } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +69,7 @@ export default function PublicPurchaseOrderPage({ params }: { params: { id: stri
       try {
         const result = await getPurchaseData(params.id);
         if (result) {
-          setData({ purchase: result.purchase, userData: result.userData });
+          setData(result);
         } else {
           setError("Bon de commande non trouvé");
         }
@@ -80,5 +103,5 @@ export default function PublicPurchaseOrderPage({ params }: { params: { id: stri
     );
   }
   
-  return <PublicPurchaseOrderView purchase={data.purchase} userData={data.userData} />;
+  return <PublicPurchaseOrderView purchase={data.purchase} companyProfile={data.companyProfile} userData={data.userData} />;
 }

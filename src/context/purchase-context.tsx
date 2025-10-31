@@ -1,15 +1,15 @@
 // src/context/purchase-context.tsx
 "use client";
 
-import React, { createContext, useContext, ReactNode, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, ReactNode, useCallback, useMemo, useState, useEffect } from 'react';
 import type { Purchase } from '@/types/purchase';
-import { useUserData } from './user-context';
 import { v4 as uuidv4 } from "uuid";
 import { db } from '@/lib/firebase';
-import { doc, runTransaction } from 'firebase/firestore';
+import { doc, runTransaction, onSnapshot, arrayUnion } from 'firebase/firestore';
 import { useAuth } from './auth-context';
-import type { UserData } from './user-context';
 import type { ActivityLog } from '@/types/activity-log';
+import type { Enterprise } from '@/types/enterprise';
+import { useEnterprise } from './enterprise-context';
 
 interface PurchasesContextType {
   purchases: Purchase[];
@@ -21,40 +21,54 @@ interface PurchasesContextType {
 const PurchasesContext = createContext<PurchasesContextType | undefined>(undefined);
 
 export const PurchasesProvider = ({ children }: { children: ReactNode }) => {
-  const { userData, isLoading: isUserDataLoading } = useUserData();
   const { user } = useAuth();
-  
-  const purchases = useMemo(() => {
-     if (!userData || !userData.purchases) return [];
-     return userData.purchases.sort((a: Purchase, b: Purchase) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [userData]);
+  const { enterprises, isLoading: isLoadingEnterprises } = useEnterprise();
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // For now, we assume the user has only one enterprise.
+  const activeEnterprise = useMemo(() => enterprises.length > 0 ? enterprises[0] : null, [enterprises]);
+
+  useEffect(() => {
+    if (!activeEnterprise) {
+        setIsLoading(false);
+        setPurchases([]);
+        return;
+    }
+
+    const enterpriseDocRef = doc(db, 'enterprises', activeEnterprise.id);
+    const unsubscribe = onSnapshot(enterpriseDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const enterpriseData = docSnap.data() as Enterprise;
+            const sortedPurchases = (enterpriseData.purchases || []).sort((a: Purchase, b: Purchase) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            setPurchases(sortedPurchases);
+        }
+        setIsLoading(false);
+    }, (error) => {
+        console.error("Failed to listen to enterprise purchases:", error);
+        setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [activeEnterprise]);
   
   const getPurchaseById = useCallback((id: string) => {
     return purchases.find(p => p.id === id);
   }, [purchases]);
 
-  const getUserDocRef = useCallback(() => {
-    if (!user) return null;
-    return doc(db, 'users', user.uid);
-  }, [user]);
-
   const addPurchase = useCallback(async (purchaseData: Omit<Purchase, 'id' | 'date' | 'invoiceNumber' | 'userId'>): Promise<Purchase> => {
-    const userDocRef = getUserDocRef();
-    if (!userDocRef || !user) throw new Error("Utilisateur non authentifié");
+    if (!user || !activeEnterprise) throw new Error("Utilisateur ou entreprise non authentifié");
 
     const newPurchaseId = uuidv4();
     let newPurchase: Purchase | null = null;
+    const enterpriseDocRef = doc(db, 'enterprises', activeEnterprise.id);
     
     try {
         await runTransaction(db, async (transaction) => {
-            const userDoc = await transaction.get(userDocRef);
-            if (!userDoc.exists()) {
-                throw "Document does not exist!";
-            }
+            const enterpriseDoc = await transaction.get(enterpriseDocRef);
+            if (!enterpriseDoc.exists()) throw "Le document de l'entreprise n'existe pas !";
             
-            const currentData = userDoc.data() as UserData;
-
-            // Generate invoice number
+            const currentData = enterpriseDoc.data() as Enterprise;
             const currentCounter = currentData.purchaseInvoiceCounter || 0;
             const newCount = currentCounter + 1;
             const invoiceNumber = `PURCH-${String(newCount).padStart(4, '0')}`;
@@ -67,21 +81,19 @@ export const PurchasesProvider = ({ children }: { children: ReactNode }) => {
                 ...purchaseData,
             };
 
-            const currentPurchases = currentData.purchases || [];
-            const updatedPurchases = [...currentPurchases, newPurchase];
+            const updatedPurchases = [...(currentData.purchases || []), newPurchase];
             
-            // Update product stock and purchase price
             const currentProducts = currentData.products || [];
             const updatedProducts = [...currentProducts];
 
             for (const item of newPurchase.items) {
                 const productIndex = updatedProducts.findIndex(p => p.id === item.productId);
                 if (productIndex !== -1) {
-                    const newQuantity = updatedProducts[productIndex].quantity + item.quantity;
-                    // Update both current quantity and initial quantity as a new reference point
-                    updatedProducts[productIndex].quantity = newQuantity;
-                    updatedProducts[productIndex].initialQuantity = newQuantity; 
-                    updatedProducts[productIndex].purchasePrice = item.price;
+                    const product = updatedProducts[productIndex];
+                    const newQuantity = product.quantity + item.quantity;
+                    product.quantity = newQuantity;
+                    product.initialQuantity = newQuantity > product.initialQuantity ? newQuantity : product.initialQuantity;
+                    product.purchasePrice = item.price;
                 }
             }
             
@@ -93,13 +105,12 @@ export const PurchasesProvider = ({ children }: { children: ReactNode }) => {
               userName: user?.displayName || 'Unknown',
               userId: user?.uid || 'Unknown',
             };
-            const currentActivities = currentData.enterpriseActivities || [];
 
-            transaction.update(userDocRef, { 
+            transaction.update(enterpriseDocRef, { 
                 purchases: updatedPurchases,
                 products: updatedProducts,
                 purchaseInvoiceCounter: newCount,
-                enterpriseActivities: [newLog, ...currentActivities],
+                enterpriseActivities: arrayUnion(newLog)
             });
         });
         if (newPurchase) {
@@ -111,11 +122,11 @@ export const PurchasesProvider = ({ children }: { children: ReactNode }) => {
       console.error("Failed to add purchase and update stock", e);
       throw e;
     }
-  }, [getUserDocRef, user]);
+  }, [user, activeEnterprise]);
 
 
   return (
-    <PurchasesContext.Provider value={{ purchases, addPurchase, getPurchaseById, isLoading: isUserDataLoading }}>
+    <PurchasesContext.Provider value={{ purchases, addPurchase, getPurchaseById, isLoading: isLoading || isLoadingEnterprises }}>
       {children}
     </PurchasesContext.Provider>
   );
