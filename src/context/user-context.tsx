@@ -144,8 +144,7 @@ interface UserDataContextType {
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
 
 export const UserDataProvider = ({ children, initialData }: { children: ReactNode, initialData?: UserData | null }) => {
-  const { fullUserData: authFullUserData, isLoading: authIsLoading } = useAuth();
-  const { user } = useAuth();
+  const { fullUserData: authFullUserData, isLoading: authIsLoading, user } = useAuth();
   const { toast } = useToast();
 
   const userData = initialData || authFullUserData;
@@ -186,7 +185,7 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
 
   const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => {
     const userDocRef = getUserDocRef();
-    if (!userDocRef) throw new Error("User not available");
+    if (!userDocRef) throw new Error("User or enterprise not available");
 
     const now = new Date().toISOString();
     const newProduct: Product = { 
@@ -202,7 +201,7 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
   
   const updateProduct = useCallback(async (id: string, updatedProductData: Partial<Omit<Product, 'id' | 'initialQuantity'>>) => {
      const userDocRef = getUserDocRef();
-    if (!userDocRef) throw new Error("User not available");
+    if (!userDocRef) throw new Error("User or enterprise not available");
     
     const currentProducts = userData?.products || [];
     const productIndex = currentProducts.findIndex(p => p.id === id);
@@ -234,7 +233,7 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
     if (!userDocRef) return null;
 
     const newCategory = { id: uuidv4(), name };
-    if ((userData?.productCategories || []).some(c => c.name.toLowerCase() === name.toLowerCase())) {
+    if ((userData?.productCategories || []).some(c => c && c.name && c.name.toLowerCase() === name.toLowerCase())) {
         toast({ variant: "destructive", title: "Catégorie existante" });
         return null;
     }
@@ -377,13 +376,6 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
     userData,
     isLoading,
     updateUserData,
-    // Enterprise data and functions
-    products: userData?.products,
-    productCategories: userData?.productCategories,
-    sales: userData?.sales,
-    purchases: userData?.purchases,
-    companyProfile: userData?.companyProfile,
-    enterpriseActivities: userData?.enterpriseActivities,
     addProduct,
     updateProduct,
     deleteProduct,
