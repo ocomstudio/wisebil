@@ -45,20 +45,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   if (pathname.startsWith('/dashboard/scan-receipt')) {
     return <div className="h-screen w-screen">{children}</div>;
   }
-  
-  const EnterpriseRelatedProviders = ({children}: {children: React.ReactNode}) => (
-     <CompanyProfileProvider>
-        <ProductProvider>
-          <SalesProvider>
-            <PurchasesProvider>
-              {children}
-            </PurchasesProvider>
-          </SalesProvider>
-        </ProductProvider>
-      </CompanyProfileProvider>
-  )
-
-  const isEnterprisePage = pathname.startsWith('/dashboard/entreprise');
 
   return (
     <div className={cn("grid h-screen w-full overflow-hidden", showTeamChatPanel ? "md:grid-cols-[250px_1fr_350px]" : "md:grid-cols-[250px_1fr_350px]")}>
@@ -98,11 +84,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         {/* Main Content */}
         <main className="flex-1 p-4 md:p-8 bg-background md:bg-muted/40 overflow-y-auto pb-20 md:pb-8">
           <div className="max-w-6xl mx-auto h-full">
-            {isEnterprisePage ? (
-              <EnterpriseRelatedProviders>{children}</EnterpriseRelatedProviders>
-            ) : (
-              children
-            )}
+            {children}
           </div>
         </main>
       </div>
@@ -134,11 +116,19 @@ export default function DashboardLayout({
                     <SavingsProvider>
                       <NotificationsProvider>
                         <EnterpriseProvider>
-                            <TutorialProvider>
-                                <TeamChatProvider>
-                                  <DashboardLayoutContent>{children}</DashboardLayoutContent>
-                                </TeamChatProvider>
-                            </TutorialProvider>
+                          <CompanyProfileProvider>
+                            <ProductProvider>
+                              <SalesProvider>
+                                <PurchasesProvider>
+                                  <TutorialProvider>
+                                      <TeamChatProvider>
+                                        <DashboardLayoutContent>{children}</DashboardLayoutContent>
+                                      </TeamChatProvider>
+                                  </TutorialProvider>
+                                </PurchasesProvider>
+                              </SalesProvider>
+                            </ProductProvider>
+                          </CompanyProfileProvider>
                         </EnterpriseProvider>
                       </NotificationsProvider>
                       <HotToaster
