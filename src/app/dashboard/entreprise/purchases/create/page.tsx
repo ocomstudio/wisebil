@@ -124,6 +124,12 @@ export default function CreatePurchasePage() {
                     <CardTitle>{t('products_purchased_title')}</CardTitle>
                 </CardHeader>
                 <CardContent>
+                    <div className="hidden md:grid grid-cols-[1fr_120px_120px_auto] gap-2 items-end mb-2 text-sm font-medium text-muted-foreground">
+                        <div>{t('product_header')}</div>
+                        <div className="text-center">{t('quantity_header')}</div>
+                        <div className="text-center">{t('product_purchase_price_label')} ({currency})</div>
+                        <div></div>
+                    </div>
                     <div className="space-y-4">
                         {fields.map((field, index) => (
                            <div key={field.id} className="grid grid-cols-1 md:grid-cols-[1fr_120px_120px_auto] gap-2 items-start">
