@@ -266,14 +266,14 @@ export function ConseilPanel() {
   useEffect(() => {
     if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
-        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        textareaRef.current.style.height = `${'${textareaRef.current.scrollHeight}'}px`;
     }
   }, [promptValue]);
   
   useEffect(() => {
     if (transcriptTextareaRef.current) {
         transcriptTextareaRef.current.style.height = 'auto';
-        transcriptTextareaRef.current.style.height = `${transcriptTextareaRef.current.scrollHeight}px`;
+        transcriptTextareaRef.current.style.height = `${'${transcriptTextareaRef.current.scrollHeight}'}px`;
     }
   }, [transcriptForVerification]);
 
@@ -296,7 +296,7 @@ export function ConseilPanel() {
                 });
                 // console.log('Wake Lock is active');
             } catch (err: any) {
-                console.error(`${err.name}, ${err.message}`);
+                console.error(`${'${err.name}'}, ${'${err.message}'}`);
             }
         }
     }, []);
@@ -395,15 +395,7 @@ export function ConseilPanel() {
     
     if (response.transactions?.length) {
         response.transactions.forEach((t: any) => {
-            const newTransaction = {
-                id: uuidv4(),
-                type: t.amount < 0 ? 'expense' : 'income',
-                amount: Math.abs(t.amount),
-                description: t.description,
-                category: t.category,
-                date: t.date
-            };
-            addTransaction(newTransaction);
+            addTransaction({ ...t, id: uuidv4() });
             itemsAdded++;
         });
     }
@@ -450,6 +442,7 @@ export function ConseilPanel() {
             language: locale,
         };
         const result = await runAgentW(agentWInput);
+        
         processAgentWResponse(result);
 
     } catch (error) {
@@ -543,8 +536,8 @@ export function ConseilPanel() {
           key={i} 
           className="w-1 bg-primary/80 rounded-full"
           style={{ 
-            height: `${Math.random() * 80 + 20}%`,
-            animation: `wave 1.2s ease-in-out ${i * 0.1}s infinite alternate`
+            height: `${'${Math.random() * 80 + 20}'}%`,
+            animation: `wave 1.2s ease-in-out ${'${i * 0.1}'}s infinite alternate`
           }}
         ></div>
       ))}
@@ -608,29 +601,29 @@ const AgentWReviewCard = ({ message }: { message: Message }) => {
         <div className="p-4 rounded-lg bg-accent/50 border border-primary/20 space-y-4">
             <p className="text-sm font-medium">{message.isProcessed ? t('agent_w_actions_cancelled') : message.content}</p>
             <div className="space-y-2 text-xs">
-                {transactions.map((item, index) => (
-                    <div key={`tx-${index}`} className="flex items-center gap-2">
+                {transactions.map((item) => (
+                    <div key={item.id} className="flex items-center gap-2">
                        {item.amount >= 0 ? <TrendingUp className="h-4 w-4 text-green-500" /> : <TrendingDown className="h-4 w-4 text-red-500" />}
                        <span>{item.description}</span>
                        <span className="ml-auto font-semibold">{formatCurrency(Math.abs(item.amount))}</span>
                     </div>
                 ))}
-                {newBudgets.map((item, index) => (
-                    <div key={`bg-${index}`} className="flex items-center gap-2">
+                {newBudgets.map((item) => (
+                    <div key={item.id} className="flex items-center gap-2">
                        <Briefcase className="h-4 w-4 text-blue-500" />
                        <span>{t('budget')}: {item.name}</span>
                        <span className="ml-auto font-semibold">{formatCurrency(item.amount)}</span>
                     </div>
                 ))}
-                 {newSavingsGoals.map((item, index) => (
-                    <div key={`sg-${index}`} className="flex items-center gap-2">
+                 {newSavingsGoals.map((item) => (
+                    <div key={item.id} className="flex items-center gap-2">
                        <PiggyBank className="h-4 w-4 text-pink-500" />
                        <span>{t('goal')}: {item.name}</span>
                        <span className="ml-auto font-semibold">{formatCurrency(item.targetAmount)}</span>
                     </div>
                 ))}
                  {savingsContributions.map((item, index) => (
-                    <div key={`sc-${index}`} className="flex items-center gap-2">
+                    <div key={`sc-${'${index}'}`} className="flex items-center gap-2">
                        <PiggyBank className="h-4 w-4 text-pink-500" />
                        <span>{t('contribution')}: {item.goalName}</span>
                        <span className="ml-auto font-semibold">{formatCurrency(item.amount)}</span>
