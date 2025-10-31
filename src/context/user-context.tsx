@@ -190,10 +190,18 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
     const now = new Date().toISOString();
     const newProduct: Product = { 
         id: uuidv4(), 
+        name: productData.name,
+        description: productData.description || '',
+        purchasePrice: productData.purchasePrice,
+        price: productData.price,
+        promoPrice: productData.promoPrice || null,
+        initialQuantity: productData.quantity,
+        quantity: productData.quantity,
+        categoryId: productData.categoryId || null,
+        purchaseDate: productData.purchaseDate,
+        storageLocation: productData.storageLocation || '',
         createdAt: now,
         updatedAt: now,
-        initialQuantity: productData.quantity,
-        ...productData,
     };
     await updateDoc(userDocRef, { products: arrayUnion(newProduct) });
     await logActivity('product_created', `Produit "${newProduct.name}" créé.`);
@@ -207,7 +215,22 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
     const productIndex = currentProducts.findIndex(p => p.id === id);
     if (productIndex === -1) throw new Error("Product not found");
 
-    const updatedProduct = { ...currentProducts[productIndex], ...updatedProductData, updatedAt: new Date().toISOString() };
+    const existingProduct = currentProducts[productIndex];
+    
+    const updatedProduct = { 
+      ...existingProduct,
+      name: updatedProductData.name || existingProduct.name,
+      description: updatedProductData.description || existingProduct.description,
+      purchasePrice: updatedProductData.purchasePrice ?? existingProduct.purchasePrice,
+      price: updatedProductData.price ?? existingProduct.price,
+      promoPrice: updatedProductData.promoPrice ?? existingProduct.promoPrice,
+      quantity: updatedProductData.quantity ?? existingProduct.quantity,
+      categoryId: updatedProductData.categoryId ?? existingProduct.categoryId,
+      purchaseDate: updatedProductData.purchaseDate || existingProduct.purchaseDate,
+      storageLocation: updatedProductData.storageLocation || existingProduct.storageLocation,
+      updatedAt: new Date().toISOString() 
+    };
+
     const newProducts = [...currentProducts];
     newProducts[productIndex] = updatedProduct;
 

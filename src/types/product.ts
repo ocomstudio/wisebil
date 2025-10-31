@@ -7,15 +7,15 @@ export interface ProductCategory {
 export interface Product {
   id: string;
   name: string;
-  description?: string;
+  description: string;
   purchasePrice: number; // Cost of buying the product
   price: number; // Selling price
-  promoPrice?: number;
+  promoPrice: number | null;
   initialQuantity: number;
   quantity: number;
-  categoryId?: string;
+  categoryId: string | null;
   purchaseDate: string; // ISO date string
-  storageLocation?: string;
+  storageLocation: string;
   createdAt: string;
   updatedAt: string;
 }
