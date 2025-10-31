@@ -27,7 +27,7 @@ import { fr, enUS, de, es, vi } from 'date-fns/locale';
 export default function CreateProductPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { addProduct, isLoading, productCategories, addProductCategory } = useUserData();
+  const { addProduct, isLoading, productCategories = [], addProductCategory } = useUserData();
   const { t, currency, locale } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNewCategory, setShowNewCategory] = useState(false);
@@ -194,7 +194,7 @@ export default function CreateProductPage() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {productCategories && productCategories.map(cat => <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>)}
+                                  {productCategories.map(cat => <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>)}
                                   <SelectItem value="CREATE_NEW" className="font-bold text-primary">{t('create_new_category_button')}</SelectItem>
                                 </SelectContent>
                               </Select>

@@ -30,7 +30,7 @@ export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
-  const { getProductById, updateProduct, isLoading, productCategories, addProductCategory } = useUserData();
+  const { getProductById, updateProduct, isLoading, productCategories = [], addProductCategory } = useUserData();
   const { t, currency, locale } = useLocale();
   
   const [product, setProduct] = useState<Product | null>(null);
@@ -233,7 +233,7 @@ export default function EditProductPage() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {productCategories && productCategories.map(cat => <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>)}
+                                  {productCategories.map(cat => <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>)}
                                   <SelectItem value="CREATE_NEW" className="font-bold text-primary">{t('create_new_category_button')}</SelectItem>
                                 </SelectContent>
                               </Select>

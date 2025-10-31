@@ -44,7 +44,6 @@ import { useNotifications } from "@/context/notifications-context";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from '@/components/ui/label';
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useProducts } from "@/context/product-context";
 import { useUserData } from "@/context/user-context";
 
 export default function SettingsPage() {
@@ -66,7 +65,6 @@ export default function SettingsPage() {
   const { resetTransactions } = useTransactions();
   const { resetBudgets } = useBudgets();
   const { resetSavings } = useSavings();
-  const { resetProducts } = useProducts();
   const router = useRouter();
 
 
