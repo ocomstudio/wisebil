@@ -21,7 +21,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 export default function CreatePurchasePage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { products, addPurchase, isLoading } = useUserData();
+  const { userData, addPurchase, isLoading } = useUserData();
+  const products = userData?.products || [];
   const { t, formatCurrency, currency } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -52,10 +53,10 @@ export default function CreatePurchasePage() {
   });
 
   const handleProductChange = (index: number, productId: string) => {
-    const product = products?.find(p => p.id === productId);
+    const product = products.find(p => p.id === productId);
     if (product) {
       // Pre-fill with the default purchase price, but allow override
-      form.setValue(`items.${index}.price`, product.purchasePrice);
+      form.setValue(`items.${index}.price`, product.purchasePrice || 0);
     }
   };
   
@@ -136,7 +137,7 @@ export default function CreatePurchasePage() {
                                         </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {isLoading ? <p>{t('loading_tip')}</p> : products?.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                            {isLoading ? <p>{t('loading_tip')}</p> : products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />

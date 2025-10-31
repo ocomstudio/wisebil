@@ -136,30 +136,36 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
 
  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => {
     const userDocRef = getUserDocRef();
-    if (!userDocRef) throw new Error("User not available");
-
+    if (!userDocRef) throw new Error("User or enterprise not available");
+    
     const now = new Date().toISOString();
     const newProduct: Product = {
       id: uuidv4(),
       name: productData.name,
-      description: productData.description ?? '',
-      purchasePrice: productData.purchasePrice ?? 0,
+      description: productData.description || '',
+      purchasePrice: productData.purchasePrice || 0,
       price: productData.price,
-      promoPrice: productData.promoPrice ?? null,
-      initialQuantity: productData.initialQuantity,
+      promoPrice: productData.promoPrice || null,
+      initialQuantity: productData.quantity,
       quantity: productData.quantity,
-      categoryId: productData.categoryId ?? null,
+      categoryId: productData.categoryId || null,
       purchaseDate: productData.purchaseDate,
-      storageLocation: productData.storageLocation ?? '',
+      storageLocation: productData.storageLocation || '',
       createdAt: now,
       updatedAt: now,
     };
-    await updateDoc(userDocRef, { products: arrayUnion(newProduct) });
-    await logActivity('product_created', `Produit "${newProduct.name}" créé.`);
+
+    try {
+        await updateDoc(userDocRef, { products: arrayUnion(newProduct) });
+        await logActivity('product_created', `Produit "${newProduct.name}" créé.`);
+    } catch (e) {
+        console.error("Error in addProduct:", e);
+        throw e;
+    }
 }, [getUserDocRef, logActivity]);
   
   const updateProduct = useCallback(async (id: string, updatedProductData: Partial<Omit<Product, 'id'>>) => {
-     const userDocRef = getUserDocRef();
+    const userDocRef = getUserDocRef();
     if (!userDocRef) throw new Error("User not available");
     
     const currentProducts = userData?.products || [];
@@ -208,13 +214,14 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
     if (!userDocRef) return null;
 
     const newCategory = { id: uuidv4(), name };
-    if ((userData?.productCategories || []).some(c => c && c.name && c.name.toLowerCase() === name.toLowerCase())) {
+    const existingCategories = userData?.productCategories || [];
+    if (existingCategories.some(c => c && c.name && c.name.toLowerCase() === name.toLowerCase())) {
         toast({ variant: "destructive", title: "Catégorie existante" });
         return null;
     }
     await updateDoc(userDocRef, { productCategories: arrayUnion(newCategory) });
     return newCategory;
-  }, [getUserDocRef, userData, toast]);
+}, [getUserDocRef, userData, toast]);
   
   const getCategoryById = useCallback((id: string) => (userData?.productCategories || []).find(c => c.id === id), [userData?.productCategories]);
 
