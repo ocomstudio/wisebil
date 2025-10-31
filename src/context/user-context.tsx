@@ -18,8 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 import type { Purchase } from '@/types/purchase';
 import type { ActivityLog } from '@/types/activity-log';
 import { useToast } from '@/hooks/use-toast';
-import { storage } from '@/lib/firebase-storage';
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 
 export interface UserData {
   profile: User;
@@ -77,7 +76,6 @@ interface UserDataContextType {
   getPurchaseById: (id: string) => Purchase | undefined;
 
   updateCompanyProfile: (newProfile: Partial<CompanyProfile>) => Promise<void>;
-  uploadImage: (file: File, path: string) => Promise<string>;
   logActivity: (type: ActivityLog['type'], description: string) => Promise<void>;
 }
 
@@ -147,13 +145,6 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
     await updateDoc(userDocRef, { enterpriseActivities: arrayUnion(newLog) });
   }, [user, getUserDocRef]);
   
-  const uploadImage = useCallback(async (file: File, path: string) => {
-    if (!user) throw new Error("User not authenticated.");
-    const storageRef = ref(storage, `users/${user.uid}/${path}`);
-    const snapshot = await uploadBytes(storageRef, file);
-    return getDownloadURL(snapshot.ref);
-  }, [user]);
-
   const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) throw new Error("User not available");
@@ -365,13 +356,12 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
     addPurchase,
     getPurchaseById,
     updateCompanyProfile,
-    uploadImage,
     logActivity,
   }), [
     userData, isLoading, updateUserData, 
     products, productCategories, sortedSales, sortedPurchases, companyProfile, enterpriseActivities,
     addProduct, updateProduct, deleteProduct, getProductById, addProductCategory, getCategoryById,
-    addSale, getSaleById, addPurchase, getPurchaseById, updateCompanyProfile, uploadImage, logActivity
+    addSale, getSaleById, addPurchase, getPurchaseById, updateCompanyProfile, logActivity
   ]);
 
   return (
