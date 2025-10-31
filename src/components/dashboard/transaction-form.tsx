@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
-import { fr, enUS } from "date-fns/locale";
+import { fr, enUS, de, es, vi } from "date-fns/locale";
 import { useLocale } from "@/context/locale-context";
 
 import { Button } from "@/components/ui/button";
@@ -121,7 +121,9 @@ export function TransactionForm({
     })
   }
 
-  const dateLocale = locale === 'fr' ? fr : enUS;
+  const dateLocales = { fr, en: enUS, de, es, vi };
+  const dateLocale = dateLocales[locale] || enUS;
+
 
   return (
     <Card className="shadow-xl">
@@ -227,7 +229,7 @@ export function TransactionForm({
                           )}
                         >
                           {field.value ? (
-                            format(field.value, "PPP", { locale: dateLocale })
+                            format(new Date(field.value), "PPP", { locale: dateLocale })
                           ) : (
                             <span>{t('pick_a_date')}</span>
                           )}

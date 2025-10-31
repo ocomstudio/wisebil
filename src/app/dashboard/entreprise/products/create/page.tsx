@@ -155,7 +155,7 @@ export default function CreateProductPage() {
                                    )}
                                  >
                                    {field.value ? (
-                                     format(field.value, "PPP", { locale: dateLocale })
+                                     format(new Date(field.value), "PPP", { locale: dateLocale })
                                    ) : (
                                      <span>{t('pick_a_date')}</span>
                                    )}

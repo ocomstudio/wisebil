@@ -29,7 +29,7 @@ export default function EditTransactionPage() {
       if (transaction) {
         setInitialData({
           ...transaction,
-          date: new Date(transaction.date) as any, // Convert string to Date object
+          date: new Date(transaction.date), // Ensure it's a Date object
         });
       } else {
         toast({
