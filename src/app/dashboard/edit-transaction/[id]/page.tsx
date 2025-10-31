@@ -24,11 +24,13 @@ export default function EditTransactionPage() {
   const id = params.id as string;
 
   useEffect(() => {
-    // We wait until the transactions are loaded from the context.
     if (!isLoading && id) {
       const transaction = getTransactionById(id);
       if (transaction) {
-        setInitialData(transaction);
+        setInitialData({
+          ...transaction,
+          date: new Date(transaction.date) as any, // Convert string to Date object
+        });
       } else {
         toast({
           variant: "destructive",
