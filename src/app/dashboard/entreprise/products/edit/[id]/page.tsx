@@ -70,7 +70,7 @@ export default function EditProductPage() {
             form.reset({
                 name: foundProduct.name,
                 description: foundProduct.description || "",
-                purchasePrice: foundProduct.purchasePrice,
+                purchasePrice: foundProduct.purchasePrice || 0,
                 price: foundProduct.price,
                 promoPrice: foundProduct.promoPrice || undefined,
                 quantity: foundProduct.quantity,
@@ -111,7 +111,10 @@ export default function EditProductPage() {
     if (!product) return;
     setIsSubmitting(true);
     try {
-      await updateProduct(product.id, data);
+      await updateProduct(product.id, {
+          ...data,
+          purchaseDate: data.purchaseDate.toISOString(),
+      });
 
       toast({
         title: t('product_updated_title'),
@@ -217,7 +220,7 @@ export default function EditProductPage() {
                          </FormItem>
                         )} />
                         <FormField control={form.control} name="storageLocation" render={({ field }) => (
-                            <FormItem><FormLabel>{t('product_storage_location_label')}</FormLabel><FormControl><Input placeholder={t('product_storage_location_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>{t('product_storage_location_label')}</FormLabel><FormControl><Input placeholder={t('product_storage_location_placeholder')} {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                         )} />
                      </div>
                     <div className="grid md:grid-cols-2 gap-6">
@@ -253,7 +256,7 @@ export default function EditProductPage() {
                           </div>
                         )}
                         <FormField control={form.control} name="purchasePrice" render={({ field }) => (
-                            <FormItem><FormLabel>{t('product_purchase_price_label')} ({currency})</FormLabel><FormControl><Input type="number" placeholder="3500" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>{t('product_purchase_price_label')} ({currency})</FormLabel><FormControl><Input type="number" placeholder="3500" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="price" render={({ field }) => (
                             <FormItem><FormLabel>{t('product_price_label')} ({currency})</FormLabel><FormControl><Input type="number" placeholder="5000" {...field} /></FormControl><FormMessage /></FormItem>
