@@ -229,7 +229,7 @@ export function TransactionForm({
                           )}
                         >
                           {field.value ? (
-                            format(new Date(field.value), "PPP", { locale: dateLocale })
+                            format(field.value, "PPP", { locale: dateLocale })
                           ) : (
                             <span>{t('pick_a_date')}</span>
                           )}
