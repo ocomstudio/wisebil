@@ -194,8 +194,8 @@ export default function EditProductPage() {
                                      !field.value && "text-muted-foreground"
                                    )}
                                  >
-                                   {field.value ? (
-                                     format(new Date(field.value || new Date()), "PPP", { locale: dateLocale })
+                                   {field.value && field.value instanceof Date && !isNaN(field.value.getTime()) ? (
+                                     format(field.value, "PPP", { locale: dateLocale })
                                    ) : (
                                      <span>{t('pick_a_date')}</span>
                                    )}
