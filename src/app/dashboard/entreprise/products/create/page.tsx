@@ -1,7 +1,7 @@
 // src/app/dashboard/entreprise/products/create/page.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -15,7 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Loader2, CalendarIcon, Shield } from 'lucide-react';
+import { ArrowLeft, Loader2, Upload, CalendarIcon } from 'lucide-react';
 import { useProducts } from '@/context/product-context';
 import { useLocale } from '@/context/locale-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -27,9 +27,11 @@ import { fr, enUS, de, es, vi } from 'date-fns/locale';
 export default function CreateProductPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { addProduct, isLoading, productCategories, addProductCategory } = useProducts();
+  const { addProduct, isLoading, uploadImage, productCategories, addProductCategory } = useProducts();
   const { t, currency, locale } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
 
@@ -40,6 +42,7 @@ export default function CreateProductPage() {
     price: z.coerce.number().min(0, t('product_price_negative_error')),
     promoPrice: z.coerce.number().min(0, t('product_price_negative_error')).optional(),
     quantity: z.coerce.number().int().min(0, t('product_quantity_negative_error')),
+    imageUrl: z.string().optional(),
     categoryId: z.string().optional(),
     purchaseDate: z.date({
       required_error: t('product_purchase_date_required_error'),
@@ -58,11 +61,24 @@ export default function CreateProductPage() {
       price: 0,
       promoPrice: undefined,
       quantity: 0,
+      imageUrl: "",
       categoryId: "",
       purchaseDate: new Date(),
       storageLocation: "",
     },
   });
+  
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleCategoryChange = (value: string) => {
     if (value === 'CREATE_NEW') {
@@ -88,7 +104,13 @@ export default function CreateProductPage() {
   const onSubmit = async (data: ProductFormValues) => {
     setIsSubmitting(true);
     try {
-      const productData = { ...data, purchaseDate: data.purchaseDate.toISOString() };
+      let imageUrl = '';
+      if (imageFile) {
+        imageUrl = await uploadImage(imageFile, `product_images/${Date.now()}-${imageFile.name}`);
+      }
+
+      const productData = { ...data, imageUrl, purchaseDate: data.purchaseDate.toISOString() };
+
       await addProduct(productData);
 
       toast({
@@ -224,6 +246,23 @@ export default function CreateProductPage() {
                      <FormField control={form.control} name="quantity" render={({ field }) => (
                         <FormItem><FormLabel>{t('product_quantity_label')}</FormLabel><FormControl><Input type="number" placeholder="100" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
+                     <FormItem>
+                        <FormLabel>{t('product_image_label')}</FormLabel>
+                         <FormControl>
+                            <label className="cursor-pointer border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/50 h-48 w-full">
+                                {imagePreview ? (
+                                    <img src={imagePreview} alt={t('product_image_preview_alt')} className="max-h-full w-auto object-contain rounded-md" />
+                                ) : (
+                                    <>
+                                        <Upload className="h-8 w-8 mb-2" />
+                                        <span>{t('product_image_upload_cta')}</span>
+                                    </>
+                                )}
+                                <Input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                            </label>
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
                 </CardContent>
             </Card>
 

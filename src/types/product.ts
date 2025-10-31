@@ -13,6 +13,7 @@ export interface Product {
   promoPrice?: number;
   initialQuantity: number;
   quantity: number;
+  imageUrl?: string;
   categoryId?: string;
   purchaseDate: string; // ISO date string
   storageLocation?: string;
