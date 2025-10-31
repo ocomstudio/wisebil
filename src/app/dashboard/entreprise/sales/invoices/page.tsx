@@ -18,7 +18,8 @@ import { useUserData } from "@/context/user-context";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SaleInvoicesPage() {
-  const { sales = [], isLoading } = useUserData();
+  const { userData, isLoading } = useUserData();
+  const sales = userData?.sales || [];
   const { t, formatCurrency, formatDate } = useLocale();
 
   return (

@@ -24,7 +24,8 @@ import axios from "axios";
 export default function CreateSalePage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { products, addSale, isLoading } = useUserData();
+  const { userData, addSale, isLoading } = useUserData();
+  const products = userData?.products || [];
   const { t, formatCurrency } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [detectedCountry, setDetectedCountry] = useState<Country>('SN');
@@ -174,12 +175,17 @@ export default function CreateSalePage() {
                     <CardTitle>{t('products_sold_title')}</CardTitle>
                 </CardHeader>
                 <CardContent>
+                    <div className="hidden md:grid grid-cols-[1fr_120px_auto] gap-4 items-end mb-2 text-sm font-medium text-muted-foreground">
+                        <div>{t('product_header')}</div>
+                        <div className="text-left">{t('quantity_header')}</div>
+                        <div></div>
+                    </div>
                     <div className="space-y-4">
                         {fields.map((field, index) => (
-                           <div key={field.id} className="grid grid-cols-1 md:grid-cols-[1fr_80px_auto] gap-2 items-start">
+                           <div key={field.id} className="grid grid-cols-1 md:grid-cols-[1fr_120px_auto] gap-2 md:gap-4 items-start">
                               <FormField control={form.control} name={`items.${index}.productId`} render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="md:hidden">Produit</FormLabel>
+                                    <FormLabel className="md:hidden">{t('product_header')}</FormLabel>
                                      <Select onValueChange={(value) => {field.onChange(value); handleProductChange(index, value)}} defaultValue={field.value}>
                                         <FormControl>
                                         <SelectTrigger>
@@ -202,10 +208,10 @@ export default function CreateSalePage() {
                               )} />
                               <FormField control={form.control} name={`items.${index}.quantity`} render={({ field }) => (
                                 <FormItem>
-                                <FormLabel className="md:hidden">Qté</FormLabel>
+                                <FormLabel className="md:hidden">{t('quantity_header')}</FormLabel>
                                 <FormControl><Input type="number" placeholder={t('quantity_item_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
                               )} />
-                              <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="self-end">
+                              <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="self-end md:self-center">
                                 <Trash2 className="h-4 w-4 text-destructive" />
                               </Button>
                            </div>
