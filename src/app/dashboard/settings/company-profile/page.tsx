@@ -20,14 +20,14 @@ import { Upload, ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useLocale } from "@/context/locale-context";
-import { useCompanyProfile } from "@/context/company-profile-context";
+import { useUserData } from "@/context/user-context";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import { DailyReportSettings } from "@/components/dashboard/settings/daily-report-settings";
 
 export default function CompanyProfilePage() {
-  const { companyProfile, updateCompanyProfile, isLoading: isProfileLoading } = useCompanyProfile();
+  const { userData, updateCompanyProfile, isLoading: isProfileLoading } = useUserData();
   const { t } = useLocale();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,22 +50,20 @@ export default function CompanyProfilePage() {
   });
 
   useEffect(() => {
-    if (companyProfile) {
+    if (userData?.companyProfile) {
       form.reset({
-        name: companyProfile.name || "",
-        address: companyProfile.address || "",
-        brandColor: companyProfile.brandColor || "#179C00",
+        name: userData.companyProfile.name || "",
+        address: userData.companyProfile.address || "",
+        brandColor: userData.companyProfile.brandColor || "#179C00",
       });
     }
-  }, [companyProfile, form]);
+  }, [userData?.companyProfile, form]);
   
 
   const onSubmit = async (data: CompanyProfileFormValues) => {
     setIsSubmitting(true);
     try {
-        await updateCompanyProfile({ 
-            ...data,
-        });
+        await updateCompanyProfile(data);
         
         toast({
             title: t('company_profile_updated_title'),

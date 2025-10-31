@@ -14,11 +14,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSales } from "@/context/sales-context";
+import { useUserData } from "@/context/user-context";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SaleInvoicesPage() {
-  const { sales, isLoading } = useSales();
+  const { sales = [], isLoading } = useUserData();
   const { t, formatCurrency, formatDate } = useLocale();
 
   return (

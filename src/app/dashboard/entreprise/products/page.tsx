@@ -14,13 +14,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useProducts } from "@/context/product-context";
+import { useUserData } from "@/context/user-context";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export default function ProductsPage() {
-  const { products, deleteProduct, isLoading, getCategoryById } = useProducts();
+  const { products = [], deleteProduct, isLoading, getCategoryById } = useUserData();
   const { t, formatCurrency, formatDate } = useLocale();
 
   return (

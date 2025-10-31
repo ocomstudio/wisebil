@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-import { usePurchases } from '@/context/purchase-context';
+import { useUserData } from '@/context/user-context';
 import { Purchase } from '@/types/purchase';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, Download, Share2 } from 'lucide-react';
@@ -19,7 +19,7 @@ import { PurchaseOrderTemplate } from '@/components/invoice/purchase-order-templ
 export default function ViewPurchaseInvoicePage() {
   const router = useRouter();
   const params = useParams();
-  const { getPurchaseById, isLoading } = usePurchases();
+  const { getPurchaseById, isLoading, companyProfile } = useUserData();
   const [purchase, setPurchase] = useState<Purchase | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const { toast } = useToast();
@@ -131,7 +131,7 @@ export default function ViewPurchaseInvoicePage() {
                 </Button>
             </div>
         </div>
-        <PurchaseOrderTemplate purchase={purchase} ref={invoiceRef} />
+        <PurchaseOrderTemplate purchase={purchase} companyProfile={companyProfile || null} ref={invoiceRef} />
     </div>
   );
 }

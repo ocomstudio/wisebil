@@ -13,11 +13,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { usePurchases } from "@/context/purchase-context";
+import { useUserData } from "@/context/user-context";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PurchaseInvoicesPage() {
-  const { purchases, isLoading } = usePurchases();
+  const { purchases = [], isLoading } = useUserData();
   const { t, formatCurrency, formatDate } = useLocale();
 
   return (

@@ -18,15 +18,12 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useLocale } from "@/context/locale-context";
-import { useCompanyProfile } from "@/context/company-profile-context";
+import { useUserData } from "@/context/user-context";
 import { useEffect, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Loader2, Download } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useSales } from "@/context/sales-context";
-import { usePurchases } from "@/context/purchase-context";
-import { useProducts } from "@/context/product-context";
 import { format } from "date-fns";
 
 const reportSettingsSchema = z.object({
@@ -38,10 +35,8 @@ const reportSettingsSchema = z.object({
 type ReportSettingsFormValues = z.infer<typeof reportSettingsSchema>;
 
 export function DailyReportSettings() {
-  const { companyProfile, updateCompanyProfile, isLoading: isProfileLoading } = useCompanyProfile();
-  const { sales } = useSales();
-  const { purchases } = usePurchases();
-  const { products } = useProducts();
+  const { userData, updateCompanyProfile, isLoading: isProfileLoading } = useUserData();
+  const { sales = [], purchases = [], products = [] } = userData || {};
   const { t, formatDate } = useLocale();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,14 +51,14 @@ export function DailyReportSettings() {
   });
 
   useEffect(() => {
-    if (companyProfile) {
+    if (userData?.companyProfile) {
       form.reset({
-        dailyReportEnabled: companyProfile.dailyReportEnabled || false,
-        dailyReportTime: companyProfile.dailyReportTime || "18:00",
-        dailyReportFormat: companyProfile.dailyReportFormat || "excel",
+        dailyReportEnabled: userData.companyProfile.dailyReportEnabled || false,
+        dailyReportTime: userData.companyProfile.dailyReportTime || "18:00",
+        dailyReportFormat: userData.companyProfile.dailyReportFormat || "excel",
       });
     }
-  }, [companyProfile, form]);
+  }, [userData?.companyProfile, form]);
   
   const onSubmit = async (data: ReportSettingsFormValues) => {
     setIsSubmitting(true);

@@ -14,16 +14,14 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Loader2, PlusCircle, Shield, Trash2 } from 'lucide-react';
-import { useProducts } from '@/context/product-context';
+import { useUserData } from '@/context/user-context';
 import { useLocale } from '@/context/locale-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { usePurchases } from '@/context/purchase-context';
 
 export default function CreatePurchasePage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { products, isLoading: isLoadingProducts } = useProducts();
-  const { addPurchase, isLoading: isLoadingPurchases } = usePurchases();
+  const { products, addPurchase, isLoading } = useUserData();
   const { t, formatCurrency, currency } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -54,7 +52,7 @@ export default function CreatePurchasePage() {
   });
 
   const handleProductChange = (index: number, productId: string) => {
-    const product = products.find(p => p.id === productId);
+    const product = products?.find(p => p.id === productId);
     if (product) {
       // Pre-fill with the default purchase price, but allow override
       form.setValue(`items.${index}.price`, product.purchasePrice);
@@ -70,7 +68,7 @@ export default function CreatePurchasePage() {
         const purchaseData = {
             ...data,
             items: data.items.map(item => {
-                const product = products.find(p => p.id === item.productId);
+                const product = products?.find(p => p.id === item.productId);
                 return {
                     ...item,
                     productName: product?.name || 'Produit inconnu',
@@ -138,7 +136,7 @@ export default function CreatePurchasePage() {
                                         </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {isLoadingProducts ? <p>{t('loading_tip')}</p> : products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                            {isLoading ? <p>{t('loading_tip')}</p> : products?.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -178,8 +176,8 @@ export default function CreatePurchasePage() {
 
             <div className="flex justify-end gap-2">
                  <Button type="button" variant="outline" asChild><Link href="/dashboard/entreprise">{t('cancel')}</Link></Button>
-                 <Button type="submit" disabled={isSubmitting || isLoadingPurchases || isLoadingProducts}>
-                     {(isSubmitting || isLoadingPurchases) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                 <Button type="submit" disabled={isSubmitting || isLoading}>
+                     {(isSubmitting || isLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                      {t('save_purchase_button')}
                  </Button>
             </div>

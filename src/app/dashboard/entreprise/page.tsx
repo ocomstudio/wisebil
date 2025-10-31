@@ -1,133 +1,48 @@
 // src/app/dashboard/entreprise/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, ShoppingCart, Package, DollarSign, ArrowUpRight, Leaf, Settings, RefreshCw, Activity, AlertCircle, CheckCircle } from "lucide-react";
+import { PlusCircle, ShoppingCart, Package, ArrowUpRight, Leaf, Settings, RefreshCw, Activity } from "lucide-react";
 import Link from "next/link";
-import { useSales } from "@/context/sales-context";
-import { useProducts } from "@/context/product-context";
+import { useUserData } from "@/context/user-context";
 import { useLocale } from "@/context/locale-context";
-import { usePurchases } from "@/context/purchase-context";
 import { ActivityHistory } from "@/components/dashboard/entreprise/activity-history";
-import { useAuth } from "@/context/auth-context";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useEnterprise } from "@/context/enterprise-context";
-import { checkUserSubscriptionStatus } from "@/app/actions/check-subscription";
-import { useRouter } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 export default function EnterprisePage() {
-  const { sales } = useSales();
-  const { products } = useProducts();
-  const { purchases } = usePurchases();
+  const { userData, isLoading: isLoadingUserData } = useUserData();
   const { t, formatCurrency } = useLocale();
-  const { user } = useAuth();
   const [isActivityHistoryOpen, setIsActivityHistoryOpen] = useState(false);
-  const isMobile = useIsMobile();
-  const { isTrialActive, trialDaysRemaining } = useEnterprise();
-  const router = useRouter();
-  const [isSubscriptionActive, setIsSubscriptionActive] = useState(true); // Default to true
 
-  useEffect(() => {
-    // This check is now mostly for future use, as the server action currently always returns true.
-    // When you want to re-enable restrictions, the logic is already here.
-    checkUserSubscriptionStatus().then(({ isActive }) => {
-      setIsSubscriptionActive(isActive);
-    });
-  }, []);
+  const { sales = [], products = [], purchases = [] } = userData || {};
+
+  const isLoading = isLoadingUserData;
 
   const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
   const totalProductsSold = sales.reduce((sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
   
-  const handleProtectedLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
-    if (!isSubscriptionActive) {
-      e.preventDefault();
-      router.push('/dashboard/billing');
-    }
-  };
-
-  const SubscriptionBanner = () => {
-    const subscriptionStatus = user?.subscriptionStatus || 'inactive';
-
-    if (subscriptionStatus === 'active') {
-      const planName = user?.subscriptionPlan === 'premium' ? t('plan_premium_title') : t('plan_business_title');
-      return (
-        <Card className="bg-green-600/10 border-green-600/20 text-green-500">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-                <CheckCircle className="h-5 w-5" />
-                <span>{t('plan_active', { planName })}</span>
-            </CardTitle>
-          </CardHeader>
-        </Card>
-      )
-    }
-
-    if (trialDaysRemaining > 0) {
-        return (
-           <Card className="bg-amber-500/10 border-amber-500/20 text-amber-500">
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                    <div>
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <AlertCircle className="h-5 w-5" />
-                            <span>{t('trial_days_remaining', { days: trialDaysRemaining })}</span>
-                        </CardTitle>
-                        <CardDescription className="text-amber-500/80 text-xs mt-1">
-                            {t('upgrade_to_keep_features')}
-                        </CardDescription>
-                    </div>
-                     <Button asChild size="sm" variant="outline" className="bg-amber-500/20 border-amber-500/30 hover:bg-amber-500/30">
-                        <Link href="/dashboard/billing">{t('see_plans_button')}</Link>
-                    </Button>
-                </div>
-              </CardHeader>
-            </Card>
-        );
-    }
-    
-    // Trial expired
-    return (
-        <Card className="bg-destructive/10 border-destructive/20 text-destructive">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-                <div>
-                    <CardTitle className="text-base flex items-center gap-2">
-                        <AlertCircle className="h-5 w-5" />
-                        <span>Période d'essai terminée</span>
-                    </CardTitle>
-                    <CardDescription className="text-destructive/80 text-xs mt-1">
-                        Passez à un plan supérieur pour continuer à utiliser les fonctionnalités Entreprise.
-                    </CardDescription>
-                </div>
-                 <Button asChild size="sm" variant="outline" className="bg-destructive/20 border-destructive/30 hover:bg-destructive/30 text-destructive">
-                    <Link href="/dashboard/billing">{t('see_plans_button')}</Link>
-                </Button>
-            </div>
-          </CardHeader>
-        </Card>
-    );
-  }
 
   return (
     <div className="space-y-6 pb-24 md:pb-8">
       <div className="flex flex-wrap items-center justify-between gap-2">
-            <Button variant="outline" size="sm" onClick={() => setIsActivityHistoryOpen(true)}>
-                <Activity className="mr-2 h-4 w-4" />
-                {t('history_button')}
-            </Button>
-            <Button asChild variant="outline" size="sm">
-                <Link href="/dashboard/settings/company-profile">
-                    <Settings className="mr-2 h-4 w-4" />
-                    {t('company_settings_button')}
-                </Link>
-            </Button>
+            <h1 className="text-3xl font-bold font-headline">{t('nav_enterprise')}</h1>
+            <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => setIsActivityHistoryOpen(true)}>
+                    <Activity className="mr-2 h-4 w-4" />
+                    {t('history_button')}
+                </Button>
+                <Button asChild variant="outline" size="sm">
+                    <Link href="/dashboard/settings/company-profile">
+                        <Settings className="mr-2 h-4 w-4" />
+                        {t('company_settings_button')}
+                    </Link>
+                </Button>
+            </div>
       </div>
       
-      <SubscriptionBanner />
-
        <Card className="bg-card text-card-foreground shadow-xl rounded-2xl overflow-hidden relative border-primary/20 transform-gpu transition-transform hover:scale-[1.02]">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-transparent z-0 opacity-40"></div>
             <div className="absolute -right-10 -bottom-16 opacity-10">
@@ -137,10 +52,9 @@ export default function EnterprisePage() {
                  <div className="flex items-center justify-between">
                     <div>
                         <p className="text-sm text-primary-foreground/80 flex items-center gap-2">
-                            <DollarSign className="h-4 w-4" />
                             {t('total_revenue_label')}
                         </p>
-                        <p className="text-4xl font-bold mt-1">{formatCurrency(totalRevenue)}</p>
+                        {isLoading ? <Skeleton className="h-10 w-48 mt-1" /> : <p className="text-4xl font-bold mt-1">{formatCurrency(totalRevenue)}</p>}
                     </div>
                  </div>
                  <p className="text-xs text-muted-foreground mt-2">{t('based_on_sales_label', { count: sales.length })}</p>
@@ -188,7 +102,7 @@ export default function EnterprisePage() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+{sales.length}</div>
+            {isLoading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold">+{sales.length}</div>}
           </CardContent>
         </Card>
         <Card>
@@ -197,7 +111,7 @@ export default function EnterprisePage() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalProductsSold}</div>
+             {isLoading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold">{totalProductsSold}</div>}
           </CardContent>
         </Card>
         <Card className="col-span-2 sm:col-span-1">
@@ -206,7 +120,7 @@ export default function EnterprisePage() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{products.length}</div>
+            {isLoading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold">{products.length}</div>}
           </CardContent>
         </Card>
       </div>
@@ -216,7 +130,7 @@ export default function EnterprisePage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>{t('recent_sales_title')}</CardTitle>
-                {isMobile && sales.length > 0 && (
+                {(sales.length > 5) && (
                   <Button asChild variant="link" size="sm">
                     <Link href="/dashboard/entreprise/sales/invoices">{t('see_all')}</Link>
                   </Button>
@@ -225,7 +139,7 @@ export default function EnterprisePage() {
                 <CardDescription>{t('recent_sales_desc')}</CardDescription>
             </CardHeader>
             <CardContent>
-                {sales.length > 0 ? (
+                {isLoading ? <Skeleton className="h-40 w-full" /> : sales.length > 0 ? (
                     <div className="space-y-4">
                         {sales.slice(0, 5).map(sale => (
                              <div key={sale.id} className="flex items-center">
@@ -263,16 +177,12 @@ export default function EnterprisePage() {
                 </Button>
             </CardHeader>
             <CardContent>
-                {products.length > 0 ? (
+                {isLoading ? <Skeleton className="h-40 w-full" /> : products.length > 0 ? (
                      <div className="space-y-4">
                         {products.slice(0, 5).map(product => (
                             <div key={product.id} className="flex items-center">
                                 <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center overflow-hidden">
-                                     {product.imageUrl ? (
-                                        <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover"/>
-                                     ) : (
-                                        <Package />
-                                     )}
+                                    <Package />
                                 </div>
                                 <div className="ml-4 space-y-1">
                                     <p className="text-sm font-medium leading-none">{product.name}</p>
@@ -293,7 +203,7 @@ export default function EnterprisePage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>{t('recent_purchases_title')}</CardTitle>
-                {isMobile && purchases.length > 0 && (
+                {purchases.length > 5 && (
                    <Button asChild variant="link" size="sm">
                     <Link href="/dashboard/entreprise/purchases/invoices">{t('see_all')}</Link>
                   </Button>
@@ -302,7 +212,7 @@ export default function EnterprisePage() {
               <CardDescription>{t('recent_purchases_desc')}</CardDescription>
             </CardHeader>
             <CardContent>
-                {purchases.length > 0 ? (
+                {isLoading ? <Skeleton className="h-40 w-full" /> : purchases.length > 0 ? (
                     <div className="space-y-4">
                         {purchases.slice(0, 5).map(purchase => (
                              <div key={purchase.id} className="flex items-center">

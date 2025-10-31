@@ -12,7 +12,7 @@ import type { CompanyProfile } from '@/types/company';
 
 interface PurchaseOrderTemplateProps extends React.HTMLAttributes<HTMLDivElement> {
     purchase: Purchase;
-    companyProfile: CompanyProfile | null;
+    companyProfile: CompanyProfile;
 }
 
 export const PurchaseOrderTemplate = React.forwardRef<HTMLDivElement, PurchaseOrderTemplateProps>(({ purchase, companyProfile, ...props }, ref) => {
@@ -30,11 +30,7 @@ export const PurchaseOrderTemplate = React.forwardRef<HTMLDivElement, PurchaseOr
             <CardHeader className="p-8" style={{ backgroundColor: `${brandColor}1A` }}>
                  <div className="flex justify-between items-start">
                     <div>
-                        {companyProfile?.logoUrl ? (
-                            <Image src={companyProfile.logoUrl} alt="Company Logo" width={120} height={60} className="object-contain" />
-                        ) : (
-                            <h1 className="text-2xl font-bold font-headline" style={brandStyle}>{companyProfile?.name || t('your_company_placeholder')}</h1>
-                        )}
+                        <h1 className="text-2xl font-bold font-headline" style={brandStyle}>{companyProfile?.name || t('your_company_placeholder')}</h1>
                         <p className="text-muted-foreground whitespace-pre-line mt-2 text-sm">{companyProfile?.address}</p>
                     </div>
                     <div className="text-right">
@@ -88,17 +84,10 @@ export const PurchaseOrderTemplate = React.forwardRef<HTMLDivElement, PurchaseOr
              <CardFooter className="p-8 pt-0">
                 <div className="w-full flex justify-between items-end">
                     <div>
-                        {companyProfile?.stampUrl && (
-                            <Image src={companyProfile.stampUrl} alt="Cachet de l'entreprise" width={100} height={100} className="object-contain" />
-                        )}
+                        
                     </div>
                     <div>
-                        {companyProfile?.signatureUrl && (
-                            <>
-                                <Image src={companyProfile.signatureUrl} alt="Signature" width={150} height={60} className="object-contain" />
-                                <p className="text-center border-t mt-2 pt-1 text-sm text-muted-foreground">{t('signature_label')}</p>
-                            </>
-                        )}
+                       
                     </div>
                 </div>
              </CardFooter>

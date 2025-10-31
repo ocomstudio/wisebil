@@ -14,26 +14,20 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Loader2, PlusCircle, Trash2, Package } from 'lucide-react';
-import { useProducts } from '@/context/product-context';
+import { useUserData } from '@/context/user-context';
 import { useLocale } from '@/context/locale-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import 'react-phone-number-input/style.css';
 import PhoneInput, { isValidPhoneNumber, type Country } from 'react-phone-number-input';
-import { useUserData } from '@/context/user-context';
 import axios from "axios";
-import { useEnterprise } from '@/context/enterprise-context';
 
 export default function CreateSalePage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { products, isLoading: isLoadingProducts } = useProducts();
-  const { addUserSale } = useUserData();
-  const { enterprises, isLoading: isLoadingEnterprises } = useEnterprise();
+  const { products, addSale, isLoading } = useUserData();
   const { t, formatCurrency } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [detectedCountry, setDetectedCountry] = useState<Country>('SN');
-  
-  const activeEnterprise = useMemo(() => enterprises.length > 0 ? enterprises[0] : null, [enterprises]);
 
   useEffect(() => {
     const fetchCountry = async () => {
@@ -82,7 +76,7 @@ export default function CreateSalePage() {
   });
 
   const handleProductChange = (index: number, productId: string) => {
-    const product = products.find(p => p.id === productId);
+    const product = products?.find(p => p.id === productId);
     if (product) {
         if (product.quantity <= 0) {
             toast({
@@ -101,16 +95,12 @@ export default function CreateSalePage() {
   const total = watchedItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   const onSubmit = async (data: SaleFormValues) => {
-    if (!activeEnterprise) {
-      toast({ variant: "destructive", title: t('error_title'), description: "Aucune entreprise active trouvée." });
-      return;
-    }
     setIsSubmitting(true);
     try {
         const saleData = {
             ...data,
             items: data.items.map(item => {
-                const product = products.find(p => p.id === item.productId);
+                const product = products?.find(p => p.id === item.productId);
                 return {
                     ...item,
                     productName: product?.name || 'Produit inconnu',
@@ -119,14 +109,18 @@ export default function CreateSalePage() {
             total,
         };
 
-      const newSale = await addUserSale(saleData, activeEnterprise.id);
+      const newSale = await addSale(saleData);
       toast({
         title: t('sale_recorded_title'),
         description: t('sale_recorded_desc', { customerName: data.customerName }),
       });
       router.push(`/dashboard/entreprise/sales/invoice/${newSale.id}`);
     } catch (error) {
-      // Error toast is handled within addUserSale
+      toast({
+        variant: "destructive",
+        title: t('error_title'),
+        description: error instanceof Error ? error.message : "Une erreur est survenue."
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -193,7 +187,7 @@ export default function CreateSalePage() {
                                         </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {isLoadingProducts ? <p>{t('loading_tip')}</p> : products.map(p => 
+                                            {isLoading ? <p>{t('loading_tip')}</p> : products?.map(p => 
                                                 <SelectItem key={p.id} value={p.id} disabled={p.quantity <= 0}>
                                                     <div className="flex items-center gap-2">
                                                         <Package className="h-6 w-6 text-muted-foreground" />
@@ -235,7 +229,7 @@ export default function CreateSalePage() {
 
             <div className="flex justify-end gap-2">
                  <Button type="button" variant="outline" asChild><Link href="/dashboard/entreprise">{t('cancel')}</Link></Button>
-                 <Button type="submit" disabled={isSubmitting || isLoadingProducts || isLoadingEnterprises}>
+                 <Button type="submit" disabled={isSubmitting || isLoading}>
                      {(isSubmitting) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                      {t('save_and_generate_invoice_button')}
                  </Button>

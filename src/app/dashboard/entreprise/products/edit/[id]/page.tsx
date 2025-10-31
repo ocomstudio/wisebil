@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Loader2, Upload, CalendarIcon } from 'lucide-react';
-import { useProducts } from '@/context/product-context';
+import { useUserData } from '@/context/user-context';
 import { useLocale } from '@/context/locale-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Product } from '@/types/product';
@@ -30,7 +30,7 @@ export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
-  const { getProductById, updateProduct, isLoading, productCategories, addProductCategory } = useProducts();
+  const { getProductById, updateProduct, isLoading, productCategories, addProductCategory } = useUserData();
   const { t, currency, locale } = useLocale();
   
   const [product, setProduct] = useState<Product | null>(null);

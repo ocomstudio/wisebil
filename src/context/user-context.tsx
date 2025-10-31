@@ -6,16 +6,14 @@ import { useAuth, User } from './auth-context';
 import type { Transaction } from '@/types/transaction';
 import type { Budget } from '@/types/budget';
 import type { SavingsGoal } from '@/types/savings-goal';
-import type { JournalEntry } from '@/components/dashboard/accounting/journal-entries';
-import type { Invoice } from '@/types/invoice';
 import type { Language, Currency } from './locale-context';
-import type { CompanyProfile } from '@/types/company';
+import { db } from '@/lib/firebase';
+import { doc, setDoc, collectionGroup, query, where, getDocs, limit, getDoc, updateDoc, arrayUnion, arrayRemove, runTransaction } from 'firebase/firestore';
+import { v4 as uuidv4 } from "uuid";
 import type { Product, ProductCategory } from '@/types/product';
 import type { Sale } from '@/types/sale';
-import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, runTransaction, arrayUnion, updateDoc, arrayRemove } from 'firebase/firestore';
-import { v4 as uuidv4 } from "uuid";
 import type { Purchase } from '@/types/purchase';
+import type { CompanyProfile } from '@/types/company';
 import type { ActivityLog } from '@/types/activity-log';
 import { useToast } from '@/hooks/use-toast';
 
@@ -34,69 +32,125 @@ export interface UserData {
   transactions: Transaction[];
   budgets: Budget[];
   savingsGoals: SavingsGoal[];
-  companyProfile?: CompanyProfile;
+  enterpriseIds?: string[];
+  customCategories?: { name: string; emoji: string; }[];
+  conversations?: any;
   products?: Product[];
   productCategories?: ProductCategory[];
   sales?: Sale[];
   purchases?: Purchase[];
+  companyProfile?: CompanyProfile;
   enterpriseActivities?: ActivityLog[];
-  journalEntries?: JournalEntry[];
-  invoices?: Invoice[];
-  invoiceCounter?: number;
   saleInvoiceCounter?: number;
   purchaseInvoiceCounter?: number;
-  conversations?: any;
 }
 
+
+// Function to fetch user data based on sale ID (server-side usage)
+export async function getUserBySaleId(saleId: string): Promise<UserData | null> {
+    try {
+        const salesQuery = query(collectionGroup(db, 'sales'), where('id', '==', saleId), limit(1));
+        const saleSnapshot = await getDocs(salesQuery);
+
+        if (saleSnapshot.empty) {
+            console.warn(`No sale found with ID: ${saleId}`);
+            return null;
+        }
+
+        const saleDoc = saleSnapshot.docs[0];
+        const enterpriseDocRef = saleDoc.ref.parent.parent;
+
+        if (!enterpriseDocRef) {
+             console.error(`Could not find parent enterprise for sale ID: ${saleId}`);
+             return null;
+        }
+        
+        const enterpriseDocSnap = await getDoc(enterpriseDocRef);
+        const ownerId = enterpriseDocSnap.data()?.ownerId;
+
+        if (!ownerId) {
+            console.error(`Could not find owner for sale ID: ${saleId}`);
+            return null;
+        }
+
+        const userDocSnap = await getDoc(doc(db, 'users', ownerId));
+
+        if (userDocSnap.exists()) {
+            return userDocSnap.data() as UserData;
+        } else {
+            console.error(`User document not found for sale ID: ${saleId}`);
+            return null;
+        }
+    } catch (error) {
+        console.error("Error fetching user by sale ID:", error);
+        return null;
+    }
+}
+
+
+// Function to fetch user data based on purchase ID (server-side usage)
+export async function getUserByPurchaseId(purchaseId: string): Promise<UserData | null> {
+    const q = query(collectionGroup(db, 'purchases'), where('id', '==', purchaseId), limit(1));
+    const purchaseSnapshot = await getDocs(q);
+
+    if (purchaseSnapshot.empty) {
+        console.warn(`No purchase found with ID: ${purchaseId}`);
+        return null;
+    }
+
+    const purchaseDoc = purchaseSnapshot.docs[0];
+    const enterpriseDocRef = purchaseDoc.ref.parent.parent;
+    if (!enterpriseDocRef) {
+         console.error(`Could not find parent enterprise for purchase ID: ${purchaseId}`);
+         return null;
+    }
+    
+    const enterpriseDocSnap = await getDoc(enterpriseDocRef);
+    const ownerId = enterpriseDocSnap.data()?.ownerId;
+
+    if (!ownerId) {
+        console.error(`Could not find owner for purchase ID: ${purchaseId}`);
+        return null;
+    }
+
+    const userDocSnap = await getDoc(doc(db, 'users', ownerId));
+
+    if (userDocSnap.exists()) {
+        return userDocSnap.data() as UserData;
+    } else {
+        console.error(`User document not found for purchase ID: ${purchaseId}`);
+        return null;
+    }
+}
 
 interface UserDataContextType {
   userData: UserData | null;
   isLoading: boolean;
   updateUserData: (data: Partial<UserData>) => Promise<void>;
-  
-  // Enterprise-related data and functions
-  products?: Product[];
-  productCategories?: ProductCategory[];
-  sales?: Sale[];
-  purchases?: Purchase[];
-  companyProfile?: CompanyProfile | null;
-  enterpriseActivities?: ActivityLog[];
-  
   addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => Promise<void>;
-  updateProduct: (id: string, updatedProduct: Partial<Omit<Product, 'id'>>) => Promise<void>;
+  updateProduct: (id: string, updatedProduct: Partial<Omit<Product, 'id' | 'initialQuantity'>>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   getProductById: (id: string) => Product | undefined;
   addProductCategory: (name: string) => Promise<ProductCategory | null>;
   getCategoryById: (id: string) => ProductCategory | undefined;
-  
   addSale: (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber' | 'userId'>) => Promise<Sale>;
   getSaleById: (id: string) => Sale | undefined;
-
   addPurchase: (purchaseData: Omit<Purchase, 'id' | 'date' | 'invoiceNumber' | 'userId'>) => Promise<Purchase>;
   getPurchaseById: (id: string) => Purchase | undefined;
-
   updateCompanyProfile: (newProfile: Partial<CompanyProfile>) => Promise<void>;
   logActivity: (type: ActivityLog['type'], description: string) => Promise<void>;
 }
 
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
 
-const cleanUndefined = (obj: any) => {
-  const newObj: any = {};
-  Object.keys(obj).forEach((key) => {
-    if (obj[key] !== undefined) {
-      newObj[key] = obj[key];
-    }
-  });
-  return newObj;
-};
-
 export const UserDataProvider = ({ children, initialData }: { children: ReactNode, initialData?: UserData | null }) => {
-  const { fullUserData: authFullUserData, isLoading: authIsLoading, user } = useAuth();
+  const { fullUserData: authFullUserData, isLoading: authIsLoading } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
 
   const userData = initialData || authFullUserData;
   const isLoading = initialData ? false : authIsLoading;
+
 
   const getUserDocRef = useCallback(() => {
     if (!user) return null;
@@ -115,24 +169,9 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
     }
   }, [getUserDocRef]);
 
-  // --- LOGIC MOVED FROM ENTERPRISE-RELATED PROVIDERS ---
-
-  const {
-    products = [],
-    productCategories = [],
-    sales = [],
-    purchases = [],
-    companyProfile = null,
-    enterpriseActivities = [],
-  } = userData || {};
-
-  const sortedSales = useMemo(() => sales.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()), [sales]);
-  const sortedPurchases = useMemo(() => purchases.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()), [purchases]);
-
   const logActivity = useCallback(async (type: ActivityLog['type'], description: string) => {
-    if (!user) return;
     const userDocRef = getUserDocRef();
-    if (!userDocRef) return;
+    if (!user || !userDocRef) return;
 
     const newLog: ActivityLog = {
       id: uuidv4(),
@@ -144,7 +183,7 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
     };
     await updateDoc(userDocRef, { enterpriseActivities: arrayUnion(newLog) });
   }, [user, getUserDocRef]);
-  
+
   const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) throw new Error("User not available");
@@ -154,14 +193,14 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
         id: uuidv4(), 
         createdAt: now,
         updatedAt: now,
-        ...productData,
         initialQuantity: productData.quantity,
+        ...productData,
     };
-    await updateDoc(userDocRef, { products: arrayUnion(cleanUndefined(newProduct)) });
+    await updateDoc(userDocRef, { products: arrayUnion(newProduct) });
     await logActivity('product_created', `Produit "${newProduct.name}" créé.`);
   }, [getUserDocRef, logActivity]);
   
-  const updateProduct = useCallback(async (id: string, updatedProductData: Partial<Omit<Product, 'id'>>) => {
+  const updateProduct = useCallback(async (id: string, updatedProductData: Partial<Omit<Product, 'id' | 'initialQuantity'>>) => {
      const userDocRef = getUserDocRef();
     if (!userDocRef) throw new Error("User not available");
     
@@ -171,7 +210,7 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
 
     const updatedProduct = { ...currentProducts[productIndex], ...updatedProductData, updatedAt: new Date().toISOString() };
     const newProducts = [...currentProducts];
-    newProducts[productIndex] = cleanUndefined(updatedProduct);
+    newProducts[productIndex] = updatedProduct;
 
     await updateDoc(userDocRef, { products: newProducts });
     await logActivity('product_updated', `Produit "${updatedProduct.name}" mis à jour.`);
@@ -265,7 +304,7 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
     return newSale;
   }, [user, getUserDocRef, logActivity]);
 
-  const getSaleById = useCallback((id: string) => sortedSales.find(s => s.id === id), [sortedSales]);
+  const getSaleById = useCallback((id: string) => (userData?.sales || []).find(s => s.id === id), [userData?.sales]);
   
   const addPurchase = useCallback(async (purchaseData: Omit<Purchase, 'id' | 'date' | 'invoiceNumber' | 'userId'>) => {
     const userDocRef = getUserDocRef();
@@ -325,7 +364,7 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
     return newPurchase;
   }, [user, getUserDocRef, logActivity]);
 
-  const getPurchaseById = useCallback((id: string) => sortedPurchases.find(p => p.id === id), [sortedPurchases]);
+  const getPurchaseById = useCallback((id: string) => (userData?.purchases || []).find(p => p.id === id), [userData?.purchases]);
 
   const updateCompanyProfile = useCallback(async (newProfileData: Partial<CompanyProfile>) => {
     const userDocRef = getUserDocRef();
@@ -339,12 +378,12 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
     isLoading,
     updateUserData,
     // Enterprise data and functions
-    products,
-    productCategories,
-    sales: sortedSales,
-    purchases: sortedPurchases,
-    companyProfile,
-    enterpriseActivities,
+    products: userData?.products,
+    productCategories: userData?.productCategories,
+    sales: userData?.sales,
+    purchases: userData?.purchases,
+    companyProfile: userData?.companyProfile,
+    enterpriseActivities: userData?.enterpriseActivities,
     addProduct,
     updateProduct,
     deleteProduct,
@@ -359,7 +398,6 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
     logActivity,
   }), [
     userData, isLoading, updateUserData, 
-    products, productCategories, sortedSales, sortedPurchases, companyProfile, enterpriseActivities,
     addProduct, updateProduct, deleteProduct, getProductById, addProductCategory, getCategoryById,
     addSale, getSaleById, addPurchase, getPurchaseById, updateCompanyProfile, logActivity
   ]);

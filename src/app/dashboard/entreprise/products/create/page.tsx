@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Loader2, Upload, CalendarIcon } from 'lucide-react';
-import { useProducts } from '@/context/product-context';
+import { useUserData } from '@/context/user-context';
 import { useLocale } from '@/context/locale-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -27,7 +27,7 @@ import { fr, enUS, de, es, vi } from 'date-fns/locale';
 export default function CreateProductPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { addProduct, isLoading, productCategories, addProductCategory } = useProducts();
+  const { addProduct, isLoading, productCategories, addProductCategory } = useUserData();
   const { t, currency, locale } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNewCategory, setShowNewCategory] = useState(false);

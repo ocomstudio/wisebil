@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-import { useSales } from '@/context/sales-context';
+import { useUserData } from '@/context/user-context';
 import { Sale } from '@/types/sale';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, Download, Share2 } from 'lucide-react';
@@ -18,7 +18,7 @@ import { InvoiceTemplate } from '@/components/invoice/invoice-template';
 export default function ViewSaleInvoicePage() {
   const router = useRouter();
   const params = useParams();
-  const { getSaleById, isLoading } = useSales();
+  const { getSaleById, isLoading, companyProfile } = useUserData();
   const [sale, setSale] = useState<Sale | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const { toast } = useToast();
@@ -130,7 +130,7 @@ export default function ViewSaleInvoicePage() {
                 </Button>
             </div>
         </div>
-        <InvoiceTemplate sale={sale} ref={invoiceRef} />
+        <InvoiceTemplate sale={sale} companyProfile={companyProfile || null} ref={invoiceRef} />
     </div>
   );
 }

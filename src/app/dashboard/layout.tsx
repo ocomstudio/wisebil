@@ -21,18 +21,12 @@ import { Toaster as HotToaster } from 'react-hot-toast';
 import Link from "next/link";
 import { LocaleProvider, useLocale } from "@/context/locale-context";
 import { TutorialProvider } from "@/context/tutorial-context";
-import { useNotifications, NotificationsProvider } from "@/context/notifications-context";
+import { NotificationsProvider, useNotifications } from "@/context/notifications-context";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { TeamChatProvider } from "@/context/team-chat-context";
 import { TeamChat } from "@/components/dashboard/team/team-chat";
 import { UserDataProvider } from "@/context/user-context";
-import { EnterpriseProvider } from "@/context/enterprise-context";
-import { ProductProvider } from "@/context/product-context";
-import { SalesProvider } from "@/context/sales-context";
-import { PurchasesProvider } from "@/context/purchase-context";
-import { CompanyProfileProvider } from "@/context/company-profile-context";
-
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { t } = useLocale();
@@ -115,21 +109,11 @@ export default function DashboardLayout({
                   <BudgetProvider>
                     <SavingsProvider>
                       <NotificationsProvider>
-                        <EnterpriseProvider>
-                          <CompanyProfileProvider>
-                            <ProductProvider>
-                              <SalesProvider>
-                                <PurchasesProvider>
-                                  <TutorialProvider>
-                                      <TeamChatProvider>
-                                        <DashboardLayoutContent>{children}</DashboardLayoutContent>
-                                      </TeamChatProvider>
-                                  </TutorialProvider>
-                                </PurchasesProvider>
-                              </SalesProvider>
-                            </ProductProvider>
-                          </CompanyProfileProvider>
-                        </EnterpriseProvider>
+                        <TutorialProvider>
+                            <TeamChatProvider>
+                              <DashboardLayoutContent>{children}</DashboardLayoutContent>
+                            </TeamChatProvider>
+                        </TutorialProvider>
                       </NotificationsProvider>
                       <HotToaster
                         position="top-center"
