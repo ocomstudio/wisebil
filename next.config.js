@@ -1,4 +1,12 @@
 /** @type {import('next').NextConfig} */
+
+const withPWA = require("next-pwa")({
+  dest: "public",
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === "development",
+});
+
 const nextConfig = {
   /* config options here */
   typescript: {
@@ -37,4 +45,4 @@ const nextConfig = {
   // env is no longer needed here as long as variables are prefixed with NEXT_PUBLIC_
 };
 
-module.exports = nextConfig;
+module.exports = withPWA(nextConfig);
