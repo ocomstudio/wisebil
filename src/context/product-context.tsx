@@ -6,8 +6,6 @@ import { Product, ProductCategory } from '@/types/product';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { storage } from '@/lib/firebase-storage';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, doc, onSnapshot, writeBatch, arrayUnion, updateDoc, arrayRemove } from 'firebase/firestore';
 import { useEnterprise } from './enterprise-context';
 import { v4 as uuidv4 } from 'uuid';
@@ -21,7 +19,6 @@ interface ProductContextType {
   getProductById: (id: string) => Product | undefined;
   addProductCategory: (name: string) => Promise<ProductCategory | null>;
   getCategoryById: (id: string) => ProductCategory | undefined;
-  uploadImage: (file: File, path: string) => Promise<string>;
   isLoading: boolean;
 }
 
@@ -59,13 +56,6 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, [activeEnterprise, isLoadingEnterprises]);
   
-  const uploadImage = useCallback(async (file: File, path: string) => {
-    if (!user || !activeEnterprise) throw new Error("User or enterprise not available");
-    const storageRef = ref(storage, `enterprises/${activeEnterprise.id}/${path}`);
-    const snapshot = await uploadBytes(storageRef, file);
-    return getDownloadURL(snapshot.ref);
-  }, [user, activeEnterprise]);
-
   const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => {
     if (!user || !activeEnterprise) throw new Error("User or enterprise not available");
 
@@ -130,7 +120,6 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     getProductById,
     addProductCategory,
     getCategoryById,
-    uploadImage,
     isLoading
   };
 

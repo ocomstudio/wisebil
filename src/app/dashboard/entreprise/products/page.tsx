@@ -14,13 +14,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useUserData } from "@/context/user-context";
+import { useProducts } from "@/context/product-context";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export default function ProductsPage() {
-  const { products, deleteProduct, isLoading, getCategoryById } = useUserData();
+  const { products, deleteProduct, isLoading, getCategoryById } = useProducts();
   const { t, formatCurrency, formatDate } = useLocale();
 
   return (
@@ -71,7 +71,6 @@ export default function ProductsPage() {
              <Table>
                 <TableHeader>
                     <TableRow>
-                    <TableHead className="w-16">{t('table_header_image')}</TableHead>
                     <TableHead>{t('table_header_name')}</TableHead>
                     <TableHead>{t('table_header_category')}</TableHead>
                     <TableHead>{t('table_header_price')}</TableHead>
@@ -82,15 +81,6 @@ export default function ProductsPage() {
                 <TableBody>
                     {products.map((product) => (
                     <TableRow key={product.id}>
-                        <TableCell>
-                            <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center overflow-hidden">
-                                {product.imageUrl ? (
-                                <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover"/>
-                                ) : (
-                                <Package />
-                                )}
-                            </div>
-                        </TableCell>
                         <TableCell className="font-medium">{product.name}</TableCell>
                         <TableCell>{(product.categoryId && getCategoryById(product.categoryId)?.name) || '-'}</TableCell>
                         <TableCell>
