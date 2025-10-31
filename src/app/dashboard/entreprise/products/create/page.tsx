@@ -27,7 +27,8 @@ import { fr, enUS, de, es, vi } from 'date-fns/locale';
 export default function CreateProductPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { addProduct, isLoading, productCategories = [], addProductCategory } = useUserData();
+  const { addProduct, isLoading, userData, addProductCategory } = useUserData();
+  const productCategories = userData?.productCategories || [];
   const { t, currency, locale } = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNewCategory, setShowNewCategory] = useState(false);

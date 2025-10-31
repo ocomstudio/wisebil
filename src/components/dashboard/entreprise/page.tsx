@@ -4,46 +4,22 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, ShoppingCart, Package, ArrowUpRight, Leaf, Settings, RefreshCw, Activity, Building, Loader2 } from "lucide-react";
+import { PlusCircle, ShoppingCart, Package, ArrowUpRight, Leaf, Settings, RefreshCw, Activity } from "lucide-react";
 import Link from "next/link";
-import { useSales } from "@/context/sales-context";
-import { useProducts } from "@/context/product-context";
+import { useUserData } from "@/context/user-context";
 import { useLocale } from "@/context/locale-context";
-import { usePurchases } from "@/context/purchase-context";
 import { ActivityHistory } from "@/components/dashboard/entreprise/activity-history";
-import { useEnterprise } from "@/context/enterprise-context";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CreateEnterpriseForm } from "./create-enterprise-form";
 
 
 export default function EnterprisePage() {
-  const { activeEnterprise, isLoading: isLoadingEnterprise } = useEnterprise();
-  const { sales, isLoading: isLoadingSales } = useSales();
-  const { products, isLoading: isLoadingProducts } = useProducts();
-  const { purchases, isLoading: isLoadingPurchases } = usePurchases();
+  const { userData, isLoading: isLoadingUserData } = useUserData();
   const { t, formatCurrency } = useLocale();
   const [isActivityHistoryOpen, setIsActivityHistoryOpen] = useState(false);
 
-  if (isLoadingEnterprise) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-1/3" />
-        <Skeleton className="h-32 w-full" />
-        <div className="grid grid-cols-3 gap-2">
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-        </div>
-        <Skeleton className="h-64 w-full" />
-      </div>
-    );
-  }
+  const { sales = [], products = [], purchases = [] } = userData || {};
 
-  if (!activeEnterprise) {
-    return <CreateEnterpriseForm />;
-  }
-  
-  const isLoading = isLoadingSales || isLoadingProducts || isLoadingPurchases;
+  const isLoading = isLoadingUserData;
 
   const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
   const totalProductsSold = sales.reduce((sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
@@ -51,23 +27,20 @@ export default function EnterprisePage() {
 
   return (
     <div className="space-y-6 pb-24 md:pb-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold font-headline flex items-center gap-2"><Building /> {activeEnterprise.name}</h1>
-            <p className="text-muted-foreground">{activeEnterprise.description}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setIsActivityHistoryOpen(true)}>
-                <Activity className="mr-2 h-4 w-4" />
-                {t('history_button')}
-            </Button>
-            <Button asChild variant="outline" size="sm">
-                <Link href="/dashboard/settings/company-profile">
-                    <Settings className="mr-2 h-4 w-4" />
-                    {t('company_settings_button')}
-                </Link>
-            </Button>
-          </div>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+            <h1 className="text-3xl font-bold font-headline">{t('nav_enterprise')}</h1>
+            <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => setIsActivityHistoryOpen(true)}>
+                    <Activity className="mr-2 h-4 w-4" />
+                    {t('history_button')}
+                </Button>
+                <Button asChild variant="outline" size="sm">
+                    <Link href="/dashboard/settings/company-profile">
+                        <Settings className="mr-2 h-4 w-4" />
+                        {t('company_settings_button')}
+                    </Link>
+                </Button>
+            </div>
       </div>
       
        <Card className="bg-card text-card-foreground shadow-xl rounded-2xl overflow-hidden relative border-primary/20 transform-gpu transition-transform hover:scale-[1.02]">
@@ -81,7 +54,7 @@ export default function EnterprisePage() {
                         <p className="text-sm text-primary-foreground/80 flex items-center gap-2">
                             {t('total_revenue_label')}
                         </p>
-                         {isLoading ? <Skeleton className="h-10 w-48 mt-1" /> : <p className="text-4xl font-bold mt-1">{formatCurrency(totalRevenue)}</p>}
+                        {isLoading ? <Skeleton className="h-10 w-48 mt-1" /> : <p className="text-4xl font-bold mt-1">{formatCurrency(totalRevenue)}</p>}
                     </div>
                  </div>
                  <p className="text-xs text-muted-foreground mt-2">{t('based_on_sales_label', { count: sales.length })}</p>
@@ -138,7 +111,7 @@ export default function EnterprisePage() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            {isLoading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold">{totalProductsSold}</div>}
+             {isLoading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold">{totalProductsSold}</div>}
           </CardContent>
         </Card>
         <Card className="col-span-2 sm:col-span-1">
@@ -209,11 +182,7 @@ export default function EnterprisePage() {
                         {products.slice(0, 5).map(product => (
                             <div key={product.id} className="flex items-center">
                                 <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center overflow-hidden">
-                                     {product.imageUrl ? (
-                                        <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover"/>
-                                     ) : (
-                                        <Package />
-                                     )}
+                                    <Package />
                                 </div>
                                 <div className="ml-4 space-y-1">
                                     <p className="text-sm font-medium leading-none">{product.name}</p>

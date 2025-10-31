@@ -28,6 +28,7 @@ import { TeamChatProvider } from "@/context/team-chat-context";
 import { TeamChat } from "@/components/dashboard/team/team-chat";
 import { UserDataProvider } from "@/context/user-context";
 
+
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { t } = useLocale();
   const pathname = usePathname();

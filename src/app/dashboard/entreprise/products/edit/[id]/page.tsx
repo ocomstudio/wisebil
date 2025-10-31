@@ -30,7 +30,8 @@ export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
-  const { getProductById, updateProduct, isLoading, productCategories = [], addProductCategory } = useUserData();
+  const { getProductById, updateProduct, isLoading, userData, addProductCategory } = useUserData();
+  const productCategories = userData?.productCategories || [];
   const { t, currency, locale } = useLocale();
   
   const [product, setProduct] = useState<Product | null>(null);
