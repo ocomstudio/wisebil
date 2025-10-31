@@ -32,6 +32,7 @@ import { UserDataProvider } from "@/context/user-context";
 import { CompanyProfileProvider } from "@/context/company-profile-context";
 import { ProductProvider } from "@/context/product-context";
 import { SalesProvider } from "@/context/sales-context";
+import { PurchasesProvider } from "@/context/purchase-context";
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
@@ -46,6 +47,16 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   
   const showTeamChatPanel = pathname.startsWith('/dashboard/entreprise/management');
   
+  const EnterpriseProviders = ({children}: {children: React.ReactNode}) => (
+    <SalesProvider>
+      <PurchasesProvider>
+        {children}
+      </PurchasesProvider>
+    </SalesProvider>
+  )
+
+  const isEnterprisePage = pathname.startsWith('/dashboard/entreprise');
+
   return (
     <div className={cn("grid h-screen w-full overflow-hidden", showTeamChatPanel ? "md:grid-cols-[250px_1fr_350px]" : "md:grid-cols-[250px_1fr_350px]")}>
       {/* Desktop Sidebar */}
@@ -83,7 +94,13 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
         {/* Main Content */}
         <main className="flex-1 p-4 md:p-8 bg-background md:bg-muted/40 overflow-y-auto pb-20 md:pb-8">
-          <div className="max-w-6xl mx-auto h-full">{children}</div>
+          <div className="max-w-6xl mx-auto h-full">
+            {isEnterprisePage ? (
+              <EnterpriseProviders>{children}</EnterpriseProviders>
+            ) : (
+              children
+            )}
+          </div>
         </main>
       </div>
       
@@ -116,13 +133,11 @@ export default function DashboardLayout({
                       <NotificationsProvider>
                         <CompanyProfileProvider>
                            <ProductProvider>
-                             <SalesProvider>
                                 <TutorialProvider>
                                     <TeamChatProvider>
-                                    <DashboardLayoutContent>{children}</DashboardLayoutContent>
+                                      <DashboardLayoutContent>{children}</DashboardLayoutContent>
                                     </TeamChatProvider>
                                 </TutorialProvider>
-                              </SalesProvider>
                             </ProductProvider>
                         </CompanyProfileProvider>
                       </NotificationsProvider>
