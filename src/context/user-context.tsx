@@ -48,87 +48,38 @@ export interface UserData {
 
 // Function to fetch user data based on sale ID (server-side usage)
 export async function getUserBySaleId(saleId: string): Promise<UserData | null> {
-    try {
-        const salesQuery = query(collectionGroup(db, 'sales'), where('id', '==', saleId), limit(1));
-        const saleSnapshot = await getDocs(salesQuery);
+    const q = query(collectionGroup(db, 'users'), where('sales.id', '==', saleId), limit(1));
+    const querySnapshot = await getDocs(q);
 
-        if (saleSnapshot.empty) {
-            console.warn(`No sale found with ID: ${saleId}`);
-            return null;
-        }
-
-        const saleDoc = saleSnapshot.docs[0];
-        const enterpriseDocRef = saleDoc.ref.parent.parent;
-
-        if (!enterpriseDocRef) {
-             console.error(`Could not find parent enterprise for sale ID: ${saleId}`);
-             return null;
-        }
-        
-        const enterpriseDocSnap = await getDoc(enterpriseDocRef);
-        const ownerId = enterpriseDocSnap.data()?.ownerId;
-
-        if (!ownerId) {
-            console.error(`Could not find owner for sale ID: ${saleId}`);
-            return null;
-        }
-
-        const userDocSnap = await getDoc(doc(db, 'users', ownerId));
-
-        if (userDocSnap.exists()) {
-            return userDocSnap.data() as UserData;
-        } else {
-            console.error(`User document not found for sale ID: ${saleId}`);
-            return null;
-        }
-    } catch (error) {
-        console.error("Error fetching user by sale ID:", error);
+    if (querySnapshot.empty) {
+        console.warn(`No user found for sale ID: ${saleId}`);
         return null;
     }
+
+    const userDoc = querySnapshot.docs[0];
+    return userDoc.data() as UserData;
 }
 
 
 // Function to fetch user data based on purchase ID (server-side usage)
 export async function getUserByPurchaseId(purchaseId: string): Promise<UserData | null> {
-    const q = query(collectionGroup(db, 'purchases'), where('id', '==', purchaseId), limit(1));
-    const purchaseSnapshot = await getDocs(q);
+    const q = query(collectionGroup(db, 'users'), where('purchases.id', '==', purchaseId), limit(1));
+    const querySnapshot = await getDocs(q);
 
-    if (purchaseSnapshot.empty) {
-        console.warn(`No purchase found with ID: ${purchaseId}`);
+    if (querySnapshot.empty) {
+        console.warn(`No user found for purchase ID: ${purchaseId}`);
         return null;
     }
-
-    const purchaseDoc = purchaseSnapshot.docs[0];
-    const enterpriseDocRef = purchaseDoc.ref.parent.parent;
-    if (!enterpriseDocRef) {
-         console.error(`Could not find parent enterprise for purchase ID: ${purchaseId}`);
-         return null;
-    }
-    
-    const enterpriseDocSnap = await getDoc(enterpriseDocRef);
-    const ownerId = enterpriseDocSnap.data()?.ownerId;
-
-    if (!ownerId) {
-        console.error(`Could not find owner for purchase ID: ${purchaseId}`);
-        return null;
-    }
-
-    const userDocSnap = await getDoc(doc(db, 'users', ownerId));
-
-    if (userDocSnap.exists()) {
-        return userDocSnap.data() as UserData;
-    } else {
-        console.error(`User document not found for purchase ID: ${purchaseId}`);
-        return null;
-    }
+    const userDoc = querySnapshot.docs[0];
+    return userDoc.data() as UserData;
 }
 
 interface UserDataContextType {
   userData: UserData | null;
   isLoading: boolean;
   updateUserData: (data: Partial<UserData>) => Promise<void>;
-  addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => Promise<void>;
-  updateProduct: (id: string, updatedProduct: Partial<Omit<Product, 'id' | 'initialQuantity'>>) => Promise<void>;
+  addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateProduct: (id: string, updatedProduct: Partial<Omit<Product, 'id'>>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   getProductById: (id: string) => Product | undefined;
   addProductCategory: (name: string) => Promise<ProductCategory | null>;
@@ -183,33 +134,33 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
     await updateDoc(userDocRef, { enterpriseActivities: arrayUnion(newLog) });
   }, [user, getUserDocRef]);
 
-  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => {
+ const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => {
     const userDocRef = getUserDocRef();
-    if (!userDocRef) throw new Error("User or enterprise not available");
+    if (!userDocRef) throw new Error("User not available");
 
     const now = new Date().toISOString();
-    const newProduct: Product = { 
-        id: uuidv4(), 
-        name: productData.name,
-        description: productData.description || '',
-        purchasePrice: productData.purchasePrice,
-        price: productData.price,
-        promoPrice: productData.promoPrice || null,
-        initialQuantity: productData.quantity,
-        quantity: productData.quantity,
-        categoryId: productData.categoryId || null,
-        purchaseDate: productData.purchaseDate,
-        storageLocation: productData.storageLocation || '',
-        createdAt: now,
-        updatedAt: now,
+    const newProduct: Product = {
+      id: uuidv4(),
+      name: productData.name,
+      description: productData.description ?? '',
+      purchasePrice: productData.purchasePrice ?? 0,
+      price: productData.price,
+      promoPrice: productData.promoPrice ?? null,
+      initialQuantity: productData.initialQuantity,
+      quantity: productData.quantity,
+      categoryId: productData.categoryId ?? null,
+      purchaseDate: productData.purchaseDate,
+      storageLocation: productData.storageLocation ?? '',
+      createdAt: now,
+      updatedAt: now,
     };
     await updateDoc(userDocRef, { products: arrayUnion(newProduct) });
     await logActivity('product_created', `Produit "${newProduct.name}" créé.`);
-  }, [getUserDocRef, logActivity]);
+}, [getUserDocRef, logActivity]);
   
-  const updateProduct = useCallback(async (id: string, updatedProductData: Partial<Omit<Product, 'id' | 'initialQuantity'>>) => {
+  const updateProduct = useCallback(async (id: string, updatedProductData: Partial<Omit<Product, 'id'>>) => {
      const userDocRef = getUserDocRef();
-    if (!userDocRef) throw new Error("User or enterprise not available");
+    if (!userDocRef) throw new Error("User not available");
     
     const currentProducts = userData?.products || [];
     const productIndex = currentProducts.findIndex(p => p.id === id);
@@ -217,18 +168,19 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
 
     const existingProduct = currentProducts[productIndex];
     
-    const updatedProduct = { 
+    const updatedProduct: Product = {
       ...existingProduct,
-      name: updatedProductData.name || existingProduct.name,
-      description: updatedProductData.description || existingProduct.description,
+      name: updatedProductData.name ?? existingProduct.name,
+      description: updatedProductData.description ?? existingProduct.description,
       purchasePrice: updatedProductData.purchasePrice ?? existingProduct.purchasePrice,
       price: updatedProductData.price ?? existingProduct.price,
       promoPrice: updatedProductData.promoPrice ?? existingProduct.promoPrice,
+      initialQuantity: updatedProductData.initialQuantity ?? existingProduct.initialQuantity,
       quantity: updatedProductData.quantity ?? existingProduct.quantity,
       categoryId: updatedProductData.categoryId ?? existingProduct.categoryId,
-      purchaseDate: updatedProductData.purchaseDate || existingProduct.purchaseDate,
-      storageLocation: updatedProductData.storageLocation || existingProduct.storageLocation,
-      updatedAt: new Date().toISOString() 
+      purchaseDate: updatedProductData.purchaseDate ?? existingProduct.purchaseDate,
+      storageLocation: updatedProductData.storageLocation ?? existingProduct.storageLocation,
+      updatedAt: new Date().toISOString()
     };
 
     const newProducts = [...currentProducts];
@@ -266,16 +218,15 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
   
   const getCategoryById = useCallback((id: string) => (userData?.productCategories || []).find(c => c.id === id), [userData?.productCategories]);
 
-  const addSale = useCallback(async (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber' | 'userId'>) => {
+  const addSale = useCallback(async (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber' | 'userId'>): Promise<Sale> => {
     const userDocRef = getUserDocRef();
     if (!user || !userDocRef) throw new Error("User not authenticated");
 
-    const newSaleId = uuidv4();
     let newSale: Sale;
     
     await runTransaction(db, async (transaction) => {
       const userDoc = await transaction.get(userDocRef);
-      if (!userDoc.exists()) throw "User document does not exist!";
+      if (!userDoc.exists()) throw new Error("User document does not exist!");
       
       const currentData = userDoc.data() as UserData;
       const currentCounter = currentData.saleInvoiceCounter || 0;
@@ -283,14 +234,13 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
       const invoiceNumber = `SALE-${String(newCount).padStart(4, '0')}`;
 
       newSale = {
-          id: newSaleId,
+          id: uuidv4(),
           invoiceNumber,
           date: new Date().toISOString(),
           userId: user.uid,
           ...saleData,
       };
 
-      const updatedSales = [...(currentData.sales || []), newSale];
       const currentProducts = currentData.products || [];
       const updatedProducts = [...currentProducts];
 
@@ -315,7 +265,7 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
       };
 
       transaction.update(userDocRef, { 
-          sales: updatedSales,
+          sales: arrayUnion(newSale),
           products: updatedProducts,
           saleInvoiceCounter: newCount,
           enterpriseActivities: arrayUnion(newLog),
@@ -324,20 +274,19 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
 
     // @ts-ignore
     return newSale;
-  }, [user, getUserDocRef, logActivity]);
+  }, [user, getUserDocRef]);
 
   const getSaleById = useCallback((id: string) => (userData?.sales || []).find(s => s.id === id), [userData?.sales]);
   
-  const addPurchase = useCallback(async (purchaseData: Omit<Purchase, 'id' | 'date' | 'invoiceNumber' | 'userId'>) => {
+  const addPurchase = useCallback(async (purchaseData: Omit<Purchase, 'id' | 'date' | 'invoiceNumber' | 'userId'>): Promise<Purchase> => {
     const userDocRef = getUserDocRef();
     if (!user || !userDocRef) throw new Error("User not authenticated");
 
-    const newPurchaseId = uuidv4();
     let newPurchase: Purchase;
     
-    await runTransaction(db, async (transaction) => {
-      const userDoc = await transaction.get(userDocRef);
-      if (!userDoc.exists()) throw "User document does not exist!";
+    await runTransaction(db, async (firestoreTransaction) => {
+      const userDoc = await firestoreTransaction.get(userDocRef);
+      if (!userDoc.exists()) throw new Error("User document does not exist!");
       
       const currentData = userDoc.data() as UserData;
       const currentCounter = currentData.purchaseInvoiceCounter || 0;
@@ -345,7 +294,7 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
       const invoiceNumber = `PURCH-${String(newCount).padStart(4, '0')}`;
 
       newPurchase = {
-          id: newPurchaseId,
+          id: uuidv4(),
           invoiceNumber,
           date: new Date().toISOString(),
           userId: user.uid,
@@ -374,7 +323,7 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
         userId: user.uid,
       };
 
-      transaction.update(userDocRef, { 
+      firestoreTransaction.update(userDocRef, { 
           purchases: arrayUnion(newPurchase),
           products: updatedProducts,
           purchaseInvoiceCounter: newCount,
@@ -384,7 +333,7 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
 
     // @ts-ignore
     return newPurchase;
-  }, [user, getUserDocRef, logActivity]);
+  }, [user, getUserDocRef]);
 
   const getPurchaseById = useCallback((id: string) => (userData?.purchases || []).find(p => p.id === id), [userData?.purchases]);
 

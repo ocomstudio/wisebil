@@ -20,7 +20,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export default function ProductsPage() {
-  const { products = [], deleteProduct, isLoading, getCategoryById } = useUserData();
+  const { userData, deleteProduct, isLoading, getCategoryById } = useUserData();
+  const products = userData?.products || [];
   const { t, formatCurrency, formatDate } = useLocale();
 
   return (

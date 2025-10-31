@@ -89,7 +89,11 @@ export default function CreateProductPage() {
   const onSubmit = async (data: ProductFormValues) => {
     setIsSubmitting(true);
     try {
-      await addProduct(data);
+      await addProduct({
+        ...data,
+        purchaseDate: data.purchaseDate.toISOString(),
+        initialQuantity: data.quantity, // Set initial quantity
+      });
 
       toast({
         title: t('product_added_title'),
