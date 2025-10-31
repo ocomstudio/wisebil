@@ -14,13 +14,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useProducts } from "@/context/product-context";
+import { useUserData } from "@/context/user-context";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export default function ProductsPage() {
-  const { products, deleteProduct, isLoading, getCategoryById } = useProducts();
+  const { products, deleteProduct, isLoading, getCategoryById } = useUserData();
   const { t, formatCurrency, formatDate } = useLocale();
 
   return (
@@ -54,7 +54,7 @@ export default function ProductsPage() {
                 <Skeleton className="h-12 w-full" />
                 <Skeleton className="h-12 w-full" />
              </div>
-           ) : products.length === 0 ? (
+           ) : !products || products.length === 0 ? (
              <div className="flex flex-col items-center justify-center text-center p-12 border-dashed border-2 rounded-lg">
                 <Package className="h-16 w-16 text-muted-foreground mb-4" />
                 <h3 className="text-xl font-semibold">{t('no_products_title')}</h3>
@@ -92,15 +92,15 @@ export default function ProductsPage() {
                             </div>
                         </TableCell>
                         <TableCell className="font-medium">{product.name}</TableCell>
-                        <TableCell>{getCategoryById(product.categoryId || '')?.name || '-'}</TableCell>
+                        <TableCell>{(product.categoryId && getCategoryById(product.categoryId)?.name) || '-'}</TableCell>
                         <TableCell>
                             {product.promoPrice ? (
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-destructive font-semibold">{formatCurrency(product.promoPrice)}</span>
-                                    <span className="text-xs text-muted-foreground line-through">{formatCurrency(product.price)}</span>
+                                    <span className="text-destructive font-semibold">{formatCurrency(product.promoPrice, 'XOF')}</span>
+                                    <span className="text-xs text-muted-foreground line-through">{formatCurrency(product.price, 'XOF')}</span>
                                 </div>
                             ) : (
-                                formatCurrency(product.price)
+                                formatCurrency(product.price, 'XOF')
                             )}
                         </TableCell>
                         <TableCell>

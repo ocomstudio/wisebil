@@ -1,0 +1,277 @@
+// src/app/dashboard/entreprise/page.tsx
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlusCircle, ShoppingCart, Package, ArrowUpRight, Leaf, Settings, RefreshCw, Activity, Building, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useSales } from "@/context/sales-context";
+import { useProducts } from "@/context/product-context";
+import { useLocale } from "@/context/locale-context";
+import { usePurchases } from "@/context/purchase-context";
+import { ActivityHistory } from "@/components/dashboard/entreprise/activity-history";
+import { useEnterprise } from "@/context/enterprise-context";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CreateEnterpriseForm } from "./create-enterprise-form";
+
+
+export default function EnterprisePage() {
+  const { activeEnterprise, isLoading: isLoadingEnterprise } = useEnterprise();
+  const { sales, isLoading: isLoadingSales } = useSales();
+  const { products, isLoading: isLoadingProducts } = useProducts();
+  const { purchases, isLoading: isLoadingPurchases } = usePurchases();
+  const { t, formatCurrency } = useLocale();
+  const [isActivityHistoryOpen, setIsActivityHistoryOpen] = useState(false);
+
+  if (isLoadingEnterprise) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-1/3" />
+        <Skeleton className="h-32 w-full" />
+        <div className="grid grid-cols-3 gap-2">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+        </div>
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (!activeEnterprise) {
+    return <CreateEnterpriseForm />;
+  }
+  
+  const isLoading = isLoadingSales || isLoadingProducts || isLoadingPurchases;
+
+  const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
+  const totalProductsSold = sales.reduce((sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
+  
+
+  return (
+    <div className="space-y-6 pb-24 md:pb-8">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold font-headline flex items-center gap-2"><Building /> {activeEnterprise.name}</h1>
+            <p className="text-muted-foreground">{activeEnterprise.description}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setIsActivityHistoryOpen(true)}>
+                <Activity className="mr-2 h-4 w-4" />
+                {t('history_button')}
+            </Button>
+            <Button asChild variant="outline" size="sm">
+                <Link href="/dashboard/settings/company-profile">
+                    <Settings className="mr-2 h-4 w-4" />
+                    {t('company_settings_button')}
+                </Link>
+            </Button>
+          </div>
+      </div>
+      
+       <Card className="bg-card text-card-foreground shadow-xl rounded-2xl overflow-hidden relative border-primary/20 transform-gpu transition-transform hover:scale-[1.02]">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-transparent z-0 opacity-40"></div>
+            <div className="absolute -right-10 -bottom-16 opacity-10">
+                <Leaf className="h-48 w-48 text-primary" />
+            </div>
+            <CardContent className="p-6 relative z-10">
+                 <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-sm text-primary-foreground/80 flex items-center gap-2">
+                            {t('total_revenue_label')}
+                        </p>
+                         {isLoading ? <Skeleton className="h-10 w-48 mt-1" /> : <p className="text-4xl font-bold mt-1">{formatCurrency(totalRevenue)}</p>}
+                    </div>
+                 </div>
+                 <p className="text-xs text-muted-foreground mt-2">{t('based_on_sales_label', { count: sales.length })}</p>
+            </CardContent>
+       </Card>
+
+       <div className="grid grid-cols-3 gap-2">
+            <Button asChild className="col-span-1 h-auto p-0" variant="ghost">
+                <Link href="/dashboard/entreprise/sales/create">
+                    <Card className="w-full h-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all transform-gpu hover:shadow-xl hover:shadow-primary/20">
+                        <CardHeader className="flex flex-col items-center justify-center text-center p-2">
+                            <ShoppingCart className="h-6 w-6 mb-1" />
+                            <CardTitle className="text-xs font-bold">{t('nav_sales')}</CardTitle>
+                        </CardHeader>
+                    </Card>
+                </Link>
+            </Button>
+             <Button asChild className="col-span-1 h-auto p-0" variant="ghost">
+                <Link href="/dashboard/entreprise/products/create">
+                    <Card className="w-full h-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all transform-gpu hover:shadow-xl hover:shadow-secondary/20">
+                        <CardHeader className="flex flex-col items-center justify-center text-center p-2">
+                            <PlusCircle className="h-6 w-6 mb-1" />
+                            <CardTitle className="text-xs font-bold">{t('nav_products')}</CardTitle>
+                        </CardHeader>
+                    </Card>
+                </Link>
+            </Button>
+             <Button asChild className="col-span-1 h-auto p-0" variant="ghost">
+                <Link href="/dashboard/entreprise/purchases/create">
+                    <Card className="w-full h-full bg-accent text-accent-foreground hover:bg-accent/90 transition-all transform-gpu hover:shadow-xl hover:shadow-accent/20">
+                        <CardHeader className="flex flex-col items-center justify-center text-center p-2">
+                            <RefreshCw className="h-6 w-6 mb-1" />
+                            <CardTitle className="text-xs font-bold">{t('nav_purchases')}</CardTitle>
+                        </CardHeader>
+                    </Card>
+                </Link>
+            </Button>
+       </div>
+
+
+       <div className="grid gap-4 grid-cols-2 sm:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t('sales_label')}</CardTitle>
+            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {isLoading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold">+{sales.length}</div>}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t('products_sold_label')}</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {isLoading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold">{totalProductsSold}</div>}
+          </CardContent>
+        </Card>
+        <Card className="col-span-2 sm:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t('total_products_label')}</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {isLoading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold">{products.length}</div>}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>{t('recent_sales_title')}</CardTitle>
+                {(sales.length > 5) && (
+                  <Button asChild variant="link" size="sm">
+                    <Link href="/dashboard/entreprise/sales/invoices">{t('see_all')}</Link>
+                  </Button>
+                )}
+              </div>
+                <CardDescription>{t('recent_sales_desc')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {isLoading ? <Skeleton className="h-40 w-full" /> : sales.length > 0 ? (
+                    <div className="space-y-4">
+                        {sales.slice(0, 5).map(sale => (
+                             <div key={sale.id} className="flex items-center">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-lg">
+                                    🛒
+                                </div>
+                                <div className="ml-4 space-y-1">
+                                <p className="text-sm font-medium leading-none">{t('sale_to_customer_label', { customerName: sale.customerName })}</p>
+                                <p className="text-sm text-muted-foreground">{t('product_count_label', { count: sale.items.length })}</p>
+                                </div>
+                                <div className="ml-auto font-medium">{formatCurrency(sale.total)}</div>
+                                <Button variant="ghost" size="icon" className="ml-2" asChild>
+                                    <Link href={`/dashboard/entreprise/sales/invoice/${sale.id}`}>
+                                        <ArrowUpRight className="h-4 w-4" />
+                                    </Link>
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                ): (
+                     <div className="text-center text-muted-foreground py-8">
+                        <p>{t('no_sales_recorded_label')}</p>
+                     </div>
+                )}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+                <CardTitle>{t('product_inventory_title')}</CardTitle>
+                <CardDescription>{t('product_inventory_desc')}</CardDescription>
+                 <Button variant="outline" size="sm" className="mt-2" asChild>
+                    <Link href="/dashboard/entreprise/products">
+                        {t('manage_products_button')}
+                    </Link>
+                </Button>
+            </CardHeader>
+            <CardContent>
+                {isLoading ? <Skeleton className="h-40 w-full" /> : products.length > 0 ? (
+                     <div className="space-y-4">
+                        {products.slice(0, 5).map(product => (
+                            <div key={product.id} className="flex items-center">
+                                <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center overflow-hidden">
+                                     {product.imageUrl ? (
+                                        <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover"/>
+                                     ) : (
+                                        <Package />
+                                     )}
+                                </div>
+                                <div className="ml-4 space-y-1">
+                                    <p className="text-sm font-medium leading-none">{product.name}</p>
+                                    <p className="text-sm text-muted-foreground">{formatCurrency(product.price)}</p>
+                                </div>
+                                <div className="ml-auto font-medium">{t('in_stock_label', { count: product.quantity })}</div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center text-muted-foreground py-8">
+                        <p>{t('no_products_in_inventory_label')}</p>
+                    </div>
+                )}
+            </CardContent>
+          </Card>
+           <Card className="lg:col-span-2">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>{t('recent_purchases_title')}</CardTitle>
+                {purchases.length > 5 && (
+                   <Button asChild variant="link" size="sm">
+                    <Link href="/dashboard/entreprise/purchases/invoices">{t('see_all')}</Link>
+                  </Button>
+                )}
+              </div>
+              <CardDescription>{t('recent_purchases_desc')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {isLoading ? <Skeleton className="h-40 w-full" /> : purchases.length > 0 ? (
+                    <div className="space-y-4">
+                        {purchases.slice(0, 5).map(purchase => (
+                             <div key={purchase.id} className="flex items-center">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-lg">
+                                    <RefreshCw />
+                                </div>
+                                <div className="ml-4 space-y-1">
+                                <p className="text-sm font-medium leading-none">{t('purchase_from_supplier_label', { supplierName: purchase.supplierName })}</p>
+                                <p className="text-sm text-muted-foreground">{t('product_count_label', { count: purchase.items.length })}</p>
+                                </div>
+                                <div className="ml-auto font-medium">{formatCurrency(purchase.total)}</div>
+                                <Button variant="ghost" size="icon" className="ml-2" asChild>
+                                    <Link href={`/dashboard/entreprise/purchases/invoice/${purchase.id}`}>
+                                        <ArrowUpRight className="h-4 w-4" />
+                                    </Link>
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                ): (
+                     <div className="text-center text-muted-foreground py-8">
+                        <p>{t('no_purchases_recorded_label')}</p>
+                     </div>
+                )}
+            </CardContent>
+          </Card>
+      </div>
+      <ActivityHistory isOpen={isActivityHistoryOpen} onOpenChange={setIsActivityHistoryOpen} />
+    </div>
+  );
+}

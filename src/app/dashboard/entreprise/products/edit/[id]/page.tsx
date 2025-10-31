@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Loader2, Upload, CalendarIcon } from 'lucide-react';
-import { useProducts } from '@/context/product-context';
+import { useUserData } from '@/context/user-context';
 import { useLocale } from '@/context/locale-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Product } from '@/types/product';
@@ -30,7 +30,7 @@ export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
-  const { getProductById, updateProduct, uploadImage, isLoading, productCategories, addProductCategory } = useProducts();
+  const { getProductById, updateProduct, uploadImage, isLoading, productCategories, addProductCategory } = useUserData();
   const { t, currency, locale } = useLocale();
   
   const [product, setProduct] = useState<Product | null>(null);
@@ -256,7 +256,7 @@ export default function EditProductPage() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {productCategories.map(cat => <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>)}
+                                  {productCategories && productCategories.map(cat => <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>)}
                                   <SelectItem value="CREATE_NEW" className="font-bold text-primary">{t('create_new_category_button')}</SelectItem>
                                 </SelectContent>
                               </Select>

@@ -26,43 +26,45 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { TeamChatProvider } from "@/context/team-chat-context";
 import { TeamChat } from "@/components/dashboard/team/team-chat";
-import { EnterpriseProvider } from "@/context/enterprise-context";
 import { UserDataProvider } from "@/context/user-context";
-import { CompanyProfileProvider } from "@/context/company-profile-context";
+import { EnterpriseProvider } from "@/context/enterprise-context";
 import { ProductProvider } from "@/context/product-context";
-import { EnterpriseDrawer } from "@/components/dashboard/entreprise/enterprise-drawer";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { SalesProvider } from "@/context/sales-context";
 import { PurchasesProvider } from "@/context/purchase-context";
+import { CompanyProfileProvider } from "@/context/company-profile-context";
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { t } = useLocale();
   const pathname = usePathname();
   const { unreadCount } = useNotifications();
-  const isMobile = useIsMobile();
   
   const showTeamChatPanel = pathname.startsWith('/dashboard/entreprise/management');
-  const isEnterpriseSection = pathname.startsWith('/dashboard/entreprise');
 
   // Hide main layout for the full-screen scan page on mobile
   if (pathname.startsWith('/dashboard/scan-receipt')) {
     return <div className="h-screen w-screen">{children}</div>;
   }
   
-  const EnterpriseWrapper = ({children}: {children: React.ReactNode}) => (
-    <SalesProvider>
-      <PurchasesProvider>
-        {children}
-      </PurchasesProvider>
-    </SalesProvider>
+  const EnterpriseRelatedProviders = ({children}: {children: React.ReactNode}) => (
+     <CompanyProfileProvider>
+        <ProductProvider>
+          <SalesProvider>
+            <PurchasesProvider>
+              {children}
+            </PurchasesProvider>
+          </SalesProvider>
+        </ProductProvider>
+      </CompanyProfileProvider>
   )
+
+  const isEnterprisePage = pathname.startsWith('/dashboard/entreprise');
 
   return (
     <div className={cn("grid h-screen w-full overflow-hidden", showTeamChatPanel ? "md:grid-cols-[250px_1fr_350px]" : "md:grid-cols-[250px_1fr_350px]")}>
       {/* Desktop Sidebar */}
-      <aside className="hidden border-r bg-muted/40 md:flex flex-col">
-        <div className="p-4 px-6">
+      <aside className="hidden border-r bg-muted/40 md:flex flex-col gap-6 p-4">
+        <div className="px-2">
           <Logo />
         </div>
         <SidebarNav />
@@ -94,18 +96,14 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         <DashboardHeader />
 
         {/* Main Content */}
-        <main className="flex-1 p-4 md:p-8 bg-background md:bg-muted/40 overflow-y-auto pb-24 md:pb-8 relative">
-           {isMobile ? (
-              <EnterpriseDrawer>{children}</EnterpriseDrawer>
+        <main className="flex-1 p-4 md:p-8 bg-background md:bg-muted/40 overflow-y-auto pb-20 md:pb-8">
+          <div className="max-w-6xl mx-auto h-full">
+            {isEnterprisePage ? (
+              <EnterpriseRelatedProviders>{children}</EnterpriseRelatedProviders>
             ) : (
-              <div className="max-w-6xl mx-auto h-full">
-                {isEnterpriseSection ? (
-                  <EnterpriseWrapper>{children}</EnterpriseWrapper>
-                ) : (
-                  children
-                )}
-              </div>
+              children
             )}
+          </div>
         </main>
       </div>
       
@@ -132,19 +130,16 @@ export default function DashboardLayout({
           <LocaleProvider>
             <SettingsProvider>
               <TransactionsProvider>
-                <EnterpriseProvider>
                   <BudgetProvider>
                     <SavingsProvider>
                       <NotificationsProvider>
-                        <CompanyProfileProvider>
-                           <ProductProvider>
-                                <TutorialProvider>
-                                    <TeamChatProvider>
-                                      <DashboardLayoutContent>{children}</DashboardLayoutContent>
-                                    </TeamChatProvider>
-                                </TutorialProvider>
-                            </ProductProvider>
-                        </CompanyProfileProvider>
+                        <EnterpriseProvider>
+                            <TutorialProvider>
+                                <TeamChatProvider>
+                                  <DashboardLayoutContent>{children}</DashboardLayoutContent>
+                                </TeamChatProvider>
+                            </TutorialProvider>
+                        </EnterpriseProvider>
                       </NotificationsProvider>
                       <HotToaster
                         position="top-center"
@@ -154,7 +149,6 @@ export default function DashboardLayout({
                       />
                     </SavingsProvider>
                   </BudgetProvider>
-                </EnterpriseProvider>
               </TransactionsProvider>
             </SettingsProvider>
           </LocaleProvider>

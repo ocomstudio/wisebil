@@ -6,18 +6,9 @@ import { useAuth, User } from './auth-context';
 import type { Transaction } from '@/types/transaction';
 import type { Budget } from '@/types/budget';
 import type { SavingsGoal } from '@/types/savings-goal';
-import type { JournalEntry } from '@/components/dashboard/accounting/journal-entries';
-import type { Invoice } from '@/types/invoice';
 import type { Language, Currency } from './locale-context';
-import type { CompanyProfile } from '@/types/company';
-import type { Product, ProductCategory } from '@/types/product';
-import type { Sale } from '@/types/sale';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, runTransaction, collection, query, where, getDocs, limit, collectionGroup } from 'firebase/firestore';
-import { v4 as uuidv4 } from "uuid";
-import type { Purchase } from '@/types/purchase';
-import type { ActivityLog } from '@/types/activity-log';
-import { useToast } from '@/hooks/use-toast';
+import { doc, setDoc, collectionGroup, query, where, getDocs, limit, getDoc } from 'firebase/firestore';
 
 
 export interface UserData {
@@ -42,10 +33,6 @@ export interface UserData {
 // Function to fetch user data based on sale ID (server-side usage)
 export async function getUserBySaleId(saleId: string): Promise<UserData | null> {
     try {
-        // This query is inherently flawed for Firestore's default security model.
-        // It requires a specific index that combines all fields, or it won't work.
-        // A better approach is to navigate from the sale document up to its parent user.
-        console.warn("Attempting a potentially inefficient collectionGroup query for 'sales'.")
         const salesQuery = query(collectionGroup(db, 'sales'), where('id', '==', saleId), limit(1));
         const saleSnapshot = await getDocs(salesQuery);
 
@@ -55,9 +42,6 @@ export async function getUserBySaleId(saleId: string): Promise<UserData | null> 
         }
 
         const saleDoc = saleSnapshot.docs[0];
-        // This assumes the structure is /users/{userId}/sales/{saleId}, which is incorrect with the new model.
-        // The correct path is /enterprises/{enterpriseId}/sales/{saleId}
-        // Let's try to get the parent's parent.
         const enterpriseDocRef = saleDoc.ref.parent.parent;
 
         if (!enterpriseDocRef) {
@@ -127,7 +111,6 @@ interface UserDataContextType {
   userData: UserData | null;
   isLoading: boolean;
   updateUserData: (data: Partial<UserData>) => Promise<void>;
-  addUserSale: (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber'>, enterpriseId: string) => Promise<Sale>;
 }
 
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
@@ -135,7 +118,6 @@ const UserDataContext = createContext<UserDataContextType | undefined>(undefined
 export const UserDataProvider = ({ children, initialData }: { children: ReactNode, initialData?: UserData | null }) => {
   const { fullUserData: authFullUserData, isLoading: authIsLoading } = useAuth();
   const { user } = useAuth();
-  const { toast } = useToast();
 
   const userData = initialData || authFullUserData;
   const isLoading = initialData ? false : authIsLoading;
@@ -159,91 +141,11 @@ export const UserDataProvider = ({ children, initialData }: { children: ReactNod
   }, [getUserDocRef]);
 
 
-   const addUserSale = useCallback(async (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber'>, enterpriseId: string): Promise<Sale> => {
-    if (!user) throw new Error("Utilisateur non authentifié");
-
-    const newSaleId = uuidv4();
-    let newSale: Sale | null = null;
-    const enterpriseDocRef = doc(db, 'enterprises', enterpriseId);
-    
-    try {
-        await runTransaction(db, async (transaction) => {
-            const enterpriseDoc = await transaction.get(enterpriseDocRef);
-            if (!enterpriseDoc.exists()) throw "Le document de l'entreprise n'existe pas !";
-            
-            const currentData = enterpriseDoc.data();
-            // Generate invoice number
-            const currentCounter = currentData.saleInvoiceCounter || 0;
-            const newCount = currentCounter + 1;
-            const invoiceNumber = `SALE-${String(newCount).padStart(4, '0')}`;
-
-            newSale = {
-                id: newSaleId,
-                invoiceNumber,
-                date: new Date().toISOString(),
-                ...saleData,
-            };
-
-            const currentSales = currentData.sales || [];
-            const updatedSales = [...currentSales, newSale];
-            
-            // Update product stock
-            const currentProducts = currentData.products || [];
-            const updatedProducts = [...currentProducts];
-
-            for (const item of newSale.items) {
-                const productIndex = updatedProducts.findIndex(p => p.id === item.productId);
-                if (productIndex !== -1) {
-                    const product = updatedProducts[productIndex];
-                     if (product.quantity < item.quantity) {
-                        throw new Error(`Stock insuffisant pour le produit "${product.name}".`);
-                    }
-                    const newQuantity = product.quantity - item.quantity;
-                    updatedProducts[productIndex] = { ...product, quantity: newQuantity >= 0 ? newQuantity : 0 };
-                } else {
-                    throw new Error(`Produit avec ID ${item.productId} non trouvé.`);
-                }
-            }
-            
-             const newLog: ActivityLog = {
-              id: uuidv4(),
-              timestamp: new Date().toISOString(),
-              type: 'sale_created',
-              description: `Vente #${invoiceNumber} créée pour ${newSale.customerName}.`,
-              userName: user?.displayName || 'Unknown',
-              userId: user?.uid || 'Unknown',
-            };
-            const currentActivities = currentData.enterpriseActivities || [];
-            
-            transaction.update(enterpriseDocRef, { 
-                sales: updatedSales,
-                products: updatedProducts,
-                saleInvoiceCounter: newCount,
-                enterpriseActivities: [newLog, ...currentActivities],
-            });
-        });
-        if (newSale) {
-            return newSale;
-        } else {
-            throw new Error("La création de la vente a échoué après la transaction.");
-        }
-    } catch (e: any) {
-      console.error("Failed to add sale and update stock", e);
-      toast({
-        variant: "destructive",
-        title: "Erreur de Vente",
-        description: e.message || "Une erreur est survenue lors de l'enregistrement de la vente."
-      })
-      throw e;
-    }
-  }, [user, toast]);
-
   const value = useMemo(() => ({
     userData: userData,
     isLoading,
     updateUserData,
-    addUserSale,
-  }), [userData, isLoading, updateUserData, addUserSale]);
+  }), [userData, isLoading, updateUserData]);
 
   return (
     <UserDataContext.Provider value={value}>

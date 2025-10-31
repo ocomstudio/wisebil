@@ -1,17 +1,16 @@
 // src/context/company-profile-context.tsx
 "use client";
 
-import React, { createContext, useContext, ReactNode, useCallback, useMemo, useEffect, useState } from 'react';
-import type { CompanyProfile } from '@/types/company';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo } from 'react';
+import { CompanyProfile } from '@/types/company';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
-import { useToast } from '@/hooks/use-toast';
 import { useEnterprise } from './enterprise-context';
 
 interface CompanyProfileContextType {
   companyProfile: CompanyProfile | null;
-  updateCompanyProfile: (newProfile: Partial<CompanyProfile>) => Promise<void>;
+  updateCompanyProfile: (newProfileData: Partial<CompanyProfile>) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -19,52 +18,54 @@ const CompanyProfileContext = createContext<CompanyProfileContextType | undefine
 
 export const CompanyProfileProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
-  const { enterprises, isLoading: isLoadingEnterprises } = useEnterprise();
+  const { activeEnterprise, isLoading: isLoadingEnterprise } = useEnterprise();
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
-  
-  // For now, we assume the user has only one enterprise.
-  const activeEnterprise = useMemo(() => enterprises.length > 0 ? enterprises[0] : null, [enterprises]);
 
   useEffect(() => {
-    if (!activeEnterprise) {
-        setIsLoading(false);
-        setCompanyProfile(null);
-        return;
+    if (isLoadingEnterprise || !activeEnterprise) {
+      setIsLoading(false);
+      setCompanyProfile(null);
+      return;
     }
 
     const enterpriseDocRef = doc(db, 'enterprises', activeEnterprise.id);
     const unsubscribe = onSnapshot(enterpriseDocRef, (docSnap) => {
-        if (docSnap.exists()) {
-            const enterpriseData = docSnap.data();
-            setCompanyProfile(enterpriseData.companyProfile || null);
-        }
-        setIsLoading(false);
-    }, (error) => {
-        console.error("Failed to listen to company profile:", error);
-        setIsLoading(false);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setCompanyProfile(data.companyProfile || null);
+      } else {
+        setCompanyProfile(null);
+      }
+      setIsLoading(false);
     });
 
     return () => unsubscribe();
-  }, [activeEnterprise]);
-
+  }, [activeEnterprise, isLoadingEnterprise]);
 
   const updateCompanyProfile = useCallback(async (newProfileData: Partial<CompanyProfile>) => {
-    if (!activeEnterprise) return;
-    
+    if (!user || !activeEnterprise) throw new Error("User or enterprise not available");
+
     const enterpriseDocRef = doc(db, 'enterprises', activeEnterprise.id);
     
-    try {
-        await updateDoc(enterpriseDocRef, { 'companyProfile': { ...companyProfile, ...newProfileData } });
-    } catch(e) {
-        console.error("Failed to update company profile in Firestore", e);
+    // Create the update payload by prefixing keys with 'companyProfile.'
+    const updatePayload: { [key: string]: any } = {};
+    for (const key in newProfileData) {
+        updatePayload[`companyProfile.${key}`] = (newProfileData as any)[key];
     }
-  }, [activeEnterprise, companyProfile]);
-  
+    
+    await updateDoc(enterpriseDocRef, updatePayload);
+
+  }, [user, activeEnterprise]);
+
+  const value = {
+    companyProfile,
+    updateCompanyProfile,
+    isLoading: isLoading || isLoadingEnterprise,
+  };
 
   return (
-    <CompanyProfileContext.Provider value={{ companyProfile, updateCompanyProfile, isLoading: isLoading || isLoadingEnterprises }}>
+    <CompanyProfileContext.Provider value={value}>
       {children}
     </CompanyProfileContext.Provider>
   );
