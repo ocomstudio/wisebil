@@ -9,6 +9,7 @@ import { db } from '@/lib/firebase';
 import { collection, doc, onSnapshot, writeBatch, arrayUnion, updateDoc, arrayRemove } from 'firebase/firestore';
 import { useEnterprise } from './enterprise-context';
 import { v4 as uuidv4 } from 'uuid';
+import { ActivityLog } from '@/types/activity-log';
 
 interface ProductContextType {
   products: Product[];
@@ -20,6 +21,7 @@ interface ProductContextType {
   addProductCategory: (name: string) => Promise<ProductCategory | null>;
   getCategoryById: (id: string) => ProductCategory | undefined;
   isLoading: boolean;
+  logActivity: (type: ActivityLog['type'], description: string) => Promise<void>;
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
@@ -31,13 +33,17 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const [productCategories, setProductCategories] = useState<ProductCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-
+  
   useEffect(() => {
-    if (isLoadingEnterprises || !activeEnterprise) {
-        setIsLoading(true);
-        setProducts([]);
-        setProductCategories([]);
-        return;
+    if (isLoadingEnterprises) {
+      setIsLoading(true);
+      return;
+    }
+    if (!activeEnterprise) {
+      setProducts([]);
+      setProductCategories([]);
+      setIsLoading(false);
+      return;
     }
 
     const enterpriseDocRef = doc(db, 'enterprises', activeEnterprise.id);
@@ -55,9 +61,26 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
 
     return () => unsubscribe();
   }, [activeEnterprise, isLoadingEnterprises]);
+
+  const logActivity = useCallback(async (type: ActivityLog['type'], description: string) => {
+    if (!user || !activeEnterprise) return;
+    const enterpriseDocRef = doc(db, 'enterprises', activeEnterprise.id);
+
+    const newLog: ActivityLog = {
+      id: uuidv4(),
+      timestamp: new Date().toISOString(),
+      type,
+      description,
+      userName: user.displayName || 'Unknown',
+      userId: user.uid,
+    };
+    await updateDoc(enterpriseDocRef, { enterpriseActivities: arrayUnion(newLog) });
+  }, [user, activeEnterprise]);
   
-  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'initialQuantity'>) => {
-    if (!user || !activeEnterprise) throw new Error("User or enterprise not available");
+  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'| 'initialQuantity'>) => {
+    if (!user || !activeEnterprise) {
+        throw new Error("User or enterprise not available");
+    }
 
     const enterpriseDocRef = doc(db, 'enterprises', activeEnterprise.id);
     const now = new Date().toISOString();
@@ -69,7 +92,8 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         ...productData,
     };
     await updateDoc(enterpriseDocRef, { products: arrayUnion(newProduct) });
-  }, [user, activeEnterprise]);
+    await logActivity('product_created', `Produit "${newProduct.name}" créé.`);
+  }, [user, activeEnterprise, logActivity]);
 
   const updateProduct = useCallback(async (id: string, updatedProductData: Partial<Omit<Product, 'id' | 'initialQuantity'>>) => {
     if (!activeEnterprise) throw new Error("Enterprise not available");
@@ -83,7 +107,8 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     currentProducts[productIndex] = updatedProduct;
     
     await updateDoc(enterpriseDocRef, { products: currentProducts });
-  }, [activeEnterprise, products]);
+    await logActivity('product_updated', `Produit "${updatedProduct.name}" mis à jour.`);
+  }, [activeEnterprise, products, logActivity]);
 
   const deleteProduct = useCallback(async (id: string) => {
     if (!activeEnterprise) return;
@@ -91,8 +116,9 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     const productToDelete = products.find(p => p.id === id);
     if (productToDelete) {
         await updateDoc(enterpriseDocRef, { products: arrayRemove(productToDelete) });
+        await logActivity('product_deleted', `Produit "${productToDelete.name}" supprimé.`);
     }
-  }, [activeEnterprise, products]);
+  }, [activeEnterprise, products, logActivity]);
 
   const getProductById = useCallback((id: string) => products.find(p => p.id === id), [products]);
 
@@ -120,7 +146,8 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     getProductById,
     addProductCategory,
     getCategoryById,
-    isLoading
+    isLoading: isLoading || isLoadingEnterprises,
+    logActivity
   };
 
   return (

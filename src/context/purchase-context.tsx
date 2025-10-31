@@ -27,9 +27,13 @@ export const PurchasesProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (isLoadingEnterprises || !activeEnterprise) {
-      setIsLoading(true);
+    if (isLoadingEnterprises) {
+        setIsLoading(true);
+        return;
+    }
+    if (!activeEnterprise) {
       setPurchases([]);
+      setIsLoading(false);
       return;
     }
 
@@ -48,7 +52,9 @@ export const PurchasesProvider = ({ children }: { children: ReactNode }) => {
   }, [activeEnterprise, isLoadingEnterprises]);
 
   const addPurchase = useCallback(async (purchaseData: Omit<Purchase, 'id' | 'date' | 'invoiceNumber'| 'userId'>): Promise<Purchase> => {
-    if (!user || !activeEnterprise) throw new Error("User or enterprise not available");
+    if (!user || !activeEnterprise) {
+      throw new Error("User or enterprise not available");
+    }
 
     const enterpriseDocRef = doc(db, 'enterprises', activeEnterprise.id);
     const newPurchaseId = uuidv4();

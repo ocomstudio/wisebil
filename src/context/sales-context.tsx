@@ -25,11 +25,34 @@ const SalesContext = createContext<SalesContextType | undefined>(undefined);
 export const SalesProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const { activeEnterprise, isLoading: isLoadingEnterprises } = useEnterprise();
-  const { products, updateProduct } = useProducts();
   const [sales, setSales] = useState<Sale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
 
+  useEffect(() => {
+    if (isLoadingEnterprises) {
+        setIsLoading(true);
+        return;
+    }
+    if (!activeEnterprise) {
+      setSales([]);
+      setIsLoading(false);
+      return;
+    }
+
+    const enterpriseDocRef = doc(db, 'enterprises', activeEnterprise.id);
+    const unsubscribe = onSnapshot(enterpriseDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            setSales(data.sales || []);
+        } else {
+            setSales([]);
+        }
+        setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [activeEnterprise, isLoadingEnterprises]);
+  
   const sortedSales = useMemo(() => {
     return [...sales].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [sales]);
@@ -49,29 +72,10 @@ export const SalesProvider = ({ children }: { children: ReactNode }) => {
     await updateDoc(enterpriseDocRef, { enterpriseActivities: arrayUnion(newLog) });
   }, [user, activeEnterprise]);
 
-  useEffect(() => {
-    if (isLoadingEnterprises || !activeEnterprise) {
-      setIsLoading(true);
-      setSales([]);
-      return;
-    }
-
-    const enterpriseDocRef = doc(db, 'enterprises', activeEnterprise.id);
-    const unsubscribe = onSnapshot(enterpriseDocRef, (docSnap) => {
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            setSales(data.sales || []);
-        } else {
-            setSales([]);
-        }
-        setIsLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [activeEnterprise, isLoadingEnterprises]);
-
   const addSale = useCallback(async (saleData: Omit<Sale, 'id' | 'date' | 'invoiceNumber'| 'userId'>): Promise<Sale> => {
-    if (!user || !activeEnterprise) throw new Error("User or enterprise not available");
+    if (!user || !activeEnterprise) {
+        throw new Error("User or enterprise not available");
+    }
 
     const enterpriseDocRef = doc(db, 'enterprises', activeEnterprise.id);
     const newSaleId = uuidv4();
