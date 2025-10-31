@@ -17,7 +17,8 @@ import { useUserData } from "@/context/user-context";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PurchaseInvoicesPage() {
-  const { purchases = [], isLoading } = useUserData();
+  const { userData, isLoading } = useUserData();
+  const purchases = userData?.purchases || [];
   const { t, formatCurrency, formatDate } = useLocale();
 
   return (

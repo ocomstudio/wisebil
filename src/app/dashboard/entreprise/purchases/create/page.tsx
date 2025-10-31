@@ -124,15 +124,15 @@ export default function CreatePurchasePage() {
                     <CardTitle>{t('products_purchased_title')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="hidden md:grid grid-cols-[1fr_120px_120px_auto] gap-2 items-end mb-2 text-sm font-medium text-muted-foreground">
+                    <div className="hidden md:grid grid-cols-[1fr_120px_150px_auto] gap-4 items-end mb-2 text-sm font-medium text-muted-foreground">
                         <div>{t('product_header')}</div>
-                        <div className="text-center">{t('quantity_header')}</div>
-                        <div className="text-center">{t('product_purchase_price_label')} ({currency})</div>
+                        <div className="text-left">{t('quantity_header')}</div>
+                        <div className="text-left">{t('product_purchase_price_label')} ({currency})</div>
                         <div></div>
                     </div>
                     <div className="space-y-4">
                         {fields.map((field, index) => (
-                           <div key={field.id} className="grid grid-cols-1 md:grid-cols-[1fr_120px_120px_auto] gap-2 items-start">
+                           <div key={field.id} className="grid grid-cols-1 md:grid-cols-[1fr_120px_150px_auto] gap-2 md:gap-4 items-start">
                               <FormField control={form.control} name={`items.${index}.productId`} render={({ field }) => (
                                 <FormItem>
                                      <FormLabel className="md:hidden">Produit</FormLabel>
@@ -151,15 +151,15 @@ export default function CreatePurchasePage() {
                               )} />
                               <FormField control={form.control} name={`items.${index}.quantity`} render={({ field }) => (
                                 <FormItem>
-                                <FormLabel className="md:hidden">{t('quantity_item_placeholder')}</FormLabel>
+                                <FormLabel className="md:hidden">{t('quantity_header')}</FormLabel>
                                 <FormControl><Input type="number" placeholder={t('quantity_item_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
                               )} />
                               <FormField control={form.control} name={`items.${index}.price`} render={({ field }) => (
                                 <FormItem>
                                 <FormLabel className="md:hidden">{t('product_purchase_price_label')} ({currency})</FormLabel>
-                                <FormControl><Input type="number" step="any" placeholder={t('product_purchase_price_label')} {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormControl><Input type="number" step="any" placeholder="0.00" {...field} /></FormControl><FormMessage /></FormItem>
                               )} />
-                              <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="self-end">
+                              <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="self-center">
                                 <Trash2 className="h-4 w-4 text-destructive" />
                               </Button>
                            </div>
