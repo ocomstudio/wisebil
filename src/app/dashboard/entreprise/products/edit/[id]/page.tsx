@@ -47,7 +47,7 @@ export default function EditProductPage() {
     price: z.coerce.number().min(0, t('product_price_negative_error')),
     promoPrice: z.coerce.number().min(0, t('product_price_negative_error')).optional(),
     quantity: z.coerce.number().int().min(0, t('product_quantity_negative_error')),
-    categoryId: z.string().optional(),
+    categoryId: z.string().nullable().optional(),
     purchaseDate: z.date({
       required_error: t('product_purchase_date_required_error'),
     }),
@@ -110,7 +110,7 @@ export default function EditProductPage() {
     if (!product) return;
     setIsSubmitting(true);
     try {
-      await updateProduct(product.id, { ...data, purchaseDate: data.purchaseDate.toISOString() });
+      await updateProduct(product.id, data);
 
       toast({
         title: t('product_updated_title'),
@@ -226,7 +226,7 @@ export default function EditProductPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{t('product_category_label')}</FormLabel>
-                              <Select onValueChange={handleCategoryChange} value={field.value}>
+                              <Select onValueChange={handleCategoryChange} value={field.value ?? ''}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder={t('select_category_placeholder')} />
