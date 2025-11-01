@@ -37,9 +37,6 @@ interface CinetPayFormProps {
     customerSurname: string;
     customerEmail: string;
     customerPhone: string;
-    apiKey: string;
-    siteId: string;
-    transactionId: string;
 }
 
 function CinetPayForm({
@@ -51,39 +48,62 @@ function CinetPayForm({
     customerSurname,
     customerEmail,
     customerPhone,
-    apiKey,
-    siteId,
-    transactionId
 }: CinetPayFormProps) {
     const return_url = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?status=success`;
     const notify_url = `${process.env.NEXT_PUBLIC_APP_URL}/api/cinetpay/notify`;
+    const transactionId = Math.floor(Math.random() * 100000000).toString();
     
     useEffect(() => {
-        const form = document.getElementById('cinetpay-form');
-        if(form) {
-            (form as HTMLFormElement).submit();
-        }
+        const script = document.createElement('script');
+        script.src = "https://cdn.cinetpay.com/seamless/main.js";
+        script.async = true;
+        document.body.appendChild(script);
+
+        script.onload = () => {
+            const CinetPay = (window as any).CinetPay;
+            CinetPay.setConfig({
+                apikey: process.env.NEXT_PUBLIC_CINETPAY_API_KEY,
+                site_id: parseInt(process.env.NEXT_PUBLIC_CINETPAY_SITE_ID || '0', 10),
+                notify_url: notify_url,
+                mode: 'PRODUCTION'
+            });
+            CinetPay.getCheckout({
+                transaction_id: transactionId,
+                amount: amount,
+                currency: currency,
+                channels: 'ALL',
+                description: description,
+                customer_name: customerName,
+                customer_surname: customerSurname,
+                customer_email: customerEmail,
+                customer_phone_number: customerPhone,
+                customer_address: '',
+                customer_city: '',
+                customer_country: '',
+                customer_state: '',
+                customer_zip_code: ''
+            });
+            CinetPay.waitResponse(function(data: any) {
+                if (data.status === "REFUSED") {
+                    window.location.href = `/dashboard/billing?status=failed&trans_id=${transactionId}`;
+                } else if (data.status === "ACCEPTED") {
+                    window.location.href = `/dashboard/billing?status=success&trans_id=${transactionId}`;
+                }
+            });
+            CinetPay.onError(function(data: any) {
+                console.log(data);
+                window.location.href = `/dashboard/billing?status=error`;
+            });
+        };
+        return () => {
+            document.body.removeChild(script);
+        };
     }, []);
 
     return (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
             <Loader2 className="h-12 w-12 text-primary animate-spin" />
             <p className="mt-4 text-lg font-semibold">Redirection vers le paiement...</p>
-            <form id="cinetpay-form" method="POST" action="https://api-checkout.cinetpay.com/v2/payment">
-                <input type="hidden" name="apikey" value={apiKey} />
-                <input type="hidden" name="site_id" value={siteId} />
-                <input type="hidden" name="transaction_id" value={transactionId} />
-                <input type="hidden" name="amount" value={amount} />
-                <input type="hidden" name="currency" value={currency} />
-                <input type="hidden" name="description" value={description} />
-                <input type="hidden" name="return_url" value={return_url} />
-                <input type="hidden" name="notify_url" value={notify_url} />
-                <input type="hidden" name="channels" value="ALL" />
-                <input type="hidden" name="customer_name" value={customerName} />
-                <input type="hidden" name="customer_surname" value={customerSurname} />
-                <input type="hidden" name="customer_email" value={customerEmail} />
-                <input type="hidden" name="customer_phone_number" value={customerPhone} />
-            </form>
         </div>
     );
 }
@@ -110,30 +130,10 @@ export default function BillingPage() {
         setIsLoading(plan);
         
         try {
-            // 1. Create a transaction record on our backend to get a transactionId
-            const transactionResponse = await fetch('/api/cinetpay/initiate-payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    plan,
-                    amount: pricing[plan][currency],
-                    currency,
-                    userId: firebaseUser.uid
-                })
-            });
-
-            if (!transactionResponse.ok) throw new Error('Could not initiate transaction record.');
-            const { transactionId } = await transactionResponse.json();
-
-            // 2. Fetch payment keys
-            const keysResponse = await fetch('/api/cinetpay/get-keys');
-            if (!keysResponse.ok) throw new Error('Could not fetch payment keys.');
-            const { apiKey, siteId } = await keysResponse.json();
-            
             const fullName = user?.displayName || 'Utilisateur';
             const [firstName, ...lastNameParts] = fullName.split(' ');
             
-            // 3. Set data to render the auto-submitting form
+            // Set data to render the CinetPay trigger component
             setPaymentData({
                 plan,
                 amount: pricing[plan][currency],
@@ -143,9 +143,6 @@ export default function BillingPage() {
                 customerSurname: lastNameParts.join(' ') || ' ',
                 customerEmail: user?.email || '',
                 customerPhone: user?.phone || '',
-                apiKey,
-                siteId,
-                transactionId, // Use the ID from our backend
             });
 
         } catch (error) {
