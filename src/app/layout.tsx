@@ -93,6 +93,7 @@ export default function RootLayout({
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icons/icon-512x512.png"></link>
+        <Script src="https://cdn.cinetpay.com/seamless/main.js" strategy="lazyOnload" />
       </head>
       <body className="font-body antialiased" suppressHydrationWarning={true}>
         <AuthProvider>
@@ -102,7 +103,6 @@ export default function RootLayout({
         </AuthProvider>
         <Toaster />
         <SpeedInsights />
-        <Script src="https://cdn.cinetpay.com/seamless/main.js" strategy="lazyOnload" />
       </body>
     </html>
   );
