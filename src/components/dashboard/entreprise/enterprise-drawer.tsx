@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, useAnimation, useMotionValue, PanInfo } from "framer-motion";
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, ArrowLeft } from "lucide-react";
 import { useLocale } from "@/context/locale-context";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -48,7 +48,7 @@ export function EnterpriseDrawer({ children }: { children: React.ReactNode }) {
       >
         <header className="p-4 flex items-center justify-between border-b flex-shrink-0">
           <Button variant="ghost" size="icon" onClick={handleClose} className="cursor-pointer">
-            <ArrowDown className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5" />
           </Button>
           <h2 className="font-bold text-lg">{t('nav_enterprise')}</h2>
           <div className="w-10"></div>
