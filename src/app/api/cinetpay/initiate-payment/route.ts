@@ -37,6 +37,7 @@ interface CinetPayFormProps {
     customerSurname: string;
     customerEmail: string;
     customerPhone: string;
+    userId: string;
 }
 
 function CinetPayForm({
@@ -48,57 +49,53 @@ function CinetPayForm({
     customerSurname,
     customerEmail,
     customerPhone,
+    userId,
 }: CinetPayFormProps) {
     const return_url = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?status=success`;
     const notify_url = `${process.env.NEXT_PUBLIC_APP_URL}/api/cinetpay/notify`;
-    const transactionId = Math.floor(Math.random() * 100000000).toString();
+    const transactionId = `${userId}-${plan}-${Date.now()}`;
     
     useEffect(() => {
-        const script = document.createElement('script');
-        script.src = "https://cdn.cinetpay.com/seamless/main.js";
-        script.async = true;
-        document.body.appendChild(script);
+        const CinetPay = (window as any).CinetPay;
+        if (!CinetPay) {
+            console.error("CinetPay.js not loaded");
+            return;
+        }
 
-        script.onload = () => {
-            const CinetPay = (window as any).CinetPay;
-            CinetPay.setConfig({
-                apikey: process.env.NEXT_PUBLIC_CINETPAY_API_KEY,
-                site_id: parseInt(process.env.NEXT_PUBLIC_CINETPAY_SITE_ID || '0', 10),
-                notify_url: notify_url,
-                mode: 'PRODUCTION'
-            });
-            CinetPay.getCheckout({
-                transaction_id: transactionId,
-                amount: amount,
-                currency: currency,
-                channels: 'ALL',
-                description: description,
-                customer_name: customerName,
-                customer_surname: customerSurname,
-                customer_email: customerEmail,
-                customer_phone_number: customerPhone,
-                customer_address: '',
-                customer_city: '',
-                customer_country: '',
-                customer_state: '',
-                customer_zip_code: ''
-            });
-            CinetPay.waitResponse(function(data: any) {
-                if (data.status === "REFUSED") {
-                    window.location.href = `/dashboard/billing?status=failed&trans_id=${transactionId}`;
-                } else if (data.status === "ACCEPTED") {
-                    window.location.href = `/dashboard/billing?status=success&trans_id=${transactionId}`;
-                }
-            });
-            CinetPay.onError(function(data: any) {
-                console.log(data);
-                window.location.href = `/dashboard/billing?status=error`;
-            });
-        };
-        return () => {
-            document.body.removeChild(script);
-        };
-    }, []);
+        CinetPay.setConfig({
+            apikey: process.env.NEXT_PUBLIC_CINETPAY_API_KEY,
+            site_id: parseInt(process.env.NEXT_PUBLIC_CINETPAY_SITE_ID || '0', 10),
+            notify_url: notify_url,
+            mode: 'PRODUCTION' // Use 'PRODUCTION' for live, 'SANDBOX' for testing
+        });
+
+        CinetPay.getCheckout({
+            transaction_id: transactionId,
+            amount: amount,
+            currency: currency,
+            channels: 'ALL',
+            description: description,
+            customer_name: customerName,
+            customer_surname: customerSurname,
+            customer_email: customerEmail,
+            customer_phone_number: customerPhone,
+            // Pass the user ID in metadata for the webhook
+            metadata: userId, 
+        });
+
+        CinetPay.waitResponse(function(data: any) {
+            if (data.status === "REFUSED") {
+                window.location.href = `/dashboard/billing?status=failed&trans_id=${transactionId}`;
+            } else if (data.status === "ACCEPTED") {
+                window.location.href = `/dashboard/billing?status=success&trans_id=${transactionId}`;
+            }
+        });
+        
+        CinetPay.onError(function(data: any) {
+            console.log("CinetPay Error:", data);
+            window.location.href = `/dashboard/billing?status=error`;
+        });
+    }, [amount, currency, customerEmail, customerName, customerPhone, customerSurname, description, plan, transactionId, userId, notify_url]);
 
     return (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
@@ -111,7 +108,7 @@ function CinetPayForm({
 
 export default function BillingPage() {
     const { t, currency, formatCurrency } = useLocale();
-    const { user, firebaseUser } = useAuth();
+    const { user: authUser, firebaseUser } = useAuth();
     const { userData } = useUserData();
     const [isLoading, setIsLoading] = useState<string | null>(null);
     const { toast } = useToast();
@@ -123,17 +120,16 @@ export default function BillingPage() {
     };
     
     const handlePayment = async (plan: 'premium' | 'business') => {
-        if (!firebaseUser) {
+        if (!firebaseUser || !authUser) {
             toast({ variant: 'destructive', title: "Veuillez vous connecter pour continuer." });
             return;
         }
         setIsLoading(plan);
         
         try {
-            const fullName = user?.displayName || 'Utilisateur';
+            const fullName = authUser.displayName || 'Utilisateur';
             const [firstName, ...lastNameParts] = fullName.split(' ');
             
-            // Set data to render the CinetPay trigger component
             setPaymentData({
                 plan,
                 amount: pricing[plan][currency],
@@ -141,8 +137,9 @@ export default function BillingPage() {
                 description: `Abonnement ${plan} - Wisebil`,
                 customerName: firstName,
                 customerSurname: lastNameParts.join(' ') || ' ',
-                customerEmail: user?.email || '',
-                customerPhone: user?.phone || '',
+                customerEmail: authUser.email || '',
+                customerPhone: authUser.phone || '',
+                userId: firebaseUser.uid,
             });
 
         } catch (error) {
@@ -234,7 +231,7 @@ export default function BillingPage() {
                             {plan.isPopular && <p className="text-sm font-semibold text-primary">{t('plan_premium_badge')}</p>}
                             <CardTitle className="font-headline text-2xl">{plan.title}</CardTitle>
                             <p className="text-4xl font-bold">
-                                {plan.prices ? formatCurrency(pricing[plan.name as 'premium' | 'business']?.[currency] ?? 0) : <span className="text-2xl">{t('on_demand')}</span>}
+                                {plan.prices ? formatCurrency(pricing[plan.name as 'premium' | 'business']?.[currency] ?? 0, currency) : <span className="text-2xl">{t('on_demand')}</span>}
                                 {plan.prices && <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span>}
                             </p>
                             <CardDescription className="text-sm pt-2 min-h-[40px]">{plan.description}</CardDescription>
