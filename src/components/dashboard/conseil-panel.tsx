@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send, PlusCircle, Mic, BrainCircuit, Bot, MessageSquare, ScanLine, Trash2, X, Check, Play, Pause, Trash, Pencil, Sparkles, TrendingDown, TrendingUp, PiggyBank, Briefcase } from 'lucide-react';
+import { Loader2, Send, PlusCircle, Mic, BrainCircuit, Bot, MessageSquare, ScanLine, Trash2, X, Play, Pause, Trash, Pencil, Sparkles, TrendingDown, TrendingUp, PiggyBank, Briefcase } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   AlertDialog,
@@ -478,13 +478,14 @@ export function ConseilPanel() {
     // Wise Mode
     const userMessage: Message = { id: uuidv4(), role: 'user', type: 'text', content: prompt };
     
-    // Use a function for state update to ensure we have the latest state
-    setCurrentConversation(prev => [...prev, userMessage]);
+    // Create the new conversation state but don't set it yet
+    const newConversationState = [...currentConversation, userMessage];
+    setCurrentConversation(newConversationState);
     setIsThinking(true);
   
     try {
       // Pass the updated conversation directly to the API
-      const historyForApi = [...currentConversation, userMessage]
+      const historyForApi = newConversationState
         .filter((m) => m.type === 'text')
         .map((m) => ({ role: m.role, content: m.content }));
   
@@ -502,18 +503,18 @@ export function ConseilPanel() {
       const assistantMessage: Message = { id: uuidv4(), role: 'model', type: 'text', content: response };
       
       setCurrentConversation((prev) => {
-        const newConversation = [...prev, assistantMessage];
-        saveCurrentConversation(newConversation);
-        return newConversation;
+        const finalConversation = [...prev, assistantMessage];
+        saveCurrentConversation(finalConversation);
+        return finalConversation;
       });
 
     } catch (error) {
       console.error("AI assistant failed:", error);
       const errorMessage = { id: uuidv4(), role: 'model', type: 'text', content: t('assistant_error_desc') };
       setCurrentConversation((prev) => {
-          const newConversation = [...prev, errorMessage];
-          saveCurrentConversation(newConversation);
-          return newConversation;
+          const finalConversation = [...prev, errorMessage];
+          saveCurrentConversation(finalConversation);
+          return finalConversation;
       });
     } finally {
       setIsThinking(false);
@@ -620,22 +621,22 @@ const AgentWReviewCard = ({ message }: { message: Message }) => {
         <div className="p-4 rounded-lg bg-accent/50 border border-primary/20 space-y-4">
             <p className="text-sm font-medium">{message.isProcessed ? t('agent_w_actions_cancelled') : message.content}</p>
             <div className="space-y-2 text-xs">
-                {transactions.map((item) => (
-                    <div key={item.id} className="flex items-center gap-2">
+                {transactions.map((item, index) => (
+                    <div key={item.id || index} className="flex items-center gap-2">
                        {item.amount >= 0 ? <TrendingUp className="h-4 w-4 text-green-500" /> : <TrendingDown className="h-4 w-4 text-red-500" />}
                        <span>{item.description}</span>
                        <span className="ml-auto font-semibold">{formatCurrency(Math.abs(item.amount))}</span>
                     </div>
                 ))}
-                {newBudgets.map((item) => (
-                    <div key={item.id} className="flex items-center gap-2">
+                {newBudgets.map((item, index) => (
+                    <div key={item.id || index} className="flex items-center gap-2">
                        <Briefcase className="h-4 w-4 text-blue-500" />
                        <span>{t('budget')}: {item.name}</span>
                        <span className="ml-auto font-semibold">{formatCurrency(item.amount)}</span>
                     </div>
                 ))}
-                 {newSavingsGoals.map((item) => (
-                    <div key={item.id} className="flex items-center gap-2">
+                 {newSavingsGoals.map((item, index) => (
+                    <div key={item.id || index} className="flex items-center gap-2">
                        <PiggyBank className="h-4 w-4 text-pink-500" />
                        <span>{t('goal')}: {item.name}</span>
                        <span className="ml-auto font-semibold">{formatCurrency(item.targetAmount)}</span>
@@ -672,64 +673,60 @@ const AgentWReviewCard = ({ message }: { message: Message }) => {
         </Button>
       </header>
 
-      <div className="flex-1 overflow-y-auto">
-        <div className="h-full">
-            <ScrollArea className="h-full" ref={scrollAreaRef}>
-              <div className="p-4 md:p-6 space-y-6 pb-8">
-                {currentConversation.length === 0 && agentMode === 'agent' && (
-                    <div className="text-center text-muted-foreground p-8">
-                        <ScanLine className="h-12 w-12 mx-auto mb-4"/>
-                        <h3 className="font-semibold text-lg">{t('agent_w_welcome_title')}</h3>
-                        <p className="text-sm">{t('agent_w_welcome_desc')}</p>
-                    </div>
+      <ScrollArea className="flex-1" ref={scrollAreaRef}>
+        <div className="p-4 md:p-6 space-y-6 pb-8">
+          {currentConversation.length === 0 && agentMode === 'agent' && (
+              <div className="text-center text-muted-foreground p-8">
+                  <ScanLine className="h-12 w-12 mx-auto mb-4"/>
+                  <h3 className="font-semibold text-lg">{t('agent_w_welcome_title')}</h3>
+                  <p className="text-sm">{t('agent_w_welcome_desc')}</p>
+              </div>
+          )}
+          {currentConversation.map((message) => (
+            <div
+              key={message.id}
+              className={`flex items-start gap-3 ${
+                message.role === 'user' ? 'justify-end' : 'justify-start'
+              }`}
+            >
+              {message.role === 'model' && (
+                <Avatar className="h-8 w-8">
+                   <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
+                </Avatar>
+              )}
+              <div
+                className={cn(`rounded-lg px-4 py-2 max-w-sm`, 
+                  message.role === 'user' ? 'bg-primary text-primary-foreground'
+                  : message.type === 'agent-review' ? 'bg-transparent p-0 w-full'
+                  : agentMode === 'agent' ? 'bg-accent text-accent-foreground' : 'bg-muted'
                 )}
-                {currentConversation.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex items-start gap-3 ${
-                      message.role === 'user' ? 'justify-end' : 'justify-start'
-                    }`}
-                  >
-                    {message.role === 'model' && (
-                      <Avatar className="h-8 w-8">
-                         <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
-                      </Avatar>
-                    )}
-                    <div
-                      className={cn(`rounded-lg px-4 py-2 max-w-sm`, 
-                        message.role === 'user' ? 'bg-primary text-primary-foreground'
-                        : message.type === 'agent-review' ? 'bg-transparent p-0 w-full'
-                        : agentMode === 'agent' ? 'bg-accent text-accent-foreground' : 'bg-muted'
-                      )}
-                    >
-                      {message.type === 'agent-review' ? (
-                          <AgentWReviewCard message={message} />
-                      ) : (
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                      )}
-                    </div>
-                    {message.role === 'user' && (
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
-                      </Avatar>
-                    )}
-                  </div>
-                ))}
-                 {isThinking && (
-                  <div className="flex items-start gap-3 justify-start">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
-                    </Avatar>
-                    <div className="rounded-lg px-4 py-2 max-w-sm bg-muted flex items-center gap-2">
-                      <BrainCircuit className="h-5 w-5 animate-pulse" />
-                      <span className="text-sm text-muted-foreground italic">{t('thinking_in_progress')}</span>
-                    </div>
-                  </div>
+              >
+                {message.type === 'agent-review' ? (
+                    <AgentWReviewCard message={message} />
+                ) : (
+                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                 )}
               </div>
-            </ScrollArea>
+              {message.role === 'user' && (
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
+                </Avatar>
+              )}
+            </div>
+          ))}
+           {isThinking && (
+            <div className="flex items-start gap-3 justify-start">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
+              </Avatar>
+              <div className="rounded-lg px-4 py-2 max-w-sm bg-muted flex items-center gap-2">
+                <BrainCircuit className="h-5 w-5 animate-pulse" />
+                <span className="text-sm text-muted-foreground italic">{t('thinking_in_progress')}</span>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      </ScrollArea>
 
        {transcriptionMode ? <TranscriptionEditor /> : (
             <footer className='p-4 md:p-6 border-t space-y-4 flex-shrink-0 bg-background'>

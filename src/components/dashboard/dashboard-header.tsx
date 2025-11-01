@@ -1,70 +1,46 @@
 // src/components/dashboard/dashboard-header.tsx
 "use client";
-import toast from 'react-hot-toast';
+
 import { Button } from "@/components/ui/button";
-import { Bell, Lightbulb, Wallet, Shield, Landmark } from "lucide-react";
+import { Bell, Info } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "../common/logo";
 import { UserProfile } from "./user-profile";
 import { useLocale } from '@/context/locale-context';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuGroup,
-} from "@/components/ui/dropdown-menu"
 import { Badge } from '../ui/badge';
 import { useNotifications } from '@/context/notifications-context';
-
 
 export function DashboardHeader() {
   const { t } = useLocale();
   const { unreadCount } = useNotifications();
-  
-  const playNotificationSound = () => {
-    const audio = new Audio('/notification.mp3');
-    audio.play().catch(error => console.error("Error playing sound:", error));
-  };
 
   return (
-    <header className="flex items-center justify-between p-4 border-b bg-background md:hidden">
-      <Logo />
-      <div className="flex items-center gap-1">
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                    <Wallet className="h-5 w-5" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48" align="end" forceMount>
-                <DropdownMenuGroup>
-                    <DropdownMenuItem asChild>
-                        <Link href="/dashboard/savings">
-                            <Shield className="mr-2 h-4 w-4" />
-                            <span>{t('nav_savings')}</span>
-                        </Link>
-                    </DropdownMenuItem>
-                     <DropdownMenuItem asChild>
-                        <Link href="/dashboard/accounts">
-                            <Landmark className="mr-2 h-4 w-4" />
-                            <span>{t('nav_accounts')}</span>
-                        </Link>
-                    </DropdownMenuItem>
-                </DropdownMenuGroup>
-            </DropdownMenuContent>
-        </DropdownMenu>
+    <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-4 border-b bg-background md:px-6 md:justify-end">
+      {/* Logo visible only on mobile */}
+      <div className="md:hidden">
+        <Logo />
+      </div>
 
-         <Button variant="ghost" size="icon" asChild className="relative" onClick={playNotificationSound}>
-          <Link href="/dashboard/notifications">
-            <Bell className="h-5 w-5" />
-             {unreadCount > 0 && (
-              <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 justify-center p-0">{unreadCount}</Badge>
-            )}
+      <div className="flex items-center gap-2 md:gap-4">
+        {/* Info button for desktop */}
+        <Button variant="ghost" size="icon" className="hidden md:inline-flex rounded-full" asChild>
+          <Link href="/about" aria-label={t('about_title')}>
+            <Info className="h-5 w-5" />
           </Link>
         </Button>
+        
+        {/* Notifications button */}
+        <Button variant="ghost" size="icon" asChild className="relative rounded-full">
+          <Link href="/dashboard/notifications">
+            <Bell className="h-5 w-5" />
+            {unreadCount > 0 && (
+              <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 justify-center p-0">{unreadCount}</Badge>
+            )}
+            <span className="sr-only">{t('notifications')}</span>
+          </Link>
+        </Button>
+
+        {/* User Profile */}
         <UserProfile />
       </div>
     </header>
