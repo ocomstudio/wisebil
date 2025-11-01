@@ -1,3 +1,4 @@
+
 // src/app/dashboard/entreprise/products/page.tsx
 "use client";
 
@@ -87,11 +88,11 @@ export default function ProductsPage() {
                         <TableCell>
                             {product.promoPrice ? (
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-destructive font-semibold">{formatCurrency(product.promoPrice, 'XOF')}</span>
-                                    <span className="text-xs text-muted-foreground line-through">{formatCurrency(product.price, 'XOF')}</span>
+                                    <span className="text-destructive font-semibold">{formatCurrency(product.promoPrice)}</span>
+                                    <span className="text-xs text-muted-foreground line-through">{formatCurrency(product.price)}</span>
                                 </div>
                             ) : (
-                                formatCurrency(product.price, 'XOF')
+                                formatCurrency(product.price)
                             )}
                         </TableCell>
                         <TableCell>
@@ -107,38 +108,38 @@ export default function ProductsPage() {
                         </TableCell>
                         <TableCell className="text-right">
                            <AlertDialog>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem asChild>
-                                       <Link href={`/dashboard/entreprise/products/edit/${product.id}`}>
-                                        <Edit className="mr-2 h-4 w-4" /> {t('edit')}
-                                       </Link>
-                                    </DropdownMenuItem>
-                                     <AlertDialogTrigger asChild>
-                                        <DropdownMenuItem className="text-destructive">
-                                            <Trash2 className="mr-2 h-4 w-4" /> {t('delete')}
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuItem asChild>
+                                           <Link href={`/dashboard/entreprise/products/edit/${product.id}`}>
+                                            <Edit className="mr-2 h-4 w-4" /> {t('edit')}
+                                           </Link>
                                         </DropdownMenuItem>
-                                    </AlertDialogTrigger>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                             <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>{t('product_delete_confirm_title')}</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        {t('product_delete_confirm_desc', { productName: product.name })}
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => deleteProduct(product.id)} className="bg-destructive hover:bg-destructive/90">
-                                        {t('delete')}
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
+                                         <AlertDialogTrigger asChild>
+                                            <DropdownMenuItem className="text-destructive" onSelect={(e) => e.preventDefault()}>
+                                                <Trash2 className="mr-2 h-4 w-4" /> {t('delete')}
+                                            </DropdownMenuItem>
+                                        </AlertDialogTrigger>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                 <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>{t('product_delete_confirm_title')}</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            {t('product_delete_confirm_desc', { productName: product.name })}
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => deleteProduct(product.id)} className="bg-destructive hover:bg-destructive/90">
+                                            {t('delete')}
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
                         </TableCell>
