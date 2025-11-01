@@ -1,9 +1,13 @@
-// This endpoint is no longer used for initiating payments.
-// The flow is now handled by the server page at /payment/initiate.
-// This file can be removed in the future.
-
+// src/app/api/cinetpay/get-keys/route.ts
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
-    return NextResponse.json({ error: 'This endpoint is deprecated. Use the /payment/initiate server page.' }, { status: 404 });
+    const apiKey = process.env.CINETPAY_API_KEY;
+    const siteId = process.env.CINETPAY_SITE_ID;
+
+    if (!apiKey || !siteId) {
+        return NextResponse.json({ error: "Configuration du serveur de paiement incomplète." }, { status: 500 });
+    }
+
+    return NextResponse.json({ apiKey, siteId });
 }

@@ -10,7 +10,6 @@ import { useAuth } from "@/context/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useUserData } from "@/context/user-context";
-import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -30,6 +29,66 @@ interface Plan {
   isPopular?: boolean;
 }
 
+interface CinetPayFormProps {
+    plan: 'premium' | 'business';
+    amount: number;
+    currency: string;
+    description: string;
+    customerName: string;
+    customerSurname: string;
+    customerEmail: string;
+    customerPhone: string;
+    apiKey: string;
+    siteId: string;
+    transactionId: string;
+}
+
+function CinetPayForm({
+    plan,
+    amount,
+    currency,
+    description,
+    customerName,
+    customerSurname,
+    customerEmail,
+    customerPhone,
+    apiKey,
+    siteId,
+    transactionId
+}: CinetPayFormProps) {
+    const return_url = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?status=success`;
+    const notify_url = `${process.env.NEXT_PUBLIC_APP_URL}/api/cinetpay/notify`;
+    
+    useEffect(() => {
+        const form = document.getElementById('cinetpay-form');
+        if(form) {
+            (form as HTMLFormElement).submit();
+        }
+    }, []);
+
+    return (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+            <Loader2 className="h-12 w-12 text-primary animate-spin" />
+            <p className="mt-4 text-lg font-semibold">Redirection vers le paiement...</p>
+            <form id="cinetpay-form" method="POST" action="https://api-checkout.cinetpay.com/v2/payment">
+                <input type="hidden" name="apikey" value={apiKey} />
+                <input type="hidden" name="site_id" value={siteId} />
+                <input type="hidden" name="transaction_id" value={transactionId} />
+                <input type="hidden" name="amount" value={amount} />
+                <input type="hidden" name="currency" value={currency} />
+                <input type="hidden" name="description" value={description} />
+                <input type="hidden" name="return_url" value={return_url} />
+                <input type="hidden" name="notify_url" value={notify_url} />
+                <input type="hidden" name="channels" value="ALL" />
+                <input type="hidden" name="customer_name" value={customerName} />
+                <input type="hidden" name="customer_surname" value={customerSurname} />
+                <input type="hidden" name="customer_email" value={customerEmail} />
+                <input type="hidden" name="customer_phone_number" value={customerPhone} />
+            </form>
+        </div>
+    );
+}
+
 
 export default function BillingPage() {
     const { t, currency, formatCurrency } = useLocale();
@@ -37,7 +96,8 @@ export default function BillingPage() {
     const { userData } = useUserData();
     const [isLoading, setIsLoading] = useState<string | null>(null);
     const { toast } = useToast();
-    const router = useRouter();
+
+    const [paymentData, setPaymentData] = useState<CinetPayFormProps | null>(null);
     
     const isCurrentPlan = (plan: 'premium' | 'business') => {
         return userData?.profile?.subscriptionStatus === 'active' && userData?.profile?.subscriptionPlan === plan;
@@ -51,21 +111,33 @@ export default function BillingPage() {
         setIsLoading(plan);
         const transactionId = uuidv4();
         
-        // Step 1: Get user's auth token
-        const idToken = await firebaseUser.getIdToken(true);
-        
-        // Step 2: Redirect to a server page that will handle the CinetPay form submission,
-        // passing all necessary info, including the auth token for server-side verification.
-        const params = new URLSearchParams({
-            plan,
-            transaction_id: transactionId,
-            amount: pricing[plan][currency].toString(),
-            currency: currency,
-            idToken: idToken,
-        });
+        try {
+            const keysResponse = await fetch('/api/cinetpay/get-keys');
+            if (!keysResponse.ok) throw new Error('Could not fetch payment keys.');
+            const { apiKey, siteId } = await keysResponse.json();
+            
+            const fullName = user?.displayName || 'Utilisateur';
+            const [firstName, ...lastNameParts] = fullName.split(' ');
+            
+            setPaymentData({
+                plan,
+                amount: pricing[plan][currency],
+                currency: currency,
+                description: `Abonnement ${plan} - Wisebil`,
+                customerName: firstName,
+                customerSurname: lastNameParts.join(' ') || ' ',
+                customerEmail: user?.email || '',
+                customerPhone: user?.phone || '',
+                apiKey,
+                siteId,
+                transactionId,
+            });
 
-        const url = `/payment/initiate?${params.toString()}`;
-        router.push(url);
+        } catch (error) {
+            console.error("Payment initiation error:", error);
+            toast({ variant: 'destructive', title: 'Erreur de Paiement', description: 'Impossible de contacter le service de paiement. Veuillez réessayer.'});
+            setIsLoading(null);
+        }
     };
 
 
@@ -130,6 +202,7 @@ export default function BillingPage() {
 
     return (
         <div className="space-y-8 pb-20 md:pb-8">
+            {paymentData && <CinetPayForm {...paymentData} />}
             <div className="flex items-center gap-4">
                  <Button variant="outline" size="icon" asChild>
                     <Link href="/dashboard">
