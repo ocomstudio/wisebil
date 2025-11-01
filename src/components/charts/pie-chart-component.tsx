@@ -32,14 +32,14 @@ export function PieChartComponent({ pieChartData, topCategoryEmoji }: PieChartCo
 
     if (pieChartData.length === 0) {
         return (
-            <div className="flex h-48 w-full items-center justify-center text-muted-foreground">
+            <div className="flex h-[250px] w-full items-center justify-center text-muted-foreground">
                 {t('no_expenses_recorded')}
             </div>
         );
     }
     
     return (
-        <ChartContainer config={chartConfig} className="min-h-[250px] w-full aspect-square">
+        <ChartContainer config={chartConfig} className="min-h-[250px] w-full">
             <PieChart>
                 <ChartTooltip
                     cursor={false}

@@ -28,7 +28,7 @@ import { useSettings } from "@/context/settings-context";
 import { useLocale } from "@/context/locale-context";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Lazy load the chart components
+// Lazy load the chart components for better performance
 const BarChartComponent = dynamic(() => import('@/components/charts/bar-chart-component').then(mod => mod.BarChartComponent), {
   ssr: false,
   loading: () => <Skeleton className="h-[310px] w-full" />,
@@ -36,7 +36,7 @@ const BarChartComponent = dynamic(() => import('@/components/charts/bar-chart-co
 
 const PieChartComponent = dynamic(() => import('@/components/charts/pie-chart-component').then(mod => mod.PieChartComponent), {
   ssr: false,
-  loading: () => <Skeleton className="h-48 w-full" />,
+  loading: () => <Skeleton className="h-[250px] w-full" />,
 });
 
 
@@ -179,7 +179,7 @@ export default function ReportsPage() {
                <CardDescription>{t('your_expenses_this_month')}</CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center items-center">
-              <Suspense fallback={<Skeleton className="h-48 w-full" />}>
+              <Suspense fallback={<Skeleton className="h-[250px] w-full" />}>
                 <PieChartComponent pieChartData={pieChartData} topCategoryEmoji={topCategoryEmoji} />
               </Suspense>
             </CardContent>
