@@ -8,57 +8,58 @@ import { useLocale } from "@/context/locale-context";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { usePathname, useRouter } from 'next/navigation';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function EnterpriseDrawer({ children }: { children: React.ReactNode }) {
   const { t } = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  const isMobile = useIsMobile();
 
   const isEnterprisePage = pathname.startsWith('/dashboard/entreprise');
   
   const controls = useAnimation();
-  const y = useMotionValue(0);
 
   useEffect(() => {
-    if (isEnterprisePage) {
+    if (isMobile && isEnterprisePage) {
       controls.start({ y: 0 });
     } else {
-      controls.start({ y: "-100%" });
+      controls.start({ y: "100%" });
     }
-  }, [isEnterprisePage, controls]);
+  }, [isEnterprisePage, controls, isMobile]);
 
   const handleClose = () => {
     router.back();
   };
+  
+  // On desktop, we don't need this component, children are rendered by the main layout.
+  if (!isMobile) {
+    return null;
+  }
 
+  // On mobile, use the drawer logic.
   return (
-    <>
-      <div className={cn("relative", isEnterprisePage && "hidden")}>
+    <motion.div
+      initial={{ y: "100%" }}
+      animate={controls}
+      transition={{ type: "spring", damping: 30, stiffness: 250 }}
+      className={cn(
+        "fixed inset-0 bg-background/95 backdrop-blur-sm flex flex-col z-[60] md:hidden",
+        !isEnterprisePage && "pointer-events-none"
+      )}
+    >
+      <header className="p-4 flex items-center justify-between border-b flex-shrink-0">
+        <Button variant="ghost" size="icon" onClick={handleClose} className="cursor-pointer">
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <h2 className="font-bold text-lg">{t('nav_enterprise')}</h2>
+        <div className="w-10"></div>
+      </header>
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-4">
           {children}
-      </div>
-
-      <motion.div
-        animate={controls}
-        transition={{ type: "spring", damping: 30, stiffness: 250 }}
-        style={{ y }}
-        className={cn(
-          "fixed inset-0 bg-background/95 backdrop-blur-sm flex flex-col z-[60] md:hidden",
-          !isEnterprisePage && "pointer-events-none"
-        )}
-      >
-        <header className="p-4 flex items-center justify-between border-b flex-shrink-0">
-          <Button variant="ghost" size="icon" onClick={handleClose} className="cursor-pointer">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h2 className="font-bold text-lg">{t('nav_enterprise')}</h2>
-          <div className="w-10"></div>
-        </header>
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-4">
-            {isEnterprisePage && children}
-          </div>
         </div>
-      </motion.div>
-    </>
+      </div>
+    </motion.div>
   );
 }
