@@ -21,7 +21,7 @@ interface BudgetContextType {
 const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
 
 export const BudgetProvider = ({ children }: { children: ReactNode }) => {
-  const { userData, isLoading: isUserDataLoading } = useUserData();
+  const { userData, isLoading: isUserDataLoading, updateUserData } = useUserData();
   const { toast } = useToast();
   const { user } = useAuth();
   
@@ -33,22 +33,16 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const addBudget = useCallback(async (budget: Budget) => {
-    const userDocRef = getUserDocRef();
-    if (!userDocRef) return;
-    
     try {
-      await updateDoc(userDocRef, { budgets: arrayUnion(budget) });
+      await updateUserData({ budgets: arrayUnion(budget) as any });
     } catch(e) {
       console.error("Failed to add budget to Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to save budget." });
       throw e;
     }
-  }, [getUserDocRef, toast]);
+  }, [toast, updateUserData]);
   
   const updateBudget = useCallback(async (id: string, updatedBudgetData: Omit<Budget, 'id'>) => {
-    const userDocRef = getUserDocRef();
-    if (!userDocRef) return;
-    
     const currentBudgets = [...budgets];
     const budgetIndex = currentBudgets.findIndex(b => b.id === id);
 
@@ -61,23 +55,20 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
     currentBudgets[budgetIndex] = updatedBudget;
     
     try {
-      await updateDoc(userDocRef, { budgets: currentBudgets });
+      await updateUserData({ budgets: currentBudgets });
     } catch (e) {
       console.error("Failed to update budget in Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to update budget." });
       throw e;
     }
-  }, [budgets, getUserDocRef, toast]);
+  }, [budgets, toast, updateUserData]);
 
   const deleteBudget = useCallback(async (id: string) => {
-    const userDocRef = getUserDocRef();
-    if (!userDocRef) return;
-    
     const budgetToDelete = budgets.find(b => b.id === id);
     if (!budgetToDelete) return;
     
     try {
-      await updateDoc(userDocRef, { budgets: arrayRemove(budgetToDelete) });
+      await updateUserData({ budgets: arrayRemove(budgetToDelete) as any });
       toast({
           title: "Budget supprimé",
           description: "Le budget a été supprimé avec succès.",
@@ -87,13 +78,11 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
       toast({ variant: "destructive", title: "Error", description: "Failed to delete budget." });
       throw e;
     }
-  }, [budgets, getUserDocRef, toast]);
+  }, [budgets, toast, updateUserData]);
 
   const resetBudgets = async () => {
-    const userDocRef = getUserDocRef();
-    if (!userDocRef) return;
     try {
-      await updateDoc(userDocRef, { budgets: deleteField() });
+      await updateUserData({ budgets: deleteField() as any });
     } catch(e) {
         console.error("Could not reset budgets in Firestore", e);
         throw e;

@@ -26,7 +26,7 @@ interface TransactionsContextType {
 const TransactionsContext = createContext<TransactionsContextType | undefined>(undefined);
 
 export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
-  const { userData, isLoading: isUserDataLoading } = useUserData();
+  const { userData, isLoading: isUserDataLoading, updateUserData } = useUserData();
   const { toast } = useToast();
   const { t } = useLocale();
   const { user } = useAuth();
@@ -47,17 +47,13 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
     if (!docRef) return;
     
     try {
-      await updateDoc(docRef, { transactions: arrayUnion(transaction) });
+      await updateUserData({ transactions: arrayUnion(transaction) as any });
     } catch(error: any) {
-       if (error.code === 'not-found' || error.message.includes('No document to update') || (error.code === 'invalid-argument' && error.message.includes("does not exist"))) {
-           await setDoc(docRef, { transactions: [transaction] }, { merge: true });
-       } else {
-           console.error("Failed to add transaction to Firestore", error);
-           toast({ variant: "destructive", title: t('error_title'), description: "Failed to save transaction." });
-           throw error;
-       }
+       console.error("Failed to add transaction to Firestore", error);
+       toast({ variant: "destructive", title: t('error_title'), description: "Failed to save transaction." });
+       throw error;
     }
-  }, [getUserDocRef, toast, t]);
+  }, [getUserDocRef, toast, t, updateUserData]);
   
   const updateTransaction = useCallback(async (id: string, updatedTransactionData: Partial<Omit<Transaction, 'id' | 'type'>>) => {
     const docRef = getUserDocRef();
@@ -76,13 +72,13 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
     currentTransactions[transactionIndex] = updatedTransaction;
 
     try {
-      await updateDoc(docRef, { transactions: currentTransactions });
+      await updateUserData({ transactions: currentTransactions });
     } catch (error) {
       console.error("Failed to update transaction in Firestore", error);
       toast({ variant: "destructive", title: t('error_title'), description: t('transaction_update_error_desc') });
       throw error;
     }
-  }, [transactions, getUserDocRef, toast, t]);
+  }, [transactions, getUserDocRef, toast, t, updateUserData]);
 
 
   const deleteTransaction = useCallback(async (id: string) => {
@@ -93,8 +89,8 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
     if (!transactionToDelete) return;
 
     try {
-      await updateDoc(docRef, {
-        transactions: arrayRemove(transactionToDelete)
+      await updateUserData({
+        transactions: arrayRemove(transactionToDelete) as any
       });
       toast({
           title: t('transaction_deleted_title'),
@@ -104,7 +100,7 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
       toast({ variant: "destructive", title: t('error_title'), description: "Failed to delete transaction." });
       throw error;
     }
-  }, [transactions, getUserDocRef, toast, t]);
+  }, [transactions, getUserDocRef, toast, t, updateUserData]);
 
   const getTransactionById = useCallback((id: string) => {
     return transactions.find(t => t.id === id);
@@ -114,7 +110,7 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
     const docRef = getUserDocRef();
     if (!docRef) return;
     try {
-      await updateDoc(docRef, { transactions: deleteField() });
+      await updateUserData({ transactions: deleteField() as any });
     } catch(e) {
       console.error("Could not reset transactions in Firestore", e)
       throw e;

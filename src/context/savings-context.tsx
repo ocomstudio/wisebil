@@ -25,7 +25,7 @@ interface SavingsContextType {
 const SavingsContext = createContext<SavingsContextType | undefined>(undefined);
 
 export const SavingsProvider = ({ children }: { children: ReactNode }) => {
-  const { userData, isLoading: isUserDataLoading } = useUserData();
+  const { userData, isLoading: isUserDataLoading, updateUserData } = useUserData();
   const { toast } = useToast();
   const { t, formatCurrency } = useLocale();
   const { user } = useAuth();
@@ -33,33 +33,22 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
   
   const savingsGoals = useMemo(() => userData?.savingsGoals || [], [userData]);
 
-  const getUserDocRef = useCallback(() => {
-    if (!user) return null;
-    return doc(db, 'users', user.uid);
-  }, [user]);
-
   const addSavingsGoal = useCallback(async (goal: SavingsGoal) => {
-    const userDocRef = getUserDocRef();
-    if (!userDocRef) return;
-
     try {
-      await updateDoc(userDocRef, { savingsGoals: arrayUnion(goal) });
+      await updateUserData({ savingsGoals: arrayUnion(goal) as any });
     } catch(e) {
       console.error("Failed to add savings goal to Firestore", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to save goal." });
       throw e;
     }
-  }, [getUserDocRef, toast]);
+  }, [toast, updateUserData]);
 
   const deleteSavingsGoal = useCallback(async (id: string) => {
-    const userDocRef = getUserDocRef();
-    if (!userDocRef) return;
-    
     const goalToDelete = savingsGoals.find(g => g.id === id);
     if (!goalToDelete) return;
 
     try {
-      await updateDoc(userDocRef, { savingsGoals: arrayRemove(goalToDelete) });
+      await updateUserData({ savingsGoals: arrayRemove(goalToDelete) as any });
       toast({
         title: t('goal_deleted_title'),
         description: t('goal_deleted_desc'),
@@ -69,12 +58,9 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
       toast({ variant: "destructive", title: "Error", description: "Failed to delete goal." });
       throw e;
     }
-  }, [savingsGoals, getUserDocRef, toast, t]);
+  }, [savingsGoals, toast, t, updateUserData]);
 
   const addFunds = useCallback(async (idOrName: string, amount: number) => {
-    const userDocRef = getUserDocRef();
-    if (!userDocRef) return;
-  
     const currentGoals = [...savingsGoals];
     const goalIndex = currentGoals.findIndex(g => g.id === idOrName || g.name === idOrName);
   
@@ -92,7 +78,7 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
     
     try {
       // First, update the savings goal in Firestore
-      await updateDoc(userDocRef, { savingsGoals: currentGoals });
+      await updateUserData({ savingsGoals: currentGoals });
 
       // Then, create a corresponding expense transaction
       await addTransaction({
@@ -113,13 +99,11 @@ export const SavingsProvider = ({ children }: { children: ReactNode }) => {
       toast({ variant: "destructive", title: "Error", description: "Failed to add funds." });
       throw e;
     }
-  }, [savingsGoals, getUserDocRef, toast, t, formatCurrency, addTransaction]);
+  }, [savingsGoals, toast, t, formatCurrency, addTransaction, updateUserData]);
 
   const resetSavings = async () => {
-    const userDocRef = getUserDocRef();
-    if (!userDocRef) return;
     try {
-      await updateDoc(userDocRef, { savingsGoals: deleteField() });
+      await updateUserData({ savingsGoals: deleteField() as any });
     } catch(e) {
       console.error("Could not reset savings in Firestore", e);
       throw e;
