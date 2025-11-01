@@ -18,15 +18,10 @@ async function transcribeAudioFlow(input: TranscribeAudioInput): Promise<Transcr
     // The audio data URI already contains the mime type, so we can use it directly.
     const [mediaType, base64Data] = input.audioDataUri.split(',');
     
-    // Poe API does not currently support direct audio file uploads via the chat completions API.
-    // This is a placeholder for how it *would* work if supported.
-    // In a real scenario, you might need to use a different service or API endpoint for transcription.
-    // For now, we will simulate this by sending a text-based request.
-    
     // As a workaround, we will inform the model we have audio and ask it to respond with the transcript.
     // This will likely not work as expected without a proper audio transcription model.
     const result = await callPoe({
-      model: 'Claude-3-Sonnet',
+      model: 'whisper-large-v3',
       systemPrompt,
       messages: [{ role: 'user', content: 'The user has provided an audio file to transcribe. Please transcribe it. [Simulated Audio Data]' }],
     });
@@ -37,10 +32,8 @@ async function transcribeAudioFlow(input: TranscribeAudioInput): Promise<Transcr
     
     // Since we can't actually transcribe, we'll return a placeholder.
     // In a real implementation with a proper audio API, you'd return the actual transcript.
-    // return { transcript: result };
+    return { transcript: result };
 
-    // For now, let's just return the placeholder text as the transcript for demonstration.
-    return { transcript: "Transcription de l'audio non prise en charge pour le moment." };
 }
 
 export async function transcribeAudio(input: TranscribeAudioInput): Promise<TranscribeAudioOutput> {

@@ -266,14 +266,14 @@ export function ConseilPanel() {
   useEffect(() => {
     if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
-        textareaRef.current.style.height = `${'${textareaRef.current.scrollHeight}'}px`;
+        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [promptValue]);
   
   useEffect(() => {
     if (transcriptTextareaRef.current) {
         transcriptTextareaRef.current.style.height = 'auto';
-        transcriptTextareaRef.current.style.height = `${'${transcriptTextareaRef.current.scrollHeight}'}px`;
+        transcriptTextareaRef.current.style.height = `${transcriptTextareaRef.current.scrollHeight}px`;
     }
   }, [transcriptForVerification]);
 
@@ -296,7 +296,7 @@ export function ConseilPanel() {
                 });
                 // console.log('Wake Lock is active');
             } catch (err: any) {
-                console.error(`${'${err.name}'}, ${'${err.message}'}`);
+                console.error(`${err.name}, ${err.message}`);
             }
         }
     }, []);
@@ -536,8 +536,8 @@ export function ConseilPanel() {
           key={i} 
           className="w-1 bg-primary/80 rounded-full"
           style={{ 
-            height: `${'${Math.random() * 80 + 20}'}%`,
-            animation: `wave 1.2s ease-in-out ${'${i * 0.1}'}s infinite alternate`
+            height: `${Math.random() * 80 + 20}%`,
+            animation: `wave 1.2s ease-in-out ${i * 0.1}s infinite alternate`
           }}
         ></div>
       ))}
@@ -623,7 +623,7 @@ const AgentWReviewCard = ({ message }: { message: Message }) => {
                     </div>
                 ))}
                  {savingsContributions.map((item, index) => (
-                    <div key={`sc-${'${index}'}`} className="flex items-center gap-2">
+                    <div key={`sc-${index}`} className="flex items-center gap-2">
                        <PiggyBank className="h-4 w-4 text-pink-500" />
                        <span>{t('contribution')}: {item.goalName}</span>
                        <span className="ml-auto font-semibold">{formatCurrency(item.amount)}</span>
