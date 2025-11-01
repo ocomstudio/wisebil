@@ -10,7 +10,6 @@ import { useAuth } from "@/context/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useUserData } from "@/context/user-context";
-import { v4 as uuidv4 } from 'uuid';
 
 
 export const pricing = {
@@ -109,9 +108,24 @@ export default function BillingPage() {
             return;
         }
         setIsLoading(plan);
-        const transactionId = uuidv4();
         
         try {
+            // 1. Create a transaction record on our backend to get a transactionId
+            const transactionResponse = await fetch('/api/cinetpay/initiate-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    plan,
+                    amount: pricing[plan][currency],
+                    currency,
+                    userId: firebaseUser.uid
+                })
+            });
+
+            if (!transactionResponse.ok) throw new Error('Could not initiate transaction record.');
+            const { transactionId } = await transactionResponse.json();
+
+            // 2. Fetch payment keys
             const keysResponse = await fetch('/api/cinetpay/get-keys');
             if (!keysResponse.ok) throw new Error('Could not fetch payment keys.');
             const { apiKey, siteId } = await keysResponse.json();
@@ -119,6 +133,7 @@ export default function BillingPage() {
             const fullName = user?.displayName || 'Utilisateur';
             const [firstName, ...lastNameParts] = fullName.split(' ');
             
+            // 3. Set data to render the auto-submitting form
             setPaymentData({
                 plan,
                 amount: pricing[plan][currency],
@@ -130,7 +145,7 @@ export default function BillingPage() {
                 customerPhone: user?.phone || '',
                 apiKey,
                 siteId,
-                transactionId,
+                transactionId, // Use the ID from our backend
             });
 
         } catch (error) {
