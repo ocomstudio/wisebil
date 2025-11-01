@@ -15,14 +15,14 @@ import { v4 as uuidv4 } from 'uuid';
 
 
 export const pricing = {
-    premium: { XOF: 5000, EUR: 8, USD: 9 },
-    business: { XOF: 9900, EUR: 15, USD: 16 },
+    premium: { XOF: 5000, EUR: 8, USD: 9, VND: 200000 },
+    business: { XOF: 9900, EUR: 15, USD: 16, VND: 380000 },
 };
 
 interface Plan {
   name: 'free' | 'premium' | 'business' | 'custom';
   title: string;
-  prices: { XOF: number; EUR: number; USD: number } | null;
+  prices: { XOF: number; EUR: number; USD: number, VND: number } | null;
   description: string;
   features: string[];
   isCurrent: boolean;
@@ -73,7 +73,7 @@ export default function BillingPage() {
         {
             name: 'free',
             title: t('plan_free_title'),
-            prices: { XOF: 0, EUR: 0, USD: 0 },
+            prices: { XOF: 0, EUR: 0, USD: 0, VND: 0 },
             description: t('plan_free_desc'),
             features: [
                 t('feature_personal_finance'),
@@ -149,7 +149,7 @@ export default function BillingPage() {
                             {plan.isPopular && <p className="text-sm font-semibold text-primary">{t('plan_premium_badge')}</p>}
                             <CardTitle className="font-headline text-2xl">{plan.title}</CardTitle>
                             <p className="text-4xl font-bold">
-                                {plan.prices ? formatCurrency(plan.prices[currency], currency) : <span className="text-2xl">{t('on_demand')}</span>}
+                                {plan.prices ? formatCurrency(pricing[plan.name as 'premium' | 'business']?.[currency] ?? 0) : <span className="text-2xl">{t('on_demand')}</span>}
                                 {plan.prices && <span className="text-lg font-normal text-muted-foreground">/{t('monthly')}</span>}
                             </p>
                             <CardDescription className="text-sm pt-2 min-h-[40px]">{plan.description}</CardDescription>
