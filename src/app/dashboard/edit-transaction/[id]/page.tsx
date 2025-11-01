@@ -24,6 +24,7 @@ export default function EditTransactionPage() {
   const id = params.id as string;
 
   useEffect(() => {
+    // We only attempt to find the transaction when data is no longer loading and we have an ID.
     if (!isLoading && id) {
       const transaction = getTransactionById(id);
       if (transaction) {
@@ -32,6 +33,8 @@ export default function EditTransactionPage() {
           date: new Date(transaction.date), // Ensure it's a Date object
         });
       } else {
+        // This might happen if the ID is incorrect or data is momentarily inconsistent.
+        // We'll show a toast and redirect.
         toast({
           variant: "destructive",
           title: t('transaction_not_found'),
@@ -49,7 +52,7 @@ export default function EditTransactionPage() {
       description: data.description,
       amount: data.amount,
       category: data.category,
-      date: data.date
+      date: data.date instanceof Date ? data.date.toISOString() : data.date,
     });
 
     toast({
@@ -59,6 +62,8 @@ export default function EditTransactionPage() {
     router.push("/dashboard");
   };
 
+  // Display a skeleton loader while the transaction data is being fetched.
+  // This prevents the form from rendering with incomplete or undefined data.
   if (isLoading || !initialData) {
     return (
         <div>
