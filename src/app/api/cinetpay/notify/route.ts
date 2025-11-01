@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     console.log(`CinetPay notify: Processing transaction ${cpm_trans_id}`);
     
     // The transaction ID from CinetPay is the same as our document ID
-    const transactionRef = db.collection('transactions').doc(cpm_trans_id);
+    const transactionRef = db.collection('payment_transactions').doc(cpm_trans_id);
     
     // Check status on CinetPay using a direct API call
     const checkStatusResponse = await axios.post('https://api-checkout.cinetpay.com/v2/payment/check', {
