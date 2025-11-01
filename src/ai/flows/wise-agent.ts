@@ -35,7 +35,7 @@ async function runAgentWFlow(input: AgentWInput): Promise<AgentWOutput> {
 3.  **Handle Savings Contributions:** If the user mentions adding money to a savings goal (e.g., "ajoute 10000 à mon fonds d'urgence"), create a 'savingsContributions' entry. The 'goalName' MUST EXACTLY match one of the existing goals: ${savingsGoals.length > 0 ? savingsGoals.map(s => `'${s.name}'`).join(', ') : 'None'}. If no matching goal is found, do not create a contribution.
 4.  **STRICT JSON-ONLY OUTPUT:** You MUST respond ONLY with a JSON object conforming to the output schema. Do not include apologies, explanations, or ANY text outside of the JSON brackets. If no actions are found, return empty arrays for all fields.`;
     
-    const result = await callPoe({
+    const result = await callPoe<AgentWOutput>({
         messages: [{ role: 'user', content: `User prompt: ${input.prompt}` }],
         systemPrompt,
         jsonResponseSchema: AgentWOutputSchema,
