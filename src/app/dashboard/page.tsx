@@ -45,6 +45,8 @@ export default function DashboardPage() {
         onFinish={handleTutorialFinish}
       />
       
+      <EnterpriseMobilePuller />
+      
       <div id="balance-card-tutorial">
         <BalanceCard balance={balance} income={income} expenses={expenses} />
       </div>
@@ -68,8 +70,6 @@ export default function DashboardPage() {
         </div>
       </div>
       
-      <EnterpriseMobilePuller />
-
        <div id="tip-card-tutorial">
         <TipCard />
       </div>
