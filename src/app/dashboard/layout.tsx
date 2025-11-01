@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { TeamChatProvider } from "@/context/team-chat-context";
 import { TeamChat } from "@/components/dashboard/team/team-chat";
 import { UserDataProvider } from "@/context/user-context";
+import { EnterpriseDrawer } from "@/components/dashboard/entreprise/enterprise-drawer";
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
@@ -40,6 +41,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   if (pathname.startsWith('/dashboard/scan-receipt')) {
     return <div className="h-screen w-screen">{children}</div>;
   }
+  
+  const isEnterprisePage = pathname.startsWith('/dashboard/entreprise');
+  const isDashboardHome = pathname === '/dashboard';
+
 
   return (
     <div className={cn("grid h-screen w-full overflow-hidden", showTeamChatPanel ? "md:grid-cols-[250px_1fr_350px]" : "md:grid-cols-[250px_1fr_350px]")}>
@@ -78,9 +83,11 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
         {/* Main Content */}
         <main className="flex-1 p-4 md:p-8 bg-background md:bg-muted/40 overflow-y-auto pb-20 md:pb-8">
-          <div className="max-w-6xl mx-auto h-full">
-            {children}
-          </div>
+            <EnterpriseDrawer>
+                <div className="max-w-6xl mx-auto h-full">
+                    {children}
+                </div>
+            </EnterpriseDrawer>
         </main>
       </div>
       

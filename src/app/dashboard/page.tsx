@@ -67,6 +67,8 @@ export default function DashboardPage() {
           </Button>
         </div>
       </div>
+      
+      <EnterpriseMobilePuller />
 
        <div id="tip-card-tutorial">
         <TipCard />
