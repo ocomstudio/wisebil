@@ -673,173 +673,175 @@ const AgentWReviewCard = ({ message }: { message: Message }) => {
         </Button>
       </header>
 
-      <ScrollArea className="flex-1" ref={scrollAreaRef}>
-        <div className="p-4 md:p-6 space-y-6 pb-8">
-          {currentConversation.length === 0 && agentMode === 'agent' && (
-              <div className="text-center text-muted-foreground p-8">
-                  <ScanLine className="h-12 w-12 mx-auto mb-4"/>
-                  <h3 className="font-semibold text-lg">{t('agent_w_welcome_title')}</h3>
-                  <p className="text-sm">{t('agent_w_welcome_desc')}</p>
-              </div>
-          )}
-          {currentConversation.map((message) => (
-            <div
-              key={message.id}
-              className={`flex items-start gap-3 ${
-                message.role === 'user' ? 'justify-end' : 'justify-start'
-              }`}
-            >
-              {message.role === 'model' && (
-                <Avatar className="h-8 w-8">
-                   <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
-                </Avatar>
-              )}
-              <div
-                className={cn(`rounded-lg px-4 py-2 max-w-sm`, 
-                  message.role === 'user' ? 'bg-primary text-primary-foreground'
-                  : message.type === 'agent-review' ? 'bg-transparent p-0 w-full'
-                  : agentMode === 'agent' ? 'bg-accent text-accent-foreground' : 'bg-muted'
-                )}
-              >
-                {message.type === 'agent-review' ? (
-                    <AgentWReviewCard message={message} />
-                ) : (
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                )}
-              </div>
-              {message.role === 'user' && (
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
-                </Avatar>
-              )}
-            </div>
-          ))}
-           {isThinking && (
-            <div className="flex items-start gap-3 justify-start">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
-              </Avatar>
-              <div className="rounded-lg px-4 py-2 max-w-sm bg-muted flex items-center gap-2">
-                <BrainCircuit className="h-5 w-5 animate-pulse" />
-                <span className="text-sm text-muted-foreground italic">{t('thinking_in_progress')}</span>
-              </div>
-            </div>
-          )}
-        </div>
-      </ScrollArea>
-
-       {transcriptionMode ? <TranscriptionEditor /> : (
-            <footer className='p-4 md:p-6 border-t space-y-4 flex-shrink-0 bg-background'>
-                {Object.keys(conversationHistory).length > 0 && (
-                <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="item-1">
-                    <AccordionTrigger>{t('history_button')}</AccordionTrigger>
-                    <AccordionContent>
-                        <ScrollArea className="h-32">
-                        <div className='space-y-2 pr-2'>
-                            {Object.entries(conversationHistory).sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime()).map(([timestamp, convo]) => (
-                            <div key={timestamp} className="grid grid-cols-[1fr_auto] items-center gap-2 p-2 bg-muted/50 rounded-md text-sm">
-                                <span
-                                className="truncate cursor-pointer hover:text-primary"
-                                onClick={() => {
-                                    archiveCurrentConversation();
-                                    setCurrentConversation(convo);
-                                    const newHistory = { ...conversationHistory };
-                                    delete newHistory[timestamp];
-                                    setConversationHistory(newHistory);
-                                }}
-                                >
-                                {convo.find(m => m.role === 'user')?.content || convo[0]?.content || t('empty_conversation')}
-                                </span>
-                                <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive">
-                                    <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
-                                            <Trash2 className="h-6 w-6 text-red-600" />
-                                        </div>
-                                    <AlertDialogTitle>{t('are_you_sure')}</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        {t('history_delete_confirmation')}
-                                    </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => deleteConversationFromHistory(timestamp)} className="bg-destructive hover:bg-destructive/90">
-                                        {t('delete')}
-                                    </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                                </AlertDialog>
-                            </div>
-                            ))}
-                        </div>
-                        </ScrollArea>
-                    </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
-                )}
-
-                <div className="grid grid-cols-2 gap-2 mb-2">
-                    <Button variant={agentMode === 'wise' ? 'secondary' : 'ghost'} onClick={() => setAgentMode('wise')}>
-                        <MessageSquare className="mr-2 h-4 w-4" />
-                        {t('nav_advice')}
-                    </Button>
-                    <Button variant={agentMode === 'agent' ? 'secondary' : 'ghost'} onClick={() => setAgentMode('agent')}>
-                        <Sparkles className="mr-2 h-4 w-4" />
-                        Agent W
-                    </Button>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <ScrollArea className="flex-1" ref={scrollAreaRef}>
+          <div className="p-4 md:p-6 space-y-6 pb-8">
+            {currentConversation.length === 0 && agentMode === 'agent' && (
+                <div className="text-center text-muted-foreground p-8">
+                    <ScanLine className="h-12 w-12 mx-auto mb-4"/>
+                    <h3 className="font-semibold text-lg">{t('agent_w_welcome_title')}</h3>
+                    <p className="text-sm">{t('agent_w_welcome_desc')}</p>
                 </div>
-                {isListening ? (
-                    <div className="flex flex-col items-center gap-2">
-                       <AudioWaveform />
-                        <Button variant="destructive" onClick={stopListening}>{t('stop_recording_button')}</Button>
-                    </div>
-                ) : (
-                    <Form {...form}>
-                        <form
-                            onSubmit={form.handleSubmit(onSubmit)}
-                            className="flex items-start gap-2"
-                        >
-                            {agentMode === 'agent' && (
-                            <Button type="button" size="icon" variant={"outline"} onClick={startListening} disabled={isThinking || isListening}>
-                                <Mic className="h-5 w-5" />
-                            </Button>
-                            )}
-                            <FormField
-                            control={form.control}
-                            name="prompt"
-                            render={({ field }) => (
-                                <FormItem className="flex-1">
-                                <FormControl>
-                                    <Textarea
-                                    ref={textareaRef}
-                                    rows={1}
-                                    placeholder={placeholderText}
-                                    {...field}
-                                    disabled={isThinking}
-                                    className={cn(
-                                        "resize-none overflow-hidden pr-10 transition-colors max-h-36",
-                                        agentMode === 'agent' && 'bg-primary/10 border-primary/50 focus-visible:ring-primary/50'
-                                    )}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                            />
-                            <Button type="submit" size="icon" disabled={isThinking || !form.formState.isValid}>
-                            {isThinking ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-                            </Button>
-                        </form>
-                    </Form>
+            )}
+            {currentConversation.map((message) => (
+              <div
+                key={message.id}
+                className={`flex items-start gap-3 ${
+                  message.role === 'user' ? 'justify-end' : 'justify-start'
+                }`}
+              >
+                {message.role === 'model' && (
+                  <Avatar className="h-8 w-8">
+                     <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
+                  </Avatar>
                 )}
-            </footer>
-       )}
+                <div
+                  className={cn(`rounded-lg px-4 py-2 max-w-sm`, 
+                    message.role === 'user' ? 'bg-primary text-primary-foreground'
+                    : message.type === 'agent-review' ? 'bg-transparent p-0 w-full'
+                    : agentMode === 'agent' ? 'bg-accent text-accent-foreground' : 'bg-muted'
+                  )}
+                >
+                  {message.type === 'agent-review' ? (
+                      <AgentWReviewCard message={message} />
+                  ) : (
+                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  )}
+                </div>
+                {message.role === 'user' && (
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
+                  </Avatar>
+                )}
+              </div>
+            ))}
+            {isThinking && (
+              <div className="flex items-start gap-3 justify-start">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
+                </Avatar>
+                <div className="rounded-lg px-4 py-2 max-w-sm bg-muted flex items-center gap-2">
+                  <BrainCircuit className="h-5 w-5 animate-pulse" />
+                  <span className="text-sm text-muted-foreground italic">{t('thinking_in_progress')}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+
+        {transcriptionMode ? <TranscriptionEditor /> : (
+              <footer className='p-4 md:p-6 border-t space-y-4 flex-shrink-0 bg-background'>
+                  {Object.keys(conversationHistory).length > 0 && (
+                  <Accordion type="single" collapsible className="w-full">
+                      <AccordionItem value="item-1">
+                      <AccordionTrigger>{t('history_button')}</AccordionTrigger>
+                      <AccordionContent>
+                          <ScrollArea className="h-32">
+                          <div className='space-y-2 pr-2'>
+                              {Object.entries(conversationHistory).sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime()).map(([timestamp, convo]) => (
+                              <div key={timestamp} className="grid grid-cols-[1fr_auto] items-center gap-2 p-2 bg-muted/50 rounded-md text-sm">
+                                  <span
+                                  className="truncate cursor-pointer hover:text-primary"
+                                  onClick={() => {
+                                      archiveCurrentConversation();
+                                      setCurrentConversation(convo);
+                                      const newHistory = { ...conversationHistory };
+                                      delete newHistory[timestamp];
+                                      setConversationHistory(newHistory);
+                                  }}
+                                  >
+                                  {convo.find(m => m.role === 'user')?.content || convo[0]?.content || t('empty_conversation')}
+                                  </span>
+                                  <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive">
+                                      <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+                                              <Trash2 className="h-6 w-6 text-red-600" />
+                                          </div>
+                                      <AlertDialogTitle>{t('are_you_sure')}</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                          {t('history_delete_confirmation')}
+                                      </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                      <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => deleteConversationFromHistory(timestamp)} className="bg-destructive hover:bg-destructive/90">
+                                          {t('delete')}
+                                      </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                  </AlertDialog>
+                              </div>
+                              ))}
+                          </div>
+                          </ScrollArea>
+                      </AccordionContent>
+                      </AccordionItem>
+                  </Accordion>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-2 mb-2">
+                      <Button variant={agentMode === 'wise' ? 'secondary' : 'ghost'} onClick={() => setAgentMode('wise')}>
+                          <MessageSquare className="mr-2 h-4 w-4" />
+                          {t('nav_advice')}
+                      </Button>
+                      <Button variant={agentMode === 'agent' ? 'secondary' : 'ghost'} onClick={() => setAgentMode('agent')}>
+                          <Sparkles className="mr-2 h-4 w-4" />
+                          Agent W
+                      </Button>
+                  </div>
+                  {isListening ? (
+                      <div className="flex flex-col items-center gap-2">
+                         <AudioWaveform />
+                          <Button variant="destructive" onClick={stopListening}>{t('stop_recording_button')}</Button>
+                      </div>
+                  ) : (
+                      <Form {...form}>
+                          <form
+                              onSubmit={form.handleSubmit(onSubmit)}
+                              className="flex items-start gap-2"
+                          >
+                              {agentMode === 'agent' && (
+                              <Button type="button" size="icon" variant={"outline"} onClick={startListening} disabled={isThinking || isListening}>
+                                  <Mic className="h-5 w-5" />
+                              </Button>
+                              )}
+                              <FormField
+                              control={form.control}
+                              name="prompt"
+                              render={({ field }) => (
+                                  <FormItem className="flex-1">
+                                  <FormControl>
+                                      <Textarea
+                                      ref={textareaRef}
+                                      rows={1}
+                                      placeholder={placeholderText}
+                                      {...field}
+                                      disabled={isThinking}
+                                      className={cn(
+                                          "resize-none overflow-hidden pr-10 transition-colors max-h-36",
+                                          agentMode === 'agent' && 'bg-primary/10 border-primary/50 focus-visible:ring-primary/50'
+                                      )}
+                                      />
+                                  </FormControl>
+                                  <FormMessage />
+                                  </FormItem>
+                              )}
+                              />
+                              <Button type="submit" size="icon" disabled={isThinking || !form.formState.isValid}>
+                              {isThinking ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+                              </Button>
+                          </form>
+                      </Form>
+                  )}
+              </footer>
+        )}
+      </div>
     </div>
   );
 }

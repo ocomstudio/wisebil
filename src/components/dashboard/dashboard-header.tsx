@@ -9,26 +9,24 @@ import { UserProfile } from "./user-profile";
 import { useLocale } from '@/context/locale-context';
 import { Badge } from '../ui/badge';
 import { useNotifications } from '@/context/notifications-context';
+import { usePathname } from "next/navigation";
 
 export function DashboardHeader() {
   const { t } = useLocale();
   const { unreadCount } = useNotifications();
+  const pathname = usePathname();
+  
+  const isScanPage = pathname.startsWith('/dashboard/scan-receipt');
+  if (isScanPage) return null; // Don't render header on scan page
 
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-4 border-b bg-background md:px-6 md:justify-end">
+    <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-4 border-b bg-background md:px-6 md:hidden">
       {/* Logo visible only on mobile */}
       <div className="md:hidden">
         <Logo />
       </div>
 
       <div className="flex items-center gap-2 md:gap-4">
-        {/* Info button for desktop */}
-        <Button variant="ghost" size="icon" className="hidden md:inline-flex rounded-full" asChild>
-          <Link href="/about" aria-label={t('about_title')}>
-            <Info className="h-5 w-5" />
-          </Link>
-        </Button>
-        
         {/* Notifications button */}
         <Button variant="ghost" size="icon" asChild className="relative rounded-full">
           <Link href="/dashboard/notifications">

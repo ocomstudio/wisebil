@@ -26,8 +26,13 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const showTeamChatPanel = pathname.startsWith('/dashboard/entreprise/management');
 
+  // Hide main layout for the full-screen scan page on mobile
+  if (pathname.startsWith('/dashboard/scan-receipt')) {
+    return <div className="h-screen w-screen">{children}</div>;
+  }
+
   return (
-    <div className="grid h-dvh w-full md:grid-cols-[250px_1fr_350px]">
+    <div className="grid h-dvh w-full overflow-hidden md:grid-cols-[250px_1fr_350px]">
       {/* Desktop Sidebar */}
       <aside className="hidden border-r bg-muted/40 md:flex flex-col gap-6 p-4">
         <div className="px-2">
@@ -37,7 +42,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex flex-col">
+      <div className="flex flex-col overflow-hidden">
         <DashboardHeader />
         <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-background md:bg-muted/40 pb-20 md:pb-8">
           <div className="max-w-6xl mx-auto h-full">
@@ -47,7 +52,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Right Panel: Conditional rendering of TeamChat or ConseilPanel */}
-      <aside className="hidden md:flex flex-col border-l bg-muted/40">
+      <aside className="hidden md:flex flex-col border-l bg-muted/40 h-screen">
         {showTeamChatPanel ? <TeamChat /> : <ConseilPanel />}
       </aside>
       
