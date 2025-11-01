@@ -848,5 +848,10 @@
     "product_image_label": "Product Image",
     "product_image_preview_alt": "Product image preview",
     "product_image_upload_cta": "Click to upload an image",
-    "open_enterprise_space": "↓ Enterprise Space ↓"
+    "open_enterprise_space": "Enterprise Space",
+    "animated_text_sales": "Manage your sales...",
+    "animated_text_purchases": "Track your purchases...",
+    "animated_text_inventory": "Master your inventory...",
+    "animated_text_overview": "Pilot your business..."
 }
+

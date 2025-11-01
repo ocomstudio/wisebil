@@ -848,5 +848,9 @@
     "product_image_label": "Hình ảnh Sản phẩm",
     "product_image_preview_alt": "Xem trước hình ảnh sản phẩm",
     "product_image_upload_cta": "Nhấp để tải lên hình ảnh",
-    "open_enterprise_space": "↓ Không gian Doanh nghiệp ↓"
+    "open_enterprise_space": "Không gian Doanh nghiệp",
+    "animated_text_sales": "Quản lý bán hàng của bạn...",
+    "animated_text_purchases": "Theo dõi các giao dịch mua của bạn...",
+    "animated_text_inventory": "Nắm vững hàng tồn kho của bạn...",
+    "animated_text_overview": "Điều khiển doanh nghiệp của bạn..."
 }

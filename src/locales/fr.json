@@ -848,5 +848,10 @@
     "product_image_label": "Image du Produit",
     "product_image_preview_alt": "Aperçu de l'image du produit",
     "product_image_upload_cta": "Cliquez pour télécharger une image",
-    "open_enterprise_space": "Tirez pour ouvrir l'Espace Entreprise"
+    "open_enterprise_space": "Espace Entreprise",
+    "animated_text_sales": "Gérez vos ventes...",
+    "animated_text_purchases": "Suivez vos achats...",
+    "animated_text_inventory": "Maîtrisez vos stocks...",
+    "animated_text_overview": "Pilotez votre activité..."
 }
+

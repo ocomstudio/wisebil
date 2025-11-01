@@ -848,5 +848,9 @@
     "product_image_label": "Produktbild",
     "product_image_preview_alt": "Vorschau des Produktbildes",
     "product_image_upload_cta": "Klicken, um ein Bild hochzuladen",
-    "open_enterprise_space": "↓ Unternehmensbereich ↓"
+    "open_enterprise_space": "Unternehmensbereich",
+    "animated_text_sales": "Verwalten Sie Ihre Verkäufe...",
+    "animated_text_purchases": "Verfolgen Sie Ihre Einkäufe...",
+    "animated_text_inventory": "Meistern Sie Ihren Lagerbestand...",
+    "animated_text_overview": "Steuern Sie Ihr Geschäft..."
 }
