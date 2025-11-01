@@ -4,7 +4,7 @@ const withPWA = require("next-pwa")({
   dest: "public",
   register: true,
   skipWaiting: true,
-  // PWA is now enabled in all environments
+  disable: process.env.NODE_ENV === 'development' ? false : true,
   fallbacks: {
     document: "/_offline", // This is the crucial line
   },
