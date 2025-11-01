@@ -28,45 +28,56 @@ interface Plan {
   isPopular?: boolean;
 }
 
-interface CinetPayFormProps {
-    plan: 'premium' | 'business';
-    amount: number;
-    currency: string;
-    description: string;
-    customerName: string;
-    customerSurname: string;
-    customerEmail: string;
-    customerPhone: string;
-    userId: string;
-}
+export default function BillingPage() {
+    const { t, currency, formatCurrency } = useLocale();
+    const { user: authUser, firebaseUser } = useAuth();
+    const { userData } = useUserData();
+    const [isLoading, setIsLoading] = useState<string | null>(null);
+    const { toast } = useToast();
+    const [isCinetpayScriptLoaded, setIsCinetpayScriptLoaded] = useState(false);
 
-function CinetPayForm({
-    plan,
-    amount,
-    currency,
-    description,
-    customerName,
-    customerSurname,
-    customerEmail,
-    customerPhone,
-    userId,
-}: CinetPayFormProps) {
-    const return_url = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?status=success`;
-    const notify_url = `${process.env.NEXT_PUBLIC_APP_URL}/api/cinetpay/notify`;
-    const transactionId = `${userId}-${plan}-${Date.now()}`;
-    
     useEffect(() => {
-        const CinetPay = (window as any).CinetPay;
-        if (!CinetPay) {
-            console.error("CinetPay.js not loaded");
+        const script = document.createElement('script');
+        script.src = "https://cdn.cinetpay.com/seamless/main.js";
+        script.async = true;
+        script.onload = () => setIsCinetpayScriptLoaded(true);
+        script.onerror = () => {
+             toast({ variant: 'destructive', title: 'Erreur de Paiement', description: 'Impossible de charger le service de paiement. Veuillez recharger la page.'});
+        }
+        document.body.appendChild(script);
+
+        return () => {
+            document.body.removeChild(script);
+        }
+    }, [toast]);
+    
+    const isCurrentPlan = (plan: 'premium' | 'business') => {
+        return userData?.profile?.subscriptionStatus === 'active' && userData?.profile?.subscriptionPlan === plan;
+    };
+    
+    const handlePayment = (plan: 'premium' | 'business') => {
+        if (!firebaseUser || !authUser) {
+            toast({ variant: 'destructive', title: "Veuillez vous connecter pour continuer." });
             return;
         }
+
+        if (!isCinetpayScriptLoaded || typeof (window as any).CinetPay === 'undefined') {
+             toast({ variant: 'destructive', title: 'Erreur de Paiement', description: 'Le service de paiement n\'est pas encore prêt. Veuillez patienter quelques instants.'});
+            return;
+        }
+
+        setIsLoading(plan);
+
+        const CinetPay = (window as any).CinetPay;
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://wisebil.com';
+        const transactionId = `${firebaseUser.uid}-${plan}-${Date.now()}`;
+        const amount = pricing[plan][currency];
 
         CinetPay.setConfig({
             apikey: process.env.NEXT_PUBLIC_CINETPAY_API_KEY,
             site_id: parseInt(process.env.NEXT_PUBLIC_CINETPAY_SITE_ID || '0', 10),
-            notify_url: notify_url,
-            mode: 'PRODUCTION' // Use 'PRODUCTION' for live, 'SANDBOX' for testing
+            notify_url: `${appUrl}/api/cinetpay/notify`,
+            mode: 'PRODUCTION'
         });
 
         CinetPay.getCheckout({
@@ -74,79 +85,29 @@ function CinetPayForm({
             amount: amount,
             currency: currency,
             channels: 'ALL',
-            description: description,
-            customer_name: customerName,
-            customer_surname: customerSurname,
-            customer_email: customerEmail,
-            customer_phone_number: customerPhone,
-            // Pass the user ID in metadata for the webhook
-            metadata: userId, 
+            description: `Abonnement ${plan} - Wisebil`,
+            customer_name: authUser.displayName || 'Utilisateur',
+            customer_surname: 'Wisebil',
+            customer_email: authUser.email || '',
+            customer_phone_number: userData?.profile?.phone || '',
+            metadata: firebaseUser.uid,
         });
 
         CinetPay.waitResponse(function(data: any) {
+            setIsLoading(null);
             if (data.status === "REFUSED") {
                 window.location.href = `/dashboard/billing?status=failed&trans_id=${transactionId}`;
             } else if (data.status === "ACCEPTED") {
                 window.location.href = `/dashboard/billing?status=success&trans_id=${transactionId}`;
             }
         });
-        
+
         CinetPay.onError(function(data: any) {
-            console.log("CinetPay Error:", data);
+            setIsLoading(null);
+            console.error("CinetPay Error:", data);
+            toast({ variant: 'destructive', title: 'Erreur de Paiement', description: 'Une erreur est survenue lors de l\'initialisation du paiement.' });
             window.location.href = `/dashboard/billing?status=error`;
         });
-    }, [amount, currency, customerEmail, customerName, customerPhone, customerSurname, description, plan, transactionId, userId, notify_url]);
-
-    return (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
-            <Loader2 className="h-12 w-12 text-primary animate-spin" />
-            <p className="mt-4 text-lg font-semibold">Redirection vers le paiement...</p>
-        </div>
-    );
-}
-
-
-export default function BillingPage() {
-    const { t, currency, formatCurrency } = useLocale();
-    const { user: authUser, firebaseUser } = useAuth();
-    const { userData } = useUserData();
-    const [isLoading, setIsLoading] = useState<string | null>(null);
-    const { toast } = useToast();
-
-    const [paymentData, setPaymentData] = useState<CinetPayFormProps | null>(null);
-    
-    const isCurrentPlan = (plan: 'premium' | 'business') => {
-        return userData?.profile?.subscriptionStatus === 'active' && userData?.profile?.subscriptionPlan === plan;
-    };
-    
-    const handlePayment = async (plan: 'premium' | 'business') => {
-        if (!firebaseUser || !authUser) {
-            toast({ variant: 'destructive', title: "Veuillez vous connecter pour continuer." });
-            return;
-        }
-        setIsLoading(plan);
-        
-        try {
-            const fullName = authUser.displayName || 'Utilisateur';
-            const [firstName, ...lastNameParts] = fullName.split(' ');
-            
-            setPaymentData({
-                plan,
-                amount: pricing[plan][currency],
-                currency: currency,
-                description: `Abonnement ${plan} - Wisebil`,
-                customerName: firstName,
-                customerSurname: lastNameParts.join(' ') || ' ',
-                customerEmail: authUser.email || '',
-                customerPhone: authUser.phone || '',
-                userId: firebaseUser.uid,
-            });
-
-        } catch (error) {
-            console.error("Payment initiation error:", error);
-            toast({ variant: 'destructive', title: 'Erreur de Paiement', description: 'Impossible de contacter le service de paiement. Veuillez réessayer.'});
-            setIsLoading(null);
-        }
     };
 
 
@@ -211,7 +172,6 @@ export default function BillingPage() {
 
     return (
         <div className="space-y-8 pb-20 md:pb-8">
-            {paymentData && <CinetPayForm {...paymentData} />}
             <div className="flex items-center gap-4">
                  <Button variant="outline" size="icon" asChild>
                     <Link href="/dashboard">
@@ -265,7 +225,7 @@ export default function BillingPage() {
                                 <Button
                                     onClick={() => handlePayment(plan.name as 'premium' | 'business')}
                                     className="w-full"
-                                    disabled={!!isLoading}
+                                    disabled={!!isLoading || !isCinetpayScriptLoaded}
                                 >
                                     {isLoading === plan.name ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                                     {isLoading === plan.name ? 'Traitement...' : plan.buttonText}
