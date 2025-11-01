@@ -89,12 +89,6 @@ export function UserProfile() {
              </Link>
           </DropdownMenuItem>
            <DropdownMenuItem asChild>
-            <Link href="/dashboard/entreprise">
-              <Building className="mr-2 h-4 w-4" />
-              <span>{t('nav_enterprise')}</span>
-            </Link>
-          </DropdownMenuItem>
-           <DropdownMenuItem asChild>
             <Link href="/dashboard/billing">
               <CreditCard className="mr-2 h-4 w-4" />
               <span>{t('billing')}</span>
