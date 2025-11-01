@@ -194,7 +194,7 @@ export function ConseilPanel() {
 }, [isClient, user, t, getUserDocRef]);
 
 
-  const saveCurrentConversation = async () => {
+  const saveCurrentConversation = async (conversationToSave: Conversation) => {
     const userDocRef = getUserDocRef();
     if (!userDocRef) return;
   
@@ -203,7 +203,7 @@ export function ConseilPanel() {
       await setDoc(userDocRef, {
         conversations: {
           [agentMode]: {
-            current: cleanObjectForFirestore(currentConversation),
+            current: cleanObjectForFirestore(conversationToSave),
             history: cleanObjectForFirestore(conversationHistory)
           }
         }
@@ -426,7 +426,12 @@ export function ConseilPanel() {
         agentMessage = { id: uuidv4(), role: 'model', type: 'text', content: successMessage};
         toast.success(t('agent_w_success'));
     }
-    setCurrentConversation(prev => [...prev, agentMessage]);
+    
+    setCurrentConversation(prev => {
+        const newConversation = [...prev, agentMessage];
+        saveCurrentConversation(newConversation);
+        return newConversation;
+    });
   };
   
   const processAgentWPrompt = async (prompt: string) => {
@@ -448,7 +453,11 @@ export function ConseilPanel() {
     } catch (error) {
         console.error("Error during agent processing:", error);
         const assistantMessage: Message = { id: uuidv4(), role: 'model', type: 'text', content: t('assistant_error_desc') };
-        setCurrentConversation(prev => [...prev, assistantMessage]);
+        setCurrentConversation(prev => {
+            const newConversation = [...prev, assistantMessage];
+            saveCurrentConversation(newConversation);
+            return newConversation;
+        });
     } finally {
         setIsThinking(false);
     }
@@ -468,12 +477,14 @@ export function ConseilPanel() {
   
     // Wise Mode
     const userMessage: Message = { id: uuidv4(), role: 'user', type: 'text', content: prompt };
-    const newConversation = [...currentConversation, userMessage];
-    setCurrentConversation(newConversation);
+    
+    // Use a function for state update to ensure we have the latest state
+    setCurrentConversation(prev => [...prev, userMessage]);
     setIsThinking(true);
   
     try {
-      const historyForApi = newConversation
+      // Pass the updated conversation directly to the API
+      const historyForApi = [...currentConversation, userMessage]
         .filter((m) => m.type === 'text')
         .map((m) => ({ role: m.role, content: m.content }));
   
@@ -489,16 +500,23 @@ export function ConseilPanel() {
       });
   
       const assistantMessage: Message = { id: uuidv4(), role: 'model', type: 'text', content: response };
-      setCurrentConversation((prev) => [...prev, assistantMessage]);
+      
+      setCurrentConversation((prev) => {
+        const newConversation = [...prev, assistantMessage];
+        saveCurrentConversation(newConversation);
+        return newConversation;
+      });
 
     } catch (error) {
       console.error("AI assistant failed:", error);
-      setCurrentConversation((prev) => [...prev, { id: uuidv4(), role: 'model', type: 'text', content: t('assistant_error_desc') }]);
-      // Remove the user message
-      // setCurrentConversation((prev) => prev.filter(msg => msg.id !== userMessage.id));
+      const errorMessage = { id: uuidv4(), role: 'model', type: 'text', content: t('assistant_error_desc') };
+      setCurrentConversation((prev) => {
+          const newConversation = [...prev, errorMessage];
+          saveCurrentConversation(newConversation);
+          return newConversation;
+      });
     } finally {
       setIsThinking(false);
-      await saveCurrentConversation();
     }
   };
   

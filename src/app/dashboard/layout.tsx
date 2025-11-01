@@ -92,6 +92,11 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       {/* Mobile Bottom Nav */}
       <BottomNav />
       
+      {/* Drawer for Enterprise on Mobile */}
+      <EnterpriseDrawer>
+        {children}
+      </EnterpriseDrawer>
+      
       {/* Right Panel: Conditional rendering of TeamChat or ConseilPanel */}
       <aside className="hidden md:flex flex-col border-l bg-muted/40 h-screen">
           {showTeamChatPanel ? <TeamChat /> : <ConseilPanel />}

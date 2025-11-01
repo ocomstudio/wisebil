@@ -1,9 +1,9 @@
 // src/components/dashboard/entreprise/enterprise-drawer.tsx
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { motion, useAnimation, useMotionValue, PanInfo } from "framer-motion";
-import { ArrowDown, ArrowLeft } from "lucide-react";
+import { useEffect } from "react";
+import { motion, useAnimation } from "framer-motion";
+import { ArrowDown } from "lucide-react";
 import { useLocale } from "@/context/locale-context";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -29,15 +29,13 @@ export function EnterpriseDrawer({ children }: { children: React.ReactNode }) {
   }, [isEnterprisePage, controls, isMobile]);
 
   const handleClose = () => {
-    router.back();
+    router.push('/dashboard');
   };
   
-  // On desktop, we don't need this component, children are rendered by the main layout.
   if (!isMobile) {
     return null;
   }
 
-  // On mobile, use the drawer logic.
   return (
     <motion.div
       initial={{ y: "100%" }}
@@ -49,11 +47,12 @@ export function EnterpriseDrawer({ children }: { children: React.ReactNode }) {
       )}
     >
       <header className="p-4 flex items-center justify-between border-b flex-shrink-0">
-        <Button variant="ghost" size="icon" onClick={handleClose} className="cursor-pointer">
-          <ArrowLeft className="h-5 w-5" />
+        <Button variant="ghost" onClick={handleClose} className="cursor-pointer">
+          <ArrowDown className="mr-2 h-5 w-5" />
+          {t('back_to_dashboard')}
         </Button>
         <h2 className="font-bold text-lg">{t('nav_enterprise')}</h2>
-        <div className="w-10"></div>
+        <div className="w-24"></div> {/* Spacer */}
       </header>
       <div className="flex-1 overflow-y-auto">
         <div className="p-4">
