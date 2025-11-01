@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, useAnimation, useMotionValue, PanInfo } from "framer-motion";
-import { ArrowLeft, ArrowUp } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 import { useLocale } from "@/context/locale-context";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -23,12 +23,12 @@ export function EnterpriseDrawer({ children }: { children: React.ReactNode }) {
     if (isEnterprisePage) {
       controls.start({ y: 0 });
     } else {
-      controls.start({ y: "100%" });
+      controls.start({ y: "-100%" });
     }
   }, [isEnterprisePage, controls]);
 
   const handleClose = () => {
-    router.push('/dashboard');
+    router.back();
   };
 
   return (
@@ -48,7 +48,7 @@ export function EnterpriseDrawer({ children }: { children: React.ReactNode }) {
       >
         <header className="p-4 flex items-center justify-between border-b flex-shrink-0">
           <Button variant="ghost" size="icon" onClick={handleClose} className="cursor-pointer">
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowDown className="h-5 w-5" />
           </Button>
           <h2 className="font-bold text-lg">{t('nav_enterprise')}</h2>
           <div className="w-10"></div>

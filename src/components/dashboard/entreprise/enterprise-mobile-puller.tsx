@@ -2,7 +2,7 @@
 "use client";
 
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Building } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/context/locale-context";
 
@@ -16,12 +16,15 @@ export function EnterpriseMobilePuller() {
     return (
         <div
             onClick={() => router.push('/dashboard/entreprise')}
-            className="-mx-4 mb-2 cursor-pointer"
+            className="w-full bg-card p-4 rounded-xl shadow-lg cursor-pointer flex items-center justify-between text-card-foreground transform-gpu transition-transform hover:scale-[1.02]"
         >
-            <div className="p-2 pt-4 text-center text-xs text-muted-foreground bg-transparent">
-                 <ArrowUp className="h-5 w-5 mx-auto opacity-70 animate-bounce" />
-                <p className="font-semibold select-none">{t('open_enterprise_space')}</p>
+            <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                    <Building className="h-5 w-5 text-primary"/>
+                </div>
+                <div className="font-semibold">{t('nav_enterprise')}</div>
             </div>
+            <ArrowUp className="h-5 w-5 text-muted-foreground animate-bounce" />
         </div>
     );
 }

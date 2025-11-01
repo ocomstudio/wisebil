@@ -27,8 +27,7 @@ export default function EnterprisePage() {
 
   return (
     <div className="space-y-6 pb-24 md:pb-8">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-            <h1 className="text-3xl font-bold font-headline">{t('nav_enterprise')}</h1>
+      <div className="flex flex-wrap items-center justify-end gap-2">
             <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => setIsActivityHistoryOpen(true)}>
                     <Activity className="mr-2 h-4 w-4" />
