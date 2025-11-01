@@ -468,11 +468,12 @@ export function ConseilPanel() {
   
     // Wise Mode
     const userMessage: Message = { id: uuidv4(), role: 'user', type: 'text', content: prompt };
-    setCurrentConversation((prev) => [...prev, userMessage]);
+    const newConversation = [...currentConversation, userMessage];
+    setCurrentConversation(newConversation);
     setIsThinking(true);
   
     try {
-      const historyForApi = currentConversation
+      const historyForApi = newConversation
         .filter((m) => m.type === 'text')
         .map((m) => ({ role: m.role, content: m.content }));
   

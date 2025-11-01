@@ -27,6 +27,10 @@ export function BottomNav() {
     { href: '/dashboard/budget', label: t('nav_budgets'), icon: Target },
     { href: '/dashboard/conseil', label: t('nav_advice'), icon: Lightbulb },
   ];
+  
+  if (isEnterprisePage) {
+    return null; // Don't render the bottom nav on enterprise pages for a full-screen experience
+  }
 
   return (
     <footer id="bottom-nav-tutorial" className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50">
